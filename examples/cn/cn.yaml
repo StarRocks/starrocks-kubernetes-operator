@@ -1,0 +1,54 @@
+apiVersion: starrocks.com/v1alpha1
+kind: ComputeNodeGroup
+metadata:
+  name: computenodegroup-sample
+  namespace: starrocks
+  annotations:
+    # cn节点需要一个fe节点能直接访问的ip，这里使用的是腾讯云的弹性网卡方案 (https://cloud.tencent.com/document/product/457/50357)
+    tke.cloud.tencent.com/networks: tke-direct-eni
+spec:
+  cnInfo:
+    configMap: cn-test # cn节点的参数配置文件ConfigMap
+  feInfo:
+    accountSecret: test-secret # fe的账户信息secret
+    addresses: # fe地址
+      - <ip>:<port>
+  images:
+    cnImage: xxx:xxx # cn镜像
+    componentsImage: xxx:xxx # 辅助组件镜像，包含cn注册sidecar和cn下线清理job
+  replicas: 4 # cn副本数
+  cronJobPolicy:
+    schedule: "*/1 * * * *" # 废弃节点清理任务cron表达式
+  podPolicy:
+    resources: # cn-pod资源要求
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+      requests:
+        cpu: 4000m
+        memory: 8Gi
+  autoScalingPolicy: # 弹性伸缩策略
+    maxReplicas: 10
+    minReplicas: 1
+    hpaPolicy:
+      metrics: # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#metricspec-v2beta2-autoscaling
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              averageUtilization: 30
+              type: Utilization
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              averageUtilization: 30
+              type: Utilization
+      behavior: # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#horizontalpodautoscalerbehavior-v2beta2-autoscaling
+        scaleUp:
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 10
+        scaleDown:
+          selectPolicy: Disabled

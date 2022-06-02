@@ -1,0 +1,15 @@
+domain: starrocks.com
+layout:
+- go.kubebuilder.io/v3
+projectName: starrocks-operator
+repo: github.com/StarRocks/starrocks-kubernetes-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: starrocks.com
+  kind: ComputeNodeGroup
+  path: github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: starrocks
+data:
+  # base64编码后的字符串
+  FE_PWD: "Cg=="
+  FE_USR: "cm9vdAo="
+type: Opaque
