@@ -18,10 +18,9 @@ package v1alpha1
 
 import autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 
-// hpa/gpa
+// hpa
 type AutoScalingPolicy struct {
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
-	// GpaPolicy *GpaPolicy `json:"gpaPolicy,omitempty"`
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 	MaxReplicas int32  `json:"maxReplicas"`

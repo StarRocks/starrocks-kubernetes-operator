@@ -36,7 +36,7 @@ spec:
               description: ComputeNodeGroupSpec defines the desired state of ComputeNodeGroup
               properties:
                 autoScalingPolicy:
-                  description: 'TODO: gpa hpa'
+                  description: hpa
                   properties:
                     hpaPolicy:
                       description: k8s hpa
@@ -662,7 +662,6 @@ spec:
                       format: int32
                       type: integer
                     minReplicas:
-                      description: GpaPolicy *GpaPolicy `json:"gpaPolicy,omitempty"`
                       format: int32
                       type: integer
                   required:

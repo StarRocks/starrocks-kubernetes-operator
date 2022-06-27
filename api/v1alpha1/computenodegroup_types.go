@@ -31,7 +31,6 @@ type ComputeNodeGroupSpec struct {
 	CnInfo   CnInfo `json:"cnInfo"`
 	Images   Images `json:"images"`
 	Replicas int32  `json:"replicas"`
-	// TODO: gpa
 	// hpa
 	// +optional
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`

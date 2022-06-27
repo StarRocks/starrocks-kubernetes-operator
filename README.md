@@ -1,6 +1,5 @@
 # starrocks-kubernetes-operator
 
-**(此项目开发中...资源定义可能会变化)**
 ## 1 项目介绍
 使用 [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) 构建，用于在k8s中管控starrocks。
 
