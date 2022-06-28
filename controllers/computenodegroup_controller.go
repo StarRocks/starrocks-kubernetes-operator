@@ -115,6 +115,10 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if err != nil {
 		return Failed(err)
 	}
+	err = r.handleFinalizer(ctx, state)
+	if err != nil {
+		return Failed(err)
+	}
 	err = r.applyDeployment(ctx, state)
 	if err != nil {
 		return Failed(err)
@@ -128,10 +132,6 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return Failed(err)
 	}
 	err = r.applyHPA(ctx, state)
-	if err != nil {
-		return Failed(err)
-	}
-	err = r.handleFinalizer(ctx, state)
 	if err != nil {
 		return Failed(err)
 	}
@@ -207,8 +207,10 @@ func (r *ComputeNodeGroupReconciler) isPodCleanUp(ctx context.Context, cn *starr
 	if err != nil {
 		return false, err
 	}
-	if len(pods.Items) != 0 {
-		return false, nil
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == corev1.PodPending || pod.Status.Phase == corev1.PodRunning {
+			return false, nil
+		}
 	}
 	return true, nil
 }
