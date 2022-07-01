@@ -1,65 +1,66 @@
 # starrocks-kubernetes-operator
 
-## 1 项目介绍
-使用 [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) 构建，用于在k8s中管控starrocks。
+## 1 Overview
+**(under development)**  
+develop with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), control starrocks in kubernetes
 
-## 2 环境要求
- * k8s: 1.18及以上
- * 网络: fe可访问cn-pod的ip
+## 2 Requirements
+ * kubernetes 1.18+
+ * network: fe can access the ip of cn-pod
 
-## 3 特性
-* 启动cn集群，并向fe注册节点
-* cn节点弹性扩缩
+## 3 Supported Features
+* start cn clusters，register cn-pod's ip to fe
+* auto-scaling for cn cluster
 
-## 3 构建镜像
-### 3.1 operator
+## 3 Build images
+### 3.1 Operator
 ```bash
-# 生成镜像
+# build image
 make docker IMG="xxx"
-# 推送镜像
+# push image to docker hub
 make push IMG="xxx"
 ```
-### 3.2 辅助组件
-目前包含cn的注册sidecar和清理下线实例的job
+### 3.2 Auxiliary Components
+contains register-sidecar and cn-offline job
 ```bash
 cd components
-# 生成镜像
+# build image
 make docker IMG="xxx"
-# 推送镜像
+# push image to docker hub
 make push IMG="xxx"
 ```
 
-## 4 operator部署
+## 4 Deploy operator in kubernetes
 ```bash
 cd deploy
-# 创建crd
+# create crd
 kubectl apply -f starrocks.com_computenodegroups.yaml
-# 创建namespace
+# create namespace
 kubectl apply -f namespace.yam;
-# 创建rbac roles
+# create rbac-roles
 kubectl apply -f leader_election_role.yaml
 kubectl apply -f role.yaml
-# 创建rbac role binding
+# create rbac-role-binding
 kubectl apply -f role_binding.yaml
 kubectl apply -f leader_election_role_binding.yaml
-# 创建rbac service account
+# create rbac-service-account
 kubectl apply -f service_account.yaml
-# 部署operator镜像
-# 注意将yaml中的镜像替换成[3.1]中构建的镜像
+# create operator deployment
+# replace image field with image which build in[3.1]
 kubectl apply -f manager.yaml
 ```
 
-## 5 运行
-### 5.1 构建一个cn集群
+## 5 Running
+### 5.1 Build a cn-cluster
 ```bash 
 cd examples/cn
-# 配置连接fe的账号密码
+# configure fe-account
 kubectl apply -f fe-account.yaml
-# 配置cn节点参数
+# configure cn-parameter
 kubectl apply -f cn-config.yaml
-# 创建cn集群
-# 注意将yaml中的辅助组件镜像替换成[3.2]中构建的镜像
+# create ComputeNodeGroup
+# replace component-image field with image which build in[3.2]
 kubectl apply -f cn.yaml
 ```
-## 6 详细设计
-参考[设计文档](./doc)
+## 6 Design
+[docs](./doc)

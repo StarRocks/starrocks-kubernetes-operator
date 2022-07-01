@@ -4,30 +4,30 @@ metadata:
   name: computenodegroup-sample
   namespace: starrocks
   annotations:
-    # cn节点需要一个fe节点能直接访问的ip，这里使用的是腾讯云的弹性网卡方案 (https://cloud.tencent.com/document/product/457/50357)
+    # assign a public ip to cn-pod, here we use the vpc-cni(https://cloud.tencent.com/document/product/457/50357)
     tke.cloud.tencent.com/networks: tke-direct-eni
 spec:
   cnInfo:
-    configMap: cn-test # cn节点的参数配置文件ConfigMap
+    configMap: cn-test # configmap to configure CN
   feInfo:
-    accountSecret: test-secret # fe的账户信息secret
-    addresses: # fe地址
+    accountSecret: test-secret # secret to configure FE account
+    addresses: # FE addresses
       - <ip>:<port>
   images:
-    cnImage: xxx:xxx # cn镜像
-    componentsImage: xxx:xxx # 辅助组件镜像，包含cn注册sidecar和cn下线清理job
-  replicas: 4 # cn副本数
+    cnImage: xxx:xxx # CN image
+    componentsImage: xxx:xxx # auxiliary components image
+  replicas: 4 # replicas of CN
   cronJobPolicy:
-    schedule: "*/1 * * * *" # 废弃节点清理任务cron表达式
+    schedule: "*/1 * * * *" # cron expression of offline-job
   podPolicy:
-    resources: # cn-pod资源要求
+    resources: # resources requirement of CN pod
       limits:
         cpu: 4000m
         memory: 8Gi
       requests:
         cpu: 4000m
         memory: 8Gi
-  autoScalingPolicy: # 弹性伸缩策略
+  autoScalingPolicy: # auto-scaling policy of CN cluster
     maxReplicas: 10
     minReplicas: 1
     hpaPolicy:
