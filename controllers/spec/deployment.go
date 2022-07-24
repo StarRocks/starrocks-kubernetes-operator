@@ -67,6 +67,10 @@ func makeCnDeploymentSpec(cn *v1alpha1.ComputeNodeGroup) appsv1.DeploymentSpec {
 
 	injectLabels(allLabels, selectorLabels)
 
+	if cn.Annotations != nil {
+		delete(cn.Annotations, "kubectl.kubernetes.io/last-applied-configuration")
+	}
+
 	return appsv1.DeploymentSpec{
 		Replicas: &cn.Spec.Replicas,
 		Selector: &metav1.LabelSelector{

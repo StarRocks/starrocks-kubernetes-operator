@@ -25,6 +25,8 @@ import (
 
 	// mysql driver init
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/blockloop/scan"
 )
 
 type Sql string
@@ -40,20 +42,15 @@ var (
 // HeartbeatPort | BePort | HttpPort | BrpcPort | LastStartTime | LastHeartbeat |
 // Alive | SystemDecommissioned | ClusterDecommissioned | ErrMsg
 type NodeInfo struct {
-	ComputeNodeId         string
-	Cluster               string
-	Ip                    string
-	HeartbeatPort         int32
-	BePort                int32
-	HttpPort              int32
-	BrpcPort              int32
-	LastStartTime         sql.NullString
-	LastHeartbeat         sql.NullString
-	Alive                 bool
-	SystemDecommissioned  bool
-	ClusterDecommissioned bool
-	ErrMsg                string
-	Version               string
+	ComputeNodeId string `db:"ComputeNodeId"`
+	Cluster       string `db:"Cluster"`
+	Ip            string `db:"IP"`
+	HeartbeatPort int32  `db:"HeartbeatPort"`
+	BePort        int32  `db:"BePort"`
+	HttpPort      int32  `db:"HttpPort"`
+	BrpcPort      int32  `db:"BrpcPort"`
+	Alive         bool   `db:"Alive"`
+	ErrMsg        string `db:"ErrMsg"`
 }
 
 // add cn node to fe
@@ -93,39 +90,25 @@ func DropNode(feAddr, usr, pwd, cnAddr string) error {
 }
 
 // get all cn nodes on fe
-func GetNodes(feAddr, usr, pwd string) ([]*NodeInfo, error) {
+func GetNodes(feAddr, usr, pwd string) ([]NodeInfo, error) {
 	db, err := getDb(feAddr, usr, pwd)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 	rows, err := db.Query(string(SqlGetNodes))
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
+		klog.Errorf("%v", err)
 		return nil, err
 	}
-	var nodes []*NodeInfo
-	for rows.Next() {
-		node := &NodeInfo{}
-		err := rows.Scan(
-			&node.ComputeNodeId,
-			&node.Cluster,
-			&node.Ip,
-			&node.HeartbeatPort,
-			&node.BePort,
-			&node.HttpPort,
-			&node.BrpcPort,
-			&node.LastStartTime,
-			&node.LastHeartbeat,
-			&node.Alive,
-			&node.SystemDecommissioned,
-			&node.ClusterDecommissioned,
-			&node.ErrMsg,
-			&node.Version,
-		)
-		if err != nil {
-			return nil, err
-		}
-		nodes = append(nodes, node)
+	var nodes []NodeInfo
+	err = scan.Rows(&nodes, rows)
+	if err != nil {
+		klog.Errorf("%v", err)
+		return nil, err
 	}
 	return nodes, nil
 }
