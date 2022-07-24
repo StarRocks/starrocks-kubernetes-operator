@@ -21,10 +21,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
+	"github.com/StarRocks/starrocks-kubernetes-operator/controllers/utils"
 	v1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	//batchv1 "k8s.io/api/batch/v1"
 	"time"
@@ -82,9 +82,9 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	err = r.Client.Get(ctx, req.NamespacedName, cn)
 	if err != nil {
 		if k8s_error.IsNotFound(err) {
-			return OK()
+			return utils.OK()
 		}
-		return Failed(err)
+		return utils.Failed(err)
 	}
 	cn = cn.DeepCopy()
 
@@ -97,122 +97,80 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	err = r.observeDeployment(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "observe deployment status", err)
 	}
 	err = r.observeCronJob(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "observe cronjob status", err)
 	}
 	err = r.observeRbac(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "observe rbac status", err)
 	}
 	err = r.observeHPA(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "observe hpa status", err)
 	}
 	err = r.Client.Status().Update(ctx, state.Inst)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "update status status", err)
 	}
 	err = r.handleFinalizer(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "handle finalizer", err)
 	}
 	err = r.applyDeployment(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "apply deployment", err)
 	}
 	err = r.applyCronJob(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "apply cronjob", err)
 	}
 	err = r.applyRbac(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "apply rbac", err)
 	}
 	err = r.applyHPA(ctx, state)
 	if err != nil {
-		return Failed(err)
+		return r.reconcileFailed(ctx, state.Inst, "apply hpa", err)
 	}
 
-	for _, condition := range state.Inst.Status.Conditions {
-		if condition.Status == metav1.ConditionFalse {
-			return Retry(10, nil)
+	for component, condition := range state.Inst.Status.Conditions {
+		if component != starrocksv1alpha1.Reconcile {
+			if condition.Status == metav1.ConditionFalse {
+				return r.reconcileInProgress(ctx, state.Inst, fmt.Sprintf("%s is not ready", component))
+			}
 		}
 	}
 
-	return OK()
+	return r.reconcileSuccess(ctx, state.Inst)
 }
 
 func (r *ComputeNodeGroupReconciler) handleFinalizer(ctx context.Context, state *CnState) error {
 	if state.Inst.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(state.Inst.ObjectMeta.Finalizers, common.CnFinalizerName) {
 			state.Inst.Finalizers = append(state.Inst.Finalizers, common.CnFinalizerName)
-			if err := r.Client.Update(ctx, state.Inst); err != nil {
+			inst := state.Inst.DeepCopy()
+			if err := r.Client.Update(ctx, inst); err != nil {
 				return err
 			}
 		}
 	} else {
 		if containsString(state.Inst.ObjectMeta.Finalizers, common.CnFinalizerName) {
-			err := r.cleanPods(ctx, state.Inst)
-			if err != nil {
-				return err
-			}
-			cleanUp, err := r.isPodCleanUp(ctx, state.Inst)
-			if err != nil {
-				return err
-			}
-			if !cleanUp {
-				return ErrFinalizerUnfinished
-			}
-			err = r.cleanCnOnFe(ctx, state.Inst)
+			err := r.cleanCnOnFe(ctx, state.Inst)
 			if err != nil {
 				return err
 			}
 			state.Inst.ObjectMeta.Finalizers = removeString(state.Inst.ObjectMeta.Finalizers, common.CnFinalizerName)
-			if err := r.Client.Update(ctx, state.Inst); err != nil {
+			inst := state.Inst.DeepCopy()
+			if err := r.Client.Update(ctx, inst); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
-}
-
-func (r *ComputeNodeGroupReconciler) cleanPods(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) error {
-	deploy := &v1.Deployment{}
-	err := r.Rclient.Get(ctx, types.NamespacedName{
-		Namespace: cn.Namespace,
-		Name:      cn.Name,
-	}, deploy)
-	if err != nil {
-		if !k8s_error.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-	*deploy.Spec.Replicas = 0
-
-	return r.Client.Update(ctx, deploy)
-}
-
-func (r *ComputeNodeGroupReconciler) isPodCleanUp(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) (bool, error) {
-	set, err := labels.ConvertSelectorToLabelsMap(cn.Status.LabelSelector)
-	if err != nil {
-		return false, err
-	}
-	pods := &corev1.PodList{}
-	err = r.Rclient.List(ctx, pods, client.InNamespace(cn.Namespace), client.MatchingLabelsSelector{Selector: set.AsSelector()})
-	if err != nil {
-		return false, err
-	}
-	for _, pod := range pods.Items {
-		if pod.Status.Phase == corev1.PodPending || pod.Status.Phase == corev1.PodRunning {
-			return false, nil
-		}
-	}
-	return true, nil
 }
 
 func (r *ComputeNodeGroupReconciler) cleanCnOnFe(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) error {

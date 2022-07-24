@@ -33,6 +33,7 @@ const (
 	CronJob    CnComponent = "CronJob"
 	Hpa        CnComponent = "HPA"
 	Fe         CnComponent = "Fe"
+	Reconcile  CnComponent = "Reconcile"
 )
 
 type ReconcileType string

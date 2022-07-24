@@ -68,8 +68,10 @@ func MakeCnCronJob(cn *v1alpha1.ComputeNodeGroup) *batchv1beta1.CronJob {
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: allLabels,
 						},
+
 						Spec: corev1.PodSpec{
 							ServiceAccountName: cn.Name,
+							ImagePullSecrets:   cn.Spec.PodPolicy.ImagePullSecrets,
 							Containers: []corev1.Container{
 								corev1.Container{
 									Name:            "job",
