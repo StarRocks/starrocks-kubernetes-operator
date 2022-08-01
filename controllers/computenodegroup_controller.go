@@ -26,6 +26,9 @@ import (
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
 	//batchv1 "k8s.io/api/batch/v1"
 	"time"
 
@@ -77,6 +80,7 @@ type ComputeNodeGroupReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, err error) {
 	_ = log.FromContext(ctx)
+	klog.Infof("Reconcile ComputeNodeGroup: %s:%s", req.Namespace, req.Name)
 	// TODO(user): your logic here
 	cn := &starrocksv1alpha1.ComputeNodeGroup{}
 	err = r.Client.Get(ctx, req.NamespacedName, cn)
@@ -94,6 +98,10 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	if state.Inst.Status.Conditions == nil {
 		state.Inst.Status.Conditions = make(map[starrocksv1alpha1.CnComponent]starrocksv1alpha1.ResourceCondition)
+	}
+	err = r.handleFinalizer(ctx, state)
+	if err != nil {
+		return r.reconcileFailed(ctx, state.Inst, "handle finalizer", err)
 	}
 	err = r.observeDeployment(ctx, state)
 	if err != nil {
@@ -114,10 +122,6 @@ func (r *ComputeNodeGroupReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	err = r.Client.Status().Update(ctx, state.Inst)
 	if err != nil {
 		return r.reconcileFailed(ctx, state.Inst, "update status status", err)
-	}
-	err = r.handleFinalizer(ctx, state)
-	if err != nil {
-		return r.reconcileFailed(ctx, state.Inst, "handle finalizer", err)
 	}
 	err = r.applyDeployment(ctx, state)
 	if err != nil {
@@ -158,7 +162,18 @@ func (r *ComputeNodeGroupReconciler) handleFinalizer(ctx context.Context, state 
 		}
 	} else {
 		if containsString(state.Inst.ObjectMeta.Finalizers, common.CnFinalizerName) {
-			err := r.cleanCnOnFe(ctx, state.Inst)
+			err := r.cleanPods(ctx, state.Inst)
+			if err != nil {
+				return err
+			}
+			cleanUp, err := r.isPodCleanUp(ctx, state.Inst)
+			if err != nil {
+				return err
+			}
+			if !cleanUp {
+				return utils.ErrFinalizerUnfinished
+			}
+			err = r.cleanCnOnFe(ctx, state.Inst)
 			if err != nil {
 				return err
 			}
@@ -173,7 +188,53 @@ func (r *ComputeNodeGroupReconciler) handleFinalizer(ctx context.Context, state 
 	return nil
 }
 
+func (r *ComputeNodeGroupReconciler) cleanPods(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) error {
+	deploy := &v1.Deployment{}
+	err := r.Rclient.Get(ctx, types.NamespacedName{
+		Namespace: cn.Namespace,
+		Name:      cn.Name,
+	}, deploy)
+	if err != nil {
+		if !k8s_error.IsNotFound(err) {
+			return err
+		}
+		return nil
+	}
+	*deploy.Spec.Replicas = 0
+
+	return r.Client.Update(ctx, deploy)
+}
+
+func (r *ComputeNodeGroupReconciler) isPodCleanUp(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) (bool, error) {
+	deploy := &v1.Deployment{}
+	err := r.Rclient.Get(ctx, types.NamespacedName{
+		Namespace: cn.Namespace,
+		Name:      cn.Name,
+	}, deploy)
+	if err != nil {
+		if !k8s_error.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	}
+	pods := &corev1.PodList{}
+	err = r.Rclient.List(ctx, pods, client.InNamespace(deploy.Namespace), client.MatchingLabels(deploy.Spec.Selector.MatchLabels))
+	if err != nil {
+		return false, err
+	}
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == corev1.PodRunning {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 func (r *ComputeNodeGroupReconciler) cleanCnOnFe(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) error {
+	if cn.Status.Servers.Available+cn.Status.Servers.Unavailable == 0 {
+		return nil
+	}
+
 	feUsr, fePwd, err := r.getFeAccount(ctx, cn)
 	fePick := fe.PickFe(cn.Spec.FeInfo.Addresses)
 	nodes, err := fe.GetNodes(fePick, feUsr, fePwd)
@@ -476,6 +537,7 @@ func (r *ComputeNodeGroupReconciler) observeFeSyncWithPods(ctx context.Context, 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ComputeNodeGroupReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: 3}).
 		For(&starrocksv1alpha1.ComputeNodeGroup{}).
 		Owns(&v1.Deployment{}).
 		Owns(&batchv1beta1.CronJob{}).

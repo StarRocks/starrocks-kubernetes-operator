@@ -26,29 +26,29 @@ import (
 	"time"
 )
 
-func (r *ComputeNodeGroupReconciler) reconcileFailed(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup, phase string, err error) (reconcile.Result, error) {
-	cn.Status.Conditions[starrocksv1alpha1.Reconcile] = buildReconcileCondition(metav1.ConditionFalse, fmt.Sprintf("%s: %s", phase, err.Error()))
-	err = r.Client.Status().Update(ctx, cn)
-	if err != nil {
-		return reconcile.Result{}, err
+func (r *ComputeNodeGroupReconciler) reconcileFailed(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup, phase string, phaseErr error) (reconcile.Result, error) {
+	cn.Status.Conditions[starrocksv1alpha1.Reconcile] = buildReconcileCondition(metav1.ConditionFalse, fmt.Sprintf("%s: %s", phase, phaseErr.Error()))
+	statusErr := r.Client.Status().Update(ctx, cn)
+	if statusErr != nil {
+		return utils.Failed(statusErr)
 	}
-	return utils.Failed(err)
+	return utils.Failed(phaseErr)
 }
 
 func (r *ComputeNodeGroupReconciler) reconcileSuccess(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup) (reconcile.Result, error) {
 	cn.Status.Conditions[starrocksv1alpha1.Reconcile] = buildReconcileCondition(metav1.ConditionTrue, fmt.Sprintf("Reconciliation succeeded"))
-	err := r.Client.Status().Update(ctx, cn)
-	if err != nil {
-		return reconcile.Result{}, err
+	statusErr := r.Client.Status().Update(ctx, cn)
+	if statusErr != nil {
+		return utils.Failed(statusErr)
 	}
 	return utils.OK()
 }
 
 func (r *ComputeNodeGroupReconciler) reconcileInProgress(ctx context.Context, cn *starrocksv1alpha1.ComputeNodeGroup, phase string) (reconcile.Result, error) {
 	cn.Status.Conditions[starrocksv1alpha1.Reconcile] = buildReconcileCondition(metav1.ConditionFalse, fmt.Sprintf("%s: In progress", phase))
-	err := r.Client.Status().Update(ctx, cn)
-	if err != nil {
-		return reconcile.Result{}, err
+	statusErr := r.Client.Status().Update(ctx, cn)
+	if statusErr != nil {
+		return utils.Failed(statusErr)
 	}
 	return utils.Retry(10, nil)
 }

@@ -60,6 +60,6 @@ func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *autoscalingv2beta2.HorizontalPodA
 // sync changed
 // only some fields would be synced
 func SyncHPAChanged(current, desired *autoscalingv2beta2.HorizontalPodAutoscaler) {
-	current.Labels = desired.Labels
+	current.Labels = makeAnnotationsOrLabels(desired.Labels, current.Labels)
 	current.Spec = desired.Spec
 }

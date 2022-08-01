@@ -133,6 +133,6 @@ func MakeCnCronJob(cn *v1alpha1.ComputeNodeGroup) *batchv1beta1.CronJob {
 // sync changed
 func SyncCronJobChanged(current, desired *batchv1beta1.CronJob) {
 	current.Spec = desired.Spec
-	current.Labels = desired.Labels
-	current.Annotations = desired.Annotations
+	current.Labels = makeAnnotationsOrLabels(desired.Labels, current.Labels)
+	current.Annotations = makeAnnotationsOrLabels(desired.Annotations, current.Annotations)
 }

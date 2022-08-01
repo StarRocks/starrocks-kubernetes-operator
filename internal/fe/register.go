@@ -127,6 +127,9 @@ func getDb(url, usr, pwd string) (*sql.DB, error) {
 
 // return a random fe addr
 func PickFe(feAddrs []string) string {
+	if len(feAddrs) == 0 {
+		return ""
+	}
 	rand.Seed(time.Now().UnixNano())
 	randInt := rand.Intn(2048)
 	fePick := feAddrs[randInt%len(feAddrs)]

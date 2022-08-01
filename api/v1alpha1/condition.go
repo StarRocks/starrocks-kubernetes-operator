@@ -39,6 +39,7 @@ const (
 type ReconcileType string
 
 const (
-	SyncedType  ReconcileType = "Synced"
-	UpdatedType ReconcileType = "Updated"
+	SyncedType   ReconcileType = "Synced"
+	UpdatingType ReconcileType = "Updating"
+	DeletingType ReconcileType = "Deleting"
 )

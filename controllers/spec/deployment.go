@@ -211,16 +211,11 @@ func makeCnResisterContainer(cn *v1alpha1.ComputeNodeGroup) v1.Container {
 
 // sync changed
 func SyncDeploymentChanged(current, desired *appsv1.Deployment) {
-	// k8s would assign a default annotation for deployment
-	if deployRevision, ok := current.Annotations["deployment.kubernetes.io/revision"]; ok {
-		desired.Annotations["deployment.kubernetes.io/revision"] = deployRevision
-	}
-
 	current.Spec.Replicas = desired.Spec.Replicas
 	current.Spec.Template.Spec = desired.Spec.Template.Spec
-	current.Spec.Template.Labels = desired.Spec.Template.Labels
-	current.Labels = desired.Labels
-	current.Annotations = desired.Annotations
+	current.Spec.Template.Labels = makeAnnotationsOrLabels(desired.Spec.Template.Labels, current.Spec.Template.Labels)
+	current.Labels = makeAnnotationsOrLabels(desired.Labels, current.Labels)
+	current.Annotations = makeAnnotationsOrLabels(desired.Annotations, current.Annotations)
 }
 
 func injectLabels(src, fixed map[string]string) {
@@ -230,4 +225,18 @@ func injectLabels(src, fixed map[string]string) {
 	for k, v := range fixed {
 		src[k] = v
 	}
+}
+
+func makeAnnotationsOrLabels(dir, cur map[string]string) map[string]string {
+	newAnnotations := make(map[string]string)
+
+	for k, v := range dir {
+		newAnnotations[k] = v
+	}
+
+	for k, v := range cur {
+		newAnnotations[k] = v
+	}
+
+	return newAnnotations
 }
