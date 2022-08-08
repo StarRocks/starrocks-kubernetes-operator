@@ -213,9 +213,9 @@ func (r *ComputeNodeGroupReconciler) isPodCleanUp(ctx context.Context, cn *starr
 	}, deploy)
 	if err != nil {
 		if !k8s_error.IsNotFound(err) {
-			return true, nil
+			return false, err
 		}
-		return false, err
+		return true, nil
 	}
 	pods := &corev1.PodList{}
 	err = r.Rclient.List(ctx, pods, client.InNamespace(deploy.Namespace), client.MatchingLabels(deploy.Spec.Selector.MatchLabels))
