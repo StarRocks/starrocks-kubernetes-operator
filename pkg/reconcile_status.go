@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package pkg
 
 import (
 	"context"
 	"fmt"
 	starrocksv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/controllers/utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"time"

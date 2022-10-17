@@ -1,0 +1,24 @@
+# permissions for end users to edit starrocksclusters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: starrockscluster-editor-role
+rules:
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters/status
+  verbs:
+  - get

@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	starrockscomv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/controllers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -78,14 +78,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ComputeNodeGroupReconciler{
-		Client:  mgr.GetClient(),
-		Scheme:  mgr.GetScheme(),
-		Rclient: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ComputeNodeGroup")
-		os.Exit(1)
+	//initial all controllers
+	for _, c := range pkg.Controllers {
+		c.Init(mgr)
 	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

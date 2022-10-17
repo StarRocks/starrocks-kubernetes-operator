@@ -119,3 +119,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters/status
+  verbs:
+  - get
+  - patch
+  - update

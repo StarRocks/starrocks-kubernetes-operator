@@ -14,19 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package pkg
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
-	"github.com/StarRocks/starrocks-kubernetes-operator/controllers/utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/utils"
 	v1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	//batchv1 "k8s.io/api/batch/v1"
@@ -38,7 +39,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/controllers/spec"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/spec"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -48,6 +49,10 @@ import (
 	starrocksv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	k8s_error "k8s.io/apimachinery/pkg/api/errors"
 )
+
+func init() {
+	Controllers = append(Controllers, &ComputeNodeGroupReconciler{})
+}
 
 // ComputeNodeGroupReconciler reconciles a ComputeNodeGroup object
 type ComputeNodeGroupReconciler struct {
@@ -543,4 +548,15 @@ func (r *ComputeNodeGroupReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&batchv1beta1.CronJob{}).
 		Owns(&corev1.Pod{}).
 		Complete(r)
+}
+
+func (r *ComputeNodeGroupReconciler) Init(mgr ctrl.Manager) {
+	if err := (&ComputeNodeGroupReconciler{
+		Client:  mgr.GetClient(),
+		Scheme:  mgr.GetScheme(),
+		Rclient: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "ComputeNodeGroup")
+		os.Exit(1)
+	}
 }
