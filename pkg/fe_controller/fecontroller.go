@@ -2,6 +2,7 @@ package fe_controller
 
 import (
 	"context"
+	"errors"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -94,10 +95,14 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		})
 	}
 
-	var spname string
-	spname = src.Name + "-" + srapi.DEFAULT_FE
+	var stname, svcname string
+	stname = src.Name + "-" + srapi.DEFAULT_FE
 	if feSpec.Name != "" {
-		spname = feSpec.Name
+		stname = feSpec.Name
+	}
+	svcname = src.Name + "-" + srapi.DEFAULT_FE + "service"
+	if feSpec.Name != "" {
+		
 	}
 	var labels rutils.Labels
 	labels[srapi.OwnerReference] = src.Name
@@ -111,7 +116,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 	}
 
 	return rutils.StatefulSetParams{
-		Name:                 spname,
+		Name:                 stname,
 		Namespace:            src.Namespace,
 		VolumeClaimTemplates: pvcs,
 		ServiceName:          srapi.DEFAULT_FE_SERVICE_NAME,
@@ -195,9 +200,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 			Name:  srapi.DEFAULT_FE,
 			Image: feSpec.Image,
 			//TODO: 增加启动
-			Command: []string{},
+			Command: []string{"fe/bin/start_fe.sh"},
 			//TODO: 使用args
-			Args: []string{},
+			Args: []string{"--daemon"},
 			Ports: []corev1.ContainerPort{{
 				Name:          "http_port",
 				ContainerPort: 8030,
@@ -223,6 +228,12 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 					ValueFrom: &corev1.EnvVarSource{
 						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 					},
+				},{
+					Name: srapi.COMPONENT_NAME,
+					Value: srapi.DEFAULT_FE,
+				},{
+					Name: srapi.COMPONENT_NAME,
+					Value:
 				},
 			},
 			Resources:    feSpec.ResourceRequirements,
@@ -254,4 +265,39 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 		},
 		Spec: podSpec,
 	}
+}
+
+func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+	//if the starrocks is not have fe.
+	if src.Status.StarRocksFeStatus == nil {
+		return true, nil
+	}
+
+	fmap := map[string]bool{}
+	count := 0
+	defer func() {
+		finalizers := []string{}
+		for _, f := range src.Finalizers {
+			if _, ok := fmap[f]; !ok {
+				finalizers = append(finalizers, f)
+			}
+		}
+		src.Finalizers = finalizers
+	}()
+
+	for _, name := range src.Status.StarRocksFeStatus.ResourceNames {
+		if _, err := k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, name); err != nil {
+			return false, errors.New("fe delete statefulset" + err.Error())
+		}
+	}
+
+	if count == len(src.Status.StarRocksFeStatus.ResourceNames) {
+		fmap[srapi.FE_STATEFULSET_FINALIZER] = true
+	}
+
+	if _, ok := fmap[srapi.FE_STATEFULSET_FINALIZER]; ok {
+		return k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, src.Spec.StarRocksFeSpec.Service.Name)
+	}
+
+	return false, nil
 }

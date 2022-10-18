@@ -40,3 +40,9 @@ const (
 
 	DEFAULT_CN_SERVICE_NAME = "starrocks-cn-service"
 )
+
+//the env of container
+const (
+	COMPONENT_NAME = "COMPONENT_NAME"
+	SERVICE_NAME   = "SERVICE_NAME"
+)

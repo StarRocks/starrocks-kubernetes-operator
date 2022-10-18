@@ -51,3 +51,18 @@ func UpdateClientObject(ctx context.Context, k8sclient client.Client, object cli
 	}
 	return nil
 }
+
+func DeleteClientObject(ctx context.Context, k8sclient client.Client, namespace, name string) (bool, error) {
+	var ob client.Object
+	err := k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, ob)
+	if err != nil && apierrors.IsNotFound(err) {
+		return true, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	if err := k8sclient.Delete(ctx, ob); err != nil {
+		return true, nil
+	}
+	return true, nil
+}

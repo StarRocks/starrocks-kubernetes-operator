@@ -22,9 +22,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -68,8 +66,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	//if the src deleted, clean all resource ownerreference to src.
 	clean := func() (res ctrl.Result, err error) {
-		cleaned, err := r.CleanSubResources(ctx, &src)
-		if err != nil {
+		if err := r.CleanSubResources(ctx, &src); err != nil {
 			klog.Error("StarRocksClusterReconciler reconciler", "update ")
 			return res, err
 		}
@@ -81,8 +78,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			}
 		}()
 
-		//all finalizers have cleaned.
-		if cleaned {
+		if len(src.Finalizers) == 0 {
 			return res, nil
 		}
 
@@ -161,77 +157,12 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 }
 
 //CleanSubResources clean all sub resources ownerreference to src.
-func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
-	var finalizers []string
-	var fmap map[string]bool
-
-	deletesvc := func(finalizer string) error {
-		var svc corev1.Service
-		err := r.Client.Get(ctx, types.NamespacedName{
-			Name:      src.Status.StarRocksFeStatus.ServiceName,
-			Namespace: src.Namespace,
-		}, &svc)
-		if err != nil && apierrors.IsNotFound(err) {
-			klog.Info("StarRocksClusterReconciler CleanSubResources", "namespace", src.Namespace,
-				"name", src.Status.StarRocksFeStatus.ServiceName, "have cleaned")
-			fmap[finalizer] = true
-			return nil
-		} else if err != nil {
+func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) error {
+	for _, c := range r.Scs {
+		if _, err := c.ClearResources(ctx, src); err != nil {
 			return err
 		}
-
-		if err := r.Client.Delete(ctx, &svc); err != nil {
-			return err
-		}
-		return nil
 	}
 
-	deletest := func(finalizer string) error {
-		count := 0
-		for _, name := range src.Status.StarRocksFeStatus.ResourceNames {
-			var st appv1.StatefulSet
-			err := r.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: src.Namespace}, &st)
-			if err != nil && apierrors.IsNotFound(err) {
-				count++
-			} else {
-				return err
-			}
-
-			if err := r.Client.Delete(ctx, &st); err != nil {
-				return err
-			}
-		}
-
-		if count == len(src.Status.StarRocksFeStatus.ResourceNames) {
-			fmap[finalizer] = true
-		}
-		return nil
-	}
-
-	for _, f := range src.Finalizers {
-		if f == srapi.FE_SERVICE_FINALIZER {
-			if err := deletesvc(f); err != nil {
-				return false, err
-			}
-		} else if f == srapi.FE_STATEFULSET_FINALIZER {
-			if err := deletest(f); err != nil {
-				return false, err
-			}
-		}
-		//TODO: 添加be和cn的清理
-	}
-
-	//generate new finalizers.
-	for _, f := range src.Finalizers {
-		if _, ok := fmap[f]; ok {
-			continue
-		}
-		finalizers = append(finalizers, f)
-	}
-	src.Finalizers = finalizers
-	if len(finalizers) == 0 {
-		return true, nil
-	}
-
-	return false, nil
+	return nil
 }
