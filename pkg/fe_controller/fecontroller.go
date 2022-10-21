@@ -1,3 +1,19 @@
+/*
+Copyright 2021-present, StarRocks Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package fe_controller
 
 import (
@@ -62,8 +78,8 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//if the spec is not change, update the status of fe on src.
 	if rutils.StatefulSetDeepEqual(&st, est) {
-		fs.ResourceNames = []string{st.Name}
-		if err := fc.UpdateFeStatus(&fs, st); err != nil {
+		fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{st.Name})
+		if err := fc.updateFeStatus(&fs, st); err != nil {
 			return err
 		}
 		//no update
@@ -76,7 +92,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	return fc.UpdateFeStatus(&fs, st)
+	return fc.updateFeStatus(&fs, st)
 }
 
 //buildStatefulSetParams generate the params of construct the statefulset.
@@ -95,15 +111,11 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		})
 	}
 
-	var stname, svcname string
-	stname = src.Name + "-" + srapi.DEFAULT_FE
+	stname := src.Name + "-" + srapi.DEFAULT_FE
 	if feSpec.Name != "" {
 		stname = feSpec.Name
 	}
-	svcname = src.Name + "-" + srapi.DEFAULT_FE + "service"
-	if feSpec.Name != "" {
-		
-	}
+
 	var labels rutils.Labels
 	labels[srapi.OwnerReference] = src.Name
 	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
@@ -119,7 +131,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		Name:                 stname,
 		Namespace:            src.Namespace,
 		VolumeClaimTemplates: pvcs,
-		ServiceName:          srapi.DEFAULT_FE_SERVICE_NAME,
+		ServiceName:          fc.getFeServiceName(src),
 		PodTemplateSpec:      fc.buildPodTemplate(src),
 		Labels:               labels,
 		Selector:             labels,
@@ -128,7 +140,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 }
 
 //UpdateFeStatus update the starrockscluster fe status.
-func (fc *FeController) UpdateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.StatefulSet) error {
+func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.StatefulSet) error {
 	var podList corev1.PodList
 	if err := fc.k8sReader.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
 		return err
@@ -165,17 +177,14 @@ func (fc *FeController) UpdateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 
 //buildPodTemplate construct the podTemplate for deploy fe.
 func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
-	metaname := src.Name + "-fe"
+	metaname := src.Name + "-" + srapi.DEFAULT_FE
 	labels := src.Labels
 	feSpec := src.Spec.StarRocksFeSpec
-	if feSpec.Name != "" {
-		labels[srapi.OwnerReference] = feSpec.Name
-	} else {
-		labels[srapi.OwnerReference] = srapi.DEFAULT_FE
-	}
+	labels[srapi.OwnerReference] = fc.getFeServiceName(src)
 
 	vols := []corev1.Volume{
-		{
+		//TODO：cancel the configmap for temporary.
+		/*{
 			Name: srapi.DEFAULT_FE_CONFIG_NAME,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
@@ -183,6 +192,12 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 						Name: srapi.DEFAULT_FE_CONFIG_NAME,
 					},
 				},
+			},
+		},*/
+		{
+			Name: srapi.DEFAULT_EMPTDIR_NAME,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 	}
@@ -192,16 +207,19 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 		volMounts = append(volMounts, corev1.VolumeMount{
 			Name:      vm.Name,
 			MountPath: vm.MountPath,
+		}, corev1.VolumeMount{
+			Name:      srapi.INITIAL_VOLUME_PATH_NAME,
+			MountPath: srapi.INITIAL_VOLUME_PATH,
 		})
 	}
 
-	operatorContainers := []corev1.Container{
+	opContainers := []corev1.Container{
 		{
 			Name:  srapi.DEFAULT_FE,
 			Image: feSpec.Image,
-			//TODO: 增加启动
+			//TODO: add start command
 			Command: []string{"fe/bin/start_fe.sh"},
-			//TODO: 使用args
+			//TODO: add args
 			Args: []string{"--daemon"},
 			Ports: []corev1.ContainerPort{{
 				Name:          "http_port",
@@ -228,25 +246,66 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 					ValueFrom: &corev1.EnvVarSource{
 						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 					},
-				},{
-					Name: srapi.COMPONENT_NAME,
+				}, {
+					Name:  srapi.COMPONENT_NAME,
 					Value: srapi.DEFAULT_FE,
-				},{
-					Name: srapi.COMPONENT_NAME,
-					Value:
+				}, {
+					Name:  srapi.SERVICE_NAME,
+					Value: fc.getFeServiceName(src),
+				}, {
+					Name: "POD_IP",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"},
+					},
+				}, {
+					Name: "HOST_IP",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
+					},
 				},
 			},
+
 			Resources:    feSpec.ResourceRequirements,
 			VolumeMounts: volMounts,
 			//TODO: LivenessProbe,ReadinessProbe
 			ImagePullPolicy: corev1.PullIfNotPresent,
+			//TODO: cancel the startProbe for temporary.
+			/*StartupProbe: &corev1.Probe{
+				InitialDelaySeconds: 5,
+				FailureThreshold:    120,
+				PeriodSeconds:       5,
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: 9010,
+				}}},
+			},*/
 		},
 	}
 
+	iniContainers := []corev1.Container{
+		{
+			//TODO: set the start command.
+			Command: []string{"/opt/starrocks/init-container-entrypoint.sh"},
+			Name:    "init-prepare",
+			Image:   feSpec.Image,
+			Env: []corev1.EnvVar{
+				{
+					Name:  "FE_SERVICE_NAME",
+					Value: fc.getFeServiceName(src) + "." + src.Namespace,
+				},
+				{
+					Name:  "LEADER_FILE",
+					Value: "/pod-data/leader",
+				},
+			},
+		},
+	}
 	podSpec := corev1.PodSpec{
-		Volumes:            vols,
-		Containers:         operatorContainers,
-		ServiceAccountName: src.Spec.ServiceAccount,
+		InitContainers:                iniContainers,
+		Volumes:                       vols,
+		Containers:                    opContainers,
+		ServiceAccountName:            src.Spec.ServiceAccount,
+		TerminationGracePeriodSeconds: int64ptr(int64(30)),
 	}
 
 	return corev1.PodTemplateSpec{
@@ -267,6 +326,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 	}
 }
 
+//ClearResources clear resource about fe.
 func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	//if the starrocks is not have fe.
 	if src.Status.StarRocksFeStatus == nil {
@@ -295,9 +355,22 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		fmap[srapi.FE_STATEFULSET_FINALIZER] = true
 	}
 
-	if _, ok := fmap[srapi.FE_STATEFULSET_FINALIZER]; ok {
-		return k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, src.Spec.StarRocksFeSpec.Service.Name)
+	if _, ok := fmap[srapi.FE_STATEFULSET_FINALIZER]; !ok {
+		return k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, src.Status.StarRocksFeStatus.ServiceName)
 	}
 
 	return false, nil
+}
+
+//getFeServiceName generate the name of service that access the fe.
+func (fc *FeController) getFeServiceName(src *srapi.StarRocksCluster) string {
+	if src.Spec.StarRocksFeSpec.Service.Name != "" {
+		return src.Spec.StarRocksFeSpec.Service.Name + "-" + "service"
+	}
+
+	return src.Name + "-" + srapi.DEFAULT_FE + "-" + "service"
+}
+
+func int64ptr(n int64) *int64 {
+	return &n
 }

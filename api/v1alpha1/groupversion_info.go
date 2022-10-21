@@ -1,5 +1,5 @@
 /*
-Copyright 2022 StarRocks.
+Copyright 2021-present, StarRocks Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
