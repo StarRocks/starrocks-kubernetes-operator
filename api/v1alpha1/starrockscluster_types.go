@@ -1,5 +1,5 @@
 /*
-Copyright 2022.
+Copyright 2021-present, StarRocks Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ const (
 	//ComponentReconciling the component of starrocks cluster is dynamic adjustment.
 	ComponentReconciling = "reconciling"
 
-	//TODO: 设置失败
+	//TODO: set failed.
 	ComponentFailed = "failed"
 	//
 	ComponentRunning = "running"

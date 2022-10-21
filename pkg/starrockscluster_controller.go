@@ -1,5 +1,5 @@
 /*
-Copyright 2022.
+Copyright 2021-present, StarRocks Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package pkg
 import (
 	"context"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -45,6 +46,14 @@ type StarRocksClusterReconciler struct {
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+//+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -141,10 +150,11 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	//TODO: 初始化fe,be,cn
+	//TODO: 初始化be
 	fc := fe_controller.New(mgr.GetClient(), mgr.GetAPIReader())
+	cc := cn_controller.New(mgr.GetClient(), mgr.GetAPIReader())
 	var subcs []SubController
-	subcs = append(subcs, fc)
+	subcs = append(subcs, fc, cc)
 	if err := (&StarRocksClusterReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),

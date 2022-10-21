@@ -1,3 +1,19 @@
+/*
+Copyright 2021-present, StarRocks Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1alpha1
 
 //the labels key
@@ -27,11 +43,16 @@ const (
 //config value
 const (
 	DEFAULT_FE_CONFIG_NAME = "fe-config"
-	//TODO: 待指定
-	DEFAULT_FE_CONFIG_PATH = ""
+
+	DEFAULT_EMPTDIR_NAME = "shard-data"
+
+	INITIAL_VOLUME_PATH = "/pod-data"
+
+	INITIAL_VOLUME_PATH_NAME = "shared-data"
 
 	DEFAULT_START_SCRIPT_NAME = "fe-start-script"
 
+	//TODO: when script need set.
 	DEFAULT_START_SCRIPT_PATH = ""
 
 	DEFAULT_FE_SERVICE_NAME = "starrocks-fe-service"
