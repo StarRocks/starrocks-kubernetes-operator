@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: fe-demo
+    deploy.type: deployment
+  name: fe-sr-deploy
+  namespace: fe-example
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: fe-demo
+  serviceName: "fe-svc-internal" # use the internal service who publishes DNS record before POD is ready
+  template:
+    metadata:
+      labels:
+        app: fe-demo
+        deploy.type: deployment
+    spec:
+      containers:
+      - command:
+        - /opt/starrocks/entrypoint-fe.sh
+        args:
+        - "$(FE_SERVICE_NAME)"
+        env:
+        - name: FE_SERVICE_NAME
+          value: fe-svc-external.fe-example.svc.cluster.local # use the external service who only pulishes DNS record when POD is ready
+        - name: HOST_TYPE
+          value: FQDN # FQDN | IP
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        image: 172.26.92.212:32000/kc-fe-test:localv14-fqdn
+        imagePullPolicy: IfNotPresent
+        name: fe
+        startupProbe:
+          tcpSocket:
+            port: 9010
+          initialDelaySeconds: 5
+          failureThreshold: 20
+          periodSeconds: 5
+        ports:
+        - containerPort: 8030
+          protocol: TCP
+        - containerPort: 9010
+          protocol: TCP
+        - containerPort: 9020
+          protocol: TCP
+        - containerPort: 9030
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fe-example
+  name: fe-svc-internal # publishNotReadyAddresses must be true
+  labels:
+    app: fe-demo
+spec:
+  ports:
+  - port: 9030
+    name: mysql
+  publishNotReadyAddresses: True
+  selector:
+    app: fe-demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fe-example
+  name: fe-svc-external # publishNotReadyAddresses must be false
+  labels:
+    app: fe-demo
+spec:
+  ports:
+  - port: 9030
+    name: mysql
+  publishNotReadyAddresses: false
+  selector:
+    app: fe-demo

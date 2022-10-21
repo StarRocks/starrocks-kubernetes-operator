@@ -1,0 +1,13 @@
+FROM alpine:3.14
+
+ENV STARROCK_HOME=/opt/starrocks/
+
+RUN apk update \
+    && apk upgrade  \
+    && apk add --update openjdk11 tzdata curl unzip bash mysql-client vim \
+    && rm -rf /var/cache/apk/*
+RUN mkdir -p /opt/starrocks/fe/meta/
+ADD output/fe/ /opt/starrocks/fe/
+ADD docker/entrypoint-fe.sh  /opt/starrocks/
+ENV JAVA_HOME=/usr/lib/jvm/default-jvm/
+WORKDIR ${STARROCK_HOME}
