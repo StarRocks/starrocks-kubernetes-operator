@@ -23,8 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func
-(src *srapi.StarRocksCluster) *v2.HorizontalPodAutoscaler {
+func BuildHorizontalPodAutoscaler(src *srapi.StarRocksCluster) *v2.HorizontalPodAutoscaler {
 	if src.Spec.StarRocksCnSpec == nil || src.Spec.StarRocksCnSpec.AutoScalingPolicy == nil ||
 		src.Spec.StarRocksCnSpec.AutoScalingPolicy.HPAPolicy == nil {
 		return nil
@@ -41,7 +40,7 @@ func
 			Name:      cnspec,
 			Namespace: src.Namespace,
 			//TODO: 构造labels
-			Labels:    cn.Labels,
+			Labels: cn.Labels,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(src, src.GroupVersionKind()),
 			},

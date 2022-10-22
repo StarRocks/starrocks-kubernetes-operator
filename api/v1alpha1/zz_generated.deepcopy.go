@@ -474,7 +474,7 @@ func (in *StarRocksClusterSpec) DeepCopyInto(out *StarRocksClusterSpec) {
 	*out = *in
 	if in.StarRocksFeSpec != nil {
 		in, out := &in.StarRocksFeSpec, &out.StarRocksFeSpec
-		*out = new(StarRocksBeSpec)
+		*out = new(StarRocksFeSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.StarRocksBeSpec != nil {

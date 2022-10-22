@@ -34,7 +34,7 @@ type StarRocksClusterSpec struct {
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	//StarRocksFeSpec is the fe specification.
-	StarRocksFeSpec *StarRocksBeSpec `json:"starRocksFeSpec,omitempty"`
+	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
 	//StarRocksBeSpec is the be specification.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
@@ -71,8 +71,6 @@ const (
 )
 
 const (
-	ComponentPending = "pending"
-
 	//ComponentReconciling the component of starrocks cluster is dynamic adjustment.
 	ComponentReconciling = "reconciling"
 
@@ -115,6 +113,7 @@ type StarRocksCnStatus struct {
 
 // StarRocksCluster is the Schema for the starrocksclusters API
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:shortName=src
 //+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
@@ -228,6 +227,10 @@ type StarRocksCnSpec struct {
 
 	//Probe defines the mode probe service in container is alive.
 	Probe *StarRocksProbe `json:"probe,omitempty"`
+
+	//AutoScalingPolicy auto scaling strategy
+	AutoScalingPolicy *Auto
+	ScalingPolicy     `json:"autoScalingPolicy, omitempty"`
 }
 
 //StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC

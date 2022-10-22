@@ -12,6 +12,8 @@ spec:
     kind: StarRocksCluster
     listKind: StarRocksClusterList
     plural: starrocksclusters
+    shortNames:
+    - src
     singular: starrockscluster
   scope: Namespaced
   versions:
@@ -256,14 +258,8 @@ spec:
               starRocksFeSpec:
                 description: StarRocksFeSpec is the fe specification.
                 properties:
-                  ReplicaInstances:
-                    description: ReplicaInstance is the names of replica starrocksbe
-                      cluster.
-                    items:
-                      type: string
-                    type: array
                   image:
-                    description: Image is the container image for the be.
+                    description: Image is the container image for the fe.
                     type: string
                   limits:
                     additionalProperties:
@@ -306,8 +302,8 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: 'Replicas is the number of desired be Pod Optional:
-                      Defaults to 3'
+                    description: Replicas is the number of desired fe Pod, the number
+                      is 1,3,5
                     format: int32
                     type: integer
                   requests:
@@ -324,7 +320,7 @@ spec:
                     type: object
                   service:
                     description: Service defines the template for the associated Kubernetes
-                      Service object. the service for user access be.
+                      Service object.
                     properties:
                       name:
                         type: string
@@ -352,7 +348,7 @@ spec:
                     type: object
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
-                      fe.
+                      fe
                     items:
                       description: StorageVolume defines additional PVC template for
                         StatefulSets and volumeMount for pods that mount this PVC
