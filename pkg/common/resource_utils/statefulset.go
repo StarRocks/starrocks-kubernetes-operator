@@ -68,21 +68,33 @@ type hashStatefulsetObject struct {
 
 //StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
 func statefulSetHashObject(st *appv1.StatefulSet) hashStatefulsetObject {
+	//set -1 for the initial is zero.
+	replicas := int32(-1)
+	if st.Spec.Replicas != nil {
+		replicas = *st.Spec.Replicas
+	}
+
+	selector := metav1.LabelSelector{}
+	if st.Spec.Selector != nil {
+		selector = *st.Spec.Selector
+	}
+
 	return hashStatefulsetObject{
 		name:                 st.Name,
 		namespace:            st.Namespace,
 		labels:               st.Labels,
-		selector:             *st.Spec.Selector,
+		selector:             selector,
 		template:             st.Spec.Template,
 		serviceName:          st.Spec.ServiceName,
 		volumeClaimTemplates: st.Spec.VolumeClaimTemplates,
-		replicas:             *st.Spec.Replicas,
+		replicas:             replicas,
 	}
 }
 
 //StatefulSetDeepEqual judge two statefulset equal or not.
 func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet) bool {
 	var newHashv, oldHashv string
+
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -97,7 +109,10 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet) bool {
 		oldHashv = hash.HashObject(oldHso)
 	}
 
-	oldGeneration, _ := strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
+	var oldGeneration int64
+	if _, ok := old.Annotations[srapi.ComponentGeneration]; ok {
+		oldGeneration, _ = strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
+	}
 
 	//avoid the update from kubectl.
 	return newHashv == oldHashv && new.Name == old.Name &&

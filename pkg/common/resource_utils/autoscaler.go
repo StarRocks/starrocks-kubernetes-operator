@@ -1,5 +1,5 @@
 /*
-Copyright 2022 StarRocks.
+Copyright 2021-present, StarRocks Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,53 +13,50 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package spec
+
+package resource_utils
 
 import (
-	"github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
-	v2 "k8s.io/api/autoscaling/v2"
+	"k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// build a hpa base on cn
-func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *v2.HorizontalPodAutoscaler {
-	if cn.Spec.AutoScalingPolicy == nil {
+func
+(src *srapi.StarRocksCluster) *v2.HorizontalPodAutoscaler {
+	if src.Spec.StarRocksCnSpec == nil || src.Spec.StarRocksCnSpec.AutoScalingPolicy == nil ||
+		src.Spec.StarRocksCnSpec.AutoScalingPolicy.HPAPolicy == nil {
 		return nil
 	}
-	if cn.Spec.AutoScalingPolicy.HPAPolicy == nil {
-		return nil
-	}
+
+	cnspec := src.Spec.StarRocksCnSpec
 	return &v2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
 			APIVersion: "autoscaling/v2beta2",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cn.Name,
-			Namespace: cn.Namespace,
+			//TODO: 构造cn hpa的名字
+			Name:      cnspec,
+			Namespace: src.Namespace,
+			//TODO: 构造labels
 			Labels:    cn.Labels,
 			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(cn, cn.GroupVersionKind()),
+				*metav1.NewControllerRef(src, src.GroupVersionKind()),
 			},
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
+				//TODO: 构建target的name
 				Name:       cn.Name,
 				Kind:       common.CnKind,
 				APIVersion: common.CnApiVersionV1ALPHA,
 			},
-			MaxReplicas: cn.Spec.AutoScalingPolicy.MaxReplicas,
-			MinReplicas: cn.Spec.AutoScalingPolicy.MinReplicas,
-			Metrics:     cn.Spec.AutoScalingPolicy.HPAPolicy.Metrics,
-			Behavior:    cn.Spec.AutoScalingPolicy.HPAPolicy.Behavior,
+			MaxReplicas: cnspec.AutoScalingPolicy.MaxReplicas,
+			MinReplicas: cnspec.AutoScalingPolicy.MinReplicas,
+			Metrics:     cnspec.AutoScalingPolicy.HPAPolicy.Metrics,
+			Behavior:    cnspec.AutoScalingPolicy.HPAPolicy.Behavior,
 		},
 	}
-}
-
-// sync changed
-// only some fields would be synced
-func SyncHPAChanged(current, desired *v2.HorizontalPodAutoscaler) {
-	current.Labels = makeAnnotationsOrLabels(desired.Labels, current.Labels)
-	current.Spec = desired.Spec
 }

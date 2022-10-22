@@ -28,35 +28,36 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type CnController struct {
-	k8sclient client.Client
-	k8sReader client.Reader
+	k8sclient   client.Client
+	k8srecorder record.EventRecorder
 }
 
-func New(k8sclient client.Client, k8sReader client.Reader) *CnController {
+func New(k8sclient client.Client, k8srecorder record.EventRecorder) *CnController {
 	return &CnController{
-		k8sclient: k8sclient,
-		k8sReader: k8sReader,
+		k8sclient:   k8sclient,
+		k8srecorder: k8srecorder,
 	}
 }
 
 func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksCnSpec == nil {
-		klog.Info("CnController Sync", "the cn component is not needed", "namespace", src.Namespace, "starrocks cluster name", src.Name)
+		klog.Info("CnController Sync ", "the cn component is not needed", " namespace ", src.Namespace, " starrocks cluster name ", src.Name)
 		return nil
 	}
 
 	//generate new cn service.
-	svc := rutils.BuildService(src, rutils.CnService)
+	svc := rutils.BuildExternalService(src, rutils.CnService)
 	cs := srapi.StarRocksCnStatus{ServiceName: svc.Name}
 	src.Status.StarRocksCnStatus = &cs
 	//create or update fe service, update the status of cn on src.
 	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, &svc); err != nil {
-		klog.Error("CnController Sync", "create or update service namespace", svc.Namespace, "name", svc.Name)
+		klog.Error("CnController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name)
 		return err
 	}
 
@@ -133,7 +134,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 
 func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.StatefulSet) error {
 	var podList corev1.PodList
-	if err := cc.k8sReader.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
+	if err := cc.k8sclient.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
 		return err
 	}
 
@@ -159,7 +160,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 		cs.Phase = srapi.ComponentFailed
 		cs.Reason = podmap[faileds[0]].Status.Reason
 	} else if len(creatings) != 0 {
-		cs.Phase = srapi.ComponentPending
+		cs.Phase = srapi.ComponentReconciling
 		cs.Reason = podmap[creatings[0]].Status.Reason
 	}
 

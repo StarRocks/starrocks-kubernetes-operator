@@ -38,7 +38,7 @@ func CreateOrUpdateService(ctx context.Context, k8sclient client.Client, svc *co
 
 	if rutils.
 		ServiceDeepEqual(svc, &esvc) {
-		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change", "namespace", svc.Namespace, "name", svc.Name)
+		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ", svc.Namespace, " name ", svc.Name)
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func CreateOrUpdateService(ctx context.Context, k8sclient client.Client, svc *co
 }
 
 func CreateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.Info("Creating resource service", "namespace", object.GetNamespace(), "name", object.GetName(), "kind", object.GetObjectKind())
+	klog.Info("Creating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(), " kind ", object.GetObjectKind().GroupVersionKind().Kind)
 	if err := k8sclient.Create(ctx, object); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func CreateClientObject(ctx context.Context, k8sclient client.Client, object cli
 }
 
 func UpdateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.Info("Updating resource service", "namespace", object.GetNamespace(), "name", object.GetName(), "kind", object.GetObjectKind())
+	klog.Info("Updating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(), " kind l", object.GetObjectKind())
 	if err := k8sclient.Update(ctx, object); err != nil {
 		return err
 	}
@@ -81,4 +81,14 @@ func DeleteClientObject(ctx context.Context, k8sclient client.Client, namespace,
 		return true, nil
 	}
 	return true, nil
+}
+
+func PodIsReady(status *corev1.PodStatus) bool {
+	for _, cs := range status.ContainerStatuses {
+		if !cs.Ready {
+			return false
+		}
+	}
+
+	return true
 }

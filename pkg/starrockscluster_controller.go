@@ -23,7 +23,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,12 +35,15 @@ func init() {
 	Controllers = append(Controllers, &StarRocksClusterReconciler{})
 }
 
+var (
+	name = "starrockscluster-controller"
+)
+
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Reader client.Reader
-	Scheme *runtime.Scheme
-	Scs    []SubController
+	Recorder record.EventRecorder
+	Scs      []SubController
 }
 
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -68,22 +71,22 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	klog.FromContext(ctx)
 	klog.Info("StarRocksClusterReconciler reconciler the update crd name ", req.Name)
 	var src srapi.StarRocksCluster
-	if err := r.Get(ctx, req.NamespacedName, &src); err != nil {
-		klog.Error(err, "the req kind is not exists", req.NamespacedName, req.Name)
+	if err := r.Client.Get(ctx, req.NamespacedName, &src); err != nil {
+		klog.Error(err, " the req kind is not exists ", req.NamespacedName, " name ", req.Name)
 		return ctrl.Result{}, err
 	}
 
 	//if the src deleted, clean all resource ownerreference to src.
 	clean := func() (res ctrl.Result, err error) {
 		if err := r.CleanSubResources(ctx, &src); err != nil {
-			klog.Error("StarRocksClusterReconciler reconciler", "update ")
+			klog.Error("StarRocksClusterReconciler reconciler", "update faield, message ", err)
 			return res, err
 		}
 		//update the sr finalizers and status.
 		defer func() {
 			err = r.Client.Update(ctx, &src)
 			if err != nil {
-				klog.Error("StarRocksClusterReconciler reconciler", "update resource failed", "namespace", src.Namespace, "name", src.Name, "error", err)
+				klog.Error("StarRocksClusterReconciler reconciler ", "update resource failed ", "namespace ", src.Namespace, " name ", src.Name, " error ", err)
 			}
 		}()
 
@@ -92,7 +95,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 
 		//wait for finalizers be cleaned clear.
-		klog.Info("StarRocksClusterReconciler reconciler", "have sub resosurce to cleaned", "namespace", src.Namespace, "starrockscluster", src.Name, "resources finalizers", src.Finalizers)
+		klog.Info("StarRocksClusterReconciler reconciler ", "have sub resosurce to cleaned ", "namespace ", src.Namespace, " starrockscluster ", src.Name, " resources finalizers ", src.Finalizers)
 		res = ctrl.Result{
 			Requeue:      true,
 			RequeueAfter: time.Second * 10,
@@ -107,17 +110,17 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	//subControllers reconcile for create or update sub resource.
 	for _, rc := range r.Scs {
 		if err := rc.Sync(ctx, &src); err != nil {
-			klog.Error("StarRocksClusterReconciler reconciler", "sub resource reconcile failed", "namespace", src.Namespace, "name", src.Name)
+			klog.Error("StarRocksClusterReconciler reconciler ", " sub resource reconcile failed ", "namespace ", src.Namespace, " name ", src.Name, "faield ", err)
 			return ctrl.Result{}, err
 		}
 	}
 
 	//calculate the status of starrocks cluster by subresource's status.
-	var smap map[string]bool
+	smap := make(map[string]bool)
 	src.Status.Phase = srapi.ClusterRunning
 	func() {
 		feStatus := src.Status.StarRocksFeStatus
-		if feStatus != nil && feStatus.Phase == srapi.ComponentPending {
+		if feStatus != nil && feStatus.Phase == srapi.ComponentReconciling {
 			smap[srapi.ClusterPending] = true
 		} else if feStatus != nil && feStatus.Phase == srapi.ComponentReconciling {
 			smap[srapi.ClusterPending] = true
@@ -132,7 +135,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	if src.Status.Phase != srapi.ClusterRunning {
-		klog.Info("StarRocksClusterReconciler reconciler", "namespace", src.Namespace, "name", src.Name)
+		klog.Info("StarRocksClusterReconciler reconciler ", "namespace ", src.Namespace, " name ", src.Name)
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
 	}
 
@@ -151,17 +154,16 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	//TODO: 初始化be
-	fc := fe_controller.New(mgr.GetClient(), mgr.GetAPIReader())
-	cc := cn_controller.New(mgr.GetClient(), mgr.GetAPIReader())
+	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("fc-controller"))
+	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("cn-controller"))
 	var subcs []SubController
 	subcs = append(subcs, fc, cc)
 	if err := (&StarRocksClusterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-		Scs:    subcs,
+		Client:   mgr.GetClient(),
+		Recorder: mgr.GetEventRecorderFor(name),
+		Scs:      subcs,
 	}).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "unable to create controller", "controller", "StarRocksCluster")
+		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
 		os.Exit(1)
 	}
 }

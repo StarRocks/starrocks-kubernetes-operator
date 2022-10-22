@@ -23,6 +23,10 @@ func (l Labels) Add(key, value string) {
 }
 
 func (l Labels) AddLabel(label Labels) {
+	if label == nil {
+		return
+	}
+
 	for k, v := range label {
 		l[k] = v
 	}
@@ -41,7 +45,7 @@ func MergeMetadata(new *metav1.ObjectMeta, old metav1.ObjectMeta) {
 }
 
 func MergeSlices(new []string, old []string) []string {
-	var set map[string]bool
+	set := make(map[string]bool)
 	for _, s := range new {
 		set[s] = true
 	}
@@ -87,4 +91,16 @@ func mergeOwnerReferences(old []metav1.OwnerReference, new []metav1.OwnerReferen
 		}
 	}
 	return old
+}
+
+func GetInt32Pointer(v int32) *int32 {
+	return &v
+}
+
+func GetStringPointer(s string) *string {
+	return &s
+}
+
+func GetInt64ptr(n int64) *int64 {
+	return &n
 }
