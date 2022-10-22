@@ -229,8 +229,7 @@ type StarRocksCnSpec struct {
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
 	//AutoScalingPolicy auto scaling strategy
-	AutoScalingPolicy *Auto
-	ScalingPolicy     `json:"autoScalingPolicy, omitempty"`
+	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy, omitempty"`
 }
 
 //StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
