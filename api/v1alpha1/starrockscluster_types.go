@@ -34,7 +34,7 @@ type StarRocksClusterSpec struct {
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	//StarRocksFeSpec is the fe specification.
-	StarRocksFeSpec *StarRocksBeSpec `json:"starRocksFeSpec,omitempty"`
+	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
 	//StarRocksBeSpec is the be specification.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
@@ -71,8 +71,6 @@ const (
 )
 
 const (
-	ComponentPending = "pending"
-
 	//ComponentReconciling the component of starrocks cluster is dynamic adjustment.
 	ComponentReconciling = "reconciling"
 
@@ -115,6 +113,7 @@ type StarRocksCnStatus struct {
 
 // StarRocksCluster is the Schema for the starrocksclusters API
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:shortName=src
 //+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
@@ -228,23 +227,35 @@ type StarRocksCnSpec struct {
 
 	//Probe defines the mode probe service in container is alive.
 	Probe *StarRocksProbe `json:"probe,omitempty"`
+
+	//AutoScalingPolicy auto scaling strategy
+	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
 }
 
 //StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
 type StorageVolume struct {
 	//name of a storage volume.
+	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	Name string `json:"name"`
+
 	// storageClassName is the name of the StorageClass required by the claim.
 	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	//specify the path of volume mount.
+	// StorageSize is a valid memory size type based on powers-of-2, so 1MB is 1024KB.
+	// Supported units:MB, MiB, GB, GiB, TB, TiB, PB, PiB, EB, EiB Ex: `512MB`.
+	// +kubebuilder:validation:Pattern:="(^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B)$"
+	StorageSize string `json:"storageSize"`
+
+	//MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath,omitempty"`
 }
 
 type StarRocksService struct {
-	Name  string                 `json:"name,omitempty"`
+	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
+	Name string `json:"name,omitempty"`
+
 	Ports []StarRocksServicePort `json:"ports"`
 }
 

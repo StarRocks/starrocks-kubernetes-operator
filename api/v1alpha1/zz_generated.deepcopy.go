@@ -22,7 +22,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/api/autoscaling/v2beta2"
+	"k8s.io/api/autoscaling/v2"
 	"k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -214,14 +214,14 @@ func (in *HPAPolicy) DeepCopyInto(out *HPAPolicy) {
 	*out = *in
 	if in.Metrics != nil {
 		in, out := &in.Metrics, &out.Metrics
-		*out = make([]v2beta2.MetricSpec, len(*in))
+		*out = make([]v2.MetricSpec, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.Behavior != nil {
 		in, out := &in.Behavior, &out.Behavior
-		*out = new(v2beta2.HorizontalPodAutoscalerBehavior)
+		*out = new(v2.HorizontalPodAutoscalerBehavior)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -474,7 +474,7 @@ func (in *StarRocksClusterSpec) DeepCopyInto(out *StarRocksClusterSpec) {
 	*out = *in
 	if in.StarRocksFeSpec != nil {
 		in, out := &in.StarRocksFeSpec, &out.StarRocksFeSpec
-		*out = new(StarRocksBeSpec)
+		*out = new(StarRocksFeSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.StarRocksBeSpec != nil {
@@ -546,6 +546,11 @@ func (in *StarRocksCnSpec) DeepCopyInto(out *StarRocksCnSpec) {
 	if in.Probe != nil {
 		in, out := &in.Probe, &out.Probe
 		*out = new(StarRocksProbe)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.AutoScalingPolicy != nil {
+		in, out := &in.AutoScalingPolicy, &out.AutoScalingPolicy
+		*out = new(AutoScalingPolicy)
 		(*in).DeepCopyInto(*out)
 	}
 }

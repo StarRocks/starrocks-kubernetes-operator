@@ -18,19 +18,19 @@ package spec
 import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // build a hpa base on cn
-func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *autoscalingv2beta2.HorizontalPodAutoscaler {
+func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *v2.HorizontalPodAutoscaler {
 	if cn.Spec.AutoScalingPolicy == nil {
 		return nil
 	}
 	if cn.Spec.AutoScalingPolicy.HPAPolicy == nil {
 		return nil
 	}
-	return &autoscalingv2beta2.HorizontalPodAutoscaler{
+	return &v2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
 			APIVersion: "autoscaling/v2beta2",
@@ -43,8 +43,8 @@ func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *autoscalingv2beta2.HorizontalPodA
 				*metav1.NewControllerRef(cn, cn.GroupVersionKind()),
 			},
 		},
-		Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
-			ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
+		Spec: v2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v2.CrossVersionObjectReference{
 				Name:       cn.Name,
 				Kind:       common.CnKind,
 				APIVersion: common.CnApiVersionV1ALPHA,
@@ -59,7 +59,7 @@ func MakeCnHPA(cn *v1alpha1.ComputeNodeGroup) *autoscalingv2beta2.HorizontalPodA
 
 // sync changed
 // only some fields would be synced
-func SyncHPAChanged(current, desired *autoscalingv2beta2.HorizontalPodAutoscaler) {
+func SyncHPAChanged(current, desired *v2.HorizontalPodAutoscaler) {
 	current.Labels = makeAnnotationsOrLabels(desired.Labels, current.Labels)
 	current.Spec = desired.Spec
 }

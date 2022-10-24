@@ -23,7 +23,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/utils"
 	v1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -368,7 +368,7 @@ func (r *ComputeNodeGroupReconciler) observeCronJob(ctx context.Context, state *
 }
 
 func (r *ComputeNodeGroupReconciler) observeHPA(ctx context.Context, state *CnState) error {
-	hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+	hpa := &v2.HorizontalPodAutoscaler{}
 	err := r.Rclient.Get(ctx, state.Req.NamespacedName, hpa)
 	if err != nil {
 		if !k8s_error.IsNotFound(err) {

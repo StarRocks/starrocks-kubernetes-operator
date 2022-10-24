@@ -27,27 +27,18 @@ type hashService struct {
 	labels      map[string]string
 }
 
-func BuildService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType) corev1.Service {
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType) corev1.Service {
 
-	var name string
 	var srPorts []srapi.StarRocksServicePort
 	if serviceType == FeService {
-		name = srapi.DEFAULT_FE_SERVICE_NAME
-		if src.Spec.StarRocksFeSpec.Service != nil {
-			srPorts = append(srPorts, src.Spec.StarRocksFeSpec.Service.Ports...)
-			if src.Spec.StarRocksFeSpec.Service.Name != "" {
-				name = src.Spec.StarRocksFeSpec.Service.Name
-			}
-		}
-
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 8030, ContainerPort: 8030, Name: "http_port",
+			Port: 8030, ContainerPort: 8030, Name: "http-port",
 		}, srapi.StarRocksServicePort{
-			Port: 9020, ContainerPort: 9020, Name: "rpc_port",
+			Port: 9020, ContainerPort: 9020, Name: "rpc-port",
 		}, srapi.StarRocksServicePort{
-			Port: 9030, ContainerPort: 9030, Name: "query_port",
+			Port: 9030, ContainerPort: 9030, Name: "query-port",
 		}, srapi.StarRocksServicePort{
-			Port: 9010, ContainerPort: 9010, Name: "edit_log_port"})
+			Port: 9010, ContainerPort: 9010, Name: "edit-log-port"})
 	} else if serviceType == BeService {
 		name = srapi.DEFAULT_BE_SERVICE_NAME
 		if src.Spec.StarRocksBeSpec.Service != nil {
@@ -57,13 +48,13 @@ func BuildService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType)
 			}
 		}
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "be_port",
+			Port: 9060, ContainerPort: 9060, Name: "be-port",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver_port",
+			Port: 8040, ContainerPort: 8040, Name: "webserver-port",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat_service_port",
+			Port: 9050, ContainerPort: 9050, Name: "heartbeat-service-port",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 80060, Name: "brpc_port",
+			Port: 8060, ContainerPort: 80060, Name: "brpc-port",
 		})
 
 	} else if serviceType == CnService {
@@ -76,13 +67,13 @@ func BuildService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType)
 		}
 
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "thrift_port",
+			Port: 9060, ContainerPort: 9060, Name: "thrift-port",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver_port",
+			Port: 8040, ContainerPort: 8040, Name: "webserver-port",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat_service_port",
+			Port: 9050, ContainerPort: 9050, Name: "heartbeat-service-port",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 80060, Name: "brpc_port",
+			Port: 8060, ContainerPort: 80060, Name: "brpc-port",
 		})
 	}
 
@@ -97,13 +88,11 @@ func BuildService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType)
 	var ports []corev1.ServicePort
 	for _, sp := range srPorts {
 		ports = append(ports, corev1.ServicePort{
-			Port:     sp.Port,
-			NodePort: sp.NodePort,
-			Protocol: corev1.ProtocolTCP,
-			TargetPort: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: sp.ContainerPort,
-			},
+			Name:       sp.Name,
+			Port:       sp.Port,
+			NodePort:   sp.NodePort,
+			Protocol:   corev1.ProtocolTCP,
+			TargetPort: intstr.FromInt(int(sp.ContainerPort)),
 		})
 	}
 
@@ -121,7 +110,7 @@ func BuildService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType)
 	}
 
 	hso := serviceHashObject(&svc)
-	var anno map[string]string
+	anno := map[string]string{}
 	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
 	anno[srapi.ComponentGeneration] = "1"
 	svc.Annotations = anno
@@ -166,7 +155,7 @@ func GenerateServiceLabels(src *srapi.StarRocksCluster, serviceType StarRocksSer
 	labels := Labels{}
 	labels.AddLabel(src.Labels)
 	if serviceType == FeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
+		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_FE)
 	} else if serviceType == BeService {
 		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
 	} else if serviceType == CnService {
