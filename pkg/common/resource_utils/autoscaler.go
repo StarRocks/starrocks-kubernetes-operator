@@ -23,39 +23,31 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func BuildHorizontalPodAutoscaler(src *srapi.StarRocksCluster) *v2.HorizontalPodAutoscaler {
-	if src.Spec.StarRocksCnSpec == nil || src.Spec.StarRocksCnSpec.AutoScalingPolicy == nil ||
-		src.Spec.StarRocksCnSpec.AutoScalingPolicy.HPAPolicy == nil {
-		return nil
-	}
-
-	cnspec := src.Spec.StarRocksCnSpec
+func BuildHorizontalPodAutoscaler(namespace, name, targetName string, labels Labels, references []metav1.OwnerReference, scalepolicy *srapi.AutoScalingPolicy) *v2.HorizontalPodAutoscaler {
 	return &v2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
-			APIVersion: "autoscaling/v2beta2",
+			APIVersion: "autoscaling/v2",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			//TODO: 构造cn hpa的名字
-			Name:      cnspec,
-			Namespace: src.Namespace,
+			Name:      name,
+			Namespace: namespace,
 			//TODO: 构造labels
-			Labels: cn.Labels,
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(src, src.GroupVersionKind()),
-			},
+			Labels:          labels,
+			OwnerReferences: references,
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
 				//TODO: 构建target的name
-				Name:       cn.Name,
+				Name:       targetName,
 				Kind:       common.CnKind,
 				APIVersion: common.CnApiVersionV1ALPHA,
 			},
-			MaxReplicas: cnspec.AutoScalingPolicy.MaxReplicas,
-			MinReplicas: cnspec.AutoScalingPolicy.MinReplicas,
-			Metrics:     cnspec.AutoScalingPolicy.HPAPolicy.Metrics,
-			Behavior:    cnspec.AutoScalingPolicy.HPAPolicy.Behavior,
+			MaxReplicas: scalepolicy.MaxReplicas,
+			MinReplicas: scalepolicy.MinReplicas,
+			Metrics:     scalepolicy.HPAPolicy.Metrics,
+			Behavior:    scalepolicy.HPAPolicy.Behavior,
 		},
 	}
 }

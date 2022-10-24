@@ -85,10 +85,11 @@ spec:
                                   - value
                                   type: object
                                 type: array
+                                x-kubernetes-list-type: atomic
                               selectPolicy:
                                 description: selectPolicy is used to specify which
                                   policy should be used. If not set, the default value
-                                  MaxPolicySelect is used.
+                                  Max is used.
                                 type: string
                               stabilizationWindowSeconds:
                                 description: 'StabilizationWindowSeconds is the number
@@ -141,10 +142,11 @@ spec:
                                   - value
                                   type: object
                                 type: array
+                                x-kubernetes-list-type: atomic
                               selectPolicy:
                                 description: selectPolicy is used to specify which
                                   policy should be used. If not set, the default value
-                                  MaxPolicySelect is used.
+                                  Max is used.
                                 type: string
                               stabilizationWindowSeconds:
                                 description: 'StabilizationWindowSeconds is the number
@@ -167,7 +169,7 @@ spec:
                             should be set at once).
                           properties:
                             containerResource:
-                              description: container resource refers to a resource
+                              description: containerResource refers to a resource
                                 metric (such as those specified in requests and limits)
                                 known to Kubernetes describing a single container
                                 in each pod of the current scale target (e.g. CPU
@@ -349,9 +351,8 @@ spec:
                                 on an Ingress object).
                               properties:
                                 describedObject:
-                                  description: CrossVersionObjectReference contains
-                                    enough information to let you identify the referred
-                                    resource.
+                                  description: describedObject specifies the descriptions
+                                    of a object,such as kind,name apiVersion
                                   properties:
                                     apiVersion:
                                       description: API version of the referent

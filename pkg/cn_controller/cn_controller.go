@@ -52,7 +52,8 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	//generate new cn service.
-	svc := rutils.BuildExternalService(src, rutils.CnService)
+	//TODO:need
+	svc := rutils.BuildExternalService(src, cc.getCnServiceName(src), rutils.CnService)
 	cs := srapi.StarRocksCnStatus{ServiceName: svc.Name}
 	src.Status.StarRocksCnStatus = &cs
 	//create or update fe service, update the status of cn on src.
@@ -139,7 +140,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 	}
 
 	var creatings, runnings, faileds []string
-	var podmap map[string]corev1.Pod
+	podmap := make(map[string]corev1.Pod)
 	//get all pod status that controlled by st.
 	for _, pod := range podList.Items {
 		//TODO: test
@@ -175,7 +176,7 @@ func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		stname = cnSpec.Name
 	}
 
-	var labels rutils.Labels
+	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name
 	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
 	labels.AddLabel(src.Labels)
@@ -220,19 +221,19 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 			Args:    []string{"--daemon"},
 			Ports: []corev1.ContainerPort{
 				{
-					Name:          "thrift_port",
+					Name:          "thrift-port",
 					ContainerPort: 9060,
 					Protocol:      corev1.ProtocolTCP,
 				}, {
-					Name:          "webserver_port",
+					Name:          "webserver-port",
 					ContainerPort: 8040,
 					Protocol:      corev1.ProtocolTCP,
 				}, {
-					Name:          "heartbeat_service_port",
+					Name:          "heartbeat-service-port",
 					ContainerPort: 9050,
 					Protocol:      corev1.ProtocolTCP,
 				}, {
-					Name:          "brpc_port",
+					Name:          "brpc-port",
 					ContainerPort: 8060,
 					Protocol:      corev1.ProtocolTCP,
 				},

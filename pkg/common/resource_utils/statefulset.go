@@ -28,6 +28,7 @@ type StatefulSetParams struct {
 
 //NewStatefulset  statefulset
 func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
+	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	st := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            params.Name,

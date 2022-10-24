@@ -27,19 +27,10 @@ type hashService struct {
 	labels      map[string]string
 }
 
-func BuildExternalService(src *srapi.StarRocksCluster, serviceType StarRocksServiceType) corev1.Service {
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType) corev1.Service {
 
-	var name string
 	var srPorts []srapi.StarRocksServicePort
 	if serviceType == FeService {
-		name = srapi.DEFAULT_FE_SERVICE_NAME
-		if src.Spec.StarRocksFeSpec.Service != nil {
-			srPorts = append(srPorts, src.Spec.StarRocksFeSpec.Service.Ports...)
-			if src.Spec.StarRocksFeSpec.Service.Name != "" {
-				name = src.Spec.StarRocksFeSpec.Service.Name
-			}
-		}
-
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
 			Port: 8030, ContainerPort: 8030, Name: "http-port",
 		}, srapi.StarRocksServicePort{
@@ -164,7 +155,7 @@ func GenerateServiceLabels(src *srapi.StarRocksCluster, serviceType StarRocksSer
 	labels := Labels{}
 	labels.AddLabel(src.Labels)
 	if serviceType == FeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
+		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_FE)
 	} else if serviceType == BeService {
 		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
 	} else if serviceType == CnService {

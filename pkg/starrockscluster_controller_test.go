@@ -60,7 +60,7 @@ func TestReconcileConstructFeResource(t *testing.T) {
 				Image:    "starrocks.com/fe:2.40",
 				StorageVolumes: []srapi.StorageVolume{
 					{
-						Name:             "fe_storage",
+						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
 						MountPath:        "/data/fe/meta",
 					},
@@ -94,7 +94,7 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 				Image:    "starrocks.com/fe:2.40",
 				StorageVolumes: []srapi.StorageVolume{
 					{
-						Name:             "fe_storage",
+						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
 						MountPath:        "/data/fe/meta",
 					},
@@ -173,4 +173,8 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, reconcile.Result{}, res)
+}
+
+func TestStarRocksClusterReconciler_FeResourcePVC(t *testing.T) {
+
 }

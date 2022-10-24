@@ -19,6 +19,8 @@ package fe_controller
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func feStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
@@ -35,4 +37,42 @@ func feStatefulSetName(src *srapi.StarRocksCluster) string {
 		stname = src.Spec.StarRocksFeSpec.Name
 	}
 	return stname
+}
+
+//buildStatefulSetParams generate the params of construct the statefulset.
+func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) rutils.StatefulSetParams {
+	feSpec := src.Spec.StarRocksFeSpec
+	var pvcs []corev1.PersistentVolumeClaim
+	for _, vm := range feSpec.StorageVolumes {
+		pvcs = append(pvcs, corev1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{Name: vm.Name},
+			Spec: corev1.PersistentVolumeClaimSpec{
+				AccessModes: []corev1.PersistentVolumeAccessMode{
+					corev1.ReadWriteOnce,
+				},
+				StorageClassName: vm.StorageClassName,
+			},
+		})
+	}
+
+	stname := feStatefulSetName(src)
+	or := metav1.OwnerReference{
+		UID:        src.UID,
+		Kind:       src.Kind,
+		APIVersion: src.APIVersion,
+		Name:       src.Name,
+	}
+
+	return rutils.StatefulSetParams{
+		Name:                 stname,
+		Namespace:            src.Namespace,
+		Replicas:             feSpec.Replicas,
+		Annotations:          make(map[string]string),
+		VolumeClaimTemplates: pvcs,
+		ServiceName:          fc.getFeDomainService(),
+		PodTemplateSpec:      fc.buildPodTemplate(src),
+		Labels:               feStatefulSetsLabels(src),
+		Selector:             fePodLabels(src, stname),
+		OwnerReferences:      []metav1.OwnerReference{or},
+	}
 }

@@ -18,7 +18,7 @@ package pkg
 import (
 	starrocksv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	appv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -31,7 +31,7 @@ type CnState struct {
 	Req            ctrl.Request
 	Inst           *starrocksv1alpha1.ComputeNodeGroup
 	Deployment     *appv1.Deployment
-	HPA            *autoscalingv2beta2.HorizontalPodAutoscaler
+	HPA            *v2.HorizontalPodAutoscaler
 	CronJob        *batchv1beta1.CronJob
 	RoleBinding    *rbacv1.ClusterRoleBinding
 	ServiceAccount *corev1.ServiceAccount
