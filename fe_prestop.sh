@@ -18,6 +18,7 @@ POD_IP=$(hostname -i)
 SELF_HOST=
 #left_node_lists node lists of except self.
 LEFT_NODE_LSITS=
+PROBE_LEADER_PODX_TIMEOUT=120 # at most 60 attempts
 STARROCK_HOME=${STARROCK_HOME:-"/opt/starrocks"}
 
 show_frontends() {
@@ -70,16 +71,16 @@ set_self_not_leader() {
         assignment_variable
         if [[ "x$SELF_ROLE" == "xLEADER" ]]; then
             transfer_master
-        fi
-
-        local now=$(date +%s)
-        let "expire=start+timeout"
-        if [[ $expire -le $now ]]; then
-            log_stderr "Timed out, abort!"
-            exit 1
-        fi
-        sleep $PROBE_INTERVAL
-
+			local now=$(date +%s)
+			let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
+			if [[ $expire -le $now ]]; then
+				log_stderr "Timed out, abort!"
+				exit 1
+			fi
+			sleep $PROBE_INTERVAL
+		else
+			return 0
+		fi
     done
 }
 
