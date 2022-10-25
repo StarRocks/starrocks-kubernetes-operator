@@ -30,16 +30,16 @@ func BuildHorizontalPodAutoscaler(namespace, name, targetName string, labels Lab
 			APIVersion: "autoscaling/v2",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			//TODO: 构造cn hpa的名字
+			//TODO: generate cn hpa name
 			Name:      name,
 			Namespace: namespace,
-			//TODO: 构造labels
+			//TODO: construct labels
 			Labels:          labels,
 			OwnerReferences: references,
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				//TODO: 构建target的name
+				//TODO: generate target's name
 				Name:       targetName,
 				Kind:       common.CnKind,
 				APIVersion: common.CnApiVersionV1ALPHA,

@@ -273,7 +273,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 
 	initContainers := []corev1.Container{
 		{
-			//TODO: 设置启动参数
+			//TODO: set start parameters
 			Command: []string{},
 			Name:    "cn-prepare",
 			Image:   cnSpec.Image,

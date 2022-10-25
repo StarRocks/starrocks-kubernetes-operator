@@ -83,7 +83,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//if the spec is changed, merge old and new statefulset. update the status of fe on src.
 	if !rutils.StatefulSetDeepEqual(&st, est) {
-		klog.Info("FeController Sync exist statefulset equals to new statefuslet")
+		klog.Info("FeController Sync exist statefulset not equals to new statefuslet")
 		//fe spec changed update the statefulset.
 		rutils.MergeStatefulSets(&st, est)
 		if err := k8sutils.UpdateClientObject(ctx, fc.k8sclient, &st); err != nil {
@@ -165,7 +165,7 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return false, nil
 }
 
-//getFeServiceName generate the name of service that access the fe.
+//GetExternalFeServiceName generate the name of service that access the fe.
 func (fc *FeController) GetExternalFeServiceName(src *srapi.StarRocksCluster) string {
 	if src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Name != "" {
 		return src.Spec.StarRocksFeSpec.Service.Name + "-" + "service"

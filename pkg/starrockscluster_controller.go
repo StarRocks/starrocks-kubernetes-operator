@@ -153,7 +153,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	//TODO: 初始化be
+	//TODO: initial be
 	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("fc-controller"))
 	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("cn-controller"))
 	var subcs []SubController
