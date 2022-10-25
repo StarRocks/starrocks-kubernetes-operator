@@ -53,22 +53,24 @@ assignment_variable()
 	do
 		memlist=`show_frontends $svc`
 		local leader=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $2}'`
-		QUERY_PORT=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $2}'`
-		EDIT_LOG_PORT=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $5}'`
-
 
 		if [[ "x$leader" != "x" ]]; then
-			SELF_ROLE=`echo "$memlist" | grep "\<$SELF_HOST\>" | awk'{print $6}'`
+			QUERY_PORT=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $5}'`
+			EDIT_LOG_PORT=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $3}'`
+			SELF_ROLE=`echo "$memlist" | grep "\<$SELF_HOST\>" | awk '{print $6}'`
 			LEFT_NODE_LSITS=`echo "$memlist" | grep -v "\<$SELF_HOST\>" | awk '{print $1}' | xargs echo | tr ' ' ','`
 			return 0
 		fi
+
+		sleep $PROBE_INTERVAL
+
 	done
 }
 
 transfer_master()
 {
 
-	`java -jar lib/je-7.3.7.jar DbGroupAdmin -helperHosts {$SELF_HOST:$EDIT_LOG_PORT} -groupName PALO_JOURNAL_GROUP -transferMaster $LEFT_NODE_LSITS 30`
+	`java -jar $STARROCK_HOME/fe/lib/je-7.3.7.jar DbGroupAdmin -helperHosts $SELF_HOST:$EDIT_LOG_PORT -groupName PALO_JOURNAL_GROUP -transferMaster $LEFT_NODE_LSITS 30`
 }
 
 
@@ -76,7 +78,6 @@ set_self_not_leader()
 {
 	while true
 	do
-	show_frontends $1
 	assignment_variable
 	if [[ "x$SELF_ROLE" == "xLEADER" ]] ; then
 		transfer_master 
