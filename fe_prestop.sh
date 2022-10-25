@@ -62,8 +62,7 @@ assignment_variable() {
 }
 
 transfer_master() {
-
-    $(java -jar $STARROCK_HOME/fe/lib/je-7.3.7.jar DbGroupAdmin -helperHosts {$SELF_HOST:$EDIT_LOG_PORT} -groupName PALO_JOURNAL_GROUP -transferMaster $LEFT_NODE_LSITS 30)
+    java -jar $STARROCK_HOME/fe/lib/je-7.3.7.jar DbGroupAdmin -helperHosts $SELF_HOST:$EDIT_LOG_PORT -groupName PALO_JOURNAL_GROUP -transferMaster $LEFT_NODE_LSITS 30
 }
 
 set_self_not_leader() {
@@ -76,12 +75,8 @@ set_self_not_leader() {
         local now=$(date +%s)
         let "expire=start+timeout"
         if [[ $expire -le $now ]]; then
-            if $has_member; then
-                log_stderr "Timed out, abort!"
-                exit 1
-            else
-                log_stderrr "Timed out, no members detected ever, assume myself is the first node .."
-            fi
+            log_stderr "Timed out, abort!"
+            exit 1
         fi
         sleep $PROBE_INTERVAL
 
@@ -96,7 +91,7 @@ stop_follower_observer() {
 svc_name=$1
 if [[ "x$svc_name" == "x" ]]; then
     echo "Need a required parameter!"
-    echo "  Example: $0 <fe_service_name>"
+    echo "Example: $0 <fe_service_name>"
     exit 1
 fi
 
