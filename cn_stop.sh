@@ -36,7 +36,7 @@ drop_my_self()
         register_self=`echo "$memlist" | grep '\<$MY_SELF\>'` | awk '{print $2}'`
         if [[ "x$register_self" != "x" ]] ; then
             log_stderr "drop my self $register_self"
-            timeout 15 mysql --connect-timeout 2 -h $svc -P $QUERY_PORT -u root --skip-column-names --batch -e << EOF
+            timeout 15 mysql --connect-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch -e << EOF
 alter system drop compute node $register_self;
 EOF
             return 0

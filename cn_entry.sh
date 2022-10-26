@@ -59,18 +59,19 @@ add_self_and_start()
 
     while true
     do
-        timeout 15 mysql --connect-timeout 2 -h $FE_LEADER -P $QUERY_PORT -u root  -skip-column-names --batch << EOF
+        timeout 15 mysql --connect-timeout 2 -h $FE_LEADER -P $FE_QUERY_PORT -u root  -skip-column-names --batch << EOF
 ALTER SYSTEM ADD COMPUTE NODE "$MY_SEFL:$HEARTBEAT_PORT"
 EOF
         memlist=`show_compute_nodes $svc`
         exist=`echo $memlist | grep $MY_SELF | awk '{print $2}'`
         if [[ "x$exist" == "x$MY_SELF" ]] ; then
-            return 0
+            break
         fi
 
         let "expire=start+timeout"
         if [[ $expire -le $now ]] ; then
             log_stderr "Time out, abort!"
+            exit 1
         fi
 
         sleep $PROBE_INTERVAL
@@ -88,5 +89,5 @@ if [[ "x$svc_name" == "x" ]] ; then
     exit 1
 fi
 
-add_sefl_and_start $svc_name
+add_self_and_start $svc_name
 
