@@ -1,13 +1,12 @@
 #!/bin/bash
 
-#1. find fe leader
-#2. ad cn (myself) to fe
+#1. drop myself in fe
+#2. check drop result
 
 HOST_TYPE=${HOST_TYPE:-"IP"}
 FE_QUERY_PORT=${FE_QUERY_PORT:-9030}
 PROBE_TIMEOUT=60
 PROBE_INTERVAL=2
-FE_LEADER=
 HEARTBEAT_PORT=9050
 MY_SELF=
 MY_IP=`hostname -i`
