@@ -42,6 +42,11 @@ EOF
             return 0
         fi
 
+        if [[ "x$memlist" != "x" ]] ; then
+            log_stderr "myself $register_self is not in fe cluster"
+            return 0
+        fi
+
         local now=`date +%s`
         let "expire=start+PROBE_TIMEOUT"
         if [[ $expire -le $now ]] ; then
@@ -52,6 +57,33 @@ EOF
     done
 }
 
+valid_drop_and_stop()
+{
+    local svc=$1
+    local memlist=
+    local start=`date +%s`
+    while true
+    do
+        memlist=`show_compute_nodes $svc`
+        register_self=`echo "$memlist" | grep '\<$MY_SELF\>'` | awk '{print $2}'`
+        if [[ "x$register_self" == "x" ]] ; then
+            return 0
+        fi
+
+        drop_my_self $svc
+        local now=`date +%s`
+        let "expire=start+PROBE_TIMEOUT"
+        if [[ $expire -le $now ]] ; then
+            log_stderr "Timed out, abort!"
+            exit 1
+        fi
+        sleep $PROBE_INTERVAL
+    done
+
+    log_stderr "run stop_cn.sh"
+    $STARROCK_HOME/be/bin/stop_cn.sh
+}
+
 svc_name=$1
 if [[ "x$svc_name" == "x" ]] ; then
     echo "Need a required parameter!"
@@ -59,6 +91,5 @@ if [[ "x$svc_name" == "x" ]] ; then
     exit 1
 fi
 
-
 drop_my_self $svc_name
- $STARROCK_HOME/be/bin/stop_cn.sh
+valid_drop_and_stop $svc_name

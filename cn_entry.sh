@@ -5,7 +5,7 @@
 
 HOST_TYPE=${HOST_TYPE:-"IP"}
 FE_QUERY_PORT=${FE_QUERY_PORT:-9030}
-PROBE_LEADER_POD0_TIMEOUT=60
+PROBE_TIMEOUT=60
 PROBE_INTERVAL=2
 FE_LEADER=
 HEARTBEAT_PORT=9050
@@ -19,8 +19,8 @@ log_stderr()
     echo "[`date`] $@" >&2
 }
 
-show_frontends(){
-        timeout 15 mysql --connec-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch -e 'show frontends;'
+show_compute_nodes(){
+    timeout 15 mysql --connec-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch -e 'show compute nodes;'
 }
 
 parse_confval_from_fe_conf()
@@ -44,33 +44,6 @@ collect_env_info()
 
 }
 
-find_fe_leader() {
-    local svc=$1
-    local memlist=
-    local leader=
-    local start=`date +%s`
-    while true
-    do 
-        memlist=`show_frontends $svc`
-        leader=`echo "$memlist" | grep '\<LEADER\>' | awk '{print $2}'`
-        if [[ "x$leader" != "x" ]]; then
-            log_stderr "Find leader: $leader!"
-            FE_LEADER=$leader
-            return 0
-        fi
-
-        # no leader yet, check if needs timeout and quit
-        log_stderr "No leader yet, has_member: $has_member ..."
-        local now=`date +%s`
-        let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
-        if [[ $expire -le $now ]] ; then 
-            log_stderr "Timed out, abort!"
-            exit 1
-        fi
-
-        sleep $PROBE_INTERVAL
-    done
-}
 add_self_and_start()
 {
     collect_env_info
@@ -80,10 +53,30 @@ add_self_and_start()
         MY_SELF=$MY_HOSTNAME
     fi
 
+    lcoal svc=$1
+    start=`date +%s`
+    local timeout=$PROBE_TIMEOUT
 
-    timeout 15 mysql --connect-timeout 2 -h $FE_LEADER -P $QUERY_PORT -u root  -skip-column-names --batch << EOF
+    while true
+    do
+        timeout 15 mysql --connect-timeout 2 -h $FE_LEADER -P $QUERY_PORT -u root  -skip-column-names --batch << EOF
 ALTER SYSTEM ADD COMPUTE NODE "$MY_SEFL:$HEARTBEAT_PORT"
 EOF
+        memlist=`show_compute_nodes $svc`
+        exist=`echo $memlist | grep $MY_SELF | awk '{print $2}'`
+        if [[ "x$exist" == "x$MY_SELF" ]] ; then
+            return 0
+        fi
+
+        let "expire=start+timeout"
+        if [[ $expire -le $now ]] ; then
+            log_stderr "Time out, abort!"
+        fi
+
+        sleep $PROBE_INTERVAL
+
+    done
+
     log_stderr "run start_cn.sh"
     $STARROCK_HOME/be/bin/start_cn.sh
 }
@@ -95,5 +88,5 @@ if [[ "x$svc_name" == "x" ]] ; then
     exit 1
 fi
 
-find_fe_leader $svc_name
-add_sefl_and_start
+add_sefl_and_start $svc_name
+
