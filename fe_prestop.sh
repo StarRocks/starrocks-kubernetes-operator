@@ -71,16 +71,16 @@ set_self_not_leader() {
         assignment_variable
         if [[ "x$SELF_ROLE" == "xLEADER" ]]; then
             transfer_master
-			local now=$(date +%s)
-			let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
-			if [[ $expire -le $now ]]; then
-				log_stderr "Timed out, abort!"
-				exit 1
-			fi
-			sleep $PROBE_INTERVAL
-		else
-			return 0
-		fi
+            local now=$(date +%s)
+            let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
+            if [[ $expire -le $now ]]; then
+                log_stderr "Timed out, abort!"
+                exit 1
+            fi
+            sleep $PROBE_INTERVAL
+        else
+            return 0
+        fi
     done
 }
 
