@@ -65,6 +65,6 @@ const (
 //the env of container
 const (
 	COMPONENT_NAME      = "COMPONENT_NAME"
-	SERVICE_NAME        = "FE_SERVICE_NAME"
+	FE_SERVICE_NAME     = "FE_SERVICE_NAME"
 	SEARCH_SERVICE_NAME = "SEARCH_SERVICE_NAME"
 )

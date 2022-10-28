@@ -7,7 +7,7 @@ import (
 
 type Labels map[string]string
 
-func New(labels ...Labels) Labels {
+func NewLabels(labels ...Labels) Labels {
 	nlabels := Labels{}
 	for _, l := range labels {
 		for k, v := range l {
@@ -29,6 +29,28 @@ func (l Labels) AddLabel(label Labels) {
 
 	for k, v := range label {
 		l[k] = v
+	}
+}
+
+type Annotations map[string]string
+
+func NewAnnotations(annotations ...Annotations) Annotations {
+	anotation := Annotations{}
+	for _, a := range annotations {
+		for k, v := range a {
+			anotation[k] = v
+		}
+	}
+	return anotation
+}
+
+func (a Annotations) Add(key, value string) {
+	a[key] = value
+}
+
+func (a Annotations) AddAnnotation(annotation Annotations) {
+	for k, v := range annotation {
+		a[k] = v
 	}
 }
 

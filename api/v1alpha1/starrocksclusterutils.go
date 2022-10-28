@@ -15,3 +15,21 @@ limitations under the License.
 */
 
 package v1alpha1
+
+//GetFeExternalServiceName generate the name of service that access the fe.
+func GetFeExternalServiceName(src *StarRocksCluster) string {
+	if src.Spec.StarRocksFeSpec != nil && src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Name != "" {
+		return src.Spec.StarRocksFeSpec.Service.Name + "-" + "service"
+	}
+
+	return src.Name + "-" + DEFAULT_FE + "-" + "service"
+}
+
+//GetCnExternalServiceName generate the name of service that access the cn
+func GetCnExternalServiceName(src *StarRocksCluster) string {
+	if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Name != "" {
+		return src.Spec.StarRocksCnSpec.Service.Name + "-" + "service"
+	}
+
+	return src.Name + "-" + DEFAULT_CN + "-" + "service"
+}
