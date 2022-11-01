@@ -6,6 +6,7 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	"strconv"
 )
 
@@ -42,6 +43,9 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: params.Selector,
 			},
+			UpdateStrategy: appv1.StatefulSetUpdateStrategy{
+				Type: appv1.RollingUpdateStatefulSetStrategyType,
+			},
 			Template:             params.PodTemplateSpec,
 			ServiceName:          params.ServiceName,
 			VolumeClaimTemplates: params.VolumeClaimTemplates,
@@ -50,8 +54,12 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 
 	hst := statefulSetHashObject(&st)
 	hvalue := hash.HashObject(hst)
-	st.Annotations[srapi.ComponentResourceHash] = hvalue
-	st.Annotations[srapi.ComponentGeneration] = "1"
+
+	anno := Annotations{}
+	anno.AddAnnotation(params.Annotations)
+	anno[srapi.ComponentResourceHash] = hvalue
+	anno[srapi.ComponentGeneration] = "1"
+	st.Annotations = anno
 	return st
 }
 
@@ -115,6 +123,8 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet) bool {
 		oldGeneration, _ = strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
 	}
 
+	new.Annotations[srapi.ComponentGeneration] = strconv.FormatInt(old.Generation+1, 10)
+	klog.Info("the statefulset new hash value ", newHashv, " old have value ", oldHashv, " oldGeneration ", oldGeneration, " new Generation ", old.Generation)
 	//avoid the update from kubectl.
 	return newHashv == oldHashv && new.Name == old.Name &&
 		new.Namespace == old.Namespace &&

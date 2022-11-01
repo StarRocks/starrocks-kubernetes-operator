@@ -40,7 +40,7 @@ type StarRocksClusterSpec struct {
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
 
 	//StarRocksCnSpec is the cn specification.
-	StarRocksCnSpec *StarRocksCnSpec `json:"StarRocksCnSpec,omitempty"`
+	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster
@@ -68,16 +68,20 @@ const (
 
 	//ClusterPending starrocks cluster is creating
 	ClusterPending = "pending"
+
+	//ClusterWaiting waiting cluster running
+	//ClusterWaiting = "waiting"
 )
 
 const (
 	//ComponentReconciling the component of starrocks cluster is dynamic adjustment.
 	ComponentReconciling = "reconciling"
 
-	//TODO: set failed.
 	ComponentFailed = "failed"
 	//
 	ComponentRunning = "running"
+
+	ComponentWaiting = "waiting"
 )
 
 //StarRocksFeStatus the status of starrocksfe.
@@ -183,7 +187,8 @@ type StarRocksBeSpec struct {
 	//Service defines the template for the associated Kubernetes Service object.
 	//the service for user access be.
 	//+optional
-	Service *StarRocksService `json:"service,omitempty"`
+	//TODO: temporary cancel
+	//Service *StarRocksService `json:"service,omitempty"`
 
 	//defines the specification of resource cpu and mem.
 	//+optional
@@ -221,6 +226,10 @@ type StarRocksCnSpec struct {
 	//Service defines the template for the associated Kubernetes Service object.
 	//the service for user access cn.
 	Service *StarRocksService `json:"service,omitempty"`
+
+	//+optional
+	//set the fe service for register cn, when not set, will use the fe config to find.
+	FeServiceName string `json:"FeServiceName,omitempty"`
 
 	//defines the specification of resource cpu and mem.
 	corev1.ResourceRequirements `json:",inline"`

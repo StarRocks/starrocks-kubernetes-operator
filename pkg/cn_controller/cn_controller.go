@@ -25,7 +25,6 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
@@ -51,51 +50,82 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
-	//generate new cn service.
-	//TODO:need
-	svc := rutils.BuildExternalService(src, cc.getCnServiceName(src), rutils.CnService)
-	cs := srapi.StarRocksCnStatus{ServiceName: svc.Name}
-	src.Status.StarRocksCnStatus = &cs
+	cs := &srapi.StarRocksCnStatus{}
+	cs.Phase = srapi.ComponentWaiting
+	src.Status.StarRocksCnStatus = cs
+	endpoints := corev1.Endpoints{}
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetFeExternalServiceName(src)}, &endpoints); apierrors.IsNotFound(err) || len(endpoints.Subsets) == 0 {
+		klog.Info("wait fe available fe service name ", srapi.GetFeExternalServiceName(src))
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	feReady := false
+	for _, sub := range endpoints.Subsets {
+		if len(sub.Addresses) > 0 {
+			feReady = true
+			break
+		}
+	}
+	if !feReady {
+		klog.Info("wait fe available fe service name ", srapi.GetFeExternalServiceName(src), " have not ready fe.")
+		return nil
+	}
+
+	//generate new cn internal service.
+	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService)
+	insvc := &corev1.Service{}
+	externalsvc.ObjectMeta.DeepCopyInto(&insvc.ObjectMeta)
+	insvc.Name = cc.getCnDomainService()
+	insvc.Spec = corev1.ServiceSpec{
+		Ports: []corev1.ServicePort{
+			{
+				Name:       "heartbeat",
+				Port:       9050,
+				TargetPort: intstr.FromInt(9050),
+			},
+		},
+		Selector: externalsvc.Spec.Selector,
+
+		//value = true, Pod don't need to become ready that be search by domain.
+		PublishNotReadyAddresses: true,
+	}
+	cs.ServiceName = insvc.Name
 	//create or update fe service, update the status of cn on src.
-	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, &svc); err != nil {
-		klog.Error("CnController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name)
+	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, insvc); err != nil {
+		klog.Error("CnController Sync ", "create or update service namespace ", insvc.Namespace, " name ", insvc.Name)
 		return err
 	}
 
 	cnFinalizers := []string{srapi.CN_SERVICE_FINALIZER}
-	defer func() {
-		rutils.MergeSlices(src.Finalizers, cnFinalizers)
-	}()
-
 	//create cn statefulset.
 	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src))
+	st.Spec.PodManagementPolicy = appv1.ParallelPodManagement
+	defer func() {
+		src.Finalizers = rutils.MergeSlices(src.Finalizers, cnFinalizers)
+		cs.ResourceNames = rutils.MergeSlices(cs.ResourceNames, []string{st.Name})
+	}()
+
 	var cst appv1.StatefulSet
 	err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &cst)
 	if err != nil && apierrors.IsNotFound(err) {
-		cs.ResourceNames = append(cs.ResourceNames, st.Name)
-		cnFinalizers = append(cnFinalizers, srapi.CN_STATEFULSET_FINALIZER)
 		return k8sutils.CreateClientObject(ctx, cc.k8sclient, &st)
 	} else if err != nil {
 		return err
 	}
 
-	//if the spec is not change, update the status of cn on src.
-	if rutils.StatefulSetDeepEqual(&st, cst) {
-		cs.ResourceNames = rutils.MergeSlices(cs.ResourceNames, []string{st.Name})
-		if err := cc.updateCnStatus(&cs, st); err != nil {
+	//if the spec is changed, update the status of cn on src.
+	if !rutils.StatefulSetDeepEqual(&st, cst) {
+		klog.Info("cnController Sync exist statefulset not equals to new statefuslet")
+		rutils.MergeStatefulSets(&st, cst)
+		if err := k8sutils.UpdateClientObject(ctx, cc.k8sclient, &st); err != nil {
 			return err
 		}
-		//no update
-		return nil
 	}
 
-	//cn spec changed update the statefulset.
-	rutils.MergeStatefulSets(&st, cst)
-	if err := k8sutils.UpdateClientObject(ctx, cc.k8sclient, &st); err != nil {
-		return err
-	}
-
-	return cc.updateCnStatus(&cs, cst)
+	//no changed update the status of cn on src.
+	return cc.updateCnStatus(cs, cst)
 }
 
 func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
@@ -107,7 +137,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	fmap := map[string]bool{}
 	count := 0
 	defer func() {
-		finalizers := []string{}
+		var finalizers []string
 		for _, f := range src.Finalizers {
 			if _, ok := fmap[f]; !ok {
 				finalizers = append(finalizers, f)
@@ -139,23 +169,23 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 		return err
 	}
 
-	var creatings, runnings, faileds []string
+	var creatings, readys, faileds []string
 	podmap := make(map[string]corev1.Pod)
 	//get all pod status that controlled by st.
 	for _, pod := range podList.Items {
 		//TODO: test
 		podmap[pod.Name] = pod
-		if pod.Status.Phase == corev1.PodPending {
+		if ready := k8sutils.PodIsReady(&pod.Status); ready {
+			readys = append(readys, pod.Name)
+		} else if pod.Status.Phase == corev1.PodPending {
 			creatings = append(creatings, pod.Name)
-		} else if pod.Status.Phase == corev1.PodRunning {
-			runnings = append(runnings, pod.Name)
-		} else {
+		} else if pod.Status.Phase == corev1.PodFailed {
 			faileds = append(faileds, pod.Name)
 		}
 	}
 
 	cs.Phase = srapi.ComponentReconciling
-	if len(runnings) == int(*st.Spec.Replicas) {
+	if len(readys) == int(*st.Spec.Replicas) {
 		cs.Phase = srapi.ComponentRunning
 	} else if len(faileds) != 0 {
 		cs.Phase = srapi.ComponentFailed
@@ -168,138 +198,6 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 	return nil
 }
 
-//buildStatefulSetParams generate the params of construct the statefulset.
-func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster) rutils.StatefulSetParams {
-	cnSpec := src.Spec.StarRocksCnSpec
-	stname := src.Name + "-" + srapi.DEFAULT_CN
-	if cnSpec.Name != "" {
-		stname = cnSpec.Name
-	}
-
-	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
-	labels.AddLabel(src.Labels)
-	or := metav1.OwnerReference{
-		UID:        src.UID,
-		Kind:       src.Kind,
-		APIVersion: src.APIVersion,
-		Name:       src.Name,
-	}
-
-	return rutils.StatefulSetParams{
-		Name:            stname,
-		Namespace:       src.Namespace,
-		ServiceName:     cc.getCnServiceName(src),
-		PodTemplateSpec: cc.buildPodTemplate(src),
-		Labels:          labels,
-		Selector:        labels,
-		OwnerReferences: []metav1.OwnerReference{or},
-	}
-}
-
-func (cc *CnController) getCnServiceName(src *srapi.StarRocksCluster) string {
-	if src.Spec.StarRocksCnSpec.Service.Name != "" {
-		return src.Spec.StarRocksCnSpec.Service.Name + "-" + "service"
-	}
-
-	return src.Name + "-" + srapi.DEFAULT_CN + "-" + "service"
-}
-
-//buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_CN
-	labels := src.Labels
-	cnSpec := src.Spec.StarRocksCnSpec
-	labels[srapi.OwnerReference] = cc.getCnServiceName(src)
-
-	opContainers := []corev1.Container{
-		{
-			Name:    srapi.DEFAULT_FE,
-			Image:   cnSpec.Image,
-			Command: []string{},
-			Args:    []string{"--daemon"},
-			Ports: []corev1.ContainerPort{
-				{
-					Name:          "thrift-port",
-					ContainerPort: 9060,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "webserver-port",
-					ContainerPort: 8040,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "heartbeat-service-port",
-					ContainerPort: 9050,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "brpc-port",
-					ContainerPort: 8060,
-					Protocol:      corev1.ProtocolTCP,
-				},
-			},
-			Env: []corev1.EnvVar{
-				{
-					Name: "POD_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-					},
-				}, {
-					Name: "POD_NAMESPACE",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-					},
-				}, {
-					Name:  srapi.COMPONENT_NAME,
-					Value: srapi.DEFAULT_FE,
-				}, {
-					Name:  srapi.SERVICE_NAME,
-					Value: cc.getCnServiceName(src),
-				},
-			},
-			Resources:       cnSpec.ResourceRequirements,
-			ImagePullPolicy: corev1.PullIfNotPresent,
-			StartupProbe: &corev1.Probe{
-				InitialDelaySeconds: 5,
-				FailureThreshold:    120,
-				PeriodSeconds:       5,
-				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
-					Type:   intstr.Int,
-					IntVal: 9010,
-				}}},
-			},
-		},
-	}
-
-	initContainers := []corev1.Container{
-		{
-			//TODO: 设置启动参数
-			Command: []string{},
-			Name:    "cn-prepare",
-			Image:   cnSpec.Image,
-		},
-	}
-
-	podSpec := corev1.PodSpec{
-		InitContainers:     initContainers,
-		Containers:         opContainers,
-		ServiceAccountName: src.Spec.ServiceAccount,
-	}
-
-	return corev1.PodTemplateSpec{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
-			Namespace:   src.Namespace,
-			Labels:      labels,
-			Annotations: src.Annotations,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: src.APIVersion,
-					Kind:       src.Kind,
-					Name:       src.Name,
-				},
-			},
-		},
-		Spec: podSpec,
-	}
+func (cc *CnController) getCnDomainService() string {
+	return "cn-domain-search"
 }

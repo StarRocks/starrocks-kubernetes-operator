@@ -28,52 +28,51 @@ type hashService struct {
 }
 
 func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType) corev1.Service {
-
 	var srPorts []srapi.StarRocksServicePort
 	if serviceType == FeService {
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 8030, ContainerPort: 8030, Name: "http-port",
+			Port: 8030, ContainerPort: 8030, Name: "http",
 		}, srapi.StarRocksServicePort{
-			Port: 9020, ContainerPort: 9020, Name: "rpc-port",
+			Port: 9020, ContainerPort: 9020, Name: "rpc",
 		}, srapi.StarRocksServicePort{
-			Port: 9030, ContainerPort: 9030, Name: "query-port",
+			Port: 9030, ContainerPort: 9030, Name: "query",
 		}, srapi.StarRocksServicePort{
-			Port: 9010, ContainerPort: 9010, Name: "edit-log-port"})
+			Port: 9010, ContainerPort: 9010, Name: "edit-log"})
 	} else if serviceType == BeService {
 		name = srapi.DEFAULT_BE_SERVICE_NAME
-		if src.Spec.StarRocksBeSpec.Service != nil {
+		/*if src.Spec.StarRocksBeSpec.Service != nil {
 			srPorts = append(srPorts, src.Spec.StarRocksBeSpec.Service.Ports...)
 			if src.Spec.StarRocksBeSpec.Service.Name != "" {
 				name = src.Spec.StarRocksBeSpec.Service.Name
 			}
-		}
+		}*/
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "be-port",
+			Port: 9060, ContainerPort: 9060, Name: "be",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver-port",
+			Port: 8040, ContainerPort: 8040, Name: "webserver",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat-service-port",
+			Port: 9050, ContainerPort: 9050, Name: "heartbeat",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 80060, Name: "brpc-port",
+			Port: 8060, ContainerPort: 8060, Name: "brpc",
 		})
 
 	} else if serviceType == CnService {
 		name = srapi.DEFAULT_CN_SERVICE_NAME
-		if src.Spec.StarRocksCnSpec.Service != nil {
+		/*if src.Spec.StarRocksCnSpec.Service != nil {
 			srPorts = append(srPorts, src.Spec.StarRocksCnSpec.Service.Ports...)
 			if src.Spec.StarRocksCnSpec.Service.Name != "" {
 				name = src.Spec.StarRocksCnSpec.Service.Name
 			}
-		}
+		}*/
 
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "thrift-port",
+			Port: 9060, ContainerPort: 9060, Name: "thrift",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver-port",
+			Port: 8040, ContainerPort: 8040, Name: "webserver",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat-service-port",
+			Port: 9050, ContainerPort: 9050, Name: "heartbeat",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 80060, Name: "brpc-port",
+			Port: 8060, ContainerPort: 8060, Name: "brpc",
 		})
 	}
 

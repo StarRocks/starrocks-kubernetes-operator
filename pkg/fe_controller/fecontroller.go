@@ -53,9 +53,9 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	//generate new fe service.
-	svc := rutils.BuildExternalService(src, fc.GetExternalFeServiceName(src), rutils.FeService)
-	fs := srapi.StarRocksFeStatus{ServiceName: svc.Name, Phase: srapi.ComponentReconciling}
-	src.Status.StarRocksFeStatus = &fs
+	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService)
+	fs := &srapi.StarRocksFeStatus{ServiceName: svc.Name, Phase: srapi.ComponentReconciling}
+	src.Status.StarRocksFeStatus = fs
 	//create or update fe external and domain search service, update the status of fe on src.
 	if err := fc.createOrUpdateFeService(ctx, &svc); err != nil {
 		klog.Error("FeController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
@@ -65,15 +65,13 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//create fe statefulset.
 	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src))
 	defer func() {
-		rutils.MergeSlices(src.Finalizers, feFinalizers)
-		rutils.MergeSlices(fs.ResourceNames, []string{st.Name})
+		src.Finalizers = rutils.MergeSlices(src.Finalizers, feFinalizers)
+		fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{st.Name})
 	}()
 
 	var est appv1.StatefulSet
 	err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
 	if err != nil && apierrors.IsNotFound(err) {
-		fs.ResourceNames = append(fs.ResourceNames, st.Name)
-		feFinalizers = append(feFinalizers, srapi.FE_STATEFULSET_FINALIZER)
 		if err := k8sutils.CreateClientObject(ctx, fc.k8sclient, &st); err != nil {
 			return err
 		}
@@ -83,7 +81,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//if the spec is changed, merge old and new statefulset. update the status of fe on src.
 	if !rutils.StatefulSetDeepEqual(&st, est) {
-		klog.Info("FeController Sync exist statefulset equals to new statefuslet")
+		klog.Info("FeController Sync exist statefulset not equals to new statefuslet")
 		//fe spec changed update the statefulset.
 		rutils.MergeStatefulSets(&st, est)
 		if err := k8sutils.UpdateClientObject(ctx, fc.k8sclient, &st); err != nil {
@@ -92,7 +90,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	//no changed update the status of fe on src.l
-	return fc.updateFeStatus(&fs, st)
+	return fc.updateFeStatus(fs, st)
 }
 
 //UpdateFeStatus update the starrockscluster fe status.
@@ -109,7 +107,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 		podmap[pod.Name] = pod
 		if ready := k8sutils.PodIsReady(&pod.Status); ready {
 			readys = append(readys, pod.Name)
-		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
+		} else if pod.Status.Phase == corev1.PodPending {
 			creatings = append(creatings, pod.Name)
 		} else if pod.Status.Phase == corev1.PodFailed {
 			faileds = append(faileds, pod.Name)
@@ -117,7 +115,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 	}
 
 	fs.Phase = srapi.ComponentReconciling
-	if len(readys) == int(*st.Spec.Replicas) {
+	if st.Spec.Replicas != nil && len(readys) == int(*st.Spec.Replicas) {
 		fs.Phase = srapi.ComponentRunning
 	} else if len(faileds) != 0 {
 		fs.Phase = srapi.ComponentFailed
@@ -125,6 +123,10 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 	} else if len(creatings) != 0 {
 		fs.Reason = podmap[creatings[0]].Status.Message
 	}
+
+	fs.RunningInstances = readys
+	fs.FailedInstances = creatings
+	fs.CreatingInstances = creatings
 
 	return nil
 }
@@ -163,15 +165,6 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	return false, nil
-}
-
-//getFeServiceName generate the name of service that access the fe.
-func (fc *FeController) GetExternalFeServiceName(src *srapi.StarRocksCluster) string {
-	if src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Name != "" {
-		return src.Spec.StarRocksFeSpec.Service.Name + "-" + "service"
-	}
-
-	return src.Name + "-" + srapi.DEFAULT_FE + "-" + "service"
 }
 
 //GetFeDomainService get the domain service name, the domain service for statefulset.

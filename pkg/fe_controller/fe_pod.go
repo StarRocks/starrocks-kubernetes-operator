@@ -24,9 +24,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func fePodLabels(src *srapi.StarRocksCluster, stname string) rutils.Labels {
+//fePodLabels generate the fe pod labels and statefulset selector
+func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = stname
+	labels[srapi.OwnerReference] = ownerReferenceName
 	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
 	labels.AddLabel(src.Labels)
 	return labels
@@ -105,8 +106,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 					Name:  srapi.COMPONENT_NAME,
 					Value: srapi.DEFAULT_FE,
 				}, {
-					Name:  srapi.SERVICE_NAME,
-					Value: fc.GetExternalFeServiceName(src) + "." + src.Namespace,
+					Name:  srapi.FE_SERVICE_NAME,
+					Value: srapi.GetFeExternalServiceName(src) + "." + src.Namespace,
 				}, {
 					Name: "POD_IP",
 					ValueFrom: &corev1.EnvVarSource{
@@ -141,15 +142,21 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 				PeriodSeconds:    5,
 				ProbeHandler:     corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9020)}},
 			},
+			Lifecycle: &corev1.Lifecycle{
+				PreStop: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/opt/starrocks/fe_prestop.sh", "$(FE_SERVICE_NAME)"},
+					},
+				},
+			},
 		},
 	}
 
 	podSpec := corev1.PodSpec{
-
 		Volumes:                       vols,
 		Containers:                    opContainers,
 		ServiceAccountName:            src.Spec.ServiceAccount,
-		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(30)),
+		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 	}
 
 	return corev1.PodTemplateSpec{
