@@ -143,6 +143,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 				}, {
 					Name:  "HOST_TYPE",
 					Value: "FQDN",
+				}, {
+					Name:  "USER",
+					Value: "root",
 				},
 			},
 

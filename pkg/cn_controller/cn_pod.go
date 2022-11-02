@@ -109,6 +109,9 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 				}, {
 					Name:  "HOST_TYPE",
 					Value: "FQDN",
+				}, {
+					Name:  "USER",
+					Value: "root",
 				},
 			},
 			Resources:       cnSpec.ResourceRequirements,
