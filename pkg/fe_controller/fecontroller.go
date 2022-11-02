@@ -27,6 +27,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,14 +35,15 @@ import (
 
 type FeController struct {
 	k8sclient   client.Client
-	kisrecorder record.EventRecorder
+	k8srecorder record.EventRecorder
+	feConfig    map[string]interface{}
 }
 
 //New construct a FeController.
 func New(k8sclient client.Client, k8sRecorder record.EventRecorder) *FeController {
 	return &FeController{
 		k8sclient:   k8sclient,
-		kisrecorder: k8sRecorder,
+		k8srecorder: k8sRecorder,
 	}
 }
 
@@ -52,25 +54,34 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
+	feSpec := src.Spec.StarRocksFeSpec
+	//get the fe configMap for resolve ports.
+	config, err := fc.GetFeConfig(ctx, &feSpec.ConfigMapInfo, src.Namespace)
+	if err != nil {
+		klog.Error("FeController Sync ", "resolve fe configmap failed, namespace ", src.Namespace, " configmapName ", feSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", feSpec.ConfigMapInfo.ResolveKey, " error ", err)
+		return err
+	}
+	str, _ := json.Marshal(config)
+	klog.Info("the resolve configmap ", string(str))
 	//generate new fe service.
-	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService)
+	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config)
 	fs := &srapi.StarRocksFeStatus{ServiceName: svc.Name, Phase: srapi.ComponentReconciling}
 	src.Status.StarRocksFeStatus = fs
 	//create or update fe external and domain search service, update the status of fe on src.
-	if err := fc.createOrUpdateFeService(ctx, &svc); err != nil {
+	if err := fc.createOrUpdateFeService(ctx, &svc, config); err != nil {
 		klog.Error("FeController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
 		return err
 	}
 	feFinalizers := []string{srapi.FE_SERVICE_FINALIZER}
 	//create fe statefulset.
-	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src))
+	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src, config))
 	defer func() {
 		src.Finalizers = rutils.MergeSlices(src.Finalizers, feFinalizers)
 		fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{st.Name})
 	}()
 
 	var est appv1.StatefulSet
-	err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
+	err = fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
 	if err != nil && apierrors.IsNotFound(err) {
 		if err := k8sutils.CreateClientObject(ctx, fc.k8sclient, &st); err != nil {
 			return err
@@ -107,7 +118,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 		podmap[pod.Name] = pod
 		if ready := k8sutils.PodIsReady(&pod.Status); ready {
 			readys = append(readys, pod.Name)
-		} else if pod.Status.Phase == corev1.PodPending {
+		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
 			creatings = append(creatings, pod.Name)
 		} else if pod.Status.Phase == corev1.PodFailed {
 			faileds = append(faileds, pod.Name)
@@ -129,6 +140,25 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 	fs.CreatingInstances = creatings
 
 	return nil
+}
+
+//GetFeConfig get the fe start config.
+func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+	if configMapInfo.ConfigMapName == "" {
+		configMapInfo.ConfigMapName = "fe-config"
+	}
+	if configMapInfo.ResolveKey == "" {
+		configMapInfo.ResolveKey = "fe.conf"
+	}
+
+	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sclient, namespace, configMapInfo.ConfigMapName)
+	if err != nil && apierrors.IsNotFound(err) {
+		klog.Info("the FeController get fe config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
+		return make(map[string]interface{}), nil
+	}
+
+	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
+	return res, err
 }
 
 //ClearResources clear resource about fe.
@@ -173,7 +203,7 @@ func (fc *FeController) getFeDomainService() string {
 	return "fe-domain-search"
 }
 
-func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1.Service) error {
+func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1.Service, config map[string]interface{}) error {
 	//need create domain dns service.
 	domainSvc := &corev1.Service{}
 	svc.ObjectMeta.DeepCopyInto(&domainSvc.ObjectMeta)
@@ -182,7 +212,7 @@ func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1
 		Ports: []corev1.ServicePort{
 			{
 				Name:       "query-port",
-				Port:       9030,
+				Port:       rutils.GetPort(config, rutils.QUERY_PORT),
 				TargetPort: intstr.FromInt(9030),
 			},
 		},

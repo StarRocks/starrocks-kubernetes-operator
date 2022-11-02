@@ -109,6 +109,35 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  service:
+                    description: Service defines the template for the associated Kubernetes
+                      Service object. the service for user access be.
+                    properties:
+                      name:
+                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+                        type: string
+                      ports:
+                        items:
+                          properties:
+                            containerPort:
+                              format: int32
+                              type: integer
+                            name:
+                              type: string
+                            nodePort:
+                              format: int32
+                              type: integer
+                            port:
+                              format: int32
+                              type: integer
+                          required:
+                          - containerPort
+                          - port
+                          type: object
+                        type: array
+                    required:
+                    - ports
+                    type: object
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       fe.
@@ -144,6 +173,16 @@ spec:
               starRocksCnSpec:
                 description: StarRocksCnSpec is the cn specification.
                 properties:
+                  ConfigMapInfo:
+                    description: the reference for cn configMap.
+                    properties:
+                      configMapName:
+                        description: the config info for start progress.
+                        type: string
+                      resolveKey:
+                        description: the config response key in configmap.
+                        type: string
+                    type: object
                   FeServiceName:
                     description: set the fe service for register cn, when not set,
                       will use the fe config to find.
@@ -905,6 +944,16 @@ spec:
               starRocksFeSpec:
                 description: StarRocksFeSpec is the fe specification.
                 properties:
+                  ConfigMapInfo:
+                    description: the reference for fe configMap.
+                    properties:
+                      configMapName:
+                        description: the config info for start progress.
+                        type: string
+                      resolveKey:
+                        description: the config response key in configmap.
+                        type: string
+                    type: object
                   image:
                     description: Image is the container image for the fe.
                     type: string

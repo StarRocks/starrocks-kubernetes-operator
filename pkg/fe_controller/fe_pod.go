@@ -24,6 +24,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+const (
+	meta_path = "/opt/starrocks/fe/meta"
+	meta_name = "fe-meta"
+	log_path  = "/opt/starrocks/fe/log"
+	log_name  = "fe-log"
+)
+
 //fePodLabels generate the fe pod labels and statefulset selector
 func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
@@ -34,60 +41,75 @@ func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.
 }
 
 //buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
+func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
-	vols := []corev1.Volume{
-		//TODO：cancel the configmap for temporary.
-		/*{
-			Name: srapi.DEFAULT_FE_CONFIG_NAME,
+	vexist := make(map[string]bool)
+	var volMounts []corev1.VolumeMount
+	var vols []corev1.Volume
+	for _, sv := range feSpec.StorageVolumes {
+		vexist[sv.MountPath] = true
+		volMounts = append(volMounts, corev1.VolumeMount{
+			Name:      sv.Name,
+			MountPath: sv.MountPath,
+		})
+
+		//TODO: now only support storage class mode.
+		vols = append(vols, corev1.Volume{
+			Name: sv.Name,
 			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: srapi.DEFAULT_FE_CONFIG_NAME,
-					},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: sv.Name,
 				},
 			},
-		},*/
-		{
-			Name: srapi.DEFAULT_EMPTDIR_NAME,
+		})
+	}
+
+	// add default volume about log ,meta if not configure.
+	if _, ok := vexist[meta_path]; !ok {
+		volMounts = append(volMounts, corev1.VolumeMount{
+			Name:      meta_name,
+			MountPath: meta_path,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: meta_name,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
-		},
+		})
 	}
 
-	var volMounts []corev1.VolumeMount
-	for _, vm := range feSpec.StorageVolumes {
+	if _, ok := vexist[log_path]; !ok {
 		volMounts = append(volMounts, corev1.VolumeMount{
-			Name:      vm.Name,
-			MountPath: vm.MountPath,
-		}, corev1.VolumeMount{
-			Name:      srapi.INITIAL_VOLUME_PATH_NAME,
-			MountPath: srapi.INITIAL_VOLUME_PATH,
+			Name:      log_name,
+			MountPath: log_path,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: log_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
 		})
 	}
 
 	opContainers := []corev1.Container{
 		{
-			Name:  srapi.DEFAULT_FE,
-			Image: feSpec.Image,
-			//TODO: add start command
+			Name:    srapi.DEFAULT_FE,
+			Image:   feSpec.Image,
 			Command: []string{"/opt/starrocks/entrypoint-fe.sh"},
-			//TODO: add args
-			Args: []string{"$(FE_SERVICE_NAME)"},
+			Args:    []string{"$(FE_SERVICE_NAME)"},
 			Ports: []corev1.ContainerPort{{
 				Name:          "http-port",
-				ContainerPort: 8030,
+				ContainerPort: rutils.GetPort(feconfig, rutils.HTTP_PORT),
 				Protocol:      corev1.ProtocolTCP,
 			}, {
 				Name:          "rpc-port",
-				ContainerPort: 9020,
+				ContainerPort: rutils.GetPort(feconfig, rutils.RPC_PORT),
 				Protocol:      corev1.ProtocolTCP,
 			}, {
 				Name:          "query-port",
-				ContainerPort: 9030,
+				ContainerPort: rutils.GetPort(feconfig, rutils.QUERY_PORT),
 				Protocol:      corev1.ProtocolTCP,
 			},
 			},

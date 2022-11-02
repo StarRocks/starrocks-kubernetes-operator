@@ -39,7 +39,7 @@ func cnStatefulSetName(src *srapi.StarRocksCluster) string {
 }
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster) rutils.StatefulSetParams {
+func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) rutils.StatefulSetParams {
 	cnSpec := src.Spec.StarRocksCnSpec
 	or := metav1.OwnerReference{
 		UID:        src.UID,
@@ -52,7 +52,7 @@ func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		Name:            cnStatefulSetName(src),
 		Namespace:       src.Namespace,
 		ServiceName:     cc.getCnDomainService(),
-		PodTemplateSpec: cc.buildPodTemplate(src),
+		PodTemplateSpec: cc.buildPodTemplate(src, cnconfig),
 		Labels:          cnStatefulSetsLabels(src),
 		Selector:        cc.cnPodLabels(src, cnStatefulSetName(src)),
 		OwnerReferences: []metav1.OwnerReference{or},

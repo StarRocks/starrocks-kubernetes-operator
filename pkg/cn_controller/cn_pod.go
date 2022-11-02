@@ -22,6 +22,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"strconv"
+)
+
+const (
+	log_path = "/opt/starrocks/be/log"
+	log_name = "cn-log"
 )
 
 //cnPodLabels
@@ -34,9 +40,26 @@ func (cc *CnController) cnPodLabels(src *srapi.StarRocksCluster, ownerReferenceN
 }
 
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
+func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
+
+	//generate the default emptydir for log.
+	volumeMounts := []corev1.VolumeMount{
+		{
+			Name:      log_name,
+			MountPath: log_path,
+		},
+	}
+
+	vols := []corev1.Volume{
+		{
+			Name: log_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+	}
 
 	opContainers := []corev1.Container{
 		{
@@ -47,19 +70,19 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 			Ports: []corev1.ContainerPort{
 				{
 					Name:          "thrift-port",
-					ContainerPort: 9060,
+					ContainerPort: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
 					Protocol:      corev1.ProtocolTCP,
 				}, {
 					Name:          "webserver-port",
-					ContainerPort: 8040,
+					ContainerPort: rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT),
 					Protocol:      corev1.ProtocolTCP,
 				}, {
 					Name:          "heartbeat-port",
-					ContainerPort: 9050,
+					ContainerPort: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
 					Protocol:      corev1.ProtocolTCP,
 				}, {
 					Name:          "brpc-port",
-					ContainerPort: 8060,
+					ContainerPort: rutils.GetPort(cnconfig, rutils.BRPC_PORT),
 					Protocol:      corev1.ProtocolTCP,
 				},
 			},
@@ -82,7 +105,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 					Value: srapi.GetFeExternalServiceName(src),
 				}, {
 					Name:  "FE_QUERY_PORT",
-					Value: "9030",
+					Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
 				}, {
 					Name:  "HOST_TYPE",
 					Value: "FQDN",
@@ -90,6 +113,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 			},
 			Resources:       cnSpec.ResourceRequirements,
 			ImagePullPolicy: corev1.PullIfNotPresent,
+			VolumeMounts:    volumeMounts,
 			StartupProbe: &corev1.Probe{
 				InitialDelaySeconds: 5,
 				FailureThreshold:    120,
@@ -111,6 +135,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.Pod
 
 	podSpec := corev1.PodSpec{
 		Containers:                    opContainers,
+		Volumes:                       vols,
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 	}
