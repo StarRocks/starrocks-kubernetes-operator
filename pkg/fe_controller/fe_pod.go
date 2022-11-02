@@ -97,7 +97,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		{
 			Name:    srapi.DEFAULT_FE,
 			Image:   feSpec.Image,
-			Command: []string{"/opt/starrocks/entrypoint-fe.sh"},
+			Command: []string{"/opt/starrocks/fe_entrypoint.sh"},
 			Args:    []string{"$(FE_SERVICE_NAME)"},
 			Ports: []corev1.ContainerPort{{
 				Name:          "http-port",
@@ -153,24 +153,32 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 			VolumeMounts:    volMounts,
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			StartupProbe: &corev1.Probe{
-				FailureThreshold: 120,
+				FailureThreshold: 24,
 				PeriodSeconds:    5,
-				ProbeHandler:     corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9030)}},
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: rutils.GetPort(feconfig, rutils.HTTP_PORT),
+				}}},
 			},
 			ReadinessProbe: &corev1.Probe{
-				PeriodSeconds:       5,
-				InitialDelaySeconds: 5,
-				ProbeHandler:        corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9020)}},
+				PeriodSeconds: 5,
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: rutils.GetPort(feconfig, rutils.QUERY_PORT),
+				}}},
 			},
 			LivenessProbe: &corev1.Probe{
-				FailureThreshold: 5,
+				FailureThreshold: 24,
 				PeriodSeconds:    5,
-				ProbeHandler:     corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9020)}},
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: rutils.GetPort(feconfig, rutils.RPC_PORT),
+				}}},
 			},
 			Lifecycle: &corev1.Lifecycle{
 				PreStop: &corev1.LifecycleHandler{
 					Exec: &corev1.ExecAction{
-						Command: []string{"/opt/starrocks/fe_prestop.sh", "$(FE_SERVICE_NAME)"},
+						Command: []string{"/opt/starrocks/fe_prestop.sh"},
 					},
 				},
 			},

@@ -65,7 +65,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 		{
 			Name:    srapi.DEFAULT_CN,
 			Image:   cnSpec.Image,
-			Command: []string{"/opt/starrocks/cn_entry.sh"},
+			Command: []string{"/opt/starrocks/cn_entrypoint.sh"},
 			Args:    []string{"$(FE_SERVICE_NAME)"},
 			Ports: []corev1.ContainerPort{
 				{
@@ -118,18 +118,32 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			VolumeMounts:    volumeMounts,
 			StartupProbe: &corev1.Probe{
-				InitialDelaySeconds: 5,
-				FailureThreshold:    120,
-				PeriodSeconds:       5,
+				FailureThreshold: 24,
+				PeriodSeconds:    5,
 				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 					Type:   intstr.Int,
-					IntVal: 9050,
+					IntVal: rutils.GetPort(cnconfig, rutils.BRPC_PORT),
+				}}},
+			},
+			LivenessProbe: &corev1.Probe{
+				FailureThreshold: 24,
+				PeriodSeconds:    5,
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
+				}}},
+			},
+			ReadinessProbe: &corev1.Probe{
+				PeriodSeconds: 5,
+				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
 				}}},
 			},
 			Lifecycle: &corev1.Lifecycle{
 				PreStop: &corev1.LifecycleHandler{
 					Exec: &corev1.ExecAction{
-						Command: []string{"/opt/starrocks/cn_stop.sh"},
+						Command: []string{"/opt/starrocks/cn_prestop.sh"},
 					},
 				},
 			},
