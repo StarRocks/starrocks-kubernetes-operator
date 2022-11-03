@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"github.com/spf13/viper"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog/v2"
 	"strconv"
 )
 
@@ -41,6 +40,19 @@ const (
 	BRPC_PORT              = "brpc_port"
 )
 
+// defMap the default port about abilities.
+var defMap = map[string]int32{
+	HTTP_PORT:              8030,
+	RPC_PORT:               9020,
+	QUERY_PORT:             9030,
+	EDIT_LOG_PORT:          9010,
+	THRIFT_PORT:            9060,
+	BE_PORT:                9060,
+	WEBSERVER_PORT:         8040,
+	HEARTBEAT_SERVICE_PORT: 9050,
+	BRPC_PORT:              8060,
+}
+
 func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]interface{}, error) {
 	res := make(map[string]interface{})
 	data := configMap.Data
@@ -49,7 +61,7 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 	}
 
 	value, _ := data[key]
-	klog.Info("the resolve message ", value)
+
 	viper.SetConfigType("properties")
 	viper.ReadConfig(bytes.NewBuffer([]byte(value)))
 
@@ -58,94 +70,11 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 
 //getPort get ports from config file.
 func GetPort(config map[string]interface{}, key string) int32 {
-	if key == HTTP_PORT {
-		if v, ok := config[HTTP_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
+	if v, ok := config[key]; ok {
+		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
+			return int32(port)
 		}
-
-		return 8030
 	}
+	return defMap[key]
 
-	if key == RPC_PORT {
-		if v, ok := config[RPC_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-		return 9020
-	}
-
-	if key == QUERY_PORT {
-		if v, ok := config[QUERY_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 9030
-	}
-
-	if key == EDIT_LOG_PORT {
-		if v, ok := config[EDIT_LOG_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 9010
-	}
-
-	if key == THRIFT_PORT {
-		if v, ok := config[THRIFT_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 9060
-	}
-
-	if key == BE_PORT {
-		if v, ok := config[BE_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 9060
-	}
-
-	if key == WEBSERVER_PORT {
-		if v, ok := config[WEBSERVER_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 8040
-	}
-
-	if key == HEARTBEAT_SERVICE_PORT {
-		if v, ok := config[HEARTBEAT_SERVICE_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 9050
-	}
-
-	if key == BRPC_PORT {
-		if v, ok := config[BRPC_PORT]; ok {
-			if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
-				return int32(port)
-			}
-		}
-
-		return 8060
-	}
-
-	return 0
 }

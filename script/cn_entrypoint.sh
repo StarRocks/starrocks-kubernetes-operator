@@ -9,12 +9,36 @@ MY_SELF=
 MY_IP=`hostname -i`
 MY_HOSTNAME=`hostname -f`
 STARROCKS_ROOT=${STARROCKS_ROOT:-"/opt/starrocks"}
-STARROCKS_HOME=${STARROCKS_ROOT}/be
+STARROCKS_HOME=${STARROCKS_ROOT}/cn
 CN_CONFIG=$STARROCKS_HOME/conf/cn.conf
+
 
 log_stderr()
 {
     echo "[`date`] $@" >&2
+}
+
+update_conf_from_configmap()
+{
+    if [[ "x$CONFIGMAP_MOUNT_PATH" == "x" ]] ; then
+        log_stderr 'Empty $CONFIGMAP_MOUNT_PATH env var, skip it!'
+        return 0
+    fi
+    if ! test -d $CONFIGMAP_MOUNT_PATH ; then
+        log_stderr "$CONFIGMAP_MOUNT_PATH not exist or not a directory, ignore ..."
+        return 0
+    fi
+    local tgtconfdir=$STARROCKS_HOME/conf
+    for conffile in `ls $CONFIGMAP_MOUNT_PATH`
+    do
+        log_stderr "Process conf file $conffile ..."
+        local tgt=$tgtconfdir/$conffile
+        if test -e $tgt ; then
+            # make a backup
+            mv -f $tgt ${tgt}.bak
+        fi
+        ln -sfT $CONFIGMAP_MOUNT_PATH/$conffile $tgt
+    done
 }
 
 show_compute_nodes(){
@@ -55,9 +79,7 @@ add_self()
     while true
     do
         log_stderr "Add myself ($MY_SELF:$HEARTBEAT_PORT) into FE ..."
-        timeout 15 mysql --connect-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch << EOF
-ALTER SYSTEM ADD COMPUTE NODE "$MY_SELF:$HEARTBEAT_PORT"
-EOF
+        timeout 15 mysql --connect-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch -e "ALTER SYSTEM ADD COMPUTE NODE \"$MY_SELF:$HEARTBEAT_PORT\";"
         memlist=`show_compute_nodes $svc`
         if echo "$memlist" | grep -q -w "$MY_SELF" &>/dev/null ; then
             break;
@@ -94,9 +116,7 @@ drop_my_self()
                 return 0
             else
                 log_stderr "drop my self $selfinfo ..."
-                timeout 15 mysql --connect-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch << EOF
-ALTER SYSTEM DROP COMPUTE NODE "$selfinfo";
-EOF
+                timeout 15 mysql --connect-timeout 2 -h $svc -P $FE_QUERY_PORT -u root --skip-column-names --batch -e "ALTER SYSTEM DROP COMPUTE NODE \"$selfinfo\";"
             fi
         else
             log_stderr "Got error $ret, sleep and retry ..."
@@ -146,4 +166,5 @@ add_self $svc_name
 trap exit_clean SIGTERM
 
 log_stderr "run start_cn.sh"
+update_conf_from_configmap
 $STARROCKS_HOME/bin/start_cn.sh

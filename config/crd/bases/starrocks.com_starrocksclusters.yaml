@@ -173,20 +173,6 @@ spec:
               starRocksCnSpec:
                 description: StarRocksCnSpec is the cn specification.
                 properties:
-                  ConfigMapInfo:
-                    description: the reference for cn configMap.
-                    properties:
-                      configMapName:
-                        description: the config info for start progress.
-                        type: string
-                      resolveKey:
-                        description: the config response key in configmap.
-                        type: string
-                    type: object
-                  FeServiceName:
-                    description: set the fe service for register cn, when not set,
-                      will use the fe config to find.
-                    type: string
                   autoScalingPolicy:
                     description: AutoScalingPolicy auto scaling strategy
                     properties:
@@ -849,6 +835,20 @@ spec:
                     required:
                     - maxReplicas
                     type: object
+                  configMapInfo:
+                    description: the reference for cn configMap.
+                    properties:
+                      configMapName:
+                        description: the config info for start progress.
+                        type: string
+                      resolveKey:
+                        description: the config response key in configmap.
+                        type: string
+                    type: object
+                  feServiceName:
+                    description: set the fe service for register cn, when not set,
+                      will use the fe config to find.
+                    type: string
                   image:
                     description: Image is the container image for the cn.
                     type: string
@@ -944,7 +944,7 @@ spec:
               starRocksFeSpec:
                 description: StarRocksFeSpec is the fe specification.
                 properties:
-                  ConfigMapInfo:
+                  configMapInfo:
                     description: the reference for fe configMap.
                     properties:
                       configMapName:

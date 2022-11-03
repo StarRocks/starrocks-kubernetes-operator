@@ -162,7 +162,7 @@ type StarRocksFeSpec struct {
 
 	//the reference for fe configMap.
 	//+optional
-	ConfigMapInfo ConfigMapInfo `json:"ConfigMapInfo,omitempty"`
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
 	//Probe defines the mode probe service in container is alive.
 	//+optional
@@ -232,11 +232,11 @@ type StarRocksCnSpec struct {
 
 	//+optional
 	//set the fe service for register cn, when not set, will use the fe config to find.
-	FeServiceName string `json:"FeServiceName,omitempty"`
+	FeServiceName string `json:"feServiceName,omitempty"`
 
 	//the reference for cn configMap.
 	//+optional
-	ConfigMapInfo ConfigMapInfo `json:"ConfigMapInfo,omitempty"`
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
 	//defines the specification of resource cpu and mem.
 	corev1.ResourceRequirements `json:",inline"`

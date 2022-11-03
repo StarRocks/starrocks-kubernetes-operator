@@ -144,13 +144,9 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 
 //GetFeConfig get the fe start config.
 func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	if configMapInfo.ConfigMapName == "" {
-		configMapInfo.ConfigMapName = "fe-config"
+	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
+		return make(map[string]interface{}), nil
 	}
-	if configMapInfo.ResolveKey == "" {
-		configMapInfo.ResolveKey = "fe.conf"
-	}
-
 	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
 		klog.Info("the FeController get fe config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
@@ -213,7 +209,7 @@ func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1
 			{
 				Name:       "query-port",
 				Port:       rutils.GetPort(config, rutils.QUERY_PORT),
-				TargetPort: intstr.FromInt(9030),
+				TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.QUERY_PORT))),
 			},
 		},
 		Selector: svc.Spec.Selector,

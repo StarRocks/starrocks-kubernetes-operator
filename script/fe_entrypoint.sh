@@ -16,10 +16,13 @@ PROBE_INTERVAL=2
 PROBE_LEADER_POD0_TIMEOUT=60 # at most 15 attempts, no less than the times needed for an election
 PROBE_LEADER_PODX_TIMEOUT=120 # at most 60 attempts
 
-STARROCKS_ROOT=${STARROCKS_ROOT:-"/opt/starrocks"}
-STARROCKS_HOME=$STARROCKS_ROOT/fe
-FE_CONFFILE=$STARROCKS_HOME/conf/fe.conf
+# myself as IP or FQDN
+MYSELF=
 
+STARROCKS_ROOT=${STARROCKS_ROOT:-"/opt/starrocks"}
+STARROCKS_HOME=${STARROCKS_ROOT}/fe
+FE_CONFFILE=$STARROCKS_HOME/conf/fe.conf
+EXIT_IN_PROGRESS=false
 
 log_stderr()
 {
@@ -44,6 +47,12 @@ collect_env_info()
 
     if [[ "x$POD_FQDN" == "x" ]] ; then
         POD_FQDN=`hostname -f`
+    fi
+
+    if [[ "x$HOST_TYPE" == "xFQDN" ]] ; then
+        MYSELF=$POD_FQDN
+    else
+        MYSELF=$POD_IP # default type if not specified
     fi
 
     # example: fe-sr-deploy-1.fe-svc.kc-sr.svc.cluster.local
@@ -158,6 +167,76 @@ probe_leader()
     fi
 }
 
+# Drop myself from FE cluster
+exit_fe_handler()
+{
+    if $EXIT_IN_PROGRESS ; then
+        log_stderr "Exit in progress ..."
+        return
+    fi
+    EXIT_IN_PROGRESS=true
+    local reason=$1
+    local svc=$svc_name
+    local start=`date +%s`
+    while true
+    do
+        log_stderr "Try to remove myself:$MYSELF from FE cluster ..."
+        timeout 30 mysql --connect-timeout 2 -h $svc -P $QUERY_PORT -u root --skip-column-names --batch -e "ALTER SYSTEM DROP FOLLOWER \"$MYSELF:$EDIT_LOG_PORT\";"
+        local memlist=`show_frontends $svc`
+        if [[ -n "$memlist" ]] ; then
+            if ! echo "$memlist" | grep -q -w "$MYSELF" &>/dev/null ; then
+                # can't find myself from `show_frontends` any more
+                log_stderr "Done clean up myself from FE cluster!"
+                break;
+            fi
+        fi
+        # It is possible that this POD is the last one of the FE cluster, the check will never success, so be it!
+        local now=`date +%s`
+        let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
+        if [[ $expire -le $now ]] ; then
+            log_stderr "Timed out, abort!"
+            exit 1
+        fi
+        log_stderr "Can still find myself from 'show_frontends' output ..."
+        sleep $PROBE_INTERVAL
+    done
+    EXIT_IN_PROGRESS=false
+}
+
+exit_fe_exit()
+{
+    log_stderr "Exit clean up for EXIT ..."
+    exit_fe_handler
+}
+
+exit_fe_term()
+{
+    log_stderr "Exit clean up for SIGTERM ..."
+    exit_fe_handler
+}
+
+update_conf_from_configmap()
+{
+    if [[ "x$CONFIGMAP_MOUNT_PATH" == "x" ]] ; then
+        log_stderr 'Empty $CONFIGMAP_MOUNT_PATH env var, skip it!'
+        return 0
+    fi
+    if ! test -d $CONFIGMAP_MOUNT_PATH ; then
+        log_stderr "$CONFIGMAP_MOUNT_PATH not exist or not a directory, ignore ..."
+        return 0
+    fi
+    local tgtconfdir=$STARROCKS_HOME/conf
+    for conffile in `ls $CONFIGMAP_MOUNT_PATH`
+    do
+        log_stderr "Process conf file $conffile ..."
+        local tgt=$tgtconfdir/$conffile
+        if test -e $tgt ; then
+            # make a backup
+            mv -f $tgt ${tgt}.bak
+        fi
+        ln -sfT $CONFIGMAP_MOUNT_PATH/$conffile $tgt
+    done
+}
 
 start_fe()
 {
@@ -170,25 +249,19 @@ start_fe()
 
     if [[ "x$FE_LEADER" != "x" ]] ; then
         opts+=" --helper $FE_LEADER:$EDIT_LOG_PORT"
-        local follower=$POD_IP
-        if [[ "x$HOST_TYPE" == "xFQDN" ]] ; then
-            follower=$POD_FQDN
-        fi
 
         local start=`date +%s`
         while true
         do
-            log_stderr "Add myself($follower:$EDIT_LOG_PORT) to leader as follower ..."
-            mysql --connect-timeout 2 -h $FE_LEADER -P $QUERY_PORT -u root --skip-column-names --batch << EOF
-ALTER SYSTEM ADD FOLLOWER "$follower:$EDIT_LOG_PORT"
-EOF
+            log_stderr "Add myself($MYSELF:$EDIT_LOG_PORT) to leader as follower ..."
+            mysql --connect-timeout 2 -h $FE_LEADER -P $QUERY_PORT -u root --skip-column-names --batch -e "ALTER SYSTEM ADD FOLLOWER \"$MYSELF:$EDIT_LOG_PORT\";"
             # check if added successful
-            if show_frontends $svc | grep -q -w "$follower" &>/dev/null ; then
+            if show_frontends $svc | grep -q -w "$MYSELF" &>/dev/null ; then
                 break;
             fi
 
             local now=`date +%s`
-            let "expire=start+PROBE_LEADER_PODX_TIMEOUT"
+            let "expire=start+30" # 30s timeout
             if [[ $expire -le $now ]] ; then
                 log_stderr "Timed out, abort!"
                 exit 1
@@ -200,7 +273,10 @@ EOF
     fi
 
     log_stderr "run start_fe.sh with additional options: '$opts'"
-    exec $STARROCKS_ROOT/fe/bin/start_fe.sh $opts
+    # register EXIT trap handler to do clean up work
+    trap exit_fe_exit EXIT
+    trap exit_fe_term SIGTERM
+    $STARROCKS_HOME/bin/start_fe.sh $opts
 }
 
 svc_name=$1
@@ -210,6 +286,7 @@ if [[ "x$svc_name" == "x" ]] ; then
     exit 1
 fi
 
-collect_env_info 
+update_conf_from_configmap
+collect_env_info
 probe_leader $svc_name
 start_fe $svc_name

@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 type CnController struct {
@@ -84,10 +85,9 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	feconfig, _ := cc.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
-	//merge fe config for simplify processing.
-	for k, v := range feconfig {
-		config[k] = v
-	}
+	//annotation: add query port in cnconfig.
+	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
+
 	//generate new cn internal service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config)
 	insvc := &corev1.Service{}
@@ -217,13 +217,6 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 }
 
 func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	if configMapInfo.ConfigMapName == "" {
-		configMapInfo.ConfigMapName = "cn-config"
-	}
-	if configMapInfo.ResolveKey == "" {
-		configMapInfo.ResolveKey = "cn.conf"
-	}
-
 	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
 		klog.Info("the CnController get cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
@@ -237,26 +230,15 @@ func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.Co
 }
 
 func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	var configMapName, resolveKey string
-	if feconfigMapInfo.ConfigMapName == "" {
-		configMapName = "fe-config"
-	} else {
-		configMapName = feconfigMapInfo.ConfigMapName
-	}
-	if feconfigMapInfo.ResolveKey == "" {
-		resolveKey = "fe.conf"
-	} else {
-		resolveKey = feconfigMapInfo.ResolveKey
-	}
 
-	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapName)
+	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, feconfigMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
-		klog.Info("the CnController get fe config is not exist namespace ", namespace, " configmapName ", configMapName)
+		klog.Info("the CnController get fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
 		return make(map[string]interface{}), nil
 	} else if err != nil {
 		return make(map[string]interface{}), err
 	}
-	res, err := rutils.ResolveConfigMap(feconfigMap, resolveKey)
+	res, err := rutils.ResolveConfigMap(feconfigMap, feconfigMapInfo.ResolveKey)
 	return res, err
 }
 
