@@ -1,0 +1,80 @@
+/*
+Copyright 2021-present, StarRocks Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package resource_utils
+
+import (
+	"bytes"
+	"github.com/spf13/viper"
+	corev1 "k8s.io/api/core/v1"
+	"strconv"
+)
+
+//the fe ports key
+const (
+	HTTP_PORT     = "http_port"
+	RPC_PORT      = "rpc_port"
+	QUERY_PORT    = "query_port"
+	EDIT_LOG_PORT = "edit_log_port"
+)
+
+//the cn or be ports key
+const (
+	THRIFT_PORT            = "thrift_port"
+	BE_PORT                = "be_port"
+	WEBSERVER_PORT         = "webserver_port"
+	HEARTBEAT_SERVICE_PORT = "heartbeat_service_port"
+	BRPC_PORT              = "brpc_port"
+)
+
+// defMap the default port about abilities.
+var defMap = map[string]int32{
+	HTTP_PORT:              8030,
+	RPC_PORT:               9020,
+	QUERY_PORT:             9030,
+	EDIT_LOG_PORT:          9010,
+	THRIFT_PORT:            9060,
+	BE_PORT:                9060,
+	WEBSERVER_PORT:         8040,
+	HEARTBEAT_SERVICE_PORT: 9050,
+	BRPC_PORT:              8060,
+}
+
+func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]interface{}, error) {
+	res := make(map[string]interface{})
+	data := configMap.Data
+	if _, ok := data[key]; !ok {
+		return res, nil
+	}
+
+	value, _ := data[key]
+
+	viper.SetConfigType("properties")
+	viper.ReadConfig(bytes.NewBuffer([]byte(value)))
+
+	return viper.AllSettings(), nil
+}
+
+//getPort get ports from config file.
+func GetPort(config map[string]interface{}, key string) int32 {
+	if v, ok := config[key]; ok {
+		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
+			return int32(port)
+		}
+	}
+	return defMap[key]
+
+}

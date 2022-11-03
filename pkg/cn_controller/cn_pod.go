@@ -22,6 +22,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"strconv"
+)
+
+const (
+	log_path           = "/opt/starrocks/cn/log"
+	log_name           = "cn-log"
+	cn_config_path     = "/etc/starrocks/cn/conf"
+	env_cn_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
 //cnPodLabels
@@ -34,83 +42,143 @@ func (cc *CnController) cnPodLabels(src *srapi.StarRocksCluster, ownerReferenceN
 }
 
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
+func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
-	opContainers := []corev1.Container{
+	//generate the default emptydir for log.
+	volumeMounts := []corev1.VolumeMount{
 		{
-			Name:    srapi.DEFAULT_CN,
-			Image:   cnSpec.Image,
-			Command: []string{"/opt/starrocks/cn_entry.sh"},
-			Args:    []string{"$(FE_SERVICE_NAME)"},
-			Ports: []corev1.ContainerPort{
-				{
-					Name:          "thrift-port",
-					ContainerPort: 9060,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "webserver-port",
-					ContainerPort: 8040,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "heartbeat-port",
-					ContainerPort: 9050,
-					Protocol:      corev1.ProtocolTCP,
-				}, {
-					Name:          "brpc-port",
-					ContainerPort: 8060,
-					Protocol:      corev1.ProtocolTCP,
+			Name:      log_name,
+			MountPath: log_path,
+		},
+	}
+
+	vols := []corev1.Volume{
+		{
+			Name: log_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+	}
+
+	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      cnSpec.ConfigMapInfo.ConfigMapName,
+			MountPath: cn_config_path,
+		})
+
+		vols = append(vols, corev1.Volume{
+			Name: cnSpec.ConfigMapInfo.ConfigMapName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: cnSpec.ConfigMapInfo.ConfigMapName,
+					},
 				},
 			},
-			Env: []corev1.EnvVar{
-				{
-					Name: "POD_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-					},
-				}, {
-					Name: "POD_NAMESPACE",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-					},
-				}, {
-					Name:  srapi.COMPONENT_NAME,
-					Value: srapi.DEFAULT_FE,
-				}, {
-					Name:  srapi.FE_SERVICE_NAME,
-					Value: srapi.GetFeExternalServiceName(src),
-				}, {
-					Name:  "FE_QUERY_PORT",
-					Value: "9030",
-				}, {
-					Name:  "HOST_TYPE",
-					Value: "FQDN",
+		})
+
+	}
+
+	cnContainer := corev1.Container{
+		Name:    srapi.DEFAULT_CN,
+		Image:   cnSpec.Image,
+		Command: []string{"/opt/starrocks/cn_entrypoint.sh"},
+		Args:    []string{"$(FE_SERVICE_NAME)"},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "thrift-port",
+				ContainerPort: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			}, {
+				Name:          "webserver-port",
+				ContainerPort: rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			}, {
+				Name:          "heartbeat-port",
+				ContainerPort: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			}, {
+				Name:          "brpc-port",
+				ContainerPort: rutils.GetPort(cnconfig, rutils.BRPC_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
+		Env: []corev1.EnvVar{
+			{
+				Name: "POD_NAME",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
 				},
+			}, {
+				Name: "POD_NAMESPACE",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+				},
+			}, {
+				Name:  srapi.COMPONENT_NAME,
+				Value: srapi.DEFAULT_FE,
+			}, {
+				Name:  srapi.FE_SERVICE_NAME,
+				Value: srapi.GetFeExternalServiceName(src),
+			}, {
+				Name:  "FE_QUERY_PORT",
+				Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
+			}, {
+				Name:  "HOST_TYPE",
+				Value: "FQDN",
+			}, {
+				Name:  "USER",
+				Value: "root",
 			},
-			Resources:       cnSpec.ResourceRequirements,
-			ImagePullPolicy: corev1.PullIfNotPresent,
-			StartupProbe: &corev1.Probe{
-				InitialDelaySeconds: 5,
-				FailureThreshold:    120,
-				PeriodSeconds:       5,
-				ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
-					Type:   intstr.Int,
-					IntVal: 9050,
-				}}},
-			},
-			Lifecycle: &corev1.Lifecycle{
-				PreStop: &corev1.LifecycleHandler{
-					Exec: &corev1.ExecAction{
-						Command: []string{"/opt/starrocks/cn_stop.sh"},
-					},
+		},
+		Resources:       cnSpec.ResourceRequirements,
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		VolumeMounts:    volumeMounts,
+		StartupProbe: &corev1.Probe{
+			FailureThreshold: 30,
+			PeriodSeconds:    5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(cnconfig, rutils.BRPC_PORT),
+			}}},
+		},
+		LivenessProbe: &corev1.Probe{
+			FailureThreshold: 30,
+			PeriodSeconds:    5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
+			}}},
+		},
+		ReadinessProbe: &corev1.Probe{
+			PeriodSeconds: 5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
+			}}},
+		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: &corev1.LifecycleHandler{
+				Exec: &corev1.ExecAction{
+					Command: []string{"/opt/starrocks/cn_prestop.sh"},
 				},
 			},
 		},
 	}
 
+	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {
+		cnContainer.Env = append(cnContainer.Env, corev1.EnvVar{
+			Name:  env_cn_config_path,
+			Value: cn_config_path,
+		})
+	}
+
 	podSpec := corev1.PodSpec{
-		Containers:                    opContainers,
+		Containers:                    []corev1.Container{cnContainer},
+		Volumes:                       vols,
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 	}

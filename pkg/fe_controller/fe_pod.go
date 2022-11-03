@@ -24,6 +24,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+const (
+	meta_path          = "/opt/starrocks/fe/meta"
+	meta_name          = "fe-meta"
+	log_path           = "/opt/starrocks/fe/log"
+	log_name           = "fe-log"
+	fe_config_path     = "/etc/starrocks/fe/conf"
+	env_fe_config_path = "CONFIGMAP_MOUNT_PATH"
+)
+
 //fePodLabels generate the fe pod labels and statefulset selector
 func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
@@ -34,127 +43,176 @@ func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.
 }
 
 //buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
+func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
-	vols := []corev1.Volume{
-		//TODO：cancel the configmap for temporary.
-		/*{
-			Name: srapi.DEFAULT_FE_CONFIG_NAME,
+	vexist := make(map[string]bool)
+	var volMounts []corev1.VolumeMount
+	var vols []corev1.Volume
+	for _, sv := range feSpec.StorageVolumes {
+		vexist[sv.MountPath] = true
+		volMounts = append(volMounts, corev1.VolumeMount{
+			Name:      sv.Name,
+			MountPath: sv.MountPath,
+		})
+
+		//TODO: now only support storage class mode.
+		vols = append(vols, corev1.Volume{
+			Name: sv.Name,
 			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: srapi.DEFAULT_FE_CONFIG_NAME,
-					},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: sv.Name,
 				},
 			},
-		},*/
-		{
-			Name: srapi.DEFAULT_EMPTDIR_NAME,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		},
-	}
-
-	var volMounts []corev1.VolumeMount
-	for _, vm := range feSpec.StorageVolumes {
-		volMounts = append(volMounts, corev1.VolumeMount{
-			Name:      vm.Name,
-			MountPath: vm.MountPath,
-		}, corev1.VolumeMount{
-			Name:      srapi.INITIAL_VOLUME_PATH_NAME,
-			MountPath: srapi.INITIAL_VOLUME_PATH,
 		})
 	}
 
-	opContainers := []corev1.Container{
-		{
-			Name:  srapi.DEFAULT_FE,
-			Image: feSpec.Image,
-			//TODO: add start command
-			Command: []string{"/opt/starrocks/entrypoint-fe.sh"},
-			//TODO: add args
-			Args: []string{"$(FE_SERVICE_NAME)"},
-			Ports: []corev1.ContainerPort{{
-				Name:          "http-port",
-				ContainerPort: 8030,
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "rpc-port",
-				ContainerPort: 9020,
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "query-port",
-				ContainerPort: 9030,
-				Protocol:      corev1.ProtocolTCP,
+	// add default volume about log ,meta if not configure.
+	if _, ok := vexist[meta_path]; !ok {
+		volMounts = append(
+			volMounts, corev1.VolumeMount{
+				Name:      meta_name,
+				MountPath: meta_path,
+			})
+		vols = append(vols, corev1.Volume{
+			Name: meta_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
+		})
+	}
+
+	if _, ok := vexist[log_path]; !ok {
+		volMounts = append(volMounts, corev1.VolumeMount{
+			Name:      log_name,
+			MountPath: log_path,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: log_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
-			Env: []corev1.EnvVar{
-				{
-					Name: "POD_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
+		})
+	}
+
+	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
+		volMounts = append(volMounts, corev1.VolumeMount{
+			Name:      feSpec.ConfigMapInfo.ConfigMapName,
+			MountPath: fe_config_path,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: feSpec.ConfigMapInfo.ConfigMapName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: feSpec.ConfigMapInfo.ConfigMapName,
 					},
-				}, {
-					Name: "POD_NAMESPACE",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-					},
-				}, {
-					Name:  srapi.COMPONENT_NAME,
-					Value: srapi.DEFAULT_FE,
-				}, {
-					Name:  srapi.FE_SERVICE_NAME,
-					Value: srapi.GetFeExternalServiceName(src) + "." + src.Namespace,
-				}, {
-					Name: "POD_IP",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"},
-					},
-				}, {
-					Name: "HOST_IP",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
-					},
-				}, {
-					Name:  "HOST_TYPE",
-					Value: "FQDN",
 				},
 			},
+		})
+	}
 
-			Resources:       feSpec.ResourceRequirements,
-			VolumeMounts:    volMounts,
-			ImagePullPolicy: corev1.PullIfNotPresent,
-			StartupProbe: &corev1.Probe{
-				FailureThreshold: 120,
-				PeriodSeconds:    5,
-				ProbeHandler:     corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9030)}},
+	feContainer := corev1.Container{
+		Name:    srapi.DEFAULT_FE,
+		Image:   feSpec.Image,
+		Command: []string{"/opt/starrocks/fe_entrypoint.sh"},
+		Args:    []string{"$(FE_SERVICE_NAME)"},
+		Ports: []corev1.ContainerPort{{
+			Name:          "http-port",
+			ContainerPort: rutils.GetPort(feconfig, rutils.HTTP_PORT),
+			Protocol:      corev1.ProtocolTCP,
+		}, {
+			Name:          "rpc-port",
+			ContainerPort: rutils.GetPort(feconfig, rutils.RPC_PORT),
+			Protocol:      corev1.ProtocolTCP,
+		}, {
+			Name:          "query-port",
+			ContainerPort: rutils.GetPort(feconfig, rutils.QUERY_PORT),
+			Protocol:      corev1.ProtocolTCP,
+		},
+		},
+		Env: []corev1.EnvVar{
+			{
+				Name: "POD_NAME",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
+				},
+			}, {
+				Name: "POD_NAMESPACE",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+				},
+			}, {
+				Name:  srapi.COMPONENT_NAME,
+				Value: srapi.DEFAULT_FE,
+			}, {
+				Name:  srapi.FE_SERVICE_NAME,
+				Value: srapi.GetFeExternalServiceName(src) + "." + src.Namespace,
+			}, {
+				Name: "POD_IP",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"},
+				},
+			}, {
+				Name: "HOST_IP",
+				ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
+				},
+			}, {
+				Name:  "HOST_TYPE",
+				Value: "FQDN",
+			}, {
+				Name:  "USER",
+				Value: "root",
 			},
-			ReadinessProbe: &corev1.Probe{
-				PeriodSeconds:       5,
-				InitialDelaySeconds: 5,
-				ProbeHandler:        corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9020)}},
-			},
-			LivenessProbe: &corev1.Probe{
-				FailureThreshold: 5,
-				PeriodSeconds:    5,
-				ProbeHandler:     corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(9020)}},
-			},
-			Lifecycle: &corev1.Lifecycle{
-				PreStop: &corev1.LifecycleHandler{
-					Exec: &corev1.ExecAction{
-						Command: []string{"/opt/starrocks/fe_prestop.sh", "$(FE_SERVICE_NAME)"},
-					},
+		},
+
+		Resources:       feSpec.ResourceRequirements,
+		VolumeMounts:    volMounts,
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		StartupProbe: &corev1.Probe{
+			FailureThreshold: 24,
+			PeriodSeconds:    5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(feconfig, rutils.HTTP_PORT),
+			}}},
+		},
+		ReadinessProbe: &corev1.Probe{
+			PeriodSeconds: 5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(feconfig, rutils.QUERY_PORT),
+			}}},
+		},
+		LivenessProbe: &corev1.Probe{
+			FailureThreshold: 24,
+			PeriodSeconds:    5,
+			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: rutils.GetPort(feconfig, rutils.RPC_PORT),
+			}}},
+		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: &corev1.LifecycleHandler{
+				Exec: &corev1.ExecAction{
+					Command: []string{"/opt/starrocks/fe_prestop.sh"},
 				},
 			},
 		},
+	}
+
+	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
+		feContainer.Env = append(feContainer.Env, corev1.EnvVar{
+			Name:  env_fe_config_path,
+			Value: fe_config_path,
+		})
 	}
 
 	podSpec := corev1.PodSpec{
 		Volumes:                       vols,
-		Containers:                    opContainers,
+		Containers:                    []corev1.Container{feContainer},
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 	}

@@ -40,7 +40,7 @@ func feStatefulSetName(src *srapi.StarRocksCluster) string {
 }
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) rutils.StatefulSetParams {
+func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feconfig map[string]interface{}) rutils.StatefulSetParams {
 	feSpec := src.Spec.StarRocksFeSpec
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range feSpec.StorageVolumes {
@@ -70,7 +70,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster) ruti
 		Annotations:          make(map[string]string),
 		VolumeClaimTemplates: pvcs,
 		ServiceName:          fc.getFeDomainService(),
-		PodTemplateSpec:      fc.buildPodTemplate(src),
+		PodTemplateSpec:      fc.buildPodTemplate(src, feconfig),
 		Labels:               feStatefulSetsLabels(src),
 		Selector:             fePodLabels(src, stname),
 		OwnerReferences:      []metav1.OwnerReference{or},

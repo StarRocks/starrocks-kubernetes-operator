@@ -160,6 +160,10 @@ type StarRocksFeSpec struct {
 	//+optional
 	corev1.ResourceRequirements `json:",inline"`
 
+	//the reference for fe configMap.
+	//+optional
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
 	//Probe defines the mode probe service in container is alive.
 	//+optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
@@ -187,8 +191,7 @@ type StarRocksBeSpec struct {
 	//Service defines the template for the associated Kubernetes Service object.
 	//the service for user access be.
 	//+optional
-	//TODO: temporary cancel
-	//Service *StarRocksService `json:"service,omitempty"`
+	Service *StarRocksService `json:"service,omitempty"`
 
 	//defines the specification of resource cpu and mem.
 	//+optional
@@ -229,7 +232,11 @@ type StarRocksCnSpec struct {
 
 	//+optional
 	//set the fe service for register cn, when not set, will use the fe config to find.
-	FeServiceName string `json:"FeServiceName,omitempty"`
+	FeServiceName string `json:"feServiceName,omitempty"`
+
+	//the reference for cn configMap.
+	//+optional
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
 	//defines the specification of resource cpu and mem.
 	corev1.ResourceRequirements `json:",inline"`
@@ -239,6 +246,14 @@ type StarRocksCnSpec struct {
 
 	//AutoScalingPolicy auto scaling strategy
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
+}
+
+type ConfigMapInfo struct {
+	//the config info for start progress.
+	ConfigMapName string `json:"configMapName,omitempty"`
+
+	//the config response key in configmap.
+	ResolveKey string `json:"resolveKey,omitempty"`
 }
 
 //StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC

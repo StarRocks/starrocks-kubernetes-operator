@@ -27,52 +27,52 @@ type hashService struct {
 	labels      map[string]string
 }
 
-func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType) corev1.Service {
+//BuildExternalService build the external service.
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
 	var srPorts []srapi.StarRocksServicePort
 	if serviceType == FeService {
+		httpPort := GetPort(config, HTTP_PORT)
+		rpcPort := GetPort(config, RPC_PORT)
+		queryPort := GetPort(config, QUERY_PORT)
+		editPort := GetPort(config, EDIT_LOG_PORT)
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 8030, ContainerPort: 8030, Name: "http",
+			Port: httpPort, ContainerPort: httpPort, Name: "http",
 		}, srapi.StarRocksServicePort{
-			Port: 9020, ContainerPort: 9020, Name: "rpc",
+			Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
 		}, srapi.StarRocksServicePort{
-			Port: 9030, ContainerPort: 9030, Name: "query",
+			Port: queryPort, ContainerPort: queryPort, Name: "query",
 		}, srapi.StarRocksServicePort{
-			Port: 9010, ContainerPort: 9010, Name: "edit-log"})
+			Port: editPort, ContainerPort: editPort, Name: "edit-log"})
 	} else if serviceType == BeService {
 		name = srapi.DEFAULT_BE_SERVICE_NAME
-		/*if src.Spec.StarRocksBeSpec.Service != nil {
-			srPorts = append(srPorts, src.Spec.StarRocksBeSpec.Service.Ports...)
-			if src.Spec.StarRocksBeSpec.Service.Name != "" {
-				name = src.Spec.StarRocksBeSpec.Service.Name
-			}
-		}*/
+		bePort := GetPort(config, BE_PORT)
+		webseverPort := GetPort(config, WEBSERVER_PORT)
+		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
+		brpcPort := GetPort(config, BRPC_PORT)
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "be",
+			Port: bePort, ContainerPort: bePort, Name: "be",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver",
+			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat",
+			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 8060, Name: "brpc",
+			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
 		})
 
 	} else if serviceType == CnService {
 		name = srapi.DEFAULT_CN_SERVICE_NAME
-		/*if src.Spec.StarRocksCnSpec.Service != nil {
-			srPorts = append(srPorts, src.Spec.StarRocksCnSpec.Service.Ports...)
-			if src.Spec.StarRocksCnSpec.Service.Name != "" {
-				name = src.Spec.StarRocksCnSpec.Service.Name
-			}
-		}*/
-
+		thriftPort := GetPort(config, THRIFT_PORT)
+		webseverPort := GetPort(config, WEBSERVER_PORT)
+		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
+		brpcPort := GetPort(config, BRPC_PORT)
 		srPorts = append(srPorts, srapi.StarRocksServicePort{
-			Port: 9060, ContainerPort: 9060, Name: "thrift",
+			Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
 		}, srapi.StarRocksServicePort{
-			Port: 8040, ContainerPort: 8040, Name: "webserver",
+			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
 		}, srapi.StarRocksServicePort{
-			Port: 9050, ContainerPort: 9050, Name: "heartbeat",
+			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
 		}, srapi.StarRocksServicePort{
-			Port: 8060, ContainerPort: 8060, Name: "brpc",
+			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
 		})
 	}
 

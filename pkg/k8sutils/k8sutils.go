@@ -36,8 +36,7 @@ func CreateOrUpdateService(ctx context.Context, k8sclient client.Client, svc *co
 		return err
 	}
 
-	if rutils.
-		ServiceDeepEqual(svc, &esvc) {
+	if rutils.ServiceDeepEqual(svc, &esvc) {
 		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ", svc.Namespace, " name ", svc.Name)
 		return nil
 	}
@@ -91,4 +90,14 @@ func PodIsReady(status *corev1.PodStatus) bool {
 	}
 
 	return true
+}
+
+//GetConfigMap get the configmap name=name, namespace=namespace.
+func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name string) (*corev1.ConfigMap, error) {
+	var configMap corev1.ConfigMap
+	if err := k8scient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &configMap); err != nil {
+		return nil, err
+	}
+
+	return &configMap, nil
 }

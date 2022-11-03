@@ -44,11 +44,9 @@ const (
 const (
 	DEFAULT_FE_CONFIG_NAME = "fe-config"
 
-	DEFAULT_EMPTDIR_NAME = "shard-data"
+	DEFAULT_EMPTDIR_NAME = "emptydir-data"
 
 	INITIAL_VOLUME_PATH = "/pod-data"
-
-	INITIAL_VOLUME_PATH_NAME = "shared-data"
 
 	DEFAULT_START_SCRIPT_NAME = "fe-start-script"
 

@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 type CnController struct {
@@ -50,10 +51,12 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
+	cnSpec := src.Spec.StarRocksCnSpec
 	cs := &srapi.StarRocksCnStatus{}
 	cs.Phase = srapi.ComponentWaiting
 	src.Status.StarRocksCnStatus = cs
 	endpoints := corev1.Endpoints{}
+	//1. wait for fe ok.
 	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetFeExternalServiceName(src)}, &endpoints); apierrors.IsNotFound(err) || len(endpoints.Subsets) == 0 {
 		klog.Info("wait fe available fe service name ", srapi.GetFeExternalServiceName(src))
 		return nil
@@ -73,8 +76,20 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
+	//get the cn configMap for resolve ports.
+	//2. get config for generate statefulset and service.
+	config, err := cc.GetCnConfig(ctx, &cnSpec.ConfigMapInfo, src.Namespace)
+	if err != nil {
+		klog.Error("CnController Sync ", "resolve cn configmap failed, namespace ", src.Namespace, " configmapName ", cnSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", cnSpec.ConfigMapInfo.ResolveKey, " error ", err)
+		return err
+	}
+
+	feconfig, _ := cc.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
+	//annotation: add query port in cnconfig.
+	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
+
 	//generate new cn internal service.
-	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService)
+	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config)
 	insvc := &corev1.Service{}
 	externalsvc.ObjectMeta.DeepCopyInto(&insvc.ObjectMeta)
 	insvc.Name = cc.getCnDomainService()
@@ -82,8 +97,8 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		Ports: []corev1.ServicePort{
 			{
 				Name:       "heartbeat",
-				Port:       9050,
-				TargetPort: intstr.FromInt(9050),
+				Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
+				TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
 			},
 		},
 		Selector: externalsvc.Spec.Selector,
@@ -93,14 +108,15 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 	cs.ServiceName = insvc.Name
 	//create or update fe service, update the status of cn on src.
+	//3. issue the service.
 	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, insvc); err != nil {
 		klog.Error("CnController Sync ", "create or update service namespace ", insvc.Namespace, " name ", insvc.Name)
 		return err
 	}
 
 	cnFinalizers := []string{srapi.CN_SERVICE_FINALIZER}
-	//create cn statefulset.
-	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src))
+	//4. create cn statefulset.
+	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src, config))
 	st.Spec.PodManagementPolicy = appv1.ParallelPodManagement
 	defer func() {
 		src.Finalizers = rutils.MergeSlices(src.Finalizers, cnFinalizers)
@@ -108,13 +124,14 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}()
 
 	var cst appv1.StatefulSet
-	err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &cst)
+	err = cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &cst)
 	if err != nil && apierrors.IsNotFound(err) {
 		return k8sutils.CreateClientObject(ctx, cc.k8sclient, &st)
 	} else if err != nil {
 		return err
 	}
 
+	//5. last update the status.
 	//if the spec is changed, update the status of cn on src.
 	if !rutils.StatefulSetDeepEqual(&st, cst) {
 		klog.Info("cnController Sync exist statefulset not equals to new statefuslet")
@@ -163,6 +180,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return false, nil
 }
 
+//updateCnStatus update the src status about cn status.
 func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.StatefulSet) error {
 	var podList corev1.PodList
 	if err := cc.k8sclient.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
@@ -198,6 +216,33 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 	return nil
 }
 
+func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapInfo.ConfigMapName)
+	if err != nil && apierrors.IsNotFound(err) {
+		klog.Info("the CnController get cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
+		return make(map[string]interface{}), nil
+	} else if err != nil {
+		return make(map[string]interface{}), err
+	}
+
+	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
+	return res, err
+}
+
+func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+
+	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, feconfigMapInfo.ConfigMapName)
+	if err != nil && apierrors.IsNotFound(err) {
+		klog.Info("the CnController get fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
+		return make(map[string]interface{}), nil
+	} else if err != nil {
+		return make(map[string]interface{}), err
+	}
+	res, err := rutils.ResolveConfigMap(feconfigMap, feconfigMapInfo.ResolveKey)
+	return res, err
+}
+
+//getCnDomainService get the cn service name for dns resolve.
 func (cc *CnController) getCnDomainService() string {
 	return "cn-domain-search"
 }
