@@ -25,6 +25,15 @@ func GetFeExternalServiceName(src *StarRocksCluster) string {
 	return src.Name + "-" + DEFAULT_FE + "-" + "service"
 }
 
+//GetBeExternalServiceName generate the name of service that access the be
+func GetBeExternalServiceName(src *StarRocksCluster) string {
+	if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Name != "" {
+		return src.Spec.StarRocksBeSpec.Service.Name + "-" + "service"
+	}
+
+	return src.Name + "-" + DEFAULT_BE + "-" + "service"
+}
+
 //GetCnExternalServiceName generate the name of service that access the cn
 func GetCnExternalServiceName(src *StarRocksCluster) string {
 	if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Name != "" {

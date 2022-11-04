@@ -178,7 +178,7 @@ type StarRocksFeSpec struct {
 type StarRocksBeSpec struct {
 	//Replicas is the number of desired be Pod
 	// Optional: Defaults to 3
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	//Image is the container image for the be.
 	Image string `json:"image"`
@@ -193,6 +193,14 @@ type StarRocksBeSpec struct {
 	//+optional
 	Service *StarRocksService `json:"service,omitempty"`
 
+	//+optional
+	//set the fe service for register be, when not set, will use the fe config to find.
+	FeServiceName string `json:"feServiceName,omitempty"`
+
+	//the reference for be configMap.
+	//+optional
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
 	//defines the specification of resource cpu and mem.
 	//+optional
 	corev1.ResourceRequirements `json:",inline"`
@@ -201,7 +209,7 @@ type StarRocksBeSpec struct {
 	//+optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//StorageVolumes defines the additional storage for fe.
+	//StorageVolumes defines the additional storage for be.
 	//+optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 

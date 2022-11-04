@@ -49,6 +49,20 @@ spec:
                     items:
                       type: string
                     type: array
+                  configMapInfo:
+                    description: the reference for be configMap.
+                    properties:
+                      configMapName:
+                        description: the config info for start progress.
+                        type: string
+                      resolveKey:
+                        description: the config response key in configmap.
+                        type: string
+                    type: object
+                  feServiceName:
+                    description: set the fe service for register be, when not set,
+                      will use the fe config to find.
+                    type: string
                   image:
                     description: Image is the container image for the be.
                     type: string
@@ -140,7 +154,7 @@ spec:
                     type: object
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
-                      fe.
+                      be.
                     items:
                       description: StorageVolume defines additional PVC template for
                         StatefulSets and volumeMount for pods that mount this PVC

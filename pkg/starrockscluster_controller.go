@@ -19,6 +19,7 @@ package pkg
 import (
 	"context"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/be_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
@@ -182,11 +183,11 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	//TODO: initial be
 	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("fc-controller"))
+	bc := be_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("be-controller"))
 	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("cn-controller"))
 	var subcs []SubController
-	subcs = append(subcs, fc, cc)
+	subcs = append(subcs, fc, bc, cc)
 	if err := (&StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor(name),
