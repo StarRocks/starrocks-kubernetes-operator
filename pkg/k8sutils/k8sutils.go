@@ -19,6 +19,7 @@ package k8sutils
 import (
 	"context"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -80,6 +81,22 @@ func DeleteClientObject(ctx context.Context, k8sclient client.Client, namespace,
 		return true, nil
 	}
 	return true, nil
+}
+
+func DeleteHpa(ctx context.Context, k8sclient client.Client, namespace, name string) error {
+	var hpa v2.HorizontalPodAutoscaler
+	err := k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &hpa)
+	if err != nil && apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	if err := k8sclient.Delete(ctx, &hpa); err != nil {
+		return nil
+	}
+
+	return nil
 }
 
 func PodIsReady(status *corev1.PodStatus) bool {

@@ -29,6 +29,8 @@ const (
 	//ComponentsResourceHash the component hash
 	ComponentResourceHash string = "app.starrocks.components/hash"
 
+	ComponentReplicasEmpty string = "app.starrocks.components/replica/empty"
+
 	//ComponentGeneration record for last update generation for compare with new spec.
 	ComponentGeneration string = "app.starrocks.components/generation"
 )

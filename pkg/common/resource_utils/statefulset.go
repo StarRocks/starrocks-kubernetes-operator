@@ -52,7 +52,7 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 		},
 	}
 
-	hst := statefulSetHashObject(&st)
+	hst := statefulSetHashObject(&st, false)
 	hvalue := hash.HashObject(hst)
 
 	anno := Annotations{}
@@ -69,20 +69,21 @@ type hashStatefulsetObject struct {
 	namespace            string
 	labels               map[string]string
 	selector             metav1.LabelSelector
-	template             corev1.PodTemplateSpec
+	podSpec              corev1.PodSpec
 	serviceName          string
 	volumeClaimTemplates []corev1.PersistentVolumeClaim
 	replicas             int32
 }
 
 //StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
-func statefulSetHashObject(st *appv1.StatefulSet) hashStatefulsetObject {
+func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	//set -1 for the initial is zero.
 	replicas := int32(-1)
-	if st.Spec.Replicas != nil {
-		replicas = *st.Spec.Replicas
+	if !excludeReplica {
+		if st.Spec.Replicas != nil {
+			replicas = *st.Spec.Replicas
+		}
 	}
-
 	selector := metav1.LabelSelector{}
 	if st.Spec.Selector != nil {
 		selector = *st.Spec.Selector
@@ -93,7 +94,7 @@ func statefulSetHashObject(st *appv1.StatefulSet) hashStatefulsetObject {
 		namespace:            st.Namespace,
 		labels:               st.Labels,
 		selector:             selector,
-		template:             st.Spec.Template,
+		podSpec:              st.Spec.Template.Spec,
 		serviceName:          st.Spec.ServiceName,
 		volumeClaimTemplates: st.Spec.VolumeClaimTemplates,
 		replicas:             replicas,
@@ -101,20 +102,20 @@ func statefulSetHashObject(st *appv1.StatefulSet) hashStatefulsetObject {
 }
 
 //StatefulSetDeepEqual judge two statefulset equal or not.
-func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet) bool {
+func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
-		newHso := statefulSetHashObject(new)
+		newHso := statefulSetHashObject(new, excludeReplicas)
 		newHashv = hash.HashObject(newHso)
 	}
 
 	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
 		oldHashv = old.Annotations[srapi.ComponentResourceHash]
 	} else {
-		oldHso := statefulSetHashObject(&old)
+		oldHso := statefulSetHashObject(&old, excludeReplicas)
 		oldHashv = hash.HashObject(oldHso)
 	}
 

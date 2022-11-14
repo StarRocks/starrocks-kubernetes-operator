@@ -27,7 +27,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,8 +60,8 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		klog.Error("FeController Sync ", "resolve fe configmap failed, namespace ", src.Namespace, " configmapName ", feSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", feSpec.ConfigMapInfo.ResolveKey, " error ", err)
 		return err
 	}
-	str, _ := json.Marshal(config)
-	klog.Info("the resolve configmap ", string(str))
+	//str, _ := json.Marshal(config)
+	//klog.Info("the resolve configmap ", string(str))
 	//generate new fe service.
 	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config)
 	fs := &srapi.StarRocksFeStatus{ServiceName: svc.Name, Phase: srapi.ComponentReconciling}
@@ -91,7 +90,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	//if the spec is changed, merge old and new statefulset. update the status of fe on src.
-	if !rutils.StatefulSetDeepEqual(&st, est) {
+	if !rutils.StatefulSetDeepEqual(&st, est, false) {
 		klog.Info("FeController Sync exist statefulset not equals to new statefuslet")
 		//fe spec changed update the statefulset.
 		rutils.MergeStatefulSets(&st, est)
@@ -164,6 +163,16 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return true, nil
 	}
 
+	if src.DeletionTimestamp.IsZero() {
+		return true, nil
+	}
+
+	feStatus := src.Status.StarRocksFeStatus
+	if feStatus.ServiceName == "" && len(feStatus.ResourceNames) == 0 {
+		src.Status.StarRocksFeStatus = nil
+		return true, nil
+	}
+
 	fmap := map[string]bool{}
 	count := 0
 	defer func() {
@@ -177,8 +186,13 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}()
 
 	for _, name := range src.Status.StarRocksFeStatus.ResourceNames {
-		if _, err := k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, name); err != nil {
-			return false, errors.New("fe delete statefulset" + err.Error())
+		var st appv1.StatefulSet
+		if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: name}, &st); err != nil {
+			if apierrors.IsNotFound(err) {
+				count++
+			}
+		} else {
+			k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, name)
 		}
 	}
 
@@ -186,8 +200,9 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		fmap[srapi.FE_STATEFULSET_FINALIZER] = true
 	}
 
-	if _, ok := fmap[srapi.FE_STATEFULSET_FINALIZER]; !ok {
-		return k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, src.Status.StarRocksFeStatus.ServiceName)
+	var svc corev1.Service
+	if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Status.StarRocksFeStatus.ServiceName}, &svc); err == nil {
+		k8sutils.DeleteClientObject(ctx, fc.k8sclient, src.Namespace, src.Status.StarRocksFeStatus.ServiceName)
 	}
 
 	return false, nil

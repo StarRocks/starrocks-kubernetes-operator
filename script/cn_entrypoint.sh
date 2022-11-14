@@ -165,6 +165,6 @@ add_self $svc_name
 
 trap exit_clean SIGTERM
 
-log_stderr "run start_cn.sh"
 update_conf_from_configmap
+log_stderr "run start_cn.sh"
 $STARROCKS_HOME/bin/start_cn.sh
