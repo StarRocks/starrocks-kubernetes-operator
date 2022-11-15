@@ -39,9 +39,10 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: controller-gen ## Generate Leader election Role RoleBinding, WebhookConfiguration, ClusterRole ClusterRoleBinding, and CustomResourceDefinition objects in config/crd/bases and deploy.
 	$(CONTROLLER_GEN) rbac:roleName=cn-manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	cp -rf config/crd/bases/ deploy/
+	$(CONTROLLER_GEN) rbac:roleName=cn-manager-role crd paths="./..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
+
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -62,7 +63,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
+build: generate fmt vet ## Build operator binary,name=manager, path=bin/ .
 	GOOS=linux GOARCH=amd64 go build -o bin/manager cmd/main.go
 
 .PHONY: run
