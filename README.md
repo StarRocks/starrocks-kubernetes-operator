@@ -2,35 +2,42 @@
 
 ## 1 Overview
 **(under development)**  
-develop with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), control starrocks in kubernetes
+develop with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), deploy starrocks in kubernetes,
+operator can only deploy fe, also deploy be and cn. now operator only support deploy starrocks by FQDN mode. for storage when you don't clear statement storagevolume info, 
+the operator will use emptydir mode for save fe meta and be data. how to use storageVolume, please reference the storageVolume.
 
 ## 2 Requirements
  * kubernetes 1.18+
- * network: fe can access the ip of cn-pod
+ * golang 1.17+
 
 ## 3 Supported Features
-* start cn clusters，register cn-pod's ip to fe
-* auto-scaling for cn cluster
+* fe decouple with cn and be. you can only deploy fe or cn and be.
+* support v2beta2 horizontalpodautoscalers for cn cluster.
 
-## 3 Build images
-### 3.1 Operator
+## 3 Build operator images
+you can compile operator by make command, also you can use starrocks support image download from .....
+if you want build by yourself, you should prepare go environment.
+before build image, you should execute 'make build' command for build operator. 
+after build, you can build image and push image to your repository. the ops as follows:
+
 ```bash
-# build image
+# compile operator
+make build 
+# build docker image
 make docker IMG="xxx"
 # push image to docker hub
 make push IMG="xxx"
 ```
-### 3.2 Auxiliary Components
-contains register-sidecar and cn-offline job
-```bash
-cd components
-# build image
-make docker IMG="xxx"
-# push image to docker hub
-make push IMG="xxx"
-```
+## 4 image 
+the fe, cn be components you can get from 
 
-## 4 Deploy operator in kubernetes
+## 5 Deploy operator in kubernetes
+the directory of deploy have deployment yaml.
+the start with leader yamls are for operator election when have multi pods for backup.
+the manager.yaml is the deployment crd yaml for deploy operator, before you create or apply, you should update the image field.
+other yamls are for operator running.
+the operator deploy in starrocks namespace, if you want to deploy in another namespace, you should modify the yamls in deploy.
+the follows display the resources create or apply.
 ```bash
 cd deploy
 # create crd
@@ -50,17 +57,5 @@ kubectl apply -f service_account.yaml
 kubectl apply -f manager.yaml
 ```
 
-## 5 Running
-### 5.1 Build a cn-cluster
-```bash 
-cd examples/cn
-# configure fe-account
-kubectl apply -f fe-account.yaml
-# configure cn-parameter
-kubectl apply -f cn-config.yaml
-# create ComputeNodeGroup
-# replace component-image field with image which build in[3.2]
-kubectl apply -f cn.yaml
-```
 ## 6 Design
 [docs](./doc)
