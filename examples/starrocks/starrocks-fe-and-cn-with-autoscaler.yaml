@@ -1,0 +1,44 @@
+apiVersion: starrocks.com/v1alpha1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  serviceAccount: cn-controller-manager
+  starRocksFeSpec:
+    image: 172.26.92.212:32000/fe.demo:v1.0
+    replicas: 3
+    requests:
+      cpu: 4
+      memory: 16Gi
+  starRocksCnSpec:
+    image: 172.26.92.212:320 00/cn.demo:v1.0
+    requests:
+      cpu: 4
+      memory: 4Gi
+      #when you use autoscalingPolicy, it is recommended that replicas removed from manifests.
+    autoScalingPolicy:
+      maxReplicas: 10
+      minReplicas: 1
+      hpaPolicy:
+        metrics:
+          - type: Resource
+            resource:
+              name: memory
+              target:
+                averageUtilization: 30
+                type: Utilization
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                averageUtilization: 30
+                type: Utilization
+        behavior:
+          scaleUp:
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled

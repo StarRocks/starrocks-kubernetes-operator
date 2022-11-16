@@ -29,7 +29,11 @@ make docker IMG="xxx"
 make push IMG="xxx"
 ```
 ## 4 image 
-the fe, cn be components you can get from 
+the fe, cn be components you can use follows:
+fushilei/starrocks.be:v1.0
+fushilei/starrocks.fe:v1.0
+fushilei/starrocks.cn:v1.0
+
 
 ## 5 storageVolume
 when you specify the volume for storage fe meta or be data, you should configure the storageVolume in component spec and prepare create storageclass in kubernetes.
