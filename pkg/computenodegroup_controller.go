@@ -23,7 +23,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/utils"
 	v1 "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -50,9 +50,9 @@ import (
 	k8s_error "k8s.io/apimachinery/pkg/api/errors"
 )
 
-func init() {
+/*func init() {
 	Controllers = append(Controllers, &ComputeNodeGroupReconciler{})
-}
+}*/
 
 // ComputeNodeGroupReconciler reconciles a ComputeNodeGroup object
 type ComputeNodeGroupReconciler struct {

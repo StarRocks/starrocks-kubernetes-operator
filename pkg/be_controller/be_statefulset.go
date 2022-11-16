@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cn_controller
+package be_controller
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
@@ -22,36 +22,37 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func cnStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
+//buildStatefulSetParams generate the params of construct the statefulset.
+func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beconfig map[string]interface{}) rutils.StatefulSetParams {
+	beSpec := src.Spec.StarRocksBeSpec
+
+	or := metav1.NewControllerRef(src, src.GroupVersionKind())
+	podTemplateSpec := be.buildPodTemplate(src, beconfig)
+
+	return rutils.StatefulSetParams{
+		Name:            beStatefulSetName(src),
+		Namespace:       src.Namespace,
+		ServiceName:     be.getBeDomainService(),
+		PodTemplateSpec: podTemplateSpec,
+		Labels:          beStatefulSetsLabels(src),
+		Selector:        be.bePodLabels(src, beStatefulSetName(src)),
+		OwnerReferences: []metav1.OwnerReference{*or},
+		Replicas:        beSpec.Replicas,
+	}
+}
+
+func beStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
+	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_BE
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
-func cnStatefulSetName(src *srapi.StarRocksCluster) string {
-	stname := src.Name + "-" + srapi.DEFAULT_CN
-	if src.Spec.StarRocksCnSpec.Name != "" {
-		stname = src.Spec.StarRocksCnSpec.Name
+func beStatefulSetName(src *srapi.StarRocksCluster) string {
+	stname := src.Name + "-" + srapi.DEFAULT_BE
+	if src.Spec.StarRocksBeSpec.Name != "" {
+		stname = src.Spec.StarRocksBeSpec.Name
 	}
 	return stname
-}
-
-//buildStatefulSetParams generate the params of construct the statefulset.
-func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) rutils.StatefulSetParams {
-	cnSpec := src.Spec.StarRocksCnSpec
-	or := metav1.NewControllerRef(src, src.GroupVersionKind())
-	podTemplateSpec := cc.buildPodTemplate(src, cnconfig)
-
-	return rutils.StatefulSetParams{
-		Name:            cnStatefulSetName(src),
-		Namespace:       src.Namespace,
-		ServiceName:     cc.getCnDomainService(),
-		PodTemplateSpec: podTemplateSpec,
-		Labels:          cnStatefulSetsLabels(src),
-		Selector:        cc.cnPodLabels(src, cnStatefulSetName(src)),
-		OwnerReferences: []metav1.OwnerReference{*or},
-		Replicas:        cnSpec.Replicas,
-	}
 }

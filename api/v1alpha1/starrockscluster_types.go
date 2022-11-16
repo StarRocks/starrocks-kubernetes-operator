@@ -92,7 +92,8 @@ type StarRocksFeStatus struct {
 	RunningInstances  []string    `json:"runningInstances,omitempty"`
 	ResourceNames     []string    `json:"resourceNames,omitempty"`
 	Phase             MemberPhase `json:"phase"`
-	Reason            string      `json:"reason"`
+	//+optional
+	Reason string `json:"reason"`
 }
 
 type StarRocksBeStatus struct {
@@ -102,17 +103,20 @@ type StarRocksBeStatus struct {
 	RunningInstances  []string    `json:"runningInstances,omitempty"`
 	ResourceNames     []string    `json:"resourceNames,omitempty"`
 	Phase             MemberPhase `json:"phase"`
-	Reason            string      `json:"reason"`
+	//+optional
+	Reason string `json:"reason"`
 }
 
 type StarRocksCnStatus struct {
-	ServiceName         string      `json:"serviceName,omitempty"`
-	FailedInstanceNames []string    `json:"failedInstanceNames,omitempty"`
-	CreatingInstances   []string    `json:"creatingInstances,omitempty"`
-	RunningInstances    []string    `json:"runningInstances,omitempty"`
-	ResourceNames       []string    `json:"resourceNames,omitempty"`
-	Phase               MemberPhase `json:"phase"`
-	Reason              string      `json:"reason"`
+	ServiceName       string      `json:"serviceName,omitempty"`
+	FailedInstances   []string    `json:"failedInstances,omitempty"`
+	CreatingInstances []string    `json:"creatingInstances,omitempty"`
+	RunningInstances  []string    `json:"runningInstances,omitempty"`
+	ResourceNames     []string    `json:"resourceNames,omitempty"`
+	HpaName           string      `json:"HpaName,omitempty"`
+	Phase             MemberPhase `json:"phase"`
+	//+optional
+	Reason string `json:"reason"`
 }
 
 // StarRocksCluster is the Schema for the starrocksclusters API
@@ -120,6 +124,9 @@ type StarRocksCnStatus struct {
 //+kubebuilder:resource:shortName=src
 //+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
+//+kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
+//+kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
 //+kubebuilder:storageversion
 // +k8s:openapi-gen=true
 type StarRocksCluster struct {
@@ -178,7 +185,7 @@ type StarRocksFeSpec struct {
 type StarRocksBeSpec struct {
 	//Replicas is the number of desired be Pod
 	// Optional: Defaults to 3
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	//Image is the container image for the be.
 	Image string `json:"image"`
@@ -197,6 +204,10 @@ type StarRocksBeSpec struct {
 	//+optional
 	corev1.ResourceRequirements `json:",inline"`
 
+	//the reference for be configMap.
+	//+optional
+	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
 	//Probe defines the mode probe service in container is alive.
 	//+optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
@@ -207,6 +218,8 @@ type StarRocksBeSpec struct {
 
 	//ReplicaInstance is the names of replica starrocksbe cluster.
 	//+optional
+	//+deprecated, temp deprecated.
+
 	ReplicaInstances []string `json:"ReplicaInstances,omitempty"`
 }
 

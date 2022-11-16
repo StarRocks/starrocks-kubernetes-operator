@@ -56,12 +56,8 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 	}
 
 	stname := feStatefulSetName(src)
-	or := metav1.OwnerReference{
-		UID:        src.UID,
-		Kind:       src.Kind,
-		APIVersion: src.APIVersion,
-		Name:       src.Name,
-	}
+	or := metav1.NewControllerRef(src, src.GroupVersionKind())
+	podTemplateSpec := fc.buildPodTemplate(src, feconfig)
 
 	return rutils.StatefulSetParams{
 		Name:                 stname,
@@ -70,9 +66,9 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 		Annotations:          make(map[string]string),
 		VolumeClaimTemplates: pvcs,
 		ServiceName:          fc.getFeDomainService(),
-		PodTemplateSpec:      fc.buildPodTemplate(src, feconfig),
 		Labels:               feStatefulSetsLabels(src),
+		PodTemplateSpec:      podTemplateSpec,
 		Selector:             fePodLabels(src, stname),
-		OwnerReferences:      []metav1.OwnerReference{or},
+		OwnerReferences:      []metav1.OwnerReference{*or},
 	}
 }

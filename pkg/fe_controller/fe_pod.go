@@ -172,7 +172,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		StartupProbe: &corev1.Probe{
-			FailureThreshold: 24,
+			FailureThreshold: 60,
 			PeriodSeconds:    5,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -187,7 +187,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 			}}},
 		},
 		LivenessProbe: &corev1.Probe{
-			FailureThreshold: 24,
+			FailureThreshold: 60,
 			PeriodSeconds:    5,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -223,14 +223,16 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 			Namespace:   src.Namespace,
 			Labels:      fePodLabels(src, feStatefulSetName(src)),
 			Annotations: src.Annotations,
-			OwnerReferences: []metav1.OwnerReference{
+			/*OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: src.APIVersion,
 					Kind:       src.Kind,
 					Name:       src.Name,
+					UID:        src.UID,
 				},
-			},
+			},*/
 		},
 		Spec: podSpec,
 	}
+
 }

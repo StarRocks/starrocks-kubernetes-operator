@@ -19,9 +19,11 @@ package pkg
 import (
 	"context"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/be_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
@@ -37,14 +39,17 @@ func init() {
 }
 
 var (
-	name = "starrockscluster-controller"
+	name             = "starrockscluster-controller"
+	feControllerName = "fe-controller"
+	cnControllerName = "cn-controller"
+	beControllerName = "be-controller"
 )
 
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
-	Scs      []SubController
+	Scs      map[string]SubController
 }
 
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -118,7 +123,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	//generate the status.
-	r.reconcileStatus(src)
+	r.reconcileStatus(ctx, src)
 	if err := r.UpdateStarRocksClusterStatus(ctx, src); err != nil {
 		klog.Error(err, "failed to update cluster status name ", src.Name, " namespace ", src.Namespace)
 		return requeueIfError(err)
@@ -132,8 +137,14 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return noRequeue()
 }
 
-func (r *StarRocksClusterReconciler) reconcileStatus(src *srapi.StarRocksCluster) {
+func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {
+	klog.Info("StarRocksClusterReconciler reconcile status.")
 	//calculate the status of starrocks cluster by subresource's status.
+	//clear resources when sub resource deleted.
+	for _, rc := range r.Scs {
+		rc.ClearResources(ctx, src)
+	}
+
 	smap := make(map[string]bool)
 	src.Status.Phase = srapi.ClusterRunning
 	func() {
@@ -177,16 +188,20 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
+		Owns(&v2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
 
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	//TODO: initial be
-	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("fc-controller"))
-	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor("cn-controller"))
-	var subcs []SubController
-	subcs = append(subcs, fc, cc)
+	subcs := make(map[string]SubController)
+	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(feControllerName))
+	subcs[feControllerName] = fc
+	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(cnControllerName))
+	subcs[cnControllerName] = cc
+	be := be_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(beControllerName))
+	subcs[beControllerName] = be
+
 	if err := (&StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor(name),

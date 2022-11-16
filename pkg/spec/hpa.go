@@ -18,7 +18,7 @@ package spec
 import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/common"
-	v2 "k8s.io/api/autoscaling/v2"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

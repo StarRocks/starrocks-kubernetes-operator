@@ -18,16 +18,17 @@ package cn_controller
 
 import (
 	"context"
-	"errors"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
@@ -47,18 +48,22 @@ func New(k8sclient client.Client, k8srecorder record.EventRecorder) *CnControlle
 
 func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksCnSpec == nil {
-		klog.Info("CnController Sync ", "the cn component is not needed", " namespace ", src.Namespace, " starrocks cluster name ", src.Name)
+		klog.Info("CnController Sync the cn component is not needed", " namespace ", src.Namespace, " starrocks cluster name ", src.Name)
 		return nil
 	}
 
 	cnSpec := src.Spec.StarRocksCnSpec
 	cs := &srapi.StarRocksCnStatus{}
+	if src.Status.StarRocksCnStatus != nil {
+		cs = src.Status.StarRocksCnStatus.DeepCopy()
+	}
 	cs.Phase = srapi.ComponentWaiting
+
 	src.Status.StarRocksCnStatus = cs
 	endpoints := corev1.Endpoints{}
 	//1. wait for fe ok.
 	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetFeExternalServiceName(src)}, &endpoints); apierrors.IsNotFound(err) || len(endpoints.Subsets) == 0 {
-		klog.Info("wait fe available fe service name ", srapi.GetFeExternalServiceName(src))
+		klog.Info("CnController wait fe available fe service name ", srapi.GetFeExternalServiceName(src))
 		return nil
 	} else if err != nil {
 		return err
@@ -72,7 +77,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		}
 	}
 	if !feReady {
-		klog.Info("wait fe available fe service name ", srapi.GetFeExternalServiceName(src), " have not ready fe.")
+		klog.Info("CnController wait fe available fe service name ", srapi.GetFeExternalServiceName(src), " have not ready fe.")
 		return nil
 	}
 
@@ -123,6 +128,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		cs.ResourceNames = rutils.MergeSlices(cs.ResourceNames, []string{st.Name})
 	}()
 
+	//5. create or update the status.
 	var cst appv1.StatefulSet
 	err = cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &cst)
 	if err != nil && apierrors.IsNotFound(err) {
@@ -131,12 +137,42 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	//5. last update the status.
 	//if the spec is changed, update the status of cn on src.
-	if !rutils.StatefulSetDeepEqual(&st, cst) {
-		klog.Info("cnController Sync exist statefulset not equals to new statefuslet")
+	var excludeReplica bool
+	//if replicas =0 and not the first time, exclude the hash
+	if st.Spec.Replicas == nil {
+		if _, ok := cst.Annotations[srapi.ComponentReplicasEmpty]; !ok {
+			excludeReplica = true
+		}
+	}
+	if !rutils.StatefulSetDeepEqual(&st, cst, excludeReplica) {
 		rutils.MergeStatefulSets(&st, cst)
+		//don't update the Replicas.
+		if st.Spec.Replicas == nil {
+			st.Spec.Replicas = cst.Spec.Replicas
+		} else {
+			delete(st.Annotations, srapi.ComponentReplicasEmpty)
+		}
 		if err := k8sutils.UpdateClientObject(ctx, cc.k8sclient, &st); err != nil {
+			return err
+		}
+	}
+
+	//6. create autoscaler.
+	if cnSpec.AutoScalingPolicy != nil {
+		cnAutoscaler := rutils.BuildHorizontalPodAutoscaler(cc.buildCnAutoscalerParams(*cnSpec.AutoScalingPolicy, &cst))
+		cs.HpaName = cnAutoscaler.Name
+		var scaler v2.HorizontalPodAutoscaler
+		err = cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: cnAutoscaler.Namespace, Name: cnAutoscaler.Name}, &scaler)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return k8sutils.CreateClientObject(ctx, cc.k8sclient, cnAutoscaler)
+			}
+
+			return err
+		}
+
+		if err := k8sutils.UpdateClientObject(ctx, cc.k8sclient, cnAutoscaler); err != nil {
 			return err
 		}
 	}
@@ -145,12 +181,21 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	return cc.updateCnStatus(cs, cst)
 }
 
-func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
-	//if the starrocks is not have cn.
-	if src.Status.StarRocksCnStatus == nil {
-		return true, nil
+func (cc *CnController) clearHpa(ctx context.Context, namespace, hpaname string) {
+	var hpa v2.HorizontalPodAutoscaler
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: hpaname}, &hpa); err != nil {
+		if apierrors.IsNotFound(err) {
+			return
+		}
+	} else {
+		retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			return k8sutils.DeleteHpa(ctx, cc.k8sclient, namespace, namespace)
+		})
 	}
 
+}
+
+func (cc *CnController) clearStatefulset(ctx context.Context, src *srapi.StarRocksCluster) {
 	fmap := map[string]bool{}
 	count := 0
 	defer func() {
@@ -164,17 +209,52 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}()
 
 	for _, name := range src.Status.StarRocksCnStatus.ResourceNames {
-		if _, err := k8sutils.DeleteClientObject(ctx, cc.k8sclient, src.Namespace, name); err != nil {
-			return false, errors.New("cn delete statefulset" + err.Error())
+		var st appv1.StatefulSet
+		if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: name}, &st); err != nil {
+			if apierrors.IsNotFound(err) {
+				count++
+			}
+		} else {
+			k8sutils.DeleteClientObject(ctx, cc.k8sclient, src.Namespace, name)
 		}
 	}
 
 	if count == len(src.Status.StarRocksCnStatus.ResourceNames) {
 		fmap[srapi.CN_STATEFULSET_FINALIZER] = true
+		src.Status.StarRocksCnStatus.ResourceNames = nil
+	}
+}
+
+func (cc *CnController) clearServices(ctx context.Context, namespace, name string) {
+	var svc corev1.Service
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &svc); err == nil {
+		k8sutils.DeleteClientObject(ctx, cc.k8sclient, namespace, name)
+	}
+}
+
+func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+	//if the starrocks is not have cn.
+	cnStatus := src.Status.StarRocksCnStatus
+	if cnStatus == nil {
+		return true, nil
 	}
 
-	if _, ok := fmap[srapi.CN_STATEFULSET_FINALIZER]; !ok {
-		return k8sutils.DeleteClientObject(ctx, cc.k8sclient, src.Namespace, src.Status.StarRocksCnStatus.ServiceName)
+	if !src.DeletionTimestamp.IsZero() {
+		if cnStatus.HpaName != "" {
+			cc.clearHpa(ctx, src.Namespace, cnStatus.HpaName)
+		}
+
+		cc.clearStatefulset(ctx, src)
+		if src.Status.StarRocksCnStatus.ServiceName != "" {
+			cc.clearServices(ctx, src.Namespace, cnStatus.ServiceName)
+		}
+		src.Status.StarRocksCnStatus = nil
+		return true, nil
+	}
+
+	if cnStatus.HpaName != "" && (src.Spec.StarRocksCnSpec == nil || src.Spec.StarRocksCnSpec.AutoScalingPolicy == nil) {
+		cc.clearHpa(ctx, src.Namespace, cnStatus.HpaName)
+		cnStatus.HpaName = ""
 	}
 
 	return false, nil
@@ -212,6 +292,9 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 		cs.Phase = srapi.ComponentReconciling
 		cs.Reason = podmap[creatings[0]].Status.Reason
 	}
+	cs.RunningInstances = readys
+	cs.CreatingInstances = creatings
+	cs.FailedInstances = faileds
 
 	return nil
 }
@@ -219,7 +302,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
-		klog.Info("the CnController get cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
+		klog.Info("CnController GetCnConfig cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
 		return make(map[string]interface{}), nil
 	} else if err != nil {
 		return make(map[string]interface{}), err
@@ -233,7 +316,7 @@ func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 
 	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, feconfigMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
-		klog.Info("the CnController get fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
+		klog.Info("CnController getFeConfig fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
 		return make(map[string]interface{}), nil
 	} else if err != nil {
 		return make(map[string]interface{}), err

@@ -42,8 +42,9 @@ func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterR
 	srcController.Client = k8sutils.NewFakeClient(Scheme, objects...)
 	fc := fe_controller.New(srcController.Client, srcController.Recorder)
 	cc := cn_controller.New(srcController.Client, srcController.Recorder)
-	srcController.Scs = []SubController{}
-	srcController.Scs = append(srcController.Scs, fc, cc)
+	srcController.Scs = make(map[string]SubController)
+	srcController.Scs[feControllerName] = fc
+	srcController.Scs[cnControllerName] = cc
 	return srcController
 }
 

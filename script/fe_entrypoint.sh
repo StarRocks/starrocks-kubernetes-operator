@@ -167,7 +167,7 @@ probe_leader()
     fi
 }
 
-# Drop myself from FE cluster
+# Drop myself from FE cluster, temp cancel
 exit_fe_handler()
 {
     if $EXIT_IN_PROGRESS ; then
@@ -200,13 +200,24 @@ exit_fe_handler()
         log_stderr "Can still find myself from 'show_frontends' output ..."
         sleep $PROBE_INTERVAL
     done
+
+    mv_meta
     EXIT_IN_PROGRESS=false
+
 }
 
 exit_fe_exit()
 {
     log_stderr "Exit clean up for EXIT ..."
     exit_fe_handler
+}
+
+mv_meta()
+{
+  temp=$STARROCKS_HOME/meta/`date +%s`
+  mkdir -p $temp
+  mv $STARROCKS_HOME/meta/bdb $temp/
+  mv $STARROCKS_HOME/meta/image $temp/
 }
 
 exit_fe_term()
@@ -274,8 +285,8 @@ start_fe()
 
     log_stderr "run start_fe.sh with additional options: '$opts'"
     # register EXIT trap handler to do clean up work
-    trap exit_fe_exit EXIT
-    trap exit_fe_term SIGTERM
+    #trap exit_fe_exit EXIT
+    #trap exit_fe_term SIGTERM
     $STARROCKS_HOME/bin/start_fe.sh $opts
 }
 

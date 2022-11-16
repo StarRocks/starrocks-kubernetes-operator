@@ -18,36 +18,41 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/common"
-	"k8s.io/api/autoscaling/v2"
+	v2 "k8s.io/api/autoscaling/v2beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func BuildHorizontalPodAutoscaler(namespace, name, targetName string, labels Labels, references []metav1.OwnerReference, scalepolicy *srapi.AutoScalingPolicy) *v2.HorizontalPodAutoscaler {
+type PodAutoscalerParams struct {
+	Namespace       string
+	Name            string
+	Labels          Labels
+	TargetName      string
+	OwnerReferences []metav1.OwnerReference
+	ScalerPolicy    *srapi.AutoScalingPolicy
+}
+
+func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
 	return &v2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
 			APIVersion: "autoscaling/v2",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			//TODO: generate cn hpa name
-			Name:      name,
-			Namespace: namespace,
-			//TODO: construct labels
-			Labels:          labels,
-			OwnerReferences: references,
+			Name:            pap.Name,
+			Namespace:       pap.Namespace,
+			Labels:          pap.Labels,
+			OwnerReferences: pap.OwnerReferences,
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				//TODO: generate target's name
-				Name:       targetName,
-				Kind:       common.CnKind,
-				APIVersion: common.CnApiVersionV1ALPHA,
+				Name:       pap.TargetName,
+				Kind:       "StatefulSet",
+				APIVersion: "apps/v1",
 			},
-			MaxReplicas: scalepolicy.MaxReplicas,
-			MinReplicas: scalepolicy.MinReplicas,
-			Metrics:     scalepolicy.HPAPolicy.Metrics,
-			Behavior:    scalepolicy.HPAPolicy.Behavior,
+			MaxReplicas: pap.ScalerPolicy.MaxReplicas,
+			MinReplicas: pap.ScalerPolicy.MinReplicas,
+			Metrics:     pap.ScalerPolicy.HPAPolicy.Metrics,
+			Behavior:    pap.ScalerPolicy.HPAPolicy.Behavior,
 		},
 	}
 }
