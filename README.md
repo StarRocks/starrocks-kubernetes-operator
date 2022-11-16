@@ -31,6 +31,27 @@ make push IMG="xxx"
 ## 4 image 
 the fe, cn be components you can get from 
 
+## 5 storageVolume
+when you specify the volume for storage fe meta or be data, you should configure the storageVolume in component spec and prepare create storageclass in kubernetes.
+for fe meta storage example:
+```yaml
+starRocksFeSpec:
+  storageVolumes:
+    - name: fe-meta
+      storageClassName: meta-storage
+      storageSize: 10GB
+      mountPath: /opt/starrocks/fe/meta # is stable path
+```
+for be data storage example:
+```yaml
+starRocksBeSpec:
+  storageVolumes:
+    - name: be-data
+      storageClassName: data-storage
+      storageSize: 1TB
+      mountPath: /opt/starrocks/be/storage # is stable path
+```
+
 ## 5 Deploy operator in kubernetes
 the directory of deploy have deployment yaml.
 the start with leader yamls are for operator election when have multi pods for backup.
@@ -41,7 +62,7 @@ the follows display the resources create or apply.
 ```bash
 cd deploy
 # create crd
-kubectl apply -f starrocks.com_computenodegroups.yaml
+kubectl apply -f starrocks.com_starrocksclusters.yaml
 # create namespace
 kubectl apply -f namespace.yam;
 # create rbac-roles
@@ -53,9 +74,12 @@ kubectl apply -f leader_election_role_binding.yaml
 # create rbac-service-account
 kubectl apply -f service_account.yaml
 # create operator deployment
-# replace image field with image which build in[3.1]
+# replace image field with image which build in[3]
 kubectl apply -f manager.yaml
 ```
 
-## 6 Design
-[docs](./doc)
+## 6 example
+the directory of examples has some simple example for deploy starrocks.
+
+## 7 Design
+[cn_docks](./doc/starrocks-operator-design.md)
