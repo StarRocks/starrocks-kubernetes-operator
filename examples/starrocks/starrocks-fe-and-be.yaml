@@ -4,15 +4,14 @@ metadata:
   name: starrockscluster-sample
   namespace: starrocks
 spec:
-  serviceAccount: cn-controller-manager
   starRocksFeSpec:
-    image: 172.26.92.212:32000/fe.demo:v1.0
+    image: starrocks/alpine-fe:2.4.1
     replicas: 3
     requests:
       cpu: 4
       memory: 16Gi
   starRocksBeSpec:
-    image: 172.26.92.212:32000/be.demo:v1.1
+    image: starrocks/centos-be:2.4.1
     replicas: 3
     requests:
       cpu: 4

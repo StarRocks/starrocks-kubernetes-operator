@@ -8,7 +8,7 @@ the operator will use emptydir mode for save fe meta and be data. how to use sto
 
 ## 2 Requirements
  * kubernetes 1.18+
- * golang 1.17+
+ * golang 1.18+
 
 ## 3 Supported Features
 * fe decouple with cn and be. you can only deploy fe or cn and be.
@@ -28,13 +28,30 @@ make docker IMG="xxx"
 # push image to docker hub
 make push IMG="xxx"
 ```
-## 4 image 
-the fe, cn be components you can use follows:
-fushilei/starrocks.be:v1.0
-fushilei/starrocks.fe:v1.0
-fushilei/starrocks.cn:v1.0
-
-
+## 4 starrocks image 
+the fe, cn be components you can find from [dockerhub](https://hub.docker.com/u/starrocks):
+the image have default config, you can set your config with kubernetes configmap and specify configmap in deployment crd. examples:
+```yaml
+# fe use configmap example
+starRocksFeSpec:
+  configMapInfo:
+    configMapName: fe-config-map
+    resolveKey: fe.conf
+# cn use configmap example
+starRocksCnSpec:
+  configMapInfo:
+    configMapName: cn-config-map
+    resolveKey: cn.conf
+# be use configmap example
+  starRocksBeSpec:
+    configMapInfo:
+    configMapName: be-config-map
+    resolveKey: be.conf
+```
+the configmap value are property format, you can use starrocks config file generate.
+```shell
+kubectl create configmap fe-config-map --from-file=starrocks/fe/conf/fe.conf
+```
 ## 5 storageVolume
 when you specify the volume for storage fe meta or be data, you should configure the storageVolume in component spec and prepare create storageclass in kubernetes.
 for fe meta storage example:
@@ -43,7 +60,7 @@ starRocksFeSpec:
   storageVolumes:
     - name: fe-meta
       storageClassName: meta-storage
-      storageSize: 10GB
+      storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta # is stable path
 ```
 for be data storage example:
@@ -52,7 +69,7 @@ starRocksBeSpec:
   storageVolumes:
     - name: be-data
       storageClassName: data-storage
-      storageSize: 1TB
+      storageSize: 1Ti
       mountPath: /opt/starrocks/be/storage # is stable path
 ```
 
@@ -85,5 +102,3 @@ kubectl apply -f manager.yaml
 ## 6 example
 the directory of examples has some simple example for deploy starrocks.
 
-## 7 Design
-[cn_docks](./doc/starrocks-operator-design.md)
