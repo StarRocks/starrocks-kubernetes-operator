@@ -15,7 +15,9 @@ the operator will use emptydir mode for save fe meta and be data. how to use sto
 * support v2beta2 horizontalpodautoscalers for cn cluster.
 
 ## 3 Build operator images
-you can compile operator by make command, also you can use starrocks support image download from .....
+the starrocks supported operator image, you can download from :[operator](https://hub.docker.com/repository/docker/fushilei/starrocks.operator/tags?page=1&ordering=last_updated) , if you want to build image by yourself, you can do it as follows:
+
+in the root directory of project, you can compile operator by make command,
 if you want build by yourself, you should prepare go environment.
 before build image, you should execute 'make build' command for build operator. 
 after build, you can build image and push image to your repository. the ops as follows:
@@ -28,7 +30,7 @@ make docker IMG="xxx"
 # push image to docker hub
 make push IMG="xxx"
 ```
-## 4 starrocks image 
+## 4 starrocks image
 the fe, cn be components you can find from [dockerhub](https://hub.docker.com/u/starrocks):
 the image have default config, you can set your config with kubernetes configmap and specify configmap in deployment crd. examples:
 ```yaml
