@@ -5,9 +5,16 @@ ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
+GOBIN=$(shell go env GOPATH)
 else
 GOBIN=$(shell go env GOBIN)
+endif
+
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+ifeq (,$(GOBIN))
+GOBIN=$PROJECT_DIR
+else
+$(shell mkdir -p $(GOBIN)/bin)
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -102,17 +109,17 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 #CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-CONTROLLER_GEN = $(GOPATH)/bin/controller-gen
+CONTROLLER_GEN = $(GOBIN)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
 
-KUSTOMIZE = $(GOPATH)/bin/kustomize
+KUSTOMIZE = $(GOBIN)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
 
-ENVTEST = $(GOPATH)/bin/setup-envtest
+ENVTEST = $(GOBIN)/bin/setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
 	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
@@ -127,7 +134,7 @@ TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(GOPATH)/bin go install $(2) ;\
+GOBIN=$(GOBIN)/bin go install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
