@@ -76,7 +76,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 		Replicas:             feSpec.Replicas,
 		Annotations:          make(map[string]string),
 		VolumeClaimTemplates: pvcs,
-		ServiceName:          fc.getFeDomainService(),
+		ServiceName:          fc.getSearchService(),
 		Labels:               feStatefulSetsLabels(src),
 		PodTemplateSpec:      podTemplateSpec,
 		Selector:             fePodLabels(src, stname),

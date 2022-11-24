@@ -15,3 +15,31 @@ limitations under the License.
 */
 
 package fe_controller
+
+import (
+	"fmt"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	corev1 "k8s.io/api/core/v1"
+	"testing"
+)
+
+func TestFeController_updateStatus(t *testing.T) {
+	var creatings, readys, faileds []string
+	podmap := make(map[string]corev1.Pod)
+	//get all pod status that controlled by st.
+	var podList corev1.PodList
+	podList.Items = append(podList.Items, corev1.Pod{Status: corev1.PodStatus{Phase: corev1.PodPending}})
+
+	for _, pod := range podList.Items {
+		podmap[pod.Name] = pod
+		if ready := k8sutils.PodIsReady(&pod.Status); ready {
+			readys = append(readys, pod.Name)
+		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
+			creatings = append(creatings, pod.Name)
+		} else if pod.Status.Phase == corev1.PodFailed {
+			faileds = append(faileds, pod.Name)
+		}
+	}
+
+	fmt.Printf("the ready len %d, the creatings len %d, the faileds %d", len(readys), len(creatings), len(faileds))
+}

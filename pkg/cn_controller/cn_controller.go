@@ -95,10 +95,11 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//generate new cn internal service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config)
-	insvc := &corev1.Service{}
-	externalsvc.ObjectMeta.DeepCopyInto(&insvc.ObjectMeta)
-	insvc.Name = cc.getCnDomainService()
-	insvc.Spec = corev1.ServiceSpec{
+	searchSvc := &corev1.Service{}
+	externalsvc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
+	searchSvc.Name = cc.getCnSearchService()
+	searchSvc.Spec = corev1.ServiceSpec{
+		ClusterIP: "None",
 		Ports: []corev1.ServicePort{
 			{
 				Name:       "heartbeat",
@@ -111,11 +112,11 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		//value = true, Pod don't need to become ready that be search by domain.
 		PublishNotReadyAddresses: true,
 	}
-	cs.ServiceName = insvc.Name
+	cs.ServiceName = searchSvc.Name
 	//create or update fe service, update the status of cn on src.
 	//3. issue the service.
-	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, insvc); err != nil {
-		klog.Error("CnController Sync ", "create or update service namespace ", insvc.Namespace, " name ", insvc.Name)
+	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, searchSvc); err != nil {
+		klog.Error("CnController Sync ", "create or update service namespace ", searchSvc.Namespace, " name ", searchSvc.Name)
 		return err
 	}
 
@@ -326,6 +327,6 @@ func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 }
 
 //getCnDomainService get the cn service name for dns resolve.
-func (cc *CnController) getCnDomainService() string {
+func (cc *CnController) getCnSearchService() string {
 	return "cn-domain-search"
 }

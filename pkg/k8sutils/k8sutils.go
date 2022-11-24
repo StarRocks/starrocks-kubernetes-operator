@@ -100,6 +100,10 @@ func DeleteHpa(ctx context.Context, k8sclient client.Client, namespace, name str
 }
 
 func PodIsReady(status *corev1.PodStatus) bool {
+	if status.ContainerStatuses == nil {
+		return false
+	}
+
 	for _, cs := range status.ContainerStatuses {
 		if !cs.Ready {
 			return false

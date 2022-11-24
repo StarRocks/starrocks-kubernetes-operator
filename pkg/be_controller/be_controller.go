@@ -92,10 +92,12 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//generate new cn internal service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetBeExternalServiceName(src), rutils.BeService, config)
-	insvc := &corev1.Service{}
-	externalsvc.ObjectMeta.DeepCopyInto(&insvc.ObjectMeta)
-	insvc.Name = be.getBeDomainService()
-	insvc.Spec = corev1.ServiceSpec{
+	searchSvc := &corev1.Service{}
+	externalsvc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
+	searchSvc.Name = be.getBeSearchService()
+	searchSvc.Spec = corev1.ServiceSpec{
+		//for compatible kube-dns
+		ClusterIP: "None",
 		Ports: []corev1.ServicePort{
 			{
 				Name:       "heartbeat",
@@ -109,11 +111,11 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		PublishNotReadyAddresses: true,
 	}
 
-	bs.ServiceName = insvc.Name
+	bs.ServiceName = searchSvc.Name
 	//create or update fe service, update the status of cn on src.
 	//3. issue the service.
-	if err := k8sutils.CreateOrUpdateService(ctx, be.k8sclient, insvc); err != nil {
-		klog.Error("BeController Sync ", "create or update service namespace ", insvc.Namespace, " name ", insvc.Name)
+	if err := k8sutils.CreateOrUpdateService(ctx, be.k8sclient, searchSvc); err != nil {
+		klog.Error("BeController Sync ", "create or update service namespace ", searchSvc.Namespace, " name ", searchSvc.Name)
 		return err
 	}
 
@@ -269,6 +271,6 @@ func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 }
 
 //getCnDomainService get the cn service name for dns resolve.
-func (be *BeController) getBeDomainService() string {
+func (be *BeController) getBeSearchService() string {
 	return "be-domain-search"
 }

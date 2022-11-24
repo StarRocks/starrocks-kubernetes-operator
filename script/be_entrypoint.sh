@@ -106,6 +106,6 @@ fi
 
 update_conf_from_configmap
 collect_env_info
-add_self $svc_name
+add_self $svc_name || exit $?
 log_stderr "run start_be.sh"
 $STARROCKS_HOME/bin/start_be.sh

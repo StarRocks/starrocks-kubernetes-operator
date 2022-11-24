@@ -51,7 +51,7 @@ func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beco
 	return rutils.StatefulSetParams{
 		Name:                 beStatefulSetName(src),
 		Namespace:            src.Namespace,
-		ServiceName:          be.getBeDomainService(),
+		ServiceName:          be.getBeSearchService(),
 		PodTemplateSpec:      podTemplateSpec,
 		Labels:               beStatefulSetsLabels(src),
 		Selector:             be.bePodLabels(src, beStatefulSetName(src)),

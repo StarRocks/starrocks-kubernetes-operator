@@ -124,7 +124,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 		}
 	}
 
-	fs.Phase = srapi.ComponentReconciling
+g	fs.Phase = srapi.ComponentReconciling
 	if st.Spec.Replicas != nil && len(readys) == int(*st.Spec.Replicas) {
 		fs.Phase = srapi.ComponentRunning
 	} else if len(faileds) != 0 {
@@ -135,9 +135,8 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 	}
 
 	fs.RunningInstances = readys
-	fs.FailedInstances = creatings
+	fs.FailedInstances = faileds
 	fs.CreatingInstances = creatings
-
 	return nil
 }
 
@@ -208,18 +207,20 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return false, nil
 }
 
-//GetFeDomainService get the domain service name, the domain service for statefulset.
+//getSearchService get the domain service name, the domain service for statefulset.
 //domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
-func (fc *FeController) getFeDomainService() string {
+func (fc *FeController) getSearchService() string {
 	return "fe-domain-search"
 }
 
 func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1.Service, config map[string]interface{}) error {
 	//need create domain dns service.
-	domainSvc := &corev1.Service{}
-	svc.ObjectMeta.DeepCopyInto(&domainSvc.ObjectMeta)
-	domainSvc.Name = fc.getFeDomainService()
-	domainSvc.Spec = corev1.ServiceSpec{
+	searchSvc := &corev1.Service{}
+	svc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
+	searchSvc.Name = fc.getSearchService()
+	searchSvc.Spec = corev1.ServiceSpec{
+		//for compatible kube-dns
+		ClusterIP: "None",
 		Ports: []corev1.ServicePort{
 			{
 				Name:       "query-port",
@@ -229,11 +230,12 @@ func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1
 		},
 		Selector: svc.Spec.Selector,
 
+		//
 		//value = true, Pod don't need to become ready that be search by domain.
 		PublishNotReadyAddresses: true,
 	}
 
-	if err := k8sutils.CreateOrUpdateService(ctx, fc.k8sclient, domainSvc); err != nil {
+	if err := k8sutils.CreateOrUpdateService(ctx, fc.k8sclient, searchSvc); err != nil {
 		return errors.New("create or update domain service " + err.Error())
 	}
 	return k8sutils.CreateOrUpdateService(ctx, fc.k8sclient, svc)
