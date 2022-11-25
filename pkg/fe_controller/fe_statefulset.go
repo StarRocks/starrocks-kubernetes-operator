@@ -20,7 +20,10 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/klog/v2"
 )
 
 func feStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
@@ -50,11 +53,19 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					corev1.ReadWriteOnce,
 				},
+
 				StorageClassName: vm.StorageClassName,
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceStorage: resource.MustParse(vm.StorageSize),
+					},
+				},
 			},
 		})
 	}
 
+	str, _ := json.Marshal(pvcs)
+	klog.Info("FeController buildStatefulSetParams ", string(str))
 	stname := feStatefulSetName(src)
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
 	podTemplateSpec := fc.buildPodTemplate(src, feconfig)
@@ -65,7 +76,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 		Replicas:             feSpec.Replicas,
 		Annotations:          make(map[string]string),
 		VolumeClaimTemplates: pvcs,
-		ServiceName:          fc.getFeDomainService(),
+		ServiceName:          fc.getSearchService(),
 		Labels:               feStatefulSetsLabels(src),
 		PodTemplateSpec:      podTemplateSpec,
 		Selector:             fePodLabels(src, stname),

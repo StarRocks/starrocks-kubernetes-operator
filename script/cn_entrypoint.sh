@@ -161,8 +161,7 @@ if [[ "x$svc_name" == "x" ]] ; then
 fi
 
 collect_env_info
-add_self $svc_name
-
+add_self $svc_name || exit $?
 trap exit_clean SIGTERM
 
 update_conf_from_configmap

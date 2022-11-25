@@ -1,0 +1,12 @@
+apiVersion: starrocks.com/v1alpha1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/alpine-fe:2.4.1
+    replicas: 3
+    requests:
+      cpu: 4
+      memory: 16Gi

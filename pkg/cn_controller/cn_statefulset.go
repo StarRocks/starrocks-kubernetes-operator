@@ -47,7 +47,7 @@ func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnco
 	return rutils.StatefulSetParams{
 		Name:            cnStatefulSetName(src),
 		Namespace:       src.Namespace,
-		ServiceName:     cc.getCnDomainService(),
+		ServiceName:     cc.getCnSearchService(),
 		PodTemplateSpec: podTemplateSpec,
 		Labels:          cnStatefulSetsLabels(src),
 		Selector:        cc.cnPodLabels(src, cnStatefulSetName(src)),

@@ -280,9 +280,9 @@ type StorageVolume struct {
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	// StorageSize is a valid memory size type based on powers-of-2, so 1MB is 1024KB.
-	// Supported units:MB, MiB, GB, GiB, TB, TiB, PB, PiB, EB, EiB Ex: `512MB`.
-	// +kubebuilder:validation:Pattern:="(^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B)$"
+	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
+	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
+	// +kubebuilder:validation:Pattern:="(^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i))$"
 	StorageSize string `json:"storageSize"`
 
 	//MountPath specify the path of volume mount.
