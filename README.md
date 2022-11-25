@@ -1,41 +1,39 @@
-# starrocks-kubernetes-operator
+# StarRocks-Kubernetes-Operator
 
 ## 1 Overview
 **(under development)**  
-develop with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), deploy starrocks in kubernetes,
-operator can only deploy fe, also deploy be and cn. now operator only support deploy starrocks by FQDN mode. for storage when you don't clear statement storagevolume info, 
-the operator will use emptydir mode for save fe meta and be data. how to use storageVolume, please reference the storageVolume.
+This operator is developed with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), which can deploy StarRocks CRD resource in kubernetes.
+
+The StarRocks cluster deployed by this operator incldues FE, BE and CN components. These components are running in FQDN mode by default.
+
+If StorageVolume info is not specified in CRD spec, the operator will use emptydir mode to store FE meta and BE data. Please refer to the storageVolume section on how to enable customized storageVolume.
 
 ## 2 Requirements
  * kubernetes 1.18+
  * golang 1.18+
 
 ## 3 Supported Features
-* fe decouple with cn and be. you can only deploy fe or cn and be.
-* support v2beta2 horizontalpodautoscalers for cn cluster.
+* FE decouples with CN and BE. FE is a must-have component, BE and CN can be optionally deployed.
+* Support v2beta2 horizontalpodautoscalers for CN cluster.
 
 ## 3 Build operator images
-the starrocks supported operator image, you can download from :[operator](https://hub.docker.com/u/starrocks
+Get the official operator image from:[operator](https://hub.docker.com/repository/docker/fushilei/starrocks.operator/tags?page=1&ordering=last_updated).
 
-
-) , if you want to build image by yourself, you can do it as follows:
-
-in the root directory of project, you can compile operator by make command,
-if you want build by yourself, you should prepare go environment.
-before build image, you should execute 'make build' command for build operator. 
-after build, you can build image and push image to your repository. the ops as follows:
+Follow below instructions if you want to build your own image.
 
 ```bash
-# compile operator
+# under root directory, compile operator
 make build 
 # build docker image
 make docker IMG="xxx"
 # push image to docker hub
 make push IMG="xxx"
 ```
-## 4 starrocks image
-the fe, cn be components you can find from [dockerhub](https://hub.docker.com/u/starrocks):
-the image have default config, you can set your config with kubernetes configmap and specify configmap in deployment crd. examples:
+## 4 Starrocks Components Image
+Official FE/CN/BE components images can be found from [dockerhub](https://hub.docker.com/u/starrocks):
+Those images contains default application configuration file, they can be overritten by configuring kubernetes configmap deployment crd. 
+
+For example:
 ```yaml
 # fe use configmap example
 starRocksFeSpec:
@@ -53,41 +51,37 @@ starRocksCnSpec:
     configMapName: be-config-map
     resolveKey: be.conf
 ```
-the configmap value are property format, you can use starrocks config file generate.
+The ConfigMap value is in property format, the following command is an example to generate the configmap from an existing file.
 ```shell
+# create fe-config-map from starrocks/fe/conf/fe.conf file
 kubectl create configmap fe-config-map --from-file=starrocks/fe/conf/fe.conf
 ```
 ## 5 storageVolume
-when you specify the volume for storage fe meta or be data, you should configure the storageVolume in component spec and prepare create storageclass in kubernetes.
-for fe meta storage example:
+External storage can be used to store FE meta and BE data for persistence. `storageVolumes` can be specified in corresponding component spec to enable external storage volumes auto provisioning. Note that the specific `storageClassName` should be available in kubernetes cluster before enabling this storageVolume feature.
+
+
+**FE meta storage example**
 ```yaml
 starRocksFeSpec:
   storageVolumes:
     - name: fe-meta
       storageClassName: meta-storage
       storageSize: 10Gi
-      mountPath: /opt/starrocks/fe/meta # is stable path
+      mountPath: /opt/starrocks/fe/meta # overwrite the default meta path
 ```
-for be data storage example:
+**BE data storage example**
 ```yaml
 starRocksBeSpec:
   storageVolumes:
     - name: be-data
       storageClassName: data-storage
       storageSize: 1Ti
-      mountPath: /opt/starrocks/be/storage # is stable path
+      mountPath: /opt/starrocks/be/storage # overwrite the default data path
 ```
 
-## 6 Deploy operator in kubernetes
-the directory of deploy have deployment yaml.
-the start with leader yamls are for operator election when have multi pods for backup.
-the manager.yaml is the deployment crd yaml for deploy operator, before you create or apply, you should update the image field.
-other yamls are for operator running.
-the operator deploy in starrocks namespace, if you want to deploy in another namespace, you should modify the yamls in deploy.
-the follows display the resources create or apply. the default namespace is starrocks, when you deploy into another namespace please replace the namepace.yaml and 
-replace the command parameter -n. 
-the operator's image can search from [operator](https://hub.docker.com/u/starrocks), the key word is operator. 
-
+## 6 Deploy Operator in kubernetes
+`deploy` directory contains all the necessary yamls to deploy the operator. Yaml files with `leader_` prefix are for operator election if willing to take multiples pods for backup. `manager.yaml` is a deployment yaml to deploy operator. Remember to update corresponding `image` before applying to kubernetes. Other yamls are facilities objects created for running the operator, include namespace, service account, rbac.
+By default, the operator deploys the StarRocks cluster in `starrocks` namespace. Either specifying the namespace `-n <namespace>` when running `kubectl apply` or set the namespace meta field in every yaml files.
 ```bash
 cd deploy
 # create crd
@@ -107,6 +101,5 @@ kubectl apply -n starrocks -f service_account.yaml
 kubectl apply -n starrocks -f manager.yaml
 ```
 
-## 7 example
-the directory of [examples](./examples/starrocks) has some simple example for deploy starrocks.
-
+## 7 Example
+[examples](./examples/starrocks) directory contains some simple example for reference.
