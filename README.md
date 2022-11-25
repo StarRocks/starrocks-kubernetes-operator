@@ -15,7 +15,10 @@ the operator will use emptydir mode for save fe meta and be data. how to use sto
 * support v2beta2 horizontalpodautoscalers for cn cluster.
 
 ## 3 Build operator images
-the starrocks supported operator image, you can download from :[operator](https://hub.docker.com/repository/docker/fushilei/starrocks.operator/tags?page=1&ordering=last_updated) , if you want to build image by yourself, you can do it as follows:
+the starrocks supported operator image, you can download from :[operator](https://hub.docker.com/u/starrocks
+
+
+) , if you want to build image by yourself, you can do it as follows:
 
 in the root directory of project, you can compile operator by make command,
 if you want build by yourself, you should prepare go environment.
@@ -75,32 +78,35 @@ starRocksBeSpec:
       mountPath: /opt/starrocks/be/storage # is stable path
 ```
 
-## 5 Deploy operator in kubernetes
+## 6 Deploy operator in kubernetes
 the directory of deploy have deployment yaml.
 the start with leader yamls are for operator election when have multi pods for backup.
 the manager.yaml is the deployment crd yaml for deploy operator, before you create or apply, you should update the image field.
 other yamls are for operator running.
 the operator deploy in starrocks namespace, if you want to deploy in another namespace, you should modify the yamls in deploy.
-the follows display the resources create or apply.
+the follows display the resources create or apply. the default namespace is starrocks, when you deploy into another namespace please replace the namepace.yaml and 
+replace the command parameter -n. 
+the operator's image can search from [operator](https://hub.docker.com/u/starrocks), the key word is operator. 
+
 ```bash
 cd deploy
 # create crd
 kubectl apply -f starrocks.com_starrocksclusters.yaml
 # create namespace
-kubectl apply -f namespace.yam;
-# create rbac-roles
-kubectl apply -f leader_election_role.yaml
-kubectl apply -f role.yaml
+kubectl apply -f namespace.yaml;
+# create rbac-roles the namespace starrocks  
+kubectl apply -n starrocks -f leader_election_role.yaml
+kubectl apply -n starrocks -f role.yaml
 # create rbac-role-binding
-kubectl apply -f role_binding.yaml
-kubectl apply -f leader_election_role_binding.yaml
+kubectl apply -n starrocks -f role_binding.yaml
+kubectl apply -n starrocks -f leader_election_role_binding.yaml
 # create rbac-service-account
-kubectl apply -f service_account.yaml
+kubectl apply -n starrocks -f service_account.yaml
 # create operator deployment
 # replace image field with image which build in[3]
-kubectl apply -f manager.yaml
+kubectl apply -n starrocks -f manager.yaml
 ```
 
-## 6 example
-the directory of examples has some simple example for deploy starrocks.
+## 7 example
+the directory of [examples](./examples/starrocks) has some simple example for deploy starrocks.
 
