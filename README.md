@@ -1,21 +1,22 @@
 # StarRocks-Kubernetes-Operator
 
-## 1 Overview
+## Overview
 **(under development)**  
 This operator is developed with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), which can deploy StarRocks CRD resources in kubernetes.
 
-This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (BE) and Compute Node (CN) components together or separately. These components run in FQDN (fully qualified domain name) mode by default.
+This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (BE) and Compute Node (CN) components into your kubernetes environment. These components run in FQDN (fully qualified domain name) mode by default.
 
-## 2 Requirements
+
+## Requirements
  * kubernetes 1.18+
  * golang 1.18+
 
-## 3 Supported Features
+## Supported Features
 * FE decouples with CN and BE. FE is a must-have component, BE and CN can be optionally deployed.
 * Support v2beta2 horizontalpodautoscalers for CN cluster.
 
-## 3 Build the operator images
-Get the official operator image from:[operator](https://hub.docker.com/repository/docker/fushilei/starrocks.operator/tags?page=1&ordering=last_updated).
+## （Optional) Build the operator images by yourself
+Get the official operator image from [here](https://hub.docker.com/r/starrocks/centos-operator/tags).
 
 Follow below instructions if you want to build your own image.
 
@@ -65,7 +66,7 @@ You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN c
 
 The [examples](./examples/starrocks) directory contains some simple example for reference.
 
-You can use any of the yaml file as a starting point.
+You can use any of the template yaml file as a starting point. You can further add more configurations into the template yaml file following this deployment documentation.
 
 ### Configure the StarRocks' components images
 Official FE/CN/BE components images can be found from [dockerhub](https://hub.docker.com/u/starrocks):
