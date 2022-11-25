@@ -124,7 +124,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 		}
 	}
 
-g	fs.Phase = srapi.ComponentReconciling
+	fs.Phase = srapi.ComponentReconciling
 	if st.Spec.Replicas != nil && len(readys) == int(*st.Spec.Replicas) {
 		fs.Phase = srapi.ComponentRunning
 	} else if len(faileds) != 0 {
@@ -220,6 +220,7 @@ func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1
 	searchSvc.Name = fc.getSearchService()
 	searchSvc.Spec = corev1.ServiceSpec{
 		//for compatible kube-dns
+
 		ClusterIP: "None",
 		Ports: []corev1.ServicePort{
 			{
