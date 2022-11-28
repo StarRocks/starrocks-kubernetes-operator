@@ -81,7 +81,7 @@ starRocksFeSpec:
 
 ### (Optional) Using ConfigMap to configure your StarRocks cluster
 
-Those images contains default application configuration file, they can be overritten by configuring kubernetes configmap deployment crd. 
+The official images contains default application configuration file, however, they can be overritten by configuring kubernetes configmap deployment crd. 
 
 You can generate the configmap from an StarRocks configuration file.
 Below is an example of creating a Kubernetes configmap `fe-config-map` from the `fe.conf` configuration file. You can do the same with BE and CN.
@@ -135,6 +135,14 @@ starRocksBeSpec:
 ### Deploy the StarRocks cluster
 For demonstration purpose, we use the [starrocks-fe-and-be.yaml](./examples/starrocks/starrocks-fe-and-be.yaml) example template to start a 3 FE and 3 BE StarRocks cluster.
 
-```commandline
+```bash
 kubectl apply -f starrocks-fe-and-be.yaml
 ```
+
+### Connect to the deployed StarRocks Cluster
+
+After deploying the StarRocks cluster, you can use `kubectl get svc -n <namespace>` to find the IP to connect to. For example if the namespace that starrocks is deployed into is `starrocks`, you can:
+```bash
+kubectl get svc -n starrocks
+```
+`<your-StarRocksCluster-name>-fe-service`'s clusterIP is the IP to use to connect to StarRocks FE.
