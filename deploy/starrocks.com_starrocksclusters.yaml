@@ -178,7 +178,7 @@ spec:
                           description: 'StorageSize is a valid memory size type based
                             on powers-of-2, so 1MB is 1024KB. Supported units:MB,
                             MiB, GB, GiB, TB, TiB, PB, PiB, EB, EiB Ex: `512MB`.'
-                          pattern: (^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B)$
+                          pattern: (^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B?)$
                           type: string
                       required:
                       - name
@@ -1082,7 +1082,7 @@ spec:
                           description: 'StorageSize is a valid memory size type based
                             on powers-of-2, so 1MB is 1024KB. Supported units:MB,
                             MiB, GB, GiB, TB, TiB, PB, PiB, EB, EiB Ex: `512MB`.'
-                          pattern: (^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B)$
+                          pattern: (^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i?)?B?)$
                           type: string
                       required:
                       - name
