@@ -282,7 +282,7 @@ type StorageVolume struct {
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
-	// Supplsorted units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
+	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
 	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
 	StorageSize string `json:"storageSize"`
 
