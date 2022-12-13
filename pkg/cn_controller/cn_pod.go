@@ -186,10 +186,10 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
-			Namespace:   src.Namespace,
-			Labels:      cc.cnPodLabels(src, cnStatefulSetName(src)),
-			Annotations: src.Annotations,
+			Name:      metaname,
+			Namespace: src.Namespace,
+			Labels:    cc.cnPodLabels(src, cnStatefulSetName(src)),
+			//Annotations: src.Annotations,
 			/*OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: src.APIVersion,
