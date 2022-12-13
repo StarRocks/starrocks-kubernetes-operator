@@ -243,9 +243,10 @@ type StarRocksCnSpec struct {
 	//the service for user access cn.
 	Service *StarRocksService `json:"service,omitempty"`
 
-	//+optional
+	//+optional, should remove ?
+	//+deprecated,
 	//set the fe service for register cn, when not set, will use the fe config to find.
-	FeServiceName string `json:"feServiceName,omitempty"`
+	//FeServiceName string `json:"feServiceName,omitempty"`
 
 	//the reference for cn configMap.
 	//+optional
@@ -281,8 +282,8 @@ type StorageVolume struct {
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
-	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
-	// +kubebuilder:validation:Pattern:="(^0|([0-9]*[.])?[0-9]+((M|G|T|E|P)i))$"
+	// Supplsorted units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
+	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
 	StorageSize string `json:"storageSize"`
 
 	//MountPath specify the path of volume mount.
@@ -291,8 +292,13 @@ type StorageVolume struct {
 
 type StarRocksService struct {
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
+	// +optional
 	Name string `json:"name,omitempty"`
-
+	//type of service, More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+	//ClusterIP, NodePort, LoadBalancer,ExternalName
+	// +optional
+	Type corev1.ServiceType `json:"type,omitempty"`
+	// +optional
 	Ports []StarRocksServicePort `json:"ports"`
 }
 

@@ -19,18 +19,27 @@ const (
 
 //HashService service hash components
 type hashService struct {
-	name        string
-	namespace   string
-	ports       []corev1.ServicePort
-	selector    map[string]string
-	serviceType corev1.ServiceType
-	labels      map[string]string
+	name      string
+	namespace string
+	ports     []corev1.ServicePort
+	selector  map[string]string
+	//deal with external access load balancer.
+	//serviceType corev1.ServiceType
+	labels map[string]string
 }
 
 //BuildExternalService build the external service.
 func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
 	var srPorts []srapi.StarRocksServicePort
+	//the k8s service type.
+	var svcType corev1.ServiceType
 	if serviceType == FeService {
+		if src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Type != "" {
+			svcType = src.Spec.StarRocksFeSpec.Service.Type
+		} else {
+			svcType = corev1.ServiceTypeClusterIP
+		}
+
 		httpPort := GetPort(config, HTTP_PORT)
 		rpcPort := GetPort(config, RPC_PORT)
 		queryPort := GetPort(config, QUERY_PORT)
@@ -44,6 +53,11 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		}, srapi.StarRocksServicePort{
 			Port: editPort, ContainerPort: editPort, Name: "edit-log"})
 	} else if serviceType == BeService {
+		if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Type != "" {
+			svcType = src.Spec.StarRocksBeSpec.Service.Type
+		} else {
+			svcType = corev1.ServiceTypeClusterIP
+		}
 		name = srapi.DEFAULT_BE_SERVICE_NAME
 		bePort := GetPort(config, BE_PORT)
 		webseverPort := GetPort(config, WEBSERVER_PORT)
@@ -60,6 +74,12 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		})
 
 	} else if serviceType == CnService {
+		if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Type != "" {
+			svcType = src.Spec.StarRocksCnSpec.Service.Type
+		} else {
+			svcType = corev1.ServiceTypeClusterIP
+		}
+
 		name = srapi.DEFAULT_CN_SERVICE_NAME
 		thriftPort := GetPort(config, THRIFT_PORT)
 		webseverPort := GetPort(config, WEBSERVER_PORT)
@@ -103,6 +123,7 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 			OwnerReferences: []metav1.OwnerReference{or},
 		},
 		Spec: corev1.ServiceSpec{
+			Type:     svcType,
 			Selector: labels,
 			Ports:    ports,
 		},
@@ -140,12 +161,12 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 
 func serviceHashObject(svc *corev1.Service) hashService {
 	return hashService{
-		name:        svc.Name,
-		namespace:   svc.Namespace,
-		ports:       svc.Spec.Ports,
-		selector:    svc.Spec.Selector,
-		serviceType: svc.Spec.Type,
-		labels:      svc.Labels,
+		name:      svc.Name,
+		namespace: svc.Namespace,
+		ports:     svc.Spec.Ports,
+		selector:  svc.Spec.Selector,
+		//serviceType: svc.Spec.Type,
+		labels: svc.Labels,
 	}
 }
 

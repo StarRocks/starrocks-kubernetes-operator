@@ -212,10 +212,10 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
-			Namespace:   src.Namespace,
-			Labels:      be.bePodLabels(src, beStatefulSetName(src)),
-			Annotations: src.Annotations,
+			Name:      metaname,
+			Namespace: src.Namespace,
+			Labels:    be.bePodLabels(src, beStatefulSetName(src)),
+			//Annotations: src.Annotations,
 			/*
 				OwnerReferences: []metav1.OwnerReference{
 					{
