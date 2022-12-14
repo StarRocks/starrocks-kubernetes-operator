@@ -1,7 +1,7 @@
 FROM alpine:3.14
 RUN apk update \
     && apk upgrade  \
-    && apk add --update openjdk11 tzdata curl unzip bash mysql-client procps vim  \
+    && apk add --update openjdk11 tzdata curl unzip bash mysql-client procps vim eudev-dev \
     && rm -rf /var/cache/apk/*
 ENV JAVA_HOME=/usr/lib/jvm/default-jvm/
 ENV STARROCKS_ROOT=/opt/starrocks  
