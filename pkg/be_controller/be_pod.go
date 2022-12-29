@@ -73,7 +73,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 	if _, ok := vexist[log_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			//use storage volume.
-			Name:      storage_name,
+			Name: storage_name,
 			MountPath: log_path,
 		})
 		vols = []corev1.Volume{

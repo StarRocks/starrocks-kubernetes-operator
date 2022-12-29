@@ -1,0 +1,23 @@
+FROM ubuntu:22.04 as system
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETARCH
+
+RUN apt-get update \
+    && apt-get install -y  --no-install-recommends curl  binutils-dev \
+        openssl vim gzip tar mysql-client openjdk-11-jdk procps bash \
+    && apt-get install -y tzdata
+
+RUN useradd --create-home --no-log-init --shell /bin/bash starrocks
+
+COPY --chown=starrocks:starrocks  /fe /opt/starrocks/fe/
+COPY --chown=starrocks:starrocks fe_entrypoint.sh fe_prestop.sh /opt/starrocks/
+
+ENV STARROCKS_ROOT=/opt/starrocks
+
+USER starrocks
+
+RUN mkdir -p /opt/starrocks/fe/meta/
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-${TARGETARCH:-amd64}/
+
+Workdir /opt/starrocks

@@ -26,33 +26,31 @@ import (
 
 // StarRocksClusterSpec defines the desired state of StarRocksCluster
 type StarRocksClusterSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Specify a Service Account for starRocksCluster
+	// Specify a Service Account for starRocksCluster use k8s cluster.
 	//+optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//StarRocksFeSpec is the fe specification.
+	//StarRocksFeSpec define fe configuration of the starrocks cluster.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
-	//StarRocksBeSpec is the be specification.
+	//StarRocksBeSpec define be configuration of the starrocks cluster.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
 
-	//StarRocksCnSpec is the cn specification.
+	//StarRocksCnSpec define cn configuration of the starrocks cluster.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
 }
 
-// StarRocksClusterStatus defines the observed state of StarRocksCluster
+// StarRocksClusterStatus defines the observed state of StarRocksCluster.
 type StarRocksClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	//Represents the state of cluster. the possible value are: running, failed, pending
 	Phase ClusterPhase `json:"phase"`
-	//used pointer for the component
+	//Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
 
+	//Represents the status of be. the status have running, failed and creating pods.
 	StarRocksBeStatus *StarRocksBeStatus `json:"starRocksBeStatus,omitempty"`
 
+	//Represents the status of cn. the status have running, failed and creating pods.
 	StarRocksCnStatus *StarRocksCnStatus `json:"starRocksCnStatus,omitempty"`
 }
 
@@ -60,13 +58,13 @@ type ClusterPhase string
 type MemberPhase string
 
 const (
-	//ClusterRunning starrocks cluster is running
+	//ClusterRunning represents starrocks cluster is running.
 	ClusterRunning = "running"
 
-	//ClusterFailed starrocks cluster have failed for some reason, the status explain what happened.
+	//ClusterFailed represents starrocks cluster failed.
 	ClusterFailed = "failed"
 
-	//ClusterPending starrocks cluster is creating
+	//ClusterPending represents the starrocks cluster is creating
 	ClusterPending = "pending"
 
 	//ClusterWaiting waiting cluster running
@@ -84,42 +82,87 @@ const (
 	ComponentWaiting = "waiting"
 )
 
-//StarRocksFeStatus the status of starrocksfe.
+//StarRocksFeStatus represents the status of starrocks fe.
 type StarRocksFeStatus struct {
-	ServiceName       string      `json:"serviceName,omitempty"`
-	FailedInstances   []string    `json:"failedInstances,omitempty"`
-	CreatingInstances []string    `json:"creatingInstances,omitempty"`
-	RunningInstances  []string    `json:"runningInstances,omitempty"`
-	ResourceNames     []string    `json:"resourceNames,omitempty"`
-	Phase             MemberPhase `json:"phase"`
+	//the name of fe service exposed for user.
+	ServiceName string `json:"serviceName,omitempty"`
+
+	//FailedInstances represents the failed pods of fe.
+	FailedInstances []string `json:"failedInstances,omitempty"`
+
+	//CreatingInstances represents the creating pods of fe.
+	CreatingInstances []string `json:"creatingInstances,omitempty"`
+
+	//RunningInstances represents the running pods of fe.
+	RunningInstances []string `json:"runningInstances,omitempty"`
+
+	//ResourceNames the statefulset names of fe in v1alpha1 version.
+	ResourceNames []string `json:"resourceNames,omitempty"`
+
+	// Phase the value from all pods of fe status. If fe have one failed pod phase=failed,
+	// also if fe have one creating pod phase=creating, also if fe all running phase=running, others unknown.
+	Phase MemberPhase `json:"phase"`
+
 	//+optional
+	//Reason represents the reason of not running.
 	Reason string `json:"reason"`
 }
 
+// StarRocksBeStatus represents the status of starrocks be.
 type StarRocksBeStatus struct {
-	ServiceName       string      `json:"serviceName,omitempty"`
-	FailedInstances   []string    `json:"failedInstances,omitempty"`
-	CreatingInstances []string    `json:"creatingInstances,omitempty"`
-	RunningInstances  []string    `json:"runningInstances,omitempty"`
-	ResourceNames     []string    `json:"resourceNames,omitempty"`
-	Phase             MemberPhase `json:"phase"`
+	//the name of be service for fe find be instance.
+	ServiceName string `json:"serviceName,omitempty"`
+
+	//FailedInstances deploy failed instance of be.
+	FailedInstances []string `json:"failedInstances,omitempty"`
+
+	//CreatingInstances represents status in creating pods of be.
+	CreatingInstances []string `json:"creatingInstances,omitempty"`
+
+	//RunningInstances represents status in running pods of be.
+	RunningInstances []string `json:"runningInstances,omitempty"`
+
+	//The statefulset names of be.
+	ResourceNames []string `json:"resourceNames,omitempty"`
+
+	// Phase the value from all pods of be status. If be have one failed pod phase=failed,
+	// also if be have one creating pod phase=creating, also if be all running phase=running, others unknown.
+	Phase MemberPhase `json:"phase"`
+
+	// the reason for the phase.
 	//+optional
 	Reason string `json:"reason"`
 }
 
 type StarRocksCnStatus struct {
-	ServiceName       string      `json:"serviceName,omitempty"`
-	FailedInstances   []string    `json:"failedInstances,omitempty"`
-	CreatingInstances []string    `json:"creatingInstances,omitempty"`
-	RunningInstances  []string    `json:"runningInstances,omitempty"`
-	ResourceNames     []string    `json:"resourceNames,omitempty"`
-	HpaName           string      `json:"HpaName,omitempty"`
-	Phase             MemberPhase `json:"phase"`
+	//the name of cn service for fe find cn instance.
+	ServiceName string `json:"serviceName,omitempty"`
+
+	//FailedInstances deploy failed instance of cn.
+	FailedInstances []string `json:"failedInstances,omitempty"`
+
+	//CreatingInstances represents status in creating pods of cn.
+	CreatingInstances []string `json:"creatingInstances,omitempty"`
+
+	//RunningInstances represents status in running pods of cn.
+	RunningInstances []string `json:"runningInstances,omitempty"`
+
+	//The statefulset names of be.
+	ResourceNames []string `json:"resourceNames,omitempty"`
+
+	//The policy name of autoScale.
+	HpaName string `json:"HpaName,omitempty"`
+
+	// Phase the value from all pods of cn status. If cn have one failed pod phase=failed,
+	// also if cn have one creating pod phase=creating, also if cn all running phase=running, others unknown.
+	Phase MemberPhase `json:"phase"`
+
+	// the reason for the phase.
 	//+optional
 	Reason string `json:"reason"`
 }
 
-// StarRocksCluster is the Schema for the starrocksclusters API
+// StarRocksCluster defines a starrocks cluster deployment.
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:shortName=src
 //+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -129,11 +172,16 @@ type StarRocksCnStatus struct {
 //+kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
 //+kubebuilder:storageversion
 // +k8s:openapi-gen=true
+// +genclient
 type StarRocksCluster struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   StarRocksClusterSpec   `json:"spec,omitempty"`
+	//Specification of the desired state of the starrocks cluster.
+	Spec StarRocksClusterSpec `json:"spec,omitempty"`
+
+	//Most recent observed status of the starrocks cluster
 	Status StarRocksClusterStatus `json:"status,omitempty"`
 }
 
@@ -145,7 +193,6 @@ const (
 )
 
 //StarRocksFeSpec defines the desired state of fe.
-// +k8s:openapi-gen=true
 type StarRocksFeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
@@ -156,7 +203,7 @@ type StarRocksFeSpec struct {
 	//+optional: Defaults to 3
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image is the container image for the fe.
+	//Image for a starrocks fe deployment..
 	Image string `json:"image"`
 
 	//Service defines the template for the associated Kubernetes Service object.
@@ -181,13 +228,12 @@ type StarRocksFeSpec struct {
 }
 
 //StarRocksBeSpec defines the desired state of be.
-// +k8s:openapi-gen=true
 type StarRocksBeSpec struct {
-	//Replicas is the number of desired be Pod
-	// Optional: Defaults to 3
+	//Replicas is the number of desired be Pod. the default value=3
+	// Optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image is the container image for the be.
+	//Image for a starrocks be deployment.
 	Image string `json:"image"`
 
 	//name of the starrocks be cluster.
@@ -219,12 +265,10 @@ type StarRocksBeSpec struct {
 	//ReplicaInstance is the names of replica starrocksbe cluster.
 	//+optional
 	//+deprecated, temp deprecated.
-
 	ReplicaInstances []string `json:"ReplicaInstances,omitempty"`
 }
 
 //StarRocksCnSpec defines the desired state of cn.
-// +k8s:openapi-gen=true
 type StarRocksCnSpec struct {
 	//name of the starrocks be cluster.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
@@ -236,14 +280,14 @@ type StarRocksCnSpec struct {
 	//+optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image is the container image for the cn.
+	//Image for a starrocks cn deployment.
 	Image string `json:"image"`
 
 	//Service defines the template for the associated Kubernetes Service object.
 	//the service for user access cn.
 	Service *StarRocksService `json:"service,omitempty"`
 
-	//+optional, should remove ?
+	//+optional
 	//+deprecated,
 	//set the fe service for register cn, when not set, will use the fe config to find.
 	//FeServiceName string `json:"feServiceName,omitempty"`
@@ -291,22 +335,33 @@ type StorageVolume struct {
 }
 
 type StarRocksService struct {
+	//Name assigned to service.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	// +optional
 	Name string `json:"name,omitempty"`
-	//type of service, More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-	//ClusterIP, NodePort, LoadBalancer,ExternalName
+
+	//type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+	//More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 	// +optional
 	Type corev1.ServiceType `json:"type,omitempty"`
+
+	//Ports the components exposed ports and listen ports in pod.
 	// +optional
 	Ports []StarRocksServicePort `json:"ports"`
 }
 
 type StarRocksServicePort struct {
-	Name          string `json:"name,omitempty"`
-	Port          int32  `json:"port"`
-	ContainerPort int32  `json:"containerPort"`
-	NodePort      int32  `json:"nodePort,omitempty"`
+	//Name of the map about coming port and target port
+	Name string `json:"name,omitempty"`
+
+	//Port the pod is exposed on service.
+	Port int32 `json:"port"`
+
+	//ContainerPort the service listen in pod.
+	ContainerPort int32 `json:"containerPort"`
+
+	//The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
+	NodePort int32 `json:"nodePort,omitempty"`
 }
 
 //StarRocksProbe defines the mode for probe be alive.
@@ -328,8 +383,9 @@ type StarRocksProbe struct {
 	PeriodSeconds *int32 `json:"periodSeconds,omitempty"`
 }
 
-//+kubebuilder:object:root=true
 // StarRocksClusterList contains a list of StarRocksCluster
+//+kubebuilder:object:root=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 type StarRocksClusterList struct {
 	metav1.TypeMeta `json:",inline"`
