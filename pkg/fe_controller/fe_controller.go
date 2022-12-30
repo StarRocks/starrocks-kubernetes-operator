@@ -19,7 +19,7 @@ package fe_controller
 import (
 	"context"
 	"errors"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	appv1 "k8s.io/api/apps/v1"
@@ -47,7 +47,7 @@ func New(k8sclient client.Client, k8sRecorder record.EventRecorder) *FeControlle
 }
 
 //Sync starRocksCluster spec to fe statefulset and service.
-func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluster) error {
 	if src.Spec.StarRocksFeSpec == nil {
 		klog.Info("FeController Sync ", "the fe component is not needed ", "namespace ", src.Namespace, " starrocks cluster name ", src.Name)
 		return nil
@@ -63,15 +63,15 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//str, _ := json.Marshal(config)
 	//klog.Info("the resolve configmap ", string(str))
 	//generate new fe service.
-	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config)
-	fs := &srapi.StarRocksFeStatus{ServiceName: svc.Name, Phase: srapi.ComponentReconciling}
+	svc := rutils.BuildExternalService(src, v1alpha12.GetFeExternalServiceName(src), rutils.FeService, config)
+	fs := &v1alpha12.StarRocksFeStatus{ServiceName: svc.Name, Phase: v1alpha12.ComponentReconciling}
 	src.Status.StarRocksFeStatus = fs
 	//create or update fe external and domain search service, update the status of fe on src.
 	if err := fc.createOrUpdateFeService(ctx, &svc, config); err != nil {
 		klog.Error("FeController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
 		return err
 	}
-	feFinalizers := []string{srapi.FE_SERVICE_FINALIZER}
+	feFinalizers := []string{v1alpha12.FE_SERVICE_FINALIZER}
 	//create fe statefulset.
 	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src, config))
 	defer func() {
@@ -104,7 +104,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 }
 
 //UpdateFeStatus update the starrockscluster fe status.
-func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.StatefulSet) error {
+func (fc *FeController) updateFeStatus(fs *v1alpha12.StarRocksFeStatus, st appv1.StatefulSet) error {
 	var podList corev1.PodList
 	if err := fc.k8sclient.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
 		return err
@@ -124,11 +124,11 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 		}
 	}
 
-	fs.Phase = srapi.ComponentReconciling
+	fs.Phase = v1alpha12.ComponentReconciling
 	if st.Spec.Replicas != nil && len(readys) == int(*st.Spec.Replicas) {
-		fs.Phase = srapi.ComponentRunning
+		fs.Phase = v1alpha12.ComponentRunning
 	} else if len(faileds) != 0 {
-		fs.Phase = srapi.ComponentFailed
+		fs.Phase = v1alpha12.ComponentFailed
 		fs.Reason = podmap[faileds[0]].Status.Message
 	} else if len(creatings) != 0 {
 		fs.Reason = podmap[creatings[0]].Status.Message
@@ -141,7 +141,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, st appv1.Sta
 }
 
 //GetFeConfig get the fe start config.
-func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
 		return make(map[string]interface{}), nil
 	}
@@ -156,7 +156,7 @@ func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.Co
 }
 
 //ClearResources clear resource about fe.
-func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+func (fc *FeController) ClearResources(ctx context.Context, src *v1alpha12.StarRocksCluster) (bool, error) {
 	//if the starrocks is not have fe.
 	if src.Status.StarRocksFeStatus == nil {
 		return true, nil
@@ -196,7 +196,7 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	if count == len(src.Status.StarRocksFeStatus.ResourceNames) {
-		fmap[srapi.FE_STATEFULSET_FINALIZER] = true
+		fmap[v1alpha12.FE_STATEFULSET_FINALIZER] = true
 	}
 
 	var svc corev1.Service

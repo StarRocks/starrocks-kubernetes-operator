@@ -17,7 +17,7 @@ limitations under the License.
 package cn_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,17 +33,17 @@ const (
 )
 
 //cnPodLabels
-func (cc *CnController) cnPodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
+func (cc *CnController) cnPodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = ownerReferenceName
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
+	labels[v1alpha12.OwnerReference] = ownerReferenceName
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_CN
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_CN
+func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + v1alpha12.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
 	//generate the default emptydir for log.
@@ -83,7 +83,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 	}
 
 	cnContainer := corev1.Container{
-		Name:    srapi.DEFAULT_CN,
+		Name:    v1alpha12.DEFAULT_CN,
 		Image:   cnSpec.Image,
 		Command: []string{"/opt/starrocks/cn_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -118,11 +118,11 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 				},
 			}, {
-				Name:  srapi.COMPONENT_NAME,
-				Value: srapi.DEFAULT_CN,
+				Name:  v1alpha12.COMPONENT_NAME,
+				Value: v1alpha12.DEFAULT_CN,
 			}, {
-				Name:  srapi.FE_SERVICE_NAME,
-				Value: srapi.GetFeExternalServiceName(src),
+				Name:  v1alpha12.FE_SERVICE_NAME,
+				Value: v1alpha12.GetFeExternalServiceName(src),
 			}, {
 				Name:  "FE_QUERY_PORT",
 				Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),

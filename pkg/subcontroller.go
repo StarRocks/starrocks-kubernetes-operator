@@ -18,7 +18,7 @@ package pkg
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 )
 
 type SubController interface {

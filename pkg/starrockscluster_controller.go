@@ -18,7 +18,7 @@ package pkg
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/be_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"

@@ -17,7 +17,7 @@ limitations under the License.
 package fe_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,17 +36,17 @@ const (
 )
 
 //fePodLabels generate the fe pod labels and statefulset selector
-func fePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
+func fePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = ownerReferenceName
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
+	labels[v1alpha12.OwnerReference] = ownerReferenceName
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
 //buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_FE
+func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + v1alpha12.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
 	vexist := make(map[string]bool)
@@ -119,7 +119,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 	}
 
 	feContainer := corev1.Container{
-		Name:    srapi.DEFAULT_FE,
+		Name:    v1alpha12.DEFAULT_FE,
 		Image:   feSpec.Image,
 		Command: []string{"/opt/starrocks/fe_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -149,11 +149,11 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 				},
 			}, {
-				Name:  srapi.COMPONENT_NAME,
-				Value: srapi.DEFAULT_FE,
+				Name:  v1alpha12.COMPONENT_NAME,
+				Value: v1alpha12.DEFAULT_FE,
 			}, {
-				Name:  srapi.FE_SERVICE_NAME,
-				Value: srapi.GetFeExternalServiceName(src) + "." + src.Namespace,
+				Name:  v1alpha12.FE_SERVICE_NAME,
+				Value: v1alpha12.GetFeExternalServiceName(src) + "." + src.Namespace,
 			}, {
 				Name: "POD_IP",
 				ValueFrom: &corev1.EnvVarSource{

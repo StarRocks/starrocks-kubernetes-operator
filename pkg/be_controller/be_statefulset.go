@@ -17,7 +17,7 @@ limitations under the License.
 package be_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -25,7 +25,7 @@ import (
 )
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beconfig map[string]interface{}) rutils.StatefulSetParams {
+func (be *BeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, beconfig map[string]interface{}) rutils.StatefulSetParams {
 	beSpec := src.Spec.StarRocksBeSpec
 
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -61,16 +61,16 @@ func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beco
 	}
 }
 
-func beStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
+func beStatefulSetsLabels(src *v1alpha12.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_BE
+	labels[v1alpha12.OwnerReference] = src.Name
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
-func beStatefulSetName(src *srapi.StarRocksCluster) string {
-	stname := src.Name + "-" + srapi.DEFAULT_BE
+func beStatefulSetName(src *v1alpha12.StarRocksCluster) string {
+	stname := src.Name + "-" + v1alpha12.DEFAULT_BE
 	if src.Spec.StarRocksBeSpec.Name != "" {
 		stname = src.Spec.StarRocksBeSpec.Name
 	}

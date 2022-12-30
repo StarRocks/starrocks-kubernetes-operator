@@ -17,7 +17,7 @@ limitations under the License.
 package pkg
 
 import (
-	starrockscomv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	starrockscomv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"

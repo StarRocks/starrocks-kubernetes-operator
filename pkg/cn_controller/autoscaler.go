@@ -17,17 +17,17 @@ limitations under the License.
 package cn_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPolicy, st *appv1.StatefulSet) *rutils.PodAutoscalerParams {
+func (cc *CnController) buildCnAutoscalerParams(scalerInfo v1alpha12.AutoScalingPolicy, st *appv1.StatefulSet) *rutils.PodAutoscalerParams {
 
 	labels := rutils.Labels{}
 	labels.AddLabel(st.Labels)
-	labels.Add(srapi.ComponentLabelKey, "autoscaler")
+	labels.Add(v1alpha12.ComponentLabelKey, "autoscaler")
 
 	ors := []metav1.OwnerReference{*metav1.NewControllerRef(st, st.GroupVersionKind())}
 	return &rutils.PodAutoscalerParams{

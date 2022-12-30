@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cn-controller-manager
+  name: starrocks-controller
   namespace: starrocks
   labels:
-    control-plane: cn-controller-manager
+    control-plane: starrocks-controller
 spec:
   selector:
     matchLabels:
-      control-plane: cn-controller-manager
+      control-plane: starrocks-controller
   replicas: 1
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        control-plane: cn-controller-manager
+        control-plane: starrocks-controller
     spec:
       securityContext:
         runAsNonRoot: false
@@ -49,5 +49,5 @@ spec:
           requests:
             cpu: 10m
             memory: 64Mi
-      serviceAccountName: cn-controller-manager
+      serviceAccountName: starrocks-controller
       terminationGracePeriodSeconds: 10
