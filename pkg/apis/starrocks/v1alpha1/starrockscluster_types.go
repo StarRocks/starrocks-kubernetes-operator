@@ -30,13 +30,13 @@ type StarRocksClusterSpec struct {
 	//+optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//StarRocksFeSpec define fe configuration of the starrocks cluster.
+	//StarRocksFeSpec define fe configuration for start fe service.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
-	//StarRocksBeSpec define be configuration of the starrocks cluster.
+	//StarRocksBeSpec define be configuration for start be service.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
 
-	//StarRocksCnSpec define cn configuration of the starrocks cluster.
+	//StarRocksCnSpec define cn configuration for start cn service.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
 }
 
@@ -72,13 +72,13 @@ const (
 )
 
 const (
-	//ComponentReconciling the component of starrocks cluster is dynamic adjustment.
+	//ComponentReconciling the starrocks have component in starting.
 	ComponentReconciling = "reconciling"
-
+	//ComponentFailed have at least one service failed.
 	ComponentFailed = "failed"
-	//
+	//ComponentRunning all components runs available.
 	ComponentRunning = "running"
-
+	//ComponentWaiting service wait for reconciling.
 	ComponentWaiting = "waiting"
 )
 
@@ -87,13 +87,13 @@ type StarRocksFeStatus struct {
 	//the name of fe service exposed for user.
 	ServiceName string `json:"serviceName,omitempty"`
 
-	//FailedInstances represents the failed pods of fe.
+	//FailedInstances failed fe pod names.
 	FailedInstances []string `json:"failedInstances,omitempty"`
 
-	//CreatingInstances represents the creating pods of fe.
+	//CreatingInstances in creating pod names.
 	CreatingInstances []string `json:"creatingInstances,omitempty"`
 
-	//RunningInstances represents the running pods of fe.
+	//RunningInstances in running status pod names.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
 	//ResourceNames the statefulset names of fe in v1alpha1 version.
@@ -138,13 +138,13 @@ type StarRocksCnStatus struct {
 	//the name of cn service for fe find cn instance.
 	ServiceName string `json:"serviceName,omitempty"`
 
-	//FailedInstances deploy failed instance of cn.
+	//FailedInstances deploy failed cn pod names.
 	FailedInstances []string `json:"failedInstances,omitempty"`
 
-	//CreatingInstances represents status in creating pods of cn.
+	//CreatingInstances in creating status cn pod names.
 	CreatingInstances []string `json:"creatingInstances,omitempty"`
 
-	//RunningInstances represents status in running pods of cn.
+	//RunningInstances in running status be pod names.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
 	//The statefulset names of be.
