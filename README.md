@@ -31,7 +31,8 @@ make push IMG="xxx"
 
 
 ## Deploy the StarRocks Operator in kubernetes
- We have supported helm mode for deploy starrocks operator and starrocks, so you can deploy the operator by [helm](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks)
+ We have supported helm mode for deploy starrocks operator and starrocks, so you can deploy the operator by [helm](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks).
+
 The follows for deploy operator and starrocks manually on your k8s cluster. [deploy](./deploy) directory contains all the necessary yamls to deploy the operator. 
 
 * Yaml files with `leader_` prefix are for  mgr service election in operator.

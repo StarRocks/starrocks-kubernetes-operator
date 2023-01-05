@@ -488,7 +488,7 @@ StarRocksFeSpec
 </em>
 </td>
 <td>
-<p>StarRocksFeSpec define fe configuration of the starrocks cluster.</p>
+<p>StarRocksFeSpec define fe configuration for start fe service.</p>
 </td>
 </tr>
 <tr>
@@ -501,7 +501,7 @@ StarRocksBeSpec
 </em>
 </td>
 <td>
-<p>StarRocksBeSpec define be configuration of the starrocks cluster.</p>
+<p>StarRocksBeSpec define be configuration for start be service.</p>
 </td>
 </tr>
 <tr>
@@ -514,7 +514,7 @@ StarRocksCnSpec
 </em>
 </td>
 <td>
-<p>StarRocksCnSpec define cn configuration of the starrocks cluster.</p>
+<p>StarRocksCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
 </table>
@@ -573,7 +573,7 @@ StarRocksFeSpec
 </em>
 </td>
 <td>
-<p>StarRocksFeSpec define fe configuration of the starrocks cluster.</p>
+<p>StarRocksFeSpec define fe configuration for start fe service.</p>
 </td>
 </tr>
 <tr>
@@ -586,7 +586,7 @@ StarRocksBeSpec
 </em>
 </td>
 <td>
-<p>StarRocksBeSpec define be configuration of the starrocks cluster.</p>
+<p>StarRocksBeSpec define be configuration for start be service.</p>
 </td>
 </tr>
 <tr>
@@ -599,7 +599,7 @@ StarRocksCnSpec
 </em>
 </td>
 <td>
-<p>StarRocksCnSpec define cn configuration of the starrocks cluster.</p>
+<p>StarRocksCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
 </tbody>
@@ -847,7 +847,7 @@ string
 </em>
 </td>
 <td>
-<p>FailedInstances deploy failed instance of cn.</p>
+<p>FailedInstances deploy failed cn pod names.</p>
 </td>
 </tr>
 <tr>
@@ -858,7 +858,7 @@ string
 </em>
 </td>
 <td>
-<p>CreatingInstances represents status in creating pods of cn.</p>
+<p>CreatingInstances in creating status cn pod names.</p>
 </td>
 </tr>
 <tr>
@@ -869,7 +869,7 @@ string
 </em>
 </td>
 <td>
-<p>RunningInstances represents status in running pods of cn.</p>
+<p>RunningInstances in running status be pod names.</p>
 </td>
 </tr>
 <tr>
@@ -1097,7 +1097,7 @@ string
 </em>
 </td>
 <td>
-<p>FailedInstances represents the failed pods of fe.</p>
+<p>FailedInstances failed fe pod names.</p>
 </td>
 </tr>
 <tr>
@@ -1108,7 +1108,7 @@ string
 </em>
 </td>
 <td>
-<p>CreatingInstances represents the creating pods of fe.</p>
+<p>CreatingInstances in creating pod names.</p>
 </td>
 </tr>
 <tr>
@@ -1119,7 +1119,7 @@ string
 </em>
 </td>
 <td>
-<p>RunningInstances represents the running pods of fe.</p>
+<p>RunningInstances in running status pod names.</p>
 </td>
 </tr>
 <tr>
