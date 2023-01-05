@@ -31,9 +31,10 @@ make push IMG="xxx"
 
 
 ## Deploy the StarRocks Operator in kubernetes
-The first step is to deploy the StarRocks operator in your Kubernetes environment. The [deploy](./deploy) directory contains all the necessary yamls to deploy the operator. 
+ We have supported helm mode for deploy starrocks operator and starrocks, so you can deploy the operator by [helm](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks)
+The follows for deploy operator and starrocks manually on your k8s cluster. [deploy](./deploy) directory contains all the necessary yamls to deploy the operator. 
 
-* Yaml files with `leader_` prefix are for operator election if willing to take multiples pods for backup. 
+* Yaml files with `leader_` prefix are for  mgr service election in operator.
 
 * The [manager.yaml](./deploy/manager.yaml) template is a deployment yaml to deploy the StarRocks operator. Remember to update corresponding `image` before applying to kubernetes. 
 
@@ -41,7 +42,9 @@ The first step is to deploy the StarRocks operator in your Kubernetes environmen
 
 By default, the operator deploys the StarRocks cluster in `starrocks` namespace. Either specifying the namespace `-n <namespace>` when running `kubectl apply` or set the namespace meta field in every yaml files.
 
-This example deploys StarRocks operator in the default `starrocks` namespace.
+This example deploys StarRocks operator in the namespace `starrocks`. so when you use starrocks namespace, should create starrocks namespace before.
+if you want to deploy in another namespace, please update the yamls  namespace field.
+
 ```bash
 cd deploy
 # create crd

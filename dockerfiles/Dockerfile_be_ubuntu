@@ -4,7 +4,7 @@ ONBUILD COPY --chown=starrocks:starrocks /be /opt/starrocks/be/
 
 FROM ubuntu:22.04 as base_arm64
 RUN useradd --create-home --no-log-init --shell /bin/bash starrocks
-ONBUILD COPY --chown=starrocks:starrocks /be /opt/starrocks/be/
+ONBUILD COPY --chown=starrocks:starrocks /arm64 /opt/starrocks/be/
 
 ARG TARGETARCH
 FROM base_${TARGETARCH:-amd64}
