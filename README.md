@@ -32,13 +32,13 @@ make push IMG="xxx"
 ## Install Operator in kubernetes
 Apply the custom resource definition (CRD) for the Operator:
 ```shell
-kubectl -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
+kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
 ```
 Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace. 
 To use the Operator in a custom namespace, download the [Operator manifest](https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml) and edit all instances of namespace: starrocks to specify your custom namespace.
 Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the command below.
 ```shell
-kubectl -f  https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
 ```
 
 ## Deploy StarRocks
