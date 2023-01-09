@@ -18,7 +18,7 @@ package cn_controller
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	appv1 "k8s.io/api/apps/v1"
@@ -46,24 +46,24 @@ func New(k8sclient client.Client, k8srecorder record.EventRecorder) *CnControlle
 	}
 }
 
-func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (cc *CnController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluster) error {
 	if src.Spec.StarRocksCnSpec == nil {
 		klog.Info("CnController Sync the cn component is not needed", " namespace ", src.Namespace, " starrocks cluster name ", src.Name)
 		return nil
 	}
 
 	cnSpec := src.Spec.StarRocksCnSpec
-	cs := &srapi.StarRocksCnStatus{}
+	cs := &v1alpha12.StarRocksCnStatus{}
 	if src.Status.StarRocksCnStatus != nil {
 		cs = src.Status.StarRocksCnStatus.DeepCopy()
 	}
-	cs.Phase = srapi.ComponentWaiting
+	cs.Phase = v1alpha12.ComponentWaiting
 
 	src.Status.StarRocksCnStatus = cs
 	endpoints := corev1.Endpoints{}
 	//1. wait for fe ok.
-	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetFeExternalServiceName(src)}, &endpoints); apierrors.IsNotFound(err) || len(endpoints.Subsets) == 0 {
-		klog.Info("CnController wait fe available fe service name ", srapi.GetFeExternalServiceName(src))
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: v1alpha12.GetFeExternalServiceName(src)}, &endpoints); apierrors.IsNotFound(err) || len(endpoints.Subsets) == 0 {
+		klog.Info("CnController wait fe available fe service name ", v1alpha12.GetFeExternalServiceName(src))
 		return nil
 	} else if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		}
 	}
 	if !feReady {
-		klog.Info("CnController wait fe available fe service name ", srapi.GetFeExternalServiceName(src), " have not ready fe.")
+		klog.Info("CnController wait fe available fe service name ", v1alpha12.GetFeExternalServiceName(src), " have not ready fe.")
 		return nil
 	}
 
@@ -94,7 +94,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
 
 	//generate new cn internal service.
-	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config)
+	externalsvc := rutils.BuildExternalService(src, v1alpha12.GetCnExternalServiceName(src), rutils.CnService, config)
 	searchSvc := &corev1.Service{}
 	externalsvc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
 	searchSvc.Name = cc.getCnSearchService()
@@ -120,7 +120,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	cnFinalizers := []string{srapi.CN_SERVICE_FINALIZER}
+	cnFinalizers := []string{v1alpha12.CN_SERVICE_FINALIZER}
 	//4. create cn statefulset.
 	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src, config))
 	st.Spec.PodManagementPolicy = appv1.ParallelPodManagement
@@ -142,7 +142,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	var excludeReplica bool
 	//if replicas =0 and not the first time, exclude the hash
 	if st.Spec.Replicas == nil {
-		if _, ok := cst.Annotations[srapi.ComponentReplicasEmpty]; !ok {
+		if _, ok := cst.Annotations[v1alpha12.ComponentReplicasEmpty]; !ok {
 			excludeReplica = true
 		}
 	}
@@ -152,7 +152,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		if st.Spec.Replicas == nil {
 			st.Spec.Replicas = cst.Spec.Replicas
 		} else {
-			delete(st.Annotations, srapi.ComponentReplicasEmpty)
+			delete(st.Annotations, v1alpha12.ComponentReplicasEmpty)
 		}
 		if err := k8sutils.UpdateClientObject(ctx, cc.k8sclient, &st); err != nil {
 			return err
@@ -196,7 +196,7 @@ func (cc *CnController) clearHpa(ctx context.Context, namespace, hpaname string)
 
 }
 
-func (cc *CnController) clearStatefulset(ctx context.Context, src *srapi.StarRocksCluster) {
+func (cc *CnController) clearStatefulset(ctx context.Context, src *v1alpha12.StarRocksCluster) {
 	fmap := map[string]bool{}
 	count := 0
 	defer func() {
@@ -221,7 +221,7 @@ func (cc *CnController) clearStatefulset(ctx context.Context, src *srapi.StarRoc
 	}
 
 	if count == len(src.Status.StarRocksCnStatus.ResourceNames) {
-		fmap[srapi.CN_STATEFULSET_FINALIZER] = true
+		fmap[v1alpha12.CN_STATEFULSET_FINALIZER] = true
 		src.Status.StarRocksCnStatus.ResourceNames = nil
 	}
 }
@@ -233,7 +233,7 @@ func (cc *CnController) clearServices(ctx context.Context, namespace, name strin
 	}
 }
 
-func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+func (cc *CnController) ClearResources(ctx context.Context, src *v1alpha12.StarRocksCluster) (bool, error) {
 	//if the starrocks is not have cn.
 	cnStatus := src.Status.StarRocksCnStatus
 	if cnStatus == nil {
@@ -262,7 +262,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 }
 
 //updateCnStatus update the src status about cn status.
-func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.StatefulSet) error {
+func (cc *CnController) updateCnStatus(cs *v1alpha12.StarRocksCnStatus, st appv1.StatefulSet) error {
 	var podList corev1.PodList
 	if err := cc.k8sclient.List(context.Background(), &podList, client.InNamespace(st.Namespace), client.MatchingLabels(st.Spec.Selector.MatchLabels)); err != nil {
 		return err
@@ -283,14 +283,14 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 		}
 	}
 
-	cs.Phase = srapi.ComponentReconciling
+	cs.Phase = v1alpha12.ComponentReconciling
 	if len(readys) == int(*st.Spec.Replicas) {
-		cs.Phase = srapi.ComponentRunning
+		cs.Phase = v1alpha12.ComponentRunning
 	} else if len(faileds) != 0 {
-		cs.Phase = srapi.ComponentFailed
+		cs.Phase = v1alpha12.ComponentFailed
 		cs.Reason = podmap[faileds[0]].Status.Reason
 	} else if len(creatings) != 0 {
-		cs.Phase = srapi.ComponentReconciling
+		cs.Phase = v1alpha12.ComponentReconciling
 		cs.Reason = podmap[creatings[0]].Status.Reason
 	}
 	cs.RunningInstances = readys
@@ -300,7 +300,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, st appv1.Sta
 	return nil
 }
 
-func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
 		klog.Info("CnController GetCnConfig cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
@@ -313,7 +313,7 @@ func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *srapi.Co
 	return res, err
 }
 
-func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 
 	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, feconfigMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {

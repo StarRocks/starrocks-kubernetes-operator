@@ -46,14 +46,14 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen ## Generate Leader election Role RoleBinding, WebhookConfiguration, ClusterRole ClusterRoleBinding, and CustomResourceDefinition objects in config/crd/bases and deploy.
-	$(CONTROLLER_GEN) rbac:roleName=cn-manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	$(CONTROLLER_GEN) rbac:roleName=cn-manager-role crd paths="./..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
+manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
+	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
 
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object:headerFile=".header" paths="./pkg/apis/..."
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.

@@ -50,9 +50,9 @@ const (
 
 	INITIAL_VOLUME_PATH = "/pod-data"
 
-	DEFAULT_START_SCRIPT_NAME = "fe-start-script"
+	DEFAULT_START_SCRIPT_NAME = "fe-start-scripts"
 
-	//TODO: when script need set.
+	//TODO: when scripts need set.
 	DEFAULT_START_SCRIPT_PATH = ""
 
 	DEFAULT_FE_SERVICE_NAME = "starrocks-fe-service"

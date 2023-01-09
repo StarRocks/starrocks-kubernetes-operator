@@ -3,20 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: cn-manager-role
+  name: starrocks-manager
 rules:
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - apps
   resources:
@@ -33,18 +21,6 @@ rules:
   - autoscaling
   resources:
   - horizontalpodautoscalers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - cronjobs
   verbs:
   - create
   - delete
@@ -133,32 +109,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - starrocks.com
-  resources:
-  - computenodegroups
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - starrocks.com
-  resources:
-  - computenodegroups/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - starrocks.com
-  resources:
-  - computenodegroups/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - starrocks.com
   resources:

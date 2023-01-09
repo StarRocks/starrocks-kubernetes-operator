@@ -29,41 +29,21 @@ make docker IMG="xxx"
 make push IMG="xxx"
 ```
 
-
-## Deploy the StarRocks Operator in kubernetes
-The first step is to deploy the StarRocks operator in your Kubernetes environment. The [deploy](./deploy) directory contains all the necessary yamls to deploy the operator. 
-
-* Yaml files with `leader_` prefix are for operator election if willing to take multiples pods for backup. 
-
-* The [manager.yaml](./deploy/manager.yaml) template is a deployment yaml to deploy the StarRocks operator. Remember to update corresponding `image` before applying to kubernetes. 
-
-* Other yamls are facilities objects created for running the operator, include namespace, service account, rbac.
-
-By default, the operator deploys the StarRocks cluster in `starrocks` namespace. Either specifying the namespace `-n <namespace>` when running `kubectl apply` or set the namespace meta field in every yaml files.
-
-This example deploys StarRocks operator in the default `starrocks` namespace.
-```bash
-cd deploy
-# create crd
-kubectl apply -f starrocks.com_starrocksclusters.yaml
-# create namespace
-kubectl apply -f namespace.yaml;
-# create rbac-roles the namespace starrocks  
-kubectl apply -n starrocks -f leader_election_role.yaml
-kubectl apply -n starrocks -f role.yaml
-# create rbac-role-binding
-kubectl apply -n starrocks -f role_binding.yaml
-kubectl apply -n starrocks -f leader_election_role_binding.yaml
-# create rbac-service-account
-kubectl apply -n starrocks -f service_account.yaml
-# create operator deployment
-# replace image field with image which build in[3]
-kubectl apply -n starrocks -f manager.yaml
+## Install Operator in kubernetes
+Apply the custom resource definition (CRD) for the Operator:
+```shell
+kubectl -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
+```
+Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace. 
+To use the Operator in a custom namespace, download the [Operator manifest](https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml) and edit all instances of namespace: starrocks to specify your custom namespace.
+Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the command below.
+```shell
+kubectl -f  https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
 ```
 
-## Deploy StarRocks with the StarRocks Operator
+## Deploy StarRocks
 You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN components.
-
+Thstarrockscluster CRD fields explains in [api.md](./doc/api.md).
 The [examples](./examples/starrocks) directory contains some simple example for reference.
 
 You can use any of the template yaml file as a starting point. You can further add more configurations into the template yaml file following this deployment documentation.

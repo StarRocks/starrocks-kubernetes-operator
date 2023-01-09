@@ -20,18 +20,27 @@ import (
 	v2 "k8s.io/api/autoscaling/v2beta2"
 )
 
-// hpa
+//AutoScalingPolicy defines the auto scale
 type AutoScalingPolicy struct {
+	//the policy of
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
+
+	//the min numbers of target.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	MaxReplicas int32  `json:"maxReplicas"`
+
+	// the max numbers of target.
+	//+optional
+	MaxReplicas int32 `json:"maxReplicas"`
 }
 
-// k8s hpa
+//
 type HPAPolicy struct {
 	// +optional
+	// Metrics specifies how to scale based on a single metric
 	Metrics []v2.MetricSpec `json:"metrics,omitempty"`
+
 	// +optional
+	// HorizontalPodAutoscalerBehavior configures the scaling behavior of the target
 	Behavior *v2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }

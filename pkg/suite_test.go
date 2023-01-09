@@ -18,6 +18,7 @@ package pkg
 
 import (
 	"context"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"path/filepath"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"testing"
@@ -31,8 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

@@ -14,14 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkg
-
-import (
-	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-)
-
-type SubController interface {
-	Sync(ctx context.Context, src *srapi.StarRocksCluster) error
-	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error)
-}
+// +k8s:deepcopy-gen=package
+// +groupName=starrocks.com
+package v1alpha1

@@ -17,21 +17,21 @@ limitations under the License.
 package cn_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func cnStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
+func cnStatefulSetsLabels(src *v1alpha12.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
+	labels[v1alpha12.OwnerReference] = src.Name
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_CN
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
-func cnStatefulSetName(src *srapi.StarRocksCluster) string {
-	stname := src.Name + "-" + srapi.DEFAULT_CN
+func cnStatefulSetName(src *v1alpha12.StarRocksCluster) string {
+	stname := src.Name + "-" + v1alpha12.DEFAULT_CN
 	if src.Spec.StarRocksCnSpec.Name != "" {
 		stname = src.Spec.StarRocksCnSpec.Name
 	}
@@ -39,7 +39,7 @@ func cnStatefulSetName(src *srapi.StarRocksCluster) string {
 }
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) rutils.StatefulSetParams {
+func (cc *CnController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, cnconfig map[string]interface{}) rutils.StatefulSetParams {
 	cnSpec := src.Spec.StarRocksCnSpec
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
 	podTemplateSpec := cc.buildPodTemplate(src, cnconfig)

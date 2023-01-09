@@ -17,7 +17,7 @@ limitations under the License.
 package be_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,17 +35,17 @@ const (
 )
 
 //cnPodLabels
-func (be *BeController) bePodLabels(src *srapi.StarRocksCluster, ownerReferenceName string) rutils.Labels {
+func (be *BeController) bePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = ownerReferenceName
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_BE
+	labels[v1alpha12.OwnerReference] = ownerReferenceName
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_BE
+func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + v1alpha12.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
 	vexist := make(map[string]bool)
@@ -112,7 +112,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 	}
 
 	beContainer := corev1.Container{
-		Name:    srapi.DEFAULT_BE,
+		Name:    v1alpha12.DEFAULT_BE,
 		Image:   beSpec.Image,
 		Command: []string{"/opt/starrocks/be_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -146,11 +146,11 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 				},
 			}, {
-				Name:  srapi.COMPONENT_NAME,
-				Value: srapi.DEFAULT_CN,
+				Name:  v1alpha12.COMPONENT_NAME,
+				Value: v1alpha12.DEFAULT_CN,
 			}, {
-				Name:  srapi.FE_SERVICE_NAME,
-				Value: srapi.GetFeExternalServiceName(src),
+				Name:  v1alpha12.FE_SERVICE_NAME,
+				Value: v1alpha12.GetFeExternalServiceName(src),
 			}, {
 				Name:  "FE_QUERY_PORT",
 				Value: strconv.FormatInt(int64(rutils.GetPort(beconfig, rutils.QUERY_PORT)), 10),

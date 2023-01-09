@@ -17,7 +17,7 @@ limitations under the License.
 package fe_controller
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -26,16 +26,16 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func feStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
+func feStatefulSetsLabels(src *v1alpha12.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
+	labels[v1alpha12.OwnerReference] = src.Name
+	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
 	labels.AddLabel(src.Labels)
 	return labels
 }
 
-func feStatefulSetName(src *srapi.StarRocksCluster) string {
-	stname := src.Name + "-" + srapi.DEFAULT_FE
+func feStatefulSetName(src *v1alpha12.StarRocksCluster) string {
+	stname := src.Name + "-" + v1alpha12.DEFAULT_FE
 	if src.Spec.StarRocksFeSpec.Name != "" {
 		stname = src.Spec.StarRocksFeSpec.Name
 	}
@@ -43,7 +43,7 @@ func feStatefulSetName(src *srapi.StarRocksCluster) string {
 }
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feconfig map[string]interface{}) rutils.StatefulSetParams {
+func (fc *FeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, feconfig map[string]interface{}) rutils.StatefulSetParams {
 	feSpec := src.Spec.StarRocksFeSpec
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range feSpec.StorageVolumes {

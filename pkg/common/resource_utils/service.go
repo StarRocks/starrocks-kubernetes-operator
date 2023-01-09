@@ -1,7 +1,7 @@
 package resource_utils
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/api/v1alpha1"
+	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,8 +29,8 @@ type hashService struct {
 }
 
 //BuildExternalService build the external service.
-func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
-	var srPorts []srapi.StarRocksServicePort
+func BuildExternalService(src *v1alpha12.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
+	var srPorts []v1alpha12.StarRocksServicePort
 	//the k8s service type.
 	var svcType corev1.ServiceType
 	if serviceType == FeService {
@@ -44,13 +44,13 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		rpcPort := GetPort(config, RPC_PORT)
 		queryPort := GetPort(config, QUERY_PORT)
 		editPort := GetPort(config, EDIT_LOG_PORT)
-		srPorts = append(srPorts, srapi.StarRocksServicePort{
+		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
 			Port: httpPort, ContainerPort: httpPort, Name: "http",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: queryPort, ContainerPort: queryPort, Name: "query",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: editPort, ContainerPort: editPort, Name: "edit-log"})
 	} else if serviceType == BeService {
 		if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Type != "" {
@@ -58,18 +58,18 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		} else {
 			svcType = corev1.ServiceTypeClusterIP
 		}
-		name = srapi.DEFAULT_BE_SERVICE_NAME
+		name = v1alpha12.DEFAULT_BE_SERVICE_NAME
 		bePort := GetPort(config, BE_PORT)
 		webseverPort := GetPort(config, WEBSERVER_PORT)
 		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 		brpcPort := GetPort(config, BRPC_PORT)
-		srPorts = append(srPorts, srapi.StarRocksServicePort{
+		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
 			Port: bePort, ContainerPort: bePort, Name: "be",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
 		})
 
@@ -80,18 +80,18 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 			svcType = corev1.ServiceTypeClusterIP
 		}
 
-		name = srapi.DEFAULT_CN_SERVICE_NAME
+		name = v1alpha12.DEFAULT_CN_SERVICE_NAME
 		thriftPort := GetPort(config, THRIFT_PORT)
 		webseverPort := GetPort(config, WEBSERVER_PORT)
 		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 		brpcPort := GetPort(config, BRPC_PORT)
-		srPorts = append(srPorts, srapi.StarRocksServicePort{
+		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
 			Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-		}, srapi.StarRocksServicePort{
+		}, v1alpha12.StarRocksServicePort{
 			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
 		})
 	}
@@ -131,8 +131,8 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 
 	hso := serviceHashObject(&svc)
 	anno := map[string]string{}
-	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
-	anno[srapi.ComponentGeneration] = "1"
+	anno[v1alpha12.ComponentResourceHash] = hash.HashObject(hso)
+	anno[v1alpha12.ComponentGeneration] = "1"
 	svc.Annotations = anno
 
 	return svc
@@ -140,20 +140,20 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
-	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
-		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
+	if _, ok := nsvc.Annotations[v1alpha12.ComponentResourceHash]; ok {
+		nhsvcValue = nsvc.Annotations[v1alpha12.ComponentResourceHash]
 	} else {
 		nhsvc := serviceHashObject(nsvc)
 		nhsvcValue = hash.HashObject(nhsvc)
 	}
 
-	if _, ok := oldsvc.Annotations[srapi.ComponentResourceHash]; ok {
-		ohsvcValue = oldsvc.Annotations[srapi.ComponentResourceHash]
+	if _, ok := oldsvc.Annotations[v1alpha12.ComponentResourceHash]; ok {
+		ohsvcValue = oldsvc.Annotations[v1alpha12.ComponentResourceHash]
 	} else {
 		ohsvc := serviceHashObject(oldsvc)
 		ohsvcValue = hash.HashObject(ohsvc)
 	}
-	oldGeneration, _ := strconv.ParseInt(oldsvc.Annotations[srapi.ComponentGeneration], 10, 64)
+	oldGeneration, _ := strconv.ParseInt(oldsvc.Annotations[v1alpha12.ComponentGeneration], 10, 64)
 
 	return nhsvcValue == ohsvcValue && nsvc.Name == oldsvc.Name &&
 		nsvc.Namespace == oldsvc.Namespace && oldGeneration == oldsvc.Generation
@@ -171,15 +171,15 @@ func serviceHashObject(svc *corev1.Service) hashService {
 }
 
 //GenerateServiceLabels generate the default labels list starrocks services.
-func GenerateServiceLabels(src *srapi.StarRocksCluster, serviceType StarRocksServiceType) Labels {
+func GenerateServiceLabels(src *v1alpha12.StarRocksCluster, serviceType StarRocksServiceType) Labels {
 	labels := Labels{}
 	labels.AddLabel(src.Labels)
 	if serviceType == FeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_FE)
+		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_FE)
 	} else if serviceType == BeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
+		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_BE)
 	} else if serviceType == CnService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_CN)
+		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_CN)
 	}
 
 	return labels

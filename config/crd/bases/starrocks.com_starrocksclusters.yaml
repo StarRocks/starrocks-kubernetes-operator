@@ -30,7 +30,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: StarRocksCluster is the Schema for the starrocksclusters API
+        description: StarRocksCluster defines a starrocks cluster deployment.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,15 +45,19 @@ spec:
           metadata:
             type: object
           spec:
-            description: StarRocksClusterSpec defines the desired state of StarRocksCluster
+            description: Specification of the desired state of the starrocks cluster.
             properties:
               serviceAccount:
-                description: Specify a Service Account for starRocksCluster
+                description: Specify a Service Account for starRocksCluster use k8s
+                  cluster.
                 type: string
               starRocksBeSpec:
-                description: StarRocksBeSpec is the be specification.
+                description: StarRocksBeSpec define be configuration of the starrocks
+                  cluster.
                 properties:
                   ReplicaInstances:
+                    description: ReplicaInstance is the names of replica starrocksbe
+                      cluster.
                     items:
                       type: string
                     type: array
@@ -68,7 +72,7 @@ spec:
                         type: string
                     type: object
                   image:
-                    description: Image is the container image for the be.
+                    description: Image for a starrocks be deployment.
                     type: string
                   limits:
                     additionalProperties:
@@ -111,8 +115,8 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: 'Replicas is the number of desired be Pod Optional:
-                      Defaults to 3'
+                    description: Replicas is the number of desired be Pod. the default
+                      value=3 Optional
                     format: int32
                     type: integer
                   requests:
@@ -132,20 +136,29 @@ spec:
                       Service object. the service for user access be.
                     properties:
                       name:
+                        description: Name assigned to service.
                         pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
+                        description: Ports the components exposed ports and listen
+                          ports in pod.
                         items:
                           properties:
                             containerPort:
+                              description: ContainerPort the service listen in pod.
                               format: int32
                               type: integer
                             name:
+                              description: Name of the map about coming port and target
+                                port
                               type: string
                             nodePort:
+                              description: The easiest way to expose fe, cn or be
+                                is to use a Service of type `NodePort`.
                               format: int32
                               type: integer
                             port:
+                              description: Port the pod is exposed on service.
                               format: int32
                               type: integer
                           required:
@@ -154,8 +167,9 @@ spec:
                           type: object
                         type: array
                       type:
-                        description: 'type of service, More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-                          ClusterIP, NodePort, LoadBalancer,ExternalName'
+                        description: 'type of service,the possible value for the service
+                          type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+                          More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
                   storageVolumes:
@@ -191,18 +205,18 @@ spec:
                 - image
                 type: object
               starRocksCnSpec:
-                description: StarRocksCnSpec is the cn specification.
+                description: StarRocksCnSpec define cn configuration of the starrocks
+                  cluster.
                 properties:
                   autoScalingPolicy:
                     description: AutoScalingPolicy auto scaling strategy
                     properties:
                       hpaPolicy:
-                        description: k8s hpa
+                        description: the policy of
                         properties:
                           behavior:
                             description: HorizontalPodAutoscalerBehavior configures
-                              the scaling behavior of the target in both Up and Down
-                              directions (scaleUp and scaleDown fields respectively).
+                              the scaling behavior of the target
                             properties:
                               scaleDown:
                                 description: scaleDown is scaling policy for scaling
@@ -324,6 +338,8 @@ spec:
                                 type: object
                             type: object
                           metrics:
+                            description: Metrics specifies how to scale based on a
+                              single metric
                             items:
                               description: MetricSpec specifies how to scale based
                                 on a single metric (only `type` and one other matching
@@ -846,13 +862,13 @@ spec:
                             type: array
                         type: object
                       maxReplicas:
+                        description: the max numbers of target.
                         format: int32
                         type: integer
                       minReplicas:
+                        description: the min numbers of target.
                         format: int32
                         type: integer
-                    required:
-                    - maxReplicas
                     type: object
                   configMapInfo:
                     description: the reference for cn configMap.
@@ -865,7 +881,7 @@ spec:
                         type: string
                     type: object
                   image:
-                    description: Image is the container image for the cn.
+                    description: Image for a starrocks cn deployment.
                     type: string
                   limits:
                     additionalProperties:
@@ -929,20 +945,29 @@ spec:
                       Service object. the service for user access cn.
                     properties:
                       name:
+                        description: Name assigned to service.
                         pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
+                        description: Ports the components exposed ports and listen
+                          ports in pod.
                         items:
                           properties:
                             containerPort:
+                              description: ContainerPort the service listen in pod.
                               format: int32
                               type: integer
                             name:
+                              description: Name of the map about coming port and target
+                                port
                               type: string
                             nodePort:
+                              description: The easiest way to expose fe, cn or be
+                                is to use a Service of type `NodePort`.
                               format: int32
                               type: integer
                             port:
+                              description: Port the pod is exposed on service.
                               format: int32
                               type: integer
                           required:
@@ -951,15 +976,17 @@ spec:
                           type: object
                         type: array
                       type:
-                        description: 'type of service, More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-                          ClusterIP, NodePort, LoadBalancer,ExternalName'
+                        description: 'type of service,the possible value for the service
+                          type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+                          More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
                 required:
                 - image
                 type: object
               starRocksFeSpec:
-                description: StarRocksFeSpec is the fe specification.
+                description: StarRocksFeSpec define fe configuration of the starrocks
+                  cluster.
                 properties:
                   configMapInfo:
                     description: the reference for fe configMap.
@@ -972,7 +999,7 @@ spec:
                         type: string
                     type: object
                   image:
-                    description: Image is the container image for the fe.
+                    description: Image for a starrocks fe deployment..
                     type: string
                   limits:
                     additionalProperties:
@@ -1036,20 +1063,29 @@ spec:
                       Service object.
                     properties:
                       name:
+                        description: Name assigned to service.
                         pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
+                        description: Ports the components exposed ports and listen
+                          ports in pod.
                         items:
                           properties:
                             containerPort:
+                              description: ContainerPort the service listen in pod.
                               format: int32
                               type: integer
                             name:
+                              description: Name of the map about coming port and target
+                                port
                               type: string
                             nodePort:
+                              description: The easiest way to expose fe, cn or be
+                                is to use a Service of type `NodePort`.
                               format: int32
                               type: integer
                             port:
+                              description: Port the pod is exposed on service.
                               format: int32
                               type: integer
                           required:
@@ -1058,8 +1094,9 @@ spec:
                           type: object
                         type: array
                       type:
-                        description: 'type of service, More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-                          ClusterIP, NodePort, LoadBalancer,ExternalName'
+                        description: 'type of service,the possible value for the service
+                          type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+                          More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
                   storageVolumes:
@@ -1096,93 +1133,134 @@ spec:
                 type: object
             type: object
           status:
-            description: StarRocksClusterStatus defines the observed state of StarRocksCluster
+            description: Most recent observed status of the starrocks cluster
             properties:
               phase:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file'
+                description: 'Represents the state of cluster. the possible value
+                  are: running, failed, pending'
                 type: string
               starRocksBeStatus:
+                description: Represents the status of be. the status have running,
+                  failed and creating pods.
                 properties:
                   creatingInstances:
+                    description: CreatingInstances represents status in creating pods
+                      of be.
                     items:
                       type: string
                     type: array
                   failedInstances:
+                    description: FailedInstances deploy failed instance of be.
                     items:
                       type: string
                     type: array
                   phase:
+                    description: Phase the value from all pods of be status. If be
+                      have one failed pod phase=failed, also if be have one creating
+                      pod phase=creating, also if be all running phase=running, others
+                      unknown.
                     type: string
                   reason:
+                    description: the reason for the phase.
                     type: string
                   resourceNames:
+                    description: The statefulset names of be.
                     items:
                       type: string
                     type: array
                   runningInstances:
+                    description: RunningInstances represents status in running pods
+                      of be.
                     items:
                       type: string
                     type: array
                   serviceName:
+                    description: the name of be service for fe find be instance.
                     type: string
                 required:
                 - phase
                 type: object
               starRocksCnStatus:
+                description: Represents the status of cn. the status have running,
+                  failed and creating pods.
                 properties:
                   HpaName:
+                    description: The policy name of autoScale.
                     type: string
                   creatingInstances:
+                    description: CreatingInstances represents status in creating pods
+                      of cn.
                     items:
                       type: string
                     type: array
                   failedInstances:
+                    description: FailedInstances deploy failed instance of cn.
                     items:
                       type: string
                     type: array
                   phase:
+                    description: Phase the value from all pods of cn status. If cn
+                      have one failed pod phase=failed, also if cn have one creating
+                      pod phase=creating, also if cn all running phase=running, others
+                      unknown.
                     type: string
                   reason:
+                    description: the reason for the phase.
                     type: string
                   resourceNames:
+                    description: The statefulset names of be.
                     items:
                       type: string
                     type: array
                   runningInstances:
+                    description: RunningInstances represents status in running pods
+                      of cn.
                     items:
                       type: string
                     type: array
                   serviceName:
+                    description: the name of cn service for fe find cn instance.
                     type: string
                 required:
                 - phase
                 type: object
               starRocksFeStatus:
-                description: used pointer for the component
+                description: Represents the status of fe. the status have running,
+                  failed and creating pods.
                 properties:
                   creatingInstances:
+                    description: CreatingInstances represents the creating pods of
+                      fe.
                     items:
                       type: string
                     type: array
                   failedInstances:
+                    description: FailedInstances represents the failed pods of fe.
                     items:
                       type: string
                     type: array
                   phase:
+                    description: Phase the value from all pods of fe status. If fe
+                      have one failed pod phase=failed, also if fe have one creating
+                      pod phase=creating, also if fe all running phase=running, others
+                      unknown.
                     type: string
                   reason:
+                    description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
+                    description: ResourceNames the statefulset names of fe in v1alpha1
+                      version.
                     items:
                       type: string
                     type: array
                   runningInstances:
+                    description: RunningInstances represents the running pods of fe.
                     items:
                       type: string
                     type: array
                   serviceName:
+                    description: the name of fe service exposed for user.
                     type: string
                 required:
                 - phase
