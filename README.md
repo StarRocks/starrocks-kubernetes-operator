@@ -1,11 +1,11 @@
 # StarRocks-Kubernetes-Operator
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Overview
 **(under development)**  
 This operator is developed with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), which can deploy StarRocks CRD resources in kubernetes.
 
 This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (BE) and Compute Node (CN) components into your kubernetes environment. These components run in FQDN (fully qualified domain name) mode by default.
-
 
 ## Requirements
  * kubernetes 1.18+
@@ -57,7 +57,6 @@ For example, the below configuration uses the `starrocks/alpine-fe:2.4.1` image 
 starRocksFeSpec:
   image: starrocks/alpine-fe:2.4.1
 ```
-
 
 ### (Optional) Using ConfigMap to configure your StarRocks cluster
 
@@ -126,3 +125,20 @@ After deploying the StarRocks cluster, you can use `kubectl get svc -n <namespac
 kubectl get svc -n starrocks
 ```
 `<your-StarRocksCluster-name>-fe-service`'s clusterIP is the IP to use to connect to StarRocks FE.
+
+## Stop the StarRocks cluster
+
+Delete the custom resource:
+```shell
+kubectl delete -f starrocks-fe-and-be.yaml
+```
+
+Remove the Operator:
+```shell
+kubectl delete -f  https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
+```
+
+## Others 
+### helm
+StarRocks have supported helm use.  
+[helm chart](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks). [github repo](https://github.com/StarRocks/helm-charts)
