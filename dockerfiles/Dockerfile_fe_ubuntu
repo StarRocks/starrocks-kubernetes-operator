@@ -11,13 +11,10 @@ FROM base_${TARGETARCH:-amd64}
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-    && apt-get install -y  --no-install-recommends curl  binutils-dev \
-        openssl vim gzip tar mysql-client openjdk-11-jdk procps bash \
+    && apt-get install -y  --no-install-recommends curl binutils \
+        openssl vim gzip tar mysql-client openjdk-11-jdk \
     && apt-get install -y tzdata
 
-RUN useradd --create-home --no-log-init --shell /bin/bash starrocks
-
-COPY --chown=starrocks:starrocks  /fe /opt/starrocks/fe/
 COPY --chown=starrocks:starrocks fe_entrypoint.sh fe_prestop.sh /opt/starrocks/
 
 USER starrocks
