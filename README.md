@@ -13,7 +13,7 @@ This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (
 
 ## Supported Features
 * FE decouples with CN and BE. FE is a must-have component, BE and CN can be optionally deployed.
-* Support v2beta2 horizontalpodautoscalers for CN cluster.
+* Support v2 horizontalpodautoscalers for CN cluster.
 
 ## （Optional) Build the operator images by yourself
 Get the official operator image from [here](https://hub.docker.com/r/starrocks/centos-operator/tags).

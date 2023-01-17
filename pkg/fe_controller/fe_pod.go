@@ -118,6 +118,43 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		})
 	}
 
+	Envs := []corev1.EnvVar{
+		{
+			Name: "POD_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
+			},
+		}, {
+			Name: "POD_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+			},
+		}, {
+			Name:  v1alpha12.COMPONENT_NAME,
+			Value: v1alpha12.DEFAULT_FE,
+		}, {
+			Name:  v1alpha12.FE_SERVICE_NAME,
+			Value: v1alpha12.GetFeExternalServiceName(src) + "." + src.Namespace,
+		}, {
+			Name: "POD_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"},
+			},
+		}, {
+			Name: "HOST_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
+			},
+		}, {
+			Name:  "HOST_TYPE",
+			Value: "FQDN",
+		}, {
+			Name:  "USER",
+			Value: "root",
+		},
+	}
+
+	Envs = append(Envs, feSpec.FeEnvVars...)
 	feContainer := corev1.Container{
 		Name:    v1alpha12.DEFAULT_FE,
 		Image:   feSpec.Image,
@@ -135,44 +172,9 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 			Name:          "query-port",
 			ContainerPort: rutils.GetPort(feconfig, rutils.QUERY_PORT),
 			Protocol:      corev1.ProtocolTCP,
-		},
-		},
-		Env: []corev1.EnvVar{
-			{
-				Name: "POD_NAME",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-				},
-			}, {
-				Name: "POD_NAMESPACE",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-				},
-			}, {
-				Name:  v1alpha12.COMPONENT_NAME,
-				Value: v1alpha12.DEFAULT_FE,
-			}, {
-				Name:  v1alpha12.FE_SERVICE_NAME,
-				Value: v1alpha12.GetFeExternalServiceName(src) + "." + src.Namespace,
-			}, {
-				Name: "POD_IP",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"},
-				},
-			}, {
-				Name: "HOST_IP",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
-				},
-			}, {
-				Name:  "HOST_TYPE",
-				Value: "FQDN",
-			}, {
-				Name:  "USER",
-				Value: "root",
-			},
-		},
+		}},
 
+		Env:             Envs,
 		Resources:       feSpec.ResourceRequirements,
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
@@ -220,6 +222,9 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		Containers:                    []corev1.Container{feContainer},
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+		Affinity:                      feSpec.Affinity,
+		Tolerations:                   feSpec.Tolerations,
+		NodeSelector:                  feSpec.NodeSelector,
 	}
 
 	return corev1.PodTemplateSpec{
@@ -227,16 +232,6 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 			Name:      metaname,
 			Namespace: src.Namespace,
 			Labels:    fePodLabels(src, feStatefulSetName(src)),
-			//TODO: deal with kubectl apply.
-			//Annotations: src.Annotations,
-			/*OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: src.APIVersion,
-					Kind:       src.Kind,
-					Name:       src.Name,
-					UID:        src.UID,
-				},
-			},*/
 		},
 		Spec: podSpec,
 	}

@@ -19,7 +19,7 @@ package k8sutils
 import (
 	"context"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	v2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"

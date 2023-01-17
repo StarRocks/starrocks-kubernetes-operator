@@ -60,8 +60,7 @@ func (fc *FeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 		klog.Error("FeController Sync ", "resolve fe configmap failed, namespace ", src.Namespace, " configmapName ", feSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", feSpec.ConfigMapInfo.ResolveKey, " error ", err)
 		return err
 	}
-	//str, _ := json.Marshal(config)
-	//klog.Info("the resolve configmap ", string(str))
+
 	//generate new fe service.
 	svc := rutils.BuildExternalService(src, v1alpha12.GetFeExternalServiceName(src), rutils.FeService, config)
 	fs := &v1alpha12.StarRocksFeStatus{ServiceName: svc.Name, Phase: v1alpha12.ComponentReconciling}
