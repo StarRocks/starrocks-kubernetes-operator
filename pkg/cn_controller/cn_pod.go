@@ -150,14 +150,16 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 			}}},
 		},
 		LivenessProbe: &corev1.Probe{
-			PeriodSeconds: 5,
+			PeriodSeconds:    5,
+			FailureThreshold: 3,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
 				IntVal: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
 			}}},
 		},
 		ReadinessProbe: &corev1.Probe{
-			PeriodSeconds: 5,
+			PeriodSeconds:    5,
+			FailureThreshold: 3,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
 				IntVal: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
