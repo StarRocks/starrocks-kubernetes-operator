@@ -187,15 +187,16 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 			}}},
 		},
 		ReadinessProbe: &corev1.Probe{
-			PeriodSeconds: 5,
+			PeriodSeconds:    5,
+			FailureThreshold: 3,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
 				IntVal: rutils.GetPort(feconfig, rutils.QUERY_PORT),
 			}}},
 		},
 		LivenessProbe: &corev1.Probe{
-			FailureThreshold: 60,
 			PeriodSeconds:    5,
+			FailureThreshold: 3,
 			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
 				Type:   intstr.Int,
 				IntVal: rutils.GetPort(feconfig, rutils.RPC_PORT),
