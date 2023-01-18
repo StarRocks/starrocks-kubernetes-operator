@@ -82,6 +82,36 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 
 	}
 
+	Envs := []corev1.EnvVar{
+		{
+			Name: "POD_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
+			},
+		}, {
+			Name: "POD_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+			},
+		}, {
+			Name:  v1alpha12.COMPONENT_NAME,
+			Value: v1alpha12.DEFAULT_CN,
+		}, {
+			Name:  v1alpha12.FE_SERVICE_NAME,
+			Value: v1alpha12.GetFeExternalServiceName(src),
+		}, {
+			Name:  "FE_QUERY_PORT",
+			Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
+		}, {
+			Name:  "HOST_TYPE",
+			Value: "FQDN",
+		}, {
+			Name:  "USER",
+			Value: "root",
+		},
+	}
+
+	Envs = append(Envs, cnSpec.CnEnvVars...)
 	cnContainer := corev1.Container{
 		Name:    v1alpha12.DEFAULT_CN,
 		Image:   cnSpec.Image,
@@ -106,34 +136,7 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Env: []corev1.EnvVar{
-			{
-				Name: "POD_NAME",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-				},
-			}, {
-				Name: "POD_NAMESPACE",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-				},
-			}, {
-				Name:  v1alpha12.COMPONENT_NAME,
-				Value: v1alpha12.DEFAULT_CN,
-			}, {
-				Name:  v1alpha12.FE_SERVICE_NAME,
-				Value: v1alpha12.GetFeExternalServiceName(src),
-			}, {
-				Name:  "FE_QUERY_PORT",
-				Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
-			}, {
-				Name:  "HOST_TYPE",
-				Value: "FQDN",
-			}, {
-				Name:  "USER",
-				Value: "root",
-			},
-		},
+		Env:             Envs,
 		Resources:       cnSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
@@ -182,6 +185,9 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		Volumes:                       vols,
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+		Affinity:                      cnSpec.Affinity,
+		Tolerations:                   cnSpec.Tolerations,
+		NodeSelector:                  cnSpec.NodeSelector,
 	}
 
 	return corev1.PodTemplateSpec{
@@ -189,15 +195,6 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 			Name:      metaname,
 			Namespace: src.Namespace,
 			Labels:    cc.cnPodLabels(src, cnStatefulSetName(src)),
-			//Annotations: src.Annotations,
-			/*OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: src.APIVersion,
-					Kind:       src.Kind,
-					Name:       src.Name,
-					UID:        src.UID,
-				},
-			},*/
 		},
 		Spec: podSpec,
 	}

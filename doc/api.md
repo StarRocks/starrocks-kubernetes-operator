@@ -139,8 +139,8 @@ string
 <td>
 <code>metrics</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2beta2-autoscaling">
-[]Kubernetes autoscaling/v2beta2.MetricSpec
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2-autoscaling">
+[]Kubernetes autoscaling/v2.MetricSpec
 </a>
 </em>
 </td>
@@ -153,8 +153,8 @@ string
 <td>
 <code>behavior</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2beta2-autoscaling">
-Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2-autoscaling">
+Kubernetes autoscaling/v2.HorizontalPodAutoscalerBehavior
 </a>
 </em>
 </td>
@@ -309,7 +309,7 @@ StarRocksProbe
 </td>
 <td>
 <em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for fe.</p>
+<p>StorageVolumes defines the additional storage for be storage data and log.</p>
 </td>
 </tr>
 <tr>
@@ -322,6 +322,60 @@ StarRocksProbe
 <td>
 <em>(Optional)</em>
 <p>ReplicaInstance is the names of replica starrocksbe cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>beEnvVars</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
+[]Kubernetes core/v1.EnvVar
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>beEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
 </td>
 </tr>
 </tbody>
@@ -811,6 +865,60 @@ AutoScalingPolicy
 <p>AutoScalingPolicy auto scaling strategy</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>cnEnvVars</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
+[]Kubernetes core/v1.EnvVar
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>cnEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus
@@ -1057,7 +1165,61 @@ StarRocksProbe
 </td>
 <td>
 <em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for fe</p>
+<p>StorageVolumes defines the additional storage for fe meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>FeEnvVars</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
+[]Kubernetes core/v1.EnvVar
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>feEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
 </td>
 </tr>
 </tbody>

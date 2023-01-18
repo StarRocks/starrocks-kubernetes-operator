@@ -111,6 +111,36 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		})
 	}
 
+	Envs := []corev1.EnvVar{
+		{
+			Name: "POD_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
+			},
+		}, {
+			Name: "POD_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+			},
+		}, {
+			Name:  v1alpha12.COMPONENT_NAME,
+			Value: v1alpha12.DEFAULT_CN,
+		}, {
+			Name:  v1alpha12.FE_SERVICE_NAME,
+			Value: v1alpha12.GetFeExternalServiceName(src),
+		}, {
+			Name:  "FE_QUERY_PORT",
+			Value: strconv.FormatInt(int64(rutils.GetPort(beconfig, rutils.QUERY_PORT)), 10),
+		}, {
+			Name:  "HOST_TYPE",
+			Value: "FQDN",
+		}, {
+			Name:  "USER",
+			Value: "root",
+		},
+	}
+
+	Envs = append(Envs, beSpec.BeEnvVars...)
 	beContainer := corev1.Container{
 		Name:    v1alpha12.DEFAULT_BE,
 		Image:   beSpec.Image,
@@ -134,34 +164,7 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Env: []corev1.EnvVar{
-			{
-				Name: "POD_NAME",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-				},
-			}, {
-				Name: "POD_NAMESPACE",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-				},
-			}, {
-				Name:  v1alpha12.COMPONENT_NAME,
-				Value: v1alpha12.DEFAULT_CN,
-			}, {
-				Name:  v1alpha12.FE_SERVICE_NAME,
-				Value: v1alpha12.GetFeExternalServiceName(src),
-			}, {
-				Name:  "FE_QUERY_PORT",
-				Value: strconv.FormatInt(int64(rutils.GetPort(beconfig, rutils.QUERY_PORT)), 10),
-			}, {
-				Name:  "HOST_TYPE",
-				Value: "FQDN",
-			}, {
-				Name:  "USER",
-				Value: "root",
-			},
-		},
+		Env:             Envs,
 		Resources:       beSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
@@ -208,6 +211,9 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		Volumes:                       vols,
 		ServiceAccountName:            src.Spec.ServiceAccount,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+		Affinity:                      beSpec.Affinity,
+		Tolerations:                   beSpec.Tolerations,
+		NodeSelector:                  beSpec.NodeSelector,
 	}
 
 	return corev1.PodTemplateSpec{
@@ -215,16 +221,6 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 			Name:      metaname,
 			Namespace: src.Namespace,
 			Labels:    be.bePodLabels(src, beStatefulSetName(src)),
-			//Annotations: src.Annotations,
-			/*
-				OwnerReferences: []metav1.OwnerReference{
-					{
-						APIVersion: src.APIVersion,
-						Kind:       src.Kind,
-						Name:       src.Name,
-						UID:        src.UID,
-					},
-				},*/
 		},
 		Spec: podSpec,
 	}

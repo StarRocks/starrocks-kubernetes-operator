@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 )
 
 //AutoScalingPolicy defines the auto scale

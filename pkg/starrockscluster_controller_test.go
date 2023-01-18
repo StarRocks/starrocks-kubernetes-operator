@@ -64,6 +64,7 @@ func TestReconcileConstructFeResource(t *testing.T) {
 						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
 						MountPath:        "/data/fe/meta",
+						StorageSize:      "10Gi",
 					},
 				},
 				ResourceRequirements: corev1.ResourceRequirements{

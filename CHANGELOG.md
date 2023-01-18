@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 # [v1.2](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1.2...v1.2)
 
 ## Added
-* use statefulset and v2beta2 autoscaling.
+* use statefulset and v2 autoscaling.
 
 ## Changed
 

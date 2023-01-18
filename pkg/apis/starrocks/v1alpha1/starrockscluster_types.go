@@ -222,9 +222,25 @@ type StarRocksFeSpec struct {
 	//+optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//StorageVolumes defines the additional storage for fe
+	//StorageVolumes defines the additional storage for fe meta storage.
 	//+optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
+
+	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	//+optional
+	//feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	FeEnvVars []corev1.EnvVar `json:"FeEnvVars,omitempty"`
+
+	//+optional
+	//If specified, the pod's scheduling constraints.
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
+	//+optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 //StarRocksBeSpec defines the desired state of be.
@@ -258,7 +274,7 @@ type StarRocksBeSpec struct {
 	//+optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//StorageVolumes defines the additional storage for fe.
+	//StorageVolumes defines the additional storage for be storage data and log.
 	//+optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 
@@ -266,6 +282,22 @@ type StarRocksBeSpec struct {
 	//+optional
 	//+deprecated, temp deprecated.
 	ReplicaInstances []string `json:"ReplicaInstances,omitempty"`
+
+	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	//+optional
+	//beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	BeEnvVars []corev1.EnvVar `json:"beEnvVars,omitempty"`
+
+	//+optional
+	//If specified, the pod's scheduling constraints.
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
+	//+optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 //StarRocksCnSpec defines the desired state of cn.
@@ -304,6 +336,22 @@ type StarRocksCnSpec struct {
 
 	//AutoScalingPolicy auto scaling strategy
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
+
+	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	//+optional
+	//cnEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	CnEnvVars []corev1.EnvVar `json:"cnEnvVars,omitempty"`
+
+	//+optional
+	//If specified, the pod's scheduling constraints.
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
+	//+optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 type ConfigMapInfo struct {
