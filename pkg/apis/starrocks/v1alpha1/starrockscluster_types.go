@@ -30,6 +30,9 @@ type StarRocksClusterSpec struct {
 	//+optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
+	//start starrocks user info.
+	User *User `json:"user,omitempty"`
+
 	//StarRocksFeSpec define fe configuration for start fe service.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
@@ -38,6 +41,12 @@ type StarRocksClusterSpec struct {
 
 	//StarRocksCnSpec define cn configuration for start cn service.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
+}
+
+//The start starrocks user info.
+type User struct {
+	Name               string                    `json:"name,omitempty"`
+	PodSecurityContext corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.

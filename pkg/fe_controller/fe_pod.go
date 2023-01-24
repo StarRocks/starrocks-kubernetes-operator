@@ -228,6 +228,15 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		NodeSelector:                  feSpec.NodeSelector,
 	}
 
+	if src.Spec.User == nil {
+		podSpec.SecurityContext = &corev1.PodSecurityContext{
+			RunAsUser:  rutils.GetInt64ptr(1000),
+			RunAsGroup: rutils.GetInt64ptr(1000),
+		}
+	} else if src.Spec.User.Name != "root" {
+		podSpec.SecurityContext = &src.Spec.User.PodSecurityContext
+	}
+
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      metaname,

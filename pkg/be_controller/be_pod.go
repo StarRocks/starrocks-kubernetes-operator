@@ -217,6 +217,15 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		NodeSelector:                  beSpec.NodeSelector,
 	}
 
+	if src.Spec.User == nil {
+		podSpec.SecurityContext = &corev1.PodSecurityContext{
+			RunAsUser:  rutils.GetInt64ptr(1000),
+			RunAsGroup: rutils.GetInt64ptr(1000),
+		}
+	} else if src.Spec.User.Name != "root" {
+		podSpec.SecurityContext = &src.Spec.User.PodSecurityContext
+	}
+	
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      metaname,
