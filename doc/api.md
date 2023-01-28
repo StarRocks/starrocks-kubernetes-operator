@@ -45,7 +45,7 @@ HPAPolicy
 </em>
 </td>
 <td>
-<p>the policy of</p>
+<p>the policy of cn autoscale. operator use autoscaling v2.</p>
 </td>
 </tr>
 <tr>
