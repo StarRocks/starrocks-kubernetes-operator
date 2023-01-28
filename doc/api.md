@@ -213,6 +213,28 @@ string
 </tr>
 <tr>
 <td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for be access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>RunAsUserId</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>RunAsUserId the start be user id.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>name</code><br/>
 <em>
 string
@@ -529,20 +551,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>user</code><br/>
-<em>
-<a href="#starrocks.com/v1alpha1.User">
-User
-</a>
-</em>
-</td>
-<td>
-<p>start starrocks user info.</p>
+<p>Specify a Service Account for starRocksCluster use k8s cluster.
+Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
@@ -627,20 +637,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>user</code><br/>
-<em>
-<a href="#starrocks.com/v1alpha1.User">
-User
-</a>
-</em>
-</td>
-<td>
-<p>start starrocks user info.</p>
+<p>Specify a Service Account for starRocksCluster use k8s cluster.
+Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
@@ -779,7 +777,29 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>name of the starrocks be cluster.</p>
+<p>name of the starrocks cn cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for cn access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>RunAsUserId</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>RunAsUserId the start cn user id.</p>
 </td>
 </tr>
 <tr>
@@ -1082,6 +1102,28 @@ string
 <td>
 <em>(Optional)</em>
 <p>name of the starrocks be cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for fe access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>RunAsUserId</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>RunAsUserId the start fe user id.</p>
 </td>
 </tr>
 <tr>
@@ -1584,46 +1626,6 @@ string
 </td>
 <td>
 <p>MountPath specify the path of volume mount.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1alpha1.User">User
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
-</p>
-<div>
-<p>The start starrocks user info.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<code>podSecurityContext</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#podsecuritycontext-v1-core">
-Kubernetes core/v1.PodSecurityContext
-</a>
-</em>
-</td>
-<td>
 </td>
 </tr>
 </tbody>

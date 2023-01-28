@@ -218,23 +218,26 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		})
 	}
 
+	sa := feSpec.ServiceAccount
+	if feSpec.ServiceAccount != "" {
+		sa = feSpec.ServiceAccount
+	}
+
 	podSpec := corev1.PodSpec{
 		Volumes:                       vols,
 		Containers:                    []corev1.Container{feContainer},
-		ServiceAccountName:            src.Spec.ServiceAccount,
+		ServiceAccountName:            sa,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      feSpec.Affinity,
 		Tolerations:                   feSpec.Tolerations,
 		NodeSelector:                  feSpec.NodeSelector,
 	}
 
-	if src.Spec.User == nil {
-		podSpec.SecurityContext = &corev1.PodSecurityContext{
-			RunAsUser:  rutils.GetInt64ptr(1000),
-			RunAsGroup: rutils.GetInt64ptr(1000),
+	if feSpec.RunAsUserId != nil && *feSpec.RunAsUserId != 0 {
+		sc := &corev1.PodSecurityContext{
+			RunAsUser: feSpec.RunAsUserId,
 		}
-	} else if src.Spec.User.Name != "root" {
-		podSpec.SecurityContext = &src.Spec.User.PodSecurityContext
+		podSpec.SecurityContext = sc
 	}
 
 	return corev1.PodTemplateSpec{

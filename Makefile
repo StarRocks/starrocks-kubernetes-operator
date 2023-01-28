@@ -12,9 +12,9 @@ endif
 
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 ifeq (,$(GOBIN))
-GOBIN=$PROJECT_DIR
+GOBIN=$PROJECT_DIR/bin
 else
-$(shell mkdir -p $(GOBIN)/bin)
+$(shell mkdir -p $(GOBIN))
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -109,20 +109,29 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 #CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-CONTROLLER_GEN = $(GOBIN)/bin/controller-gen
+CONTROLLER_GEN = $(GOBIN)/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
 
-KUSTOMIZE = $(GOBIN)/bin/kustomize
+GEN_DOCS = $(GOBIN)/gen-crd-api-reference-docs
+.PHONY: gen-tool
+gen-tool: ## Download gen-crd-api-reference-docs locally 0f necessary.
+	$(call go-get-tool,$(GEN_DOCS),github.com/ahmetb/gen-crd-api-reference-docs@v0.3.0)
+
+KUSTOMIZE = $(GOBIN)/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.7)
 
-ENVTEST = $(GOBIN)/bin/setup-envtest
+ENVTEST = $(GOBIN)/setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
 	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+
+.PHONY: gen-api
+gen-api: gen-tool
+	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md" 
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -131,10 +140,11 @@ define go-get-tool
 @[ -f $(1) ] || { \
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
+echo $TMP_DIR; \
 cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(GOBIN)/bin go install $(2) ;\
+GOBIN=$(GOBIN) go install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef

@@ -28,10 +28,8 @@ import (
 type StarRocksClusterSpec struct {
 	// Specify a Service Account for starRocksCluster use k8s cluster.
 	//+optional
+	//Deprecated: component use serviceAccount in own's field.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
-
-	//start starrocks user info.
-	User *User `json:"user,omitempty"`
 
 	//StarRocksFeSpec define fe configuration for start fe service.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
@@ -41,12 +39,6 @@ type StarRocksClusterSpec struct {
 
 	//StarRocksCnSpec define cn configuration for start cn service.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
-}
-
-//The start starrocks user info.
-type User struct {
-	Name               string                    `json:"name,omitempty"`
-	PodSecurityContext corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
@@ -208,6 +200,12 @@ type StarRocksFeSpec struct {
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	Name string `json:"name,omitempty"`
 
+	//serviceAccount for fe access cloud service.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	//RunAsUserId the start fe user id.
+	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
+
 	//Replicas is the number of desired fe Pod, the number is 1,3,5
 	//+optional: Defaults to 3
 	Replicas *int32 `json:"replicas,omitempty"`
@@ -261,6 +259,12 @@ type StarRocksBeSpec struct {
 	//Image for a starrocks be deployment.
 	Image string `json:"image"`
 
+	//serviceAccount for be access cloud service.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	//RunAsUserId the start be user id.
+	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
+
 	//name of the starrocks be cluster.
 	//+optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
@@ -311,10 +315,16 @@ type StarRocksBeSpec struct {
 
 //StarRocksCnSpec defines the desired state of cn.
 type StarRocksCnSpec struct {
-	//name of the starrocks be cluster.
+	//name of the starrocks cn cluster.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	//+optional
 	Name string `json:"name,omitempty"`
+
+	//serviceAccount for cn access cloud service.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	//RunAsUserId the start cn user id.
+	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
 
 	//Replicas is the number of desired cn Pod.
 	// +kubebuilder:validation:Minimum=0

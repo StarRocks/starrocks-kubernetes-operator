@@ -181,23 +181,26 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		})
 	}
 
+	sa := src.Spec.ServiceAccount
+	if cnSpec.ServiceAccount != "" {
+		sa = cnSpec.ServiceAccount
+	}
+
 	podSpec := corev1.PodSpec{
 		Containers:                    []corev1.Container{cnContainer},
 		Volumes:                       vols,
-		ServiceAccountName:            src.Spec.ServiceAccount,
+		ServiceAccountName:            sa,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      cnSpec.Affinity,
 		Tolerations:                   cnSpec.Tolerations,
 		NodeSelector:                  cnSpec.NodeSelector,
 	}
 
-	if src.Spec.User == nil {
-		podSpec.SecurityContext = &corev1.PodSecurityContext{
-			RunAsUser:  rutils.GetInt64ptr(1000),
-			RunAsGroup: rutils.GetInt64ptr(1000),
+	if cnSpec.RunAsUserId != nil && *cnSpec.RunAsUserId != 0 {
+		sc := &corev1.PodSecurityContext{
+			RunAsUser: cnSpec.RunAsUserId,
 		}
-	} else if src.Spec.User.Name != "root" {
-		podSpec.SecurityContext = &src.Spec.User.PodSecurityContext
+		podSpec.SecurityContext = sc
 	}
 
 	return corev1.PodTemplateSpec{
