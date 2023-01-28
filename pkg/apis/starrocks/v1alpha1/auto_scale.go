@@ -22,7 +22,8 @@ import (
 
 //AutoScalingPolicy defines the auto scale
 type AutoScalingPolicy struct {
-	//the policy of
+	//the policy of cn autoscale. operator use autoscaling v2.
+
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
 
 	//the min numbers of target.
