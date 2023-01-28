@@ -13,9 +13,9 @@ endif
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 ifeq (,$(GOBIN))
 GOBIN=$PROJECT_DIR/bin
-else
-$(shell mkdir -p $(GOBIN))
 endif
+
+$(shell mkdir -p $(GOBIN))
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
