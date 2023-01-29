@@ -133,6 +133,10 @@ envtest: ## Download envtest-setup locally if necessary.
 gen-api: gen-tool
 	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md" 
 
+
+.PHONY: crd-all
+crd-all: generate manifests gen-api
+
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 

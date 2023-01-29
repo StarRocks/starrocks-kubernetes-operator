@@ -2096,7 +2096,8 @@ spec:
                     description: AutoScalingPolicy auto scaling strategy
                     properties:
                       hpaPolicy:
-                        description: the policy of
+                        description: the policy of cn autoscale. operator use autoscaling
+                          v2.
                         properties:
                           behavior:
                             description: HorizontalPodAutoscalerBehavior configures

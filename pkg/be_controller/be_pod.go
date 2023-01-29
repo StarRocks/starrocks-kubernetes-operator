@@ -18,6 +18,7 @@ package be_controller
 
 import (
 	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -222,13 +223,18 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		NodeSelector:                  beSpec.NodeSelector,
 	}
 
-	if beSpec.RunAsUserId != nil && *beSpec.RunAsUserId != 0 {
+	if beSpec.RunAsUserId == nil {
+		sc := &corev1.PodSecurityContext{
+			RunAsUser: rutils.GetInt64ptr(common.DefaultRunAsUserId),
+		}
+		podSpec.SecurityContext = sc
+	} else if *beSpec.RunAsUserId != 0 {
 		sc := &corev1.PodSecurityContext{
 			RunAsUser: beSpec.RunAsUserId,
 		}
 		podSpec.SecurityContext = sc
 	}
-	
+
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      metaname,
