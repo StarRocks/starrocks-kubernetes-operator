@@ -234,14 +234,17 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		NodeSelector:                  feSpec.NodeSelector,
 	}
 
-	if feSpec.RunAsUserId == nil {
+	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
+	if feSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroup:             rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
-	} else if *feSpec.RunAsUserId != 0 {
+	} else if *feSpec.FsGroup != 0 {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: feSpec.RunAsUserId,
+			FSGroup:             feSpec.FsGroup,
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
 	}

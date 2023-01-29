@@ -224,13 +224,15 @@ string
 </tr>
 <tr>
 <td>
-<code>RunAsUserId</code><br/>
+<code>fsGroup</code><br/>
 <em>
 int64
 </em>
 </td>
 <td>
-<p>RunAsUserId the start be user id.</p>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>
@@ -793,13 +795,15 @@ string
 </tr>
 <tr>
 <td>
-<code>RunAsUserId</code><br/>
+<code>fsGroup</code><br/>
 <em>
 int64
 </em>
 </td>
 <td>
-<p>RunAsUserId the start cn user id.</p>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>
@@ -1117,13 +1121,15 @@ string
 </tr>
 <tr>
 <td>
-<code>RunAsUserId</code><br/>
+<code>fsGroup</code><br/>
 <em>
 int64
 </em>
 </td>
 <td>
-<p>RunAsUserId the start fe user id.</p>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>

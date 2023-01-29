@@ -223,14 +223,17 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		NodeSelector:                  beSpec.NodeSelector,
 	}
 
-	if beSpec.RunAsUserId == nil {
+	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
+	if beSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroup:             rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
-	} else if *beSpec.RunAsUserId != 0 {
+	} else if *beSpec.FsGroup != 0 {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: beSpec.RunAsUserId,
+			FSGroup:             beSpec.FsGroup,
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
 	}

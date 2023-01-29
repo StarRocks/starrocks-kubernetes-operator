@@ -61,10 +61,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  RunAsUserId:
-                    description: RunAsUserId the start be user id.
-                    format: int64
-                    type: integer
                   affinity:
                     description: If specified, the pod's scheduling constraints.
                     properties:
@@ -1043,6 +1039,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks be deployment.
                     type: string
@@ -1231,10 +1233,6 @@ spec:
                 description: StarRocksCnSpec define cn configuration for start cn
                   service.
                 properties:
-                  RunAsUserId:
-                    description: RunAsUserId the start cn user id.
-                    format: int64
-                    type: integer
                   affinity:
                     description: If specified, the pod's scheduling constraints.
                     properties:
@@ -2877,6 +2875,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks cn deployment.
                     type: string
@@ -3147,10 +3151,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  RunAsUserId:
-                    description: RunAsUserId the start fe user id.
-                    format: int64
-                    type: integer
                   affinity:
                     description: If specified, the pod's scheduling constraints.
                     properties:
@@ -4018,6 +4018,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks fe deployment..
                     type: string

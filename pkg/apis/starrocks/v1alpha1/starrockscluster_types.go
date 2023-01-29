@@ -203,8 +203,10 @@ type StarRocksFeSpec struct {
 	//serviceAccount for fe access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//RunAsUserId the start fe user id.
-	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
+	//A special supplemental group that applies to all containers in a pod.
+	// Some volume types allow the Kubelet to change the ownership of that volume
+	// to be owned by the pod:
+	FsGroup *int64 `json:"fsGroup,omitempty"`
 
 	//Replicas is the number of desired fe Pod, the number is 1,3,5
 	//+optional: Defaults to 3
@@ -262,8 +264,10 @@ type StarRocksBeSpec struct {
 	//serviceAccount for be access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//RunAsUserId the start be user id.
-	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
+	//A special supplemental group that applies to all containers in a pod.
+	// Some volume types allow the Kubelet to change the ownership of that volume
+	// to be owned by the pod:
+	FsGroup *int64 `json:"fsGroup,omitempty"`
 
 	//name of the starrocks be cluster.
 	//+optional
@@ -323,8 +327,10 @@ type StarRocksCnSpec struct {
 	//serviceAccount for cn access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//RunAsUserId the start cn user id.
-	RunAsUserId *int64 `json:"RunAsUserId,omitempty"`
+	//A special supplemental group that applies to all containers in a pod.
+	// Some volume types allow the Kubelet to change the ownership of that volume
+	// to be owned by the pod:
+	FsGroup *int64 `json:"fsGroup,omitempty"`
 
 	//Replicas is the number of desired cn Pod.
 	// +kubebuilder:validation:Minimum=0

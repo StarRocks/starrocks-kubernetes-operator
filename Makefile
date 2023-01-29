@@ -5,7 +5,9 @@ ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)
+ifneq (,$(shell go env GOPATH))
+GOBIN=$(shell go env GOPATH)/bin
+endif
 else
 GOBIN=$(shell go env GOBIN)
 endif

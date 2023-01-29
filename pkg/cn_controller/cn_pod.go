@@ -197,18 +197,21 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		NodeSelector:                  cnSpec.NodeSelector,
 	}
 
-	if cnSpec.RunAsUserId == nil {
+	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
+	if cnSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroup:             rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
-	} else if *cnSpec.RunAsUserId != 0 {
+	} else if *cnSpec.FsGroup != 0 {
 		sc := &corev1.PodSecurityContext{
-			RunAsUser: cnSpec.RunAsUserId,
+			RunAsUser:           cnSpec.FsGroup,
+			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
 	}
-	
+
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      metaname,
