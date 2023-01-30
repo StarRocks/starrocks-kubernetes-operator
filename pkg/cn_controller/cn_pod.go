@@ -18,6 +18,7 @@ package cn_controller
 
 import (
 	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -181,14 +182,34 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		})
 	}
 
+	sa := src.Spec.ServiceAccount
+	if cnSpec.ServiceAccount != "" {
+		sa = cnSpec.ServiceAccount
+	}
+
 	podSpec := corev1.PodSpec{
 		Containers:                    []corev1.Container{cnContainer},
 		Volumes:                       vols,
-		ServiceAccountName:            src.Spec.ServiceAccount,
+		ServiceAccountName:            sa,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      cnSpec.Affinity,
 		Tolerations:                   cnSpec.Tolerations,
 		NodeSelector:                  cnSpec.NodeSelector,
+	}
+
+	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
+	if cnSpec.FsGroup == nil {
+		sc := &corev1.PodSecurityContext{
+			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
+			FSGroupChangePolicy: &onrootMismatch,
+		}
+		podSpec.SecurityContext = sc
+	} else if *cnSpec.FsGroup != 0 {
+		sc := &corev1.PodSecurityContext{
+			RunAsUser:           cnSpec.FsGroup,
+			FSGroupChangePolicy: &onrootMismatch,
+		}
+		podSpec.SecurityContext = sc
 	}
 
 	return corev1.PodTemplateSpec{

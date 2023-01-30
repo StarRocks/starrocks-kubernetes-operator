@@ -45,7 +45,7 @@ HPAPolicy
 </em>
 </td>
 <td>
-<p>the policy of</p>
+<p>the policy of cn autoscale. operator use autoscaling v2.</p>
 </td>
 </tr>
 <tr>
@@ -209,6 +209,30 @@ string
 </td>
 <td>
 <p>Image for a starrocks be deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for be access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fsGroup</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>
@@ -529,7 +553,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.</p>
+<p>Specify a Service Account for starRocksCluster use k8s cluster.
+Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
@@ -614,7 +639,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.</p>
+<p>Specify a Service Account for starRocksCluster use k8s cluster.
+Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
@@ -753,7 +779,31 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>name of the starrocks be cluster.</p>
+<p>name of the starrocks cn cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for cn access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fsGroup</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>
@@ -1056,6 +1106,30 @@ string
 <td>
 <em>(Optional)</em>
 <p>name of the starrocks be cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for fe access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fsGroup</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
 </td>
 </tr>
 <tr>

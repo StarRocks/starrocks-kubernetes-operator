@@ -48,8 +48,8 @@ spec:
             description: Specification of the desired state of the starrocks cluster.
             properties:
               serviceAccount:
-                description: Specify a Service Account for starRocksCluster use k8s
-                  cluster.
+                description: 'Specify a Service Account for starRocksCluster use k8s
+                  cluster. Deprecated: component use serviceAccount in own''s field.'
                 type: string
               starRocksBeSpec:
                 description: StarRocksBeSpec define be configuration for start be
@@ -1039,6 +1039,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks be deployment.
                     type: string
@@ -1146,6 +1152,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
+                  serviceAccount:
+                    description: serviceAccount for be access cloud service.
+                    type: string
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       be storage data and log.
@@ -2085,7 +2094,8 @@ spec:
                     description: AutoScalingPolicy auto scaling strategy
                     properties:
                       hpaPolicy:
-                        description: the policy of
+                        description: the policy of cn autoscale. operator use autoscaling
+                          v2.
                         properties:
                           behavior:
                             description: HorizontalPodAutoscalerBehavior configures
@@ -2865,6 +2875,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks cn deployment.
                     type: string
@@ -2879,7 +2895,7 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: name of the starrocks be cluster.
+                    description: name of the starrocks cn cluster.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -2972,6 +2988,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
+                  serviceAccount:
+                    description: serviceAccount for cn access cloud service.
+                    type: string
                   tolerations:
                     description: (Optional) Tolerations for scheduling pods onto some
                       dedicated nodes
@@ -3999,6 +4018,12 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  fsGroup:
+                    description: 'A special supplemental group that applies to all
+                      containers in a pod. Some volume types allow the Kubelet to
+                      change the ownership of that volume to be owned by the pod:'
+                    format: int64
+                    type: integer
                   image:
                     description: Image for a starrocks fe deployment..
                     type: string
@@ -4106,6 +4131,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types'
                         type: string
                     type: object
+                  serviceAccount:
+                    description: serviceAccount for fe access cloud service.
+                    type: string
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       fe meta storage.
