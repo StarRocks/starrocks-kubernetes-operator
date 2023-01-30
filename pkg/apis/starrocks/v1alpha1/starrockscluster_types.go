@@ -152,7 +152,7 @@ type StarRocksCnStatus struct {
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
 	//The policy name of autoScale.
-	HpaName string `json:"HpaName,omitempty"`
+	HpaName string `json:"hpaName,omitempty"`
 
 	// Phase the value from all pods of cn status. If cn have one failed pod phase=failed,
 	// also if cn have one creating pod phase=creating, also if cn all running phase=running, others unknown.
@@ -241,7 +241,7 @@ type StarRocksFeSpec struct {
 
 	//+optional
 	//feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
-	FeEnvVars []corev1.EnvVar `json:"FeEnvVars,omitempty"`
+	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
 
 	//+optional
 	//If specified, the pod's scheduling constraints.
@@ -298,7 +298,7 @@ type StarRocksBeSpec struct {
 	//ReplicaInstance is the names of replica starrocksbe cluster.
 	//+optional
 	//+deprecated, temp deprecated.
-	ReplicaInstances []string `json:"ReplicaInstances,omitempty"`
+	ReplicaInstances []string `json:"replicaInstances,omitempty"`
 
 	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
 	// +optional
