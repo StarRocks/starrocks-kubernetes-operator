@@ -1,5 +1,5 @@
 package common
 
 const (
-	DefaultRunAsUserId = 1000
+	DefaultFsGroup = 1000
 )

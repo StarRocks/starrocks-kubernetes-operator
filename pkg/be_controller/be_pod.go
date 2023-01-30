@@ -226,7 +226,7 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if beSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
 			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc

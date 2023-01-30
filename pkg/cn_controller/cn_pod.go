@@ -200,7 +200,7 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if cnSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultRunAsUserId),
+			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
 			FSGroupChangePolicy: &onrootMismatch,
 		}
 		podSpec.SecurityContext = sc
