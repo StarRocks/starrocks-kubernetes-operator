@@ -338,7 +338,7 @@ StarRocksProbe
 </tr>
 <tr>
 <td>
-<code>ReplicaInstances</code><br/>
+<code>replicaInstances</code><br/>
 <em>
 []string
 </em>
@@ -1043,7 +1043,7 @@ string
 </tr>
 <tr>
 <td>
-<code>HpaName</code><br/>
+<code>hpaName</code><br/>
 <em>
 string
 </em>
@@ -1256,7 +1256,7 @@ map[string]string
 </tr>
 <tr>
 <td>
-<code>FeEnvVars</code><br/>
+<code>feEnvVars</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
 []Kubernetes core/v1.EnvVar
