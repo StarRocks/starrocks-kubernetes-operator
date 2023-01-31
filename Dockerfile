@@ -1,5 +1,5 @@
-FROM centos:7
+FROM ubuntu:22.04
 
-ADD /bin/manager /manager
+ADD /bin/sroperator /sroperator
 
-CMD ["/manager"]
+CMD ["/sroperator"]

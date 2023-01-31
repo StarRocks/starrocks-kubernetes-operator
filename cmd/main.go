@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -33,26 +35,49 @@ import (
 )
 
 var (
-	setupLog = ctrl.Log.WithName("setup")
+	VERSION    string
+	GOVERSION  string
+	COMMIT     string
+	BUILD_DATE string
 )
 
-func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
+var (
+	setupLog             = ctrl.Log.WithName("setup")
+	metricsAddr          string
+	enableLeaderElection bool
+	probeAddr            string
+	printVar             bool
+)
+
+// Print version information to a given out writer.
+func Print(out io.Writer) {
+	if printVar {
+		fmt.Fprint(out, "version="+VERSION+"\ngoversion="+GOVERSION+"\ncommit="+COMMIT+"\nbuild_date="+BUILD_DATE+"\n")
+	}
+}
+
+func init() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.BoolVar(&printVar, "version", false, "Prints current version.")
+	flag.BoolVar(&printVar, "v", false, "Prints current version.")
+}
+
+func main() {
 	opts := zap.Options{
 		Development: true,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
-
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	if printVar {
+		Print(os.Stdout)
+		return
+	}
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 pkg.Scheme,
 		MetricsBindAddress:     metricsAddr,
