@@ -19,6 +19,20 @@ endif
 
 $(shell mkdir -p $(GOBIN))
 
+LATEST_TAG=$(shell git describe --tags --abbrev=0 2>/dev/null)
+LATEST_COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null)
+
+BUILD_DATE=$(shell date +"%Y%m%d-%T")
+ifeq (,$(LATEST_TAG))
+VERSION="UNKNOWN"
+else
+VERSION=$(shell echo $(LATEST_TAG) | tr -d "v")
+endif
+
+GOVERSION=$(shell go version | awk -F ' ' '{print $$3}')
+
+LDFLAGS="-s -X \"main.VERSION=$(VERSION)\" -X \"main.GOVERSION=$(GOVERSION)\" -X \"main.COMMIT=$(LATEST_COMMIT)\" -X \"main.BUILD_DATE=$(BUILD_DATE)\""
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -76,7 +90,7 @@ tidy: ## Run go vet against code.
 
 .PHONY: build
 build: tidy generate fmt vet ## Build operator binary,name=manager, path=bin/ .
-	GOOS=linux GOARCH=amd64 go build -o bin/manager cmd/main.go
+	GOOS=linux GOARCH=amd64 go build -ldflags=$(LDFLAGS) -o bin/sroperator cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
