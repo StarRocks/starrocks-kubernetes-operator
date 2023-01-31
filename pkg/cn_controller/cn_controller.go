@@ -22,7 +22,7 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	appv1 "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
+	v2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -163,7 +163,7 @@ func (cc *CnController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 	if cnSpec.AutoScalingPolicy != nil {
 		cnAutoscaler := rutils.BuildHorizontalPodAutoscaler(cc.buildCnAutoscalerParams(*cnSpec.AutoScalingPolicy, &cst))
 		cs.HpaName = cnAutoscaler.Name
-		var scaler v2.HorizontalPodAutoscaler
+		var scaler v2beta2.HorizontalPodAutoscaler
 		err = cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: cnAutoscaler.Namespace, Name: cnAutoscaler.Name}, &scaler)
 		if err != nil {
 			if apierrors.IsNotFound(err) {
@@ -183,7 +183,7 @@ func (cc *CnController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 }
 
 func (cc *CnController) clearHpa(ctx context.Context, namespace, hpaname string) {
-	var hpa v2.HorizontalPodAutoscaler
+	var hpa v2beta2.HorizontalPodAutoscaler
 	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: hpaname}, &hpa); err != nil {
 		if apierrors.IsNotFound(err) {
 			return
