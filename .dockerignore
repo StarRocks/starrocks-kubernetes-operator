@@ -1,0 +1,17 @@
+.*
+Makefile
+OWNERS
+README.md
+
+api/
+build/
+deployments/
+githooks/
+assets/
+docs/
+githooks/
+docs/
+examples/
+githooks/
+vendor/
+
