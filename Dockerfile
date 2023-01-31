@@ -11,7 +11,8 @@ COPY . .
 # Get dependancies
 RUN go mod download
 
-# Run all the test cases before build
+# Run all the test cases before build.
+# TODO: uncomment this when this issue is resolved: https://github.com/StarRocks/starrocks-kubernetes-operator/issues/37
 #RUN go test ./... -v
 
 # Build the binary
