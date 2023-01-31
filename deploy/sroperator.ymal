@@ -21,11 +21,11 @@ spec:
         runAsNonRoot: false
       containers:
       - command:
-        - /manager
+        - /sroperator
         args:
         - --leader-elect
         image: controller:latest
-        name: manager
+        name: sroperator
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:

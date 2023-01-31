@@ -237,11 +237,11 @@ spec:
         runAsNonRoot: false
       containers:
       - command:
-        - /manager
+        - /sroperator
         args:
         - --leader-elect
-        image: starrocks/operator:v1.1
-        name: manager
+        image: starrocks/operator:v1.3
+        name: sroperator
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
