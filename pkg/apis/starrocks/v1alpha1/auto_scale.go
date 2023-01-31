@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v2 "k8s.io/api/autoscaling/v2"
+	v2beta2 "k8s.io/api/autoscaling/v2beta2"
 )
 
 //AutoScalingPolicy defines the auto scale
@@ -38,9 +38,9 @@ type AutoScalingPolicy struct {
 type HPAPolicy struct {
 	// +optional
 	// Metrics specifies how to scale based on a single metric
-	Metrics []v2.MetricSpec `json:"metrics,omitempty"`
+	Metrics []v2beta2.MetricSpec `json:"metrics,omitempty"`
 
 	// +optional
 	// HorizontalPodAutoscalerBehavior configures the scaling behavior of the target
-	Behavior *v2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
+	Behavior *v2beta2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
