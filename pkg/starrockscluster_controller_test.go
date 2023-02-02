@@ -98,6 +98,7 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 					{
 						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
+						StorageSize:      "10Gi",
 						MountPath:        "/data/fe/meta",
 					},
 				},
@@ -184,7 +185,8 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: v1alpha12.StarRocksClusterSpec{
-			ServiceAccount: "starrocksAccount",
+			ServiceAccount:  "starrocksAccount",
+			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{},
 			StarRocksCnSpec: &v1alpha12.StarRocksCnSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/cn:2.40",
@@ -222,7 +224,8 @@ func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: v1alpha12.StarRocksClusterSpec{
-			ServiceAccount: "starrocksAccount",
+			ServiceAccount:  "starrocksAccount",
+			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{},
 			StarRocksCnSpec: &v1alpha12.StarRocksCnSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/cn:2.40",
