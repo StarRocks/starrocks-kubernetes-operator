@@ -43,7 +43,7 @@ kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernete
 
 ## Deploy StarRocks
 You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN components.
-Thstarrockscluster CRD fields explains in [api.md](./doc/api.md).
+The starrocks cluster CRD fields explains in [api.md](./doc/api.md).
 The [examples](./examples/starrocks) directory contains some simple example for reference.
 
 You can use any of the template yaml file as a starting point. You can further add more configurations into the template yaml file following this deployment documentation.
