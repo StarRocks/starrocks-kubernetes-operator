@@ -18,15 +18,25 @@ This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (
 ## （Optional) Build the operator images by yourself
 Get the official operator image from [here](https://hub.docker.com/r/starrocks/centos-operator/tags).
 
+### Build starrocks operator docker image
 Follow below instructions if you want to build your own image.
 
+```
+DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:<tag> .
+```
+E.g.
 ```bash
-# under root directory, compile operator
-make build 
-# build docker image
-make docker IMG="xxx"
-# push image to docker hub
-make push IMG="xxx"
+DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:latest .
+```
+
+### Publish starrocks operator docker image
+```
+docker push ghcr.io/OWNER/starrocks-kubernetes-operator/operator:latest
+```
+E.g. 
+Publish image to ghcr 
+```shell
+docker push ghcr.io/dengliu/starrocks-kubernetes-operator/operator:latest
 ```
 
 ## Install Operator in kubernetes
