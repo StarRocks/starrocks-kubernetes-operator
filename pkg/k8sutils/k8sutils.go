@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func CreateOrUpdateService(ctx context.Context, k8sclient client.Client, svc *corev1.Service) error {
+func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Service) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
 	var esvc corev1.Service
 	err := k8sclient.Get(ctx, types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, &esvc)

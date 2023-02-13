@@ -83,7 +83,7 @@ func (cc *CnController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 
 	//get the cn configMap for resolve ports.
 	//2. get config for generate statefulset and service.
-	config, err := cc.GetCnConfig(ctx, &cnSpec.ConfigMapInfo, src.Namespace)
+	config, err := cc.GetConfig(ctx, &cnSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		klog.Error("CnController Sync ", "resolve cn configmap failed, namespace ", src.Namespace, " configmapName ", cnSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", cnSpec.ConfigMapInfo.ResolveKey, " error ", err)
 		return err
@@ -115,7 +115,7 @@ func (cc *CnController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 	cs.ServiceName = searchSvc.Name
 	//create or update fe service, update the status of cn on src.
 	//3. issue the service.
-	if err := k8sutils.CreateOrUpdateService(ctx, cc.k8sclient, searchSvc); err != nil {
+	if err := k8sutils.ApplyService(ctx, cc.k8sclient, searchSvc); err != nil {
 		klog.Error("CnController Sync ", "create or update service namespace ", searchSvc.Namespace, " name ", searchSvc.Name)
 		return err
 	}
@@ -300,7 +300,7 @@ func (cc *CnController) updateCnStatus(cs *v1alpha12.StarRocksCnStatus, st appv1
 	return nil
 }
 
-func (cc *CnController) GetCnConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func (cc *CnController) GetConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
 		klog.Info("CnController GetCnConfig cn config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
