@@ -23,7 +23,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	appv1 "k8s.io/api/apps/v1"
-	v2beta2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
@@ -188,7 +188,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
-		Owns(&v2beta2.HorizontalPodAutoscaler{}).
+		Owns(&v2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
 

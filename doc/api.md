@@ -139,8 +139,8 @@ string
 <td>
 <code>metrics</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2beta2-autoscaling">
-[]Kubernetes autoscaling/v2beta2.MetricSpec
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2-autoscaling">
+[]Kubernetes autoscaling/v2.MetricSpec
 </a>
 </em>
 </td>
@@ -153,8 +153,8 @@ string
 <td>
 <code>behavior</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2beta2-autoscaling">
-Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2-autoscaling">
+Kubernetes autoscaling/v2.HorizontalPodAutoscalerBehavior
 </a>
 </em>
 </td>

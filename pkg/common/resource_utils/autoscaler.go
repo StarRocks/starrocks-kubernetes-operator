@@ -18,7 +18,7 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-	v2beta2 "k8s.io/api/autoscaling/v2beta2"
+	v2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -31,8 +31,8 @@ type PodAutoscalerParams struct {
 	ScalerPolicy    *srapi.AutoScalingPolicy
 }
 
-func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAutoscaler {
-	return &v2beta2.HorizontalPodAutoscaler{
+func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
+	return &v2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
 			APIVersion: "autoscaling/v2",
@@ -43,8 +43,8 @@ func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) *v2beta2.HorizontalP
 			Labels:          pap.Labels,
 			OwnerReferences: pap.OwnerReferences,
 		},
-		Spec: v2beta2.HorizontalPodAutoscalerSpec{
-			ScaleTargetRef: v2beta2.CrossVersionObjectReference{
+		Spec: v2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v2.CrossVersionObjectReference{
 				Name:       pap.TargetName,
 				Kind:       "StatefulSet",
 				APIVersion: "apps/v1",
