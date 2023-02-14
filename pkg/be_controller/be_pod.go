@@ -29,7 +29,7 @@ import (
 const (
 	log_path           = "/opt/starrocks/be/log"
 	log_name           = "be-log"
-	be_config_path     = "/etc/starrocks/cn/conf"
+	be_config_path     = "/etc/starrocks/be/conf"
 	storage_name       = "be-storage"
 	storage_path       = "/opt/starrocks/be/storage"
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
