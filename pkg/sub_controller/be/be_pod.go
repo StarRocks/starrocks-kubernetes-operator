@@ -36,13 +36,14 @@ const (
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//cnPodLabels
+//bePodLabels
 func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := be.beStatefulsetSelector(src)
 	//podLables for classify. operator use statefulsetSelector for manage pods.
 	if src.Spec.StarRocksBeSpec != nil {
 		labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)
 	}
+
 	return labels
 }
 
