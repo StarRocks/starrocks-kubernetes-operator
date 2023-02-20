@@ -79,6 +79,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 			Name:      log_name,
 			MountPath: log_path,
 		})
+
 		vols = append(vols, corev1.Volume{
 			Name: log_name,
 			VolumeSource: corev1.VolumeSource{
