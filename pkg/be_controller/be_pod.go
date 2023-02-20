@@ -29,13 +29,13 @@ import (
 const (
 	log_path           = "/opt/starrocks/be/log"
 	log_name           = "be-log"
-	be_config_path     = "/etc/starrocks/cn/conf"
+	be_config_path     = "/etc/starrocks/be/conf"
 	storage_name       = "be-storage"
 	storage_path       = "/opt/starrocks/be/storage"
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//cnPodLabels
+//bePodLabels
 func (be *BeController) bePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
@@ -74,12 +74,12 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 	if _, ok := vexist[log_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			//use storage volume.
-			Name:      storage_name,
+			Name:      log_name,
 			MountPath: log_path,
 		})
 		vols = []corev1.Volume{
 			{
-				Name: storage_name,
+				Name: log_name,
 				VolumeSource: corev1.VolumeSource{
 					EmptyDir: &corev1.EmptyDirVolumeSource{},
 				},
