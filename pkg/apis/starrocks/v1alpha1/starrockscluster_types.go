@@ -463,7 +463,6 @@ type StarRocksCnSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	//+optional
-
 	//podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
