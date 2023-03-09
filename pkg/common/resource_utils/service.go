@@ -151,7 +151,7 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 		service.Spec.Type = svc.Type
 	}
 
-	if svc.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
+	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
 		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
 	}
 }
