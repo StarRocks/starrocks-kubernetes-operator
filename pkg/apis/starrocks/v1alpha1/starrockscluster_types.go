@@ -215,6 +215,14 @@ type StarRocksFeSpec struct {
 	//Image for a starrocks fe deployment..
 	Image string `json:"image"`
 
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+	// If specified, these secrets will be passed to individual puller implementations for them to use.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
+
 	//Service defines the template for the associated Kubernetes Service object.
 	//+optional
 	Service *StarRocksService `json:"service,omitempty"`
@@ -250,6 +258,9 @@ type StarRocksFeSpec struct {
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
 	//+optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	//podLabels for user selector or classify pods.
+	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 
 //StarRocksBeSpec defines the desired state of be.
@@ -260,6 +271,14 @@ type StarRocksBeSpec struct {
 
 	//Image for a starrocks be deployment.
 	Image string `json:"image"`
+
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+	// If specified, these secrets will be passed to individual puller implementations for them to use.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
 
 	//serviceAccount for be access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
@@ -315,6 +334,9 @@ type StarRocksBeSpec struct {
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
 	//+optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	//podLabels for user selector or classify pods.
+	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 
 //StarRocksCnSpec defines the desired state of cn.
@@ -339,6 +361,14 @@ type StarRocksCnSpec struct {
 
 	//Image for a starrocks cn deployment.
 	Image string `json:"image"`
+
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+	// If specified, these secrets will be passed to individual puller implementations for them to use.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
 
 	//Service defines the template for the associated Kubernetes Service object.
 	//the service for user access cn.
@@ -377,6 +407,9 @@ type StarRocksCnSpec struct {
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
 	//+optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	//podLabels for user selector or classify pods.
+	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 
 type ConfigMapInfo struct {
@@ -417,6 +450,17 @@ type StarRocksService struct {
 	//More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 	// +optional
 	Type corev1.ServiceType `json:"type,omitempty"`
+
+	// Only applies to Service Type: LoadBalancer.
+	// This feature depends on whether the underlying cloud-provider supports specifying
+	// the loadBalancerIP when a load balancer is created.
+	// This field will be ignored if the cloud-provider does not support the feature.
+	// This field was under-specified and its meaning varies across implementations,
+	// and it cannot support dual-stack.
+	// As of Kubernetes v1.24, users are encouraged to use implementation-specific annotations when available.
+	// This field may be removed in a future API version.
+	// +optional
+	LoadBalancerIP string `json:"loadBalancerIP,omitempty"`
 
 	//Ports the components exposed ports and listen ports in pod.
 	// +optional

@@ -40,5 +40,5 @@ func GetBeExternalServiceName(src *StarRocksCluster) string {
 		return src.Spec.StarRocksBeSpec.Service.Name + "-" + "service"
 	}
 
-	return src.Name + "-" + DEFAULT_CN + "-" + "service"
+	return src.Name + "-" + DEFAULT_BE + "-" + "service"
 }

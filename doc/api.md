@@ -213,6 +213,22 @@ string
 </tr>
 <tr>
 <td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
 <code>serviceAccount</code><br/>
 <em>
 string
@@ -400,6 +416,17 @@ Kubernetes core/v1.Affinity
 <td>
 <em>(Optional)</em>
 <p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
 </tbody>
@@ -831,6 +858,22 @@ string
 </tr>
 <tr>
 <td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
 <code>service</code><br/>
 <em>
 <a href="#starrocks.com/v1alpha1.StarRocksService">
@@ -967,6 +1010,17 @@ Kubernetes core/v1.Affinity
 <td>
 <em>(Optional)</em>
 <p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
 </tbody>
@@ -1156,6 +1210,22 @@ string
 </tr>
 <tr>
 <td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
 <code>service</code><br/>
 <em>
 <a href="#starrocks.com/v1alpha1.StarRocksService">
@@ -1294,6 +1364,17 @@ Kubernetes core/v1.Affinity
 <td>
 <em>(Optional)</em>
 <p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
 </tbody>
@@ -1492,6 +1573,25 @@ Kubernetes core/v1.ServiceType
 <em>(Optional)</em>
 <p>type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
 More info: <a href="https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types">https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>loadBalancerIP</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Only applies to Service Type: LoadBalancer.
+This feature depends on whether the underlying cloud-provider supports specifying
+the loadBalancerIP when a load balancer is created.
+This field will be ignored if the cloud-provider does not support the feature.
+This field was under-specified and its meaning varies across implementations,
+and it cannot support dual-stack.
+As of Kubernetes v1.24, users are encouraged to use implementation-specific annotations when available.
+This field may be removed in a future API version.</p>
 </td>
 </tr>
 <tr>
