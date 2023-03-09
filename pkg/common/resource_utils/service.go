@@ -30,113 +30,6 @@ type hashService struct {
 
 //BuildExternalService build the external service.
 func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
-	/*	var srPorts []v1alpha12.StarRocksServicePort
-		//the k8s service type.
-		var svcType corev1.ServiceType
-		if serviceType == FeService {
-			if src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Type != "" {
-				svcType = src.Spec.StarRocksFeSpec.Service.Type
-			} else {
-				svcType = corev1.ServiceTypeClusterIP
-			}
-
-			httpPort := GetPort(config, HTTP_PORT)
-			rpcPort := GetPort(config, RPC_PORT)
-			queryPort := GetPort(config, QUERY_PORT)
-			editPort := GetPort(config, EDIT_LOG_PORT)
-			srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-				Port: httpPort, ContainerPort: httpPort, Name: "http",
-			}, v1alpha12.StarRocksServicePort{
-				Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
-			}, v1alpha12.StarRocksServicePort{
-				Port: queryPort, ContainerPort: queryPort, Name: "query",
-			}, v1alpha12.StarRocksServicePort{
-				Port: editPort, ContainerPort: editPort, Name: "edit-log"})
-		} else if serviceType == BeService {
-			if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Type != "" {
-				svcType = src.Spec.StarRocksBeSpec.Service.Type
-			} else {
-				svcType = corev1.ServiceTypeClusterIP
-			}
-			name = v1alpha12.DEFAULT_BE_SERVICE_NAME
-			bePort := GetPort(config, BE_PORT)
-			webseverPort := GetPort(config, WEBSERVER_PORT)
-			heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
-			brpcPort := GetPort(config, BRPC_PORT)
-			srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-				Port: bePort, ContainerPort: bePort, Name: "be",
-			}, v1alpha12.StarRocksServicePort{
-				Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-			}, v1alpha12.StarRocksServicePort{
-				Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-			}, v1alpha12.StarRocksServicePort{
-				Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-			})
-
-		} else if serviceType == CnService {
-			if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Type != "" {
-				svcType = src.Spec.StarRocksCnSpec.Service.Type
-			} else {
-				svcType = corev1.ServiceTypeClusterIP
-			}
-
-			name = v1alpha12.DEFAULT_CN_SERVICE_NAME
-			thriftPort := GetPort(config, THRIFT_PORT)
-			webseverPort := GetPort(config, WEBSERVER_PORT)
-			heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
-			brpcPort := GetPort(config, BRPC_PORT)
-			srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-				Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
-			}, v1alpha12.StarRocksServicePort{
-				Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-			}, v1alpha12.StarRocksServicePort{
-				Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-			}, v1alpha12.StarRocksServicePort{
-				Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-			})
-		}
-
-		labels := GenerateServiceLabels(src, serviceType)
-		or := metav1.OwnerReference{
-			APIVersion: src.APIVersion,
-			Kind:       src.Kind,
-			Name:       src.Name,
-			UID:        src.UID,
-		}
-
-		var ports []corev1.ServicePort
-		for _, sp := range srPorts {
-			ports = append(ports, corev1.ServicePort{
-				Name:       sp.Name,
-				Port:       sp.Port,
-				NodePort:   sp.NodePort,
-				Protocol:   corev1.ProtocolTCP,
-				TargetPort: intstr.FromInt(int(sp.ContainerPort)),
-			})
-		}
-
-		svc := corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            name,
-				Namespace:       src.Namespace,
-				Labels:          labels,
-				OwnerReferences: []metav1.OwnerReference{or},
-			},
-			Spec: corev1.ServiceSpec{
-				Type:     svcType,
-				Selector: labels,
-				Ports:    ports,
-			},
-		}
-
-		hso := serviceHashObject(&svc)
-		anno := map[string]string{}
-		anno[v1alpha12.ComponentResourceHash] = hash.HashObject(hso)
-		anno[v1alpha12.ComponentGeneration] = "1"
-		svc.Annotations = anno
-
-		return svc*/
-	//the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -149,37 +42,24 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 	}
 
 	if serviceType == FeService {
-		svc.Spec.Type = getServiceType(src.Spec.StarRocksFeSpec.Service)
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_FE
 		}
-
-		if svc.Spec.Type == corev1.ServiceTypeLoadBalancer && src.Spec.StarRocksFeSpec.Service.LoadBalancerIP != "" {
-			svc.Spec.LoadBalancerIP = src.Spec.StarRocksFeSpec.Service.LoadBalancerIP
-		}
-
+		setServiceType(src.Spec.StarRocksFeSpec.Service, &svc)
 		srPorts = getFeServicePorts(config)
 	} else if serviceType == BeService {
-		svc.Spec.Type = getServiceType(src.Spec.StarRocksBeSpec.Service)
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_BE
 		}
 
-		if svc.Spec.Type == corev1.ServiceTypeLoadBalancer && src.Spec.StarRocksBeSpec.Service.LoadBalancerIP != "" {
-			svc.Spec.LoadBalancerIP = src.Spec.StarRocksBeSpec.Service.LoadBalancerIP
-		}
-
+		setServiceType(src.Spec.StarRocksBeSpec.Service, &svc)
 		srPorts = getBeServicePorts(config)
 	} else if serviceType == CnService {
-		svc.Spec.Type = getServiceType(src.Spec.StarRocksCnSpec.Service)
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_CN
 		}
 
-		if svc.Spec.Type == corev1.ServiceTypeLoadBalancer && src.Spec.StarRocksCnSpec.Service.LoadBalancerIP != "" {
-			svc.Spec.LoadBalancerIP = src.Spec.StarRocksCnSpec.Service.LoadBalancerIP
-		}
-
+		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
 		srPorts = getCnServicePorts(config)
 	}
 
@@ -264,12 +144,16 @@ func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocks
 
 	return srPorts
 }
-func getServiceType(svc *srapi.StarRocksService) corev1.ServiceType {
-	if svc == nil || svc.Type == "" {
-		return corev1.ServiceTypeClusterIP
+
+func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
+	service.Spec.Type = corev1.ServiceTypeClusterIP
+	if svc != nil && svc.Type == "" {
+		service.Spec.Type = svc.Type
 	}
 
-	return svc.Type
+	if svc.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
+		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
+	}
 }
 
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
