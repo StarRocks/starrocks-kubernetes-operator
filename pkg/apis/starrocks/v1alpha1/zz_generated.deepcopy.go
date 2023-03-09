@@ -102,6 +102,11 @@ func (in *StarRocksBeSpec) DeepCopyInto(out *StarRocksBeSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ImagePullSecrets != nil {
+		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
+		*out = make([]v1.LocalObjectReference, len(*in))
+		copy(*out, *in)
+	}
 	if in.FsGroup != nil {
 		in, out := &in.FsGroup, &out.FsGroup
 		*out = new(int64)
@@ -155,6 +160,13 @@ func (in *StarRocksBeSpec) DeepCopyInto(out *StarRocksBeSpec) {
 		*out = make([]v1.Toleration, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.PodLabels != nil {
+		in, out := &in.PodLabels, &out.PodLabels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 }
@@ -336,6 +348,11 @@ func (in *StarRocksCnSpec) DeepCopyInto(out *StarRocksCnSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ImagePullSecrets != nil {
+		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
+		*out = make([]v1.LocalObjectReference, len(*in))
+		copy(*out, *in)
+	}
 	if in.Service != nil {
 		in, out := &in.Service, &out.Service
 		*out = new(StarRocksService)
@@ -377,6 +394,13 @@ func (in *StarRocksCnSpec) DeepCopyInto(out *StarRocksCnSpec) {
 		*out = make([]v1.Toleration, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.PodLabels != nil {
+		in, out := &in.PodLabels, &out.PodLabels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 }
@@ -439,6 +463,11 @@ func (in *StarRocksFeSpec) DeepCopyInto(out *StarRocksFeSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ImagePullSecrets != nil {
+		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
+		*out = make([]v1.LocalObjectReference, len(*in))
+		copy(*out, *in)
+	}
 	if in.Service != nil {
 		in, out := &in.Service, &out.Service
 		*out = new(StarRocksService)
@@ -482,6 +511,13 @@ func (in *StarRocksFeSpec) DeepCopyInto(out *StarRocksFeSpec) {
 		*out = make([]v1.Toleration, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.PodLabels != nil {
+		in, out := &in.PodLabels, &out.PodLabels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 }
