@@ -2,6 +2,7 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -146,6 +147,7 @@ func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocks
 
 	return srPorts
 }
+
 func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	service.Spec.Type = corev1.ServiceTypeClusterIP
 
@@ -157,6 +159,7 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
 	}
 }
+
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
 	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {

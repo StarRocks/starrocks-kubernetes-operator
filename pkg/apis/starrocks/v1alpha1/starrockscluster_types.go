@@ -256,6 +256,7 @@ type StarRocksFeSpec struct {
 
 	//Image for a starrocks fe deployment..
 	Image string `json:"image"`
+
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
 	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
@@ -459,7 +460,7 @@ type StarRocksCnSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	//+optional
-	// podLabels for user selector or classify pods
+	//podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 

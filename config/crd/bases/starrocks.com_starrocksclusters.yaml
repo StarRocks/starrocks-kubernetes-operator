@@ -7444,7 +7444,7 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    description: podLabels for user selector or classify pods
+                    description: podLabels for user selector or classify pods.
                     type: object
                   probe:
                     description: Probe defines the mode probe service in container
