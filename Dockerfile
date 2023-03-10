@@ -8,6 +8,7 @@ FROM golang:1.19 as build
 WORKDIR /go/src/app
 COPY . .
 
+
 # Run all the test cases before build.
 RUN make test
 
