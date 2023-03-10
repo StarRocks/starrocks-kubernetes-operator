@@ -8,6 +8,9 @@ FROM golang:1.19 as build
 WORKDIR /go/src/app
 COPY . .
 
+ENV http_proxy=http://172.26.92.139:28888
+ENV https_proxy=http://172.26.92.139:28888
+
 # Run all the test cases before build.
 RUN make test
 
