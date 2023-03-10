@@ -40,7 +40,7 @@ func (be *BeController) bePodLabels(src *v1alpha12.StarRocksCluster, ownerRefere
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
 	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
-	labels.AddLabel(src.Labels)
+	labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)
 	return labels
 }
 
@@ -77,20 +77,25 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 			Name:      log_name,
 			MountPath: log_path,
 		})
-		vols = []corev1.Volume{
-			{
-				Name: log_name,
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+		vols = append(vols, corev1.Volume{
+			Name: log_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
-		}
+		})
 	}
 	if _, ok := vexist[storage_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			//use storage volume.
 			Name:      storage_name,
 			MountPath: storage_path,
+		})
+
+		vols = append(vols, corev1.Volume{
+			Name: storage_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
 		})
 	}
 
@@ -220,6 +225,7 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      beSpec.Affinity,
 		Tolerations:                   beSpec.Tolerations,
+		ImagePullSecrets:              beSpec.ImagePullSecrets,
 		NodeSelector:                  beSpec.NodeSelector,
 	}
 

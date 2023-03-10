@@ -3,12 +3,7 @@ module github.com/StarRocks/starrocks-kubernetes-operator
 go 1.18
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/agiledragon/gomonkey/v2 v2.8.0
-	github.com/avast/retry-go/v4 v4.0.5
-	github.com/blockloop/scan v1.3.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/go-sql-driver/mysql v1.6.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	github.com/spf13/viper v1.13.0

@@ -80,7 +80,7 @@ func (be *BeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 
 	//get the be configMap for resolve ports.
 	//2. get config for generate statefulset and service.
-	config, err := be.GetCnConfig(ctx, &beSpec.ConfigMapInfo, src.Namespace)
+	config, err := be.GetConfig(ctx, &beSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		klog.Error("BeController Sync ", "resolve cn configmap failed, namespace ", src.Namespace, " configmapName ", beSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", beSpec.ConfigMapInfo.ResolveKey, " error ", err)
 		return err
@@ -92,32 +92,12 @@ func (be *BeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 
 	//generate new cn internal service.
 	externalsvc := rutils.BuildExternalService(src, v1alpha12.GetBeExternalServiceName(src), rutils.BeService, config)
-	searchSvc := &corev1.Service{}
-	externalsvc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
-	searchSvc.Name = be.getBeSearchService()
-	searchSvc.Spec = corev1.ServiceSpec{
-		//for compatible kube-dns
-		ClusterIP: "None",
-		Ports: []corev1.ServicePort{
-			{
-				Name:       "heartbeat",
-				Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
-				TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
-			},
-		},
-		Selector: externalsvc.Spec.Selector,
 
-		//value = true, Pod don't need to become ready that be search by domain.
-		PublishNotReadyAddresses: true,
-	}
-
-	bs.ServiceName = searchSvc.Name
-	//create or update fe service, update the status of cn on src.
-	//3. issue the service.
-	if err := k8sutils.CreateOrUpdateService(ctx, be.k8sclient, searchSvc); err != nil {
-		klog.Error("BeController Sync ", "create or update service namespace ", searchSvc.Namespace, " name ", searchSvc.Name)
+	if err := be.applyService(ctx, &externalsvc, config); err != nil {
 		return err
 	}
+	
+	bs.ServiceName = externalsvc.Name
 
 	beFinalizers := []string{v1alpha12.BE_SERVICE_FINALIZER}
 	//4. create cn statefulset.
@@ -150,7 +130,42 @@ func (be *BeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 	return be.updateBeStatus(bs, bst)
 }
 
-func (be *BeController) GetCnConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func (be *BeController) applyService(ctx context.Context, externalsvc *corev1.Service, config map[string]interface{}) error {
+	searchSvc := &corev1.Service{}
+	externalsvc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
+	searchSvc.Name = be.getBeSearchService()
+	searchSvc.Spec = corev1.ServiceSpec{
+		//for compatible kube-dns
+		ClusterIP: "None",
+		Ports: []corev1.ServicePort{
+			{
+				Name:       "heartbeat",
+				Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
+				TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
+			},
+		},
+		Selector: externalsvc.Spec.Selector,
+
+		//value = true, Pod don't need to become ready that be search by domain.
+		PublishNotReadyAddresses: true,
+	}
+
+	if err := k8sutils.ApplyService(ctx, be.k8sclient, externalsvc); err != nil {
+		klog.Error("BeController Sync ", "apply external service namespace ", externalsvc.Namespace, " name ", externalsvc.Name)
+
+		return err
+	}
+	//create or update fe service, update the status of cn on src.
+	//3. issue the service.
+	if err := k8sutils.ApplyService(ctx, be.k8sclient, searchSvc); err != nil {
+		klog.Error("BeController Sync ", "create or update service namespace ", searchSvc.Namespace, " name ", searchSvc.Name)
+		return err
+	}
+
+	return nil
+}
+
+func (be *BeController) GetConfig(ctx context.Context, configMapInfo *v1alpha12.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	configMap, err := k8sutils.GetConfigMap(ctx, be.k8sclient, namespace, configMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
 		klog.Info("BeController GetCnConfig config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)

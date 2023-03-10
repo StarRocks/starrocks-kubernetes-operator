@@ -66,7 +66,7 @@ func (fc *FeController) Sync(ctx context.Context, src *v1alpha12.StarRocksCluste
 	fs := &v1alpha12.StarRocksFeStatus{ServiceName: svc.Name, Phase: v1alpha12.ComponentReconciling}
 	src.Status.StarRocksFeStatus = fs
 	//create or update fe external and domain search service, update the status of fe on src.
-	if err := fc.createOrUpdateFeService(ctx, &svc, config); err != nil {
+	if err := fc.applyService(ctx, &svc, config); err != nil {
 		klog.Error("FeController Sync ", "create or update service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
 		return err
 	}
@@ -212,7 +212,7 @@ func (fc *FeController) getSearchService() string {
 	return "fe-domain-search"
 }
 
-func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1.Service, config map[string]interface{}) error {
+func (fc *FeController) applyService(ctx context.Context, svc *corev1.Service, config map[string]interface{}) error {
 	//need create domain dns service.
 	searchSvc := &corev1.Service{}
 	svc.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
@@ -235,8 +235,8 @@ func (fc *FeController) createOrUpdateFeService(ctx context.Context, svc *corev1
 		PublishNotReadyAddresses: true,
 	}
 
-	if err := k8sutils.CreateOrUpdateService(ctx, fc.k8sclient, searchSvc); err != nil {
+	if err := k8sutils.ApplyService(ctx, fc.k8sclient, searchSvc); err != nil {
 		return errors.New("create or update domain service " + err.Error())
 	}
-	return k8sutils.CreateOrUpdateService(ctx, fc.k8sclient, svc)
+	return k8sutils.ApplyService(ctx, fc.k8sclient, svc)
 }

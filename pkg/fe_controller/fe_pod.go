@@ -41,7 +41,7 @@ func fePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rut
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
 	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
-	labels.AddLabel(src.Labels)
+	labels.AddLabel(src.Spec.StarRocksFeSpec.PodLabels)
 	return labels
 }
 
@@ -230,6 +230,7 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		ServiceAccountName:            sa,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      feSpec.Affinity,
+		ImagePullSecrets:              feSpec.ImagePullSecrets,
 		Tolerations:                   feSpec.Tolerations,
 		NodeSelector:                  feSpec.NodeSelector,
 	}
