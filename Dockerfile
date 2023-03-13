@@ -17,5 +17,5 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/sroperator cmd/main.g
 
 FROM gcr.io/distroless/static-debian11
 
-COPY --from=build /app/sroperator /app/sroperator
-CMD ["/app/sroperator"]
+COPY --from=build /app/sroperator /sroperator
+CMD ["/sroperator"]
