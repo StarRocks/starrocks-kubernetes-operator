@@ -40,7 +40,7 @@ func (be *BeController) bePodLabels(src *v1alpha12.StarRocksCluster, ownerRefere
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
 	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
-	labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)
+	labels.AddLabel(src.Labels)
 	return labels
 }
 
