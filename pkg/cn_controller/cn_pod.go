@@ -38,7 +38,7 @@ func (cc *CnController) cnPodLabels(src *v1alpha12.StarRocksCluster, ownerRefere
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
 	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_CN
-	labels.AddLabel(src.Spec.StarRocksCnSpec.PodLabels)
+	labels.AddLabel(src.Labels)
 	return labels
 }
 

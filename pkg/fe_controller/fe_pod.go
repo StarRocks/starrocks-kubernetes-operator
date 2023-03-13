@@ -41,7 +41,7 @@ func fePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rut
 	labels := rutils.Labels{}
 	labels[v1alpha12.OwnerReference] = ownerReferenceName
 	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
-	labels.AddLabel(src.Spec.StarRocksFeSpec.PodLabels)
+	labels.AddLabel(src.Labels)
 	return labels
 }
 
