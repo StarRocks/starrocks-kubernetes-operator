@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fe_controller
+package fe
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
+	"time"
 )
 
 const (
@@ -37,17 +38,18 @@ const (
 )
 
 //fePodLabels generate the fe pod labels and statefulset selector
-func fePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[v1alpha12.OwnerReference] = ownerReferenceName
-	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
-	labels.AddLabel(src.Labels)
+func (fc *FeController) fePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := fc.feStatefulsetSelector(src)
+	//podLables for classify. operator use statefulsetSelector for manage pods.
+	if src.Spec.StarRocksFeSpec != nil {
+		labels.AddLabel(src.Spec.StarRocksFeSpec.PodLabels)
+	}
 	return labels
 }
 
 //buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + v1alpha12.DEFAULT_FE
+func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
 	vexist := make(map[string]bool)
@@ -131,11 +133,11 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 			},
 		}, {
-			Name:  v1alpha12.COMPONENT_NAME,
-			Value: v1alpha12.DEFAULT_FE,
+			Name:  srapi.COMPONENT_NAME,
+			Value: srapi.DEFAULT_FE,
 		}, {
-			Name:  v1alpha12.FE_SERVICE_NAME,
-			Value: v1alpha12.GetFeExternalServiceName(src) + "." + src.Namespace,
+			Name:  srapi.FE_SERVICE_NAME,
+			Value: srapi.GetFeExternalServiceName(src) + "." + src.Namespace,
 		}, {
 			Name: "POD_IP",
 			ValueFrom: &corev1.EnvVarSource{
@@ -157,7 +159,7 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 
 	Envs = append(Envs, feSpec.FeEnvVars...)
 	feContainer := corev1.Container{
-		Name:    v1alpha12.DEFAULT_FE,
+		Name:    srapi.DEFAULT_FE,
 		Image:   feSpec.Image,
 		Command: []string{"/opt/starrocks/fe_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -230,13 +232,22 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		ServiceAccountName:            sa,
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      feSpec.Affinity,
+		ImagePullSecrets:              feSpec.ImagePullSecrets,
 		Tolerations:                   feSpec.Tolerations,
 		NodeSelector:                  feSpec.NodeSelector,
 	}
 
+	annos := make(map[string]string)
+	//add restart
+	if _, ok := src.Annotations[string(srapi.AnnotationFERestartKey)]; ok {
+		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
+	}
+	rutils.Annotations(annos).AddAnnotation(feSpec.Annotations)
+
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if feSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
+
 			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
 			FSGroupChangePolicy: &onrootMismatch,
 		}
@@ -251,9 +262,10 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    fePodLabels(src, feStatefulSetName(src)),
+			Name:        metaname,
+			Namespace:   src.Namespace,
+			Annotations: annos,
+			Labels:      fc.fePodLabels(src),
 		},
 		Spec: podSpec,
 	}

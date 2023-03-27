@@ -18,11 +18,12 @@ package pkg
 
 import (
 	"context"
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,33 +34,32 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"testing"
-	"time"
 )
 
 func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterReconciler {
 	srcController := &StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = k8sutils.NewFakeClient(Scheme, objects...)
-	fc := fe_controller.New(srcController.Client, srcController.Recorder)
-	cc := cn_controller.New(srcController.Client, srcController.Recorder)
-	srcController.Scs = make(map[string]SubController)
+	fc := fe.New(srcController.Client, srcController.Recorder)
+	cc := cn.New(srcController.Client, srcController.Recorder)
+	srcController.Scs = make(map[string]sub_controller.SubController)
 	srcController.Scs[feControllerName] = fc
 	srcController.Scs[cnControllerName] = cc
 	return srcController
 }
 
 func TestReconcileConstructFeResource(t *testing.T) {
-	src := &v1alpha12.StarRocksCluster{
+	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "starrockscluster-sample",
 			Namespace: "default",
 		},
-		Spec: v1alpha12.StarRocksClusterSpec{
+		Spec: srapi.StarRocksClusterSpec{
 			ServiceAccount: "starrocksAccount",
-			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/fe:2.40",
-				StorageVolumes: []v1alpha12.StorageVolume{
+				StorageVolumes: []srapi.StorageVolume{
 					{
 						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
@@ -74,27 +74,35 @@ func TestReconcileConstructFeResource(t *testing.T) {
 					},
 				},
 			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
+				Replicas: rutils.GetInt32Pointer(1),
+				Image:    "test",
+			},
+			StarRocksBeSpec: &srapi.StarRocksBeSpec{
+				Replicas: rutils.GetInt32Pointer(1),
+				Image:    "test",
+			},
 		},
 	}
 
 	r := newStarRocksClusterController(src)
 	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
-	require.Equal(t, reconcile.Result{RequeueAfter: time.Second * 10}, res)
+	require.Equal(t, reconcile.Result{Requeue: true}, res)
 }
 
 func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
-	src := &v1alpha12.StarRocksCluster{
+	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "starrockscluster-sample",
 			Namespace: "default",
 		},
-		Spec: v1alpha12.StarRocksClusterSpec{
+		Spec: srapi.StarRocksClusterSpec{
 			ServiceAccount: "starrocksAccount",
-			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/fe:2.40",
-				StorageVolumes: []v1alpha12.StorageVolume{
+				StorageVolumes: []srapi.StorageVolume{
 					{
 						Name:             "fe-storage",
 						StorageClassName: rutils.GetStringPointer("shard-data"),
@@ -108,6 +116,14 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 						corev1.ResourceMemory: resource.MustParse("16G"),
 					},
 				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
+				Replicas: rutils.GetInt32Pointer(1),
+				Image:    "test",
+			},
+			StarRocksBeSpec: &srapi.StarRocksBeSpec{
+				Replicas: rutils.GetInt32Pointer(1),
+				Image:    "test",
 			},
 		},
 	}
@@ -119,8 +135,8 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 					Name:      "pod1",
 					Namespace: "default",
 					Labels: map[string]string{
-						v1alpha12.OwnerReference:    src.Name + "-" + v1alpha12.DEFAULT_FE,
-						v1alpha12.ComponentLabelKey: v1alpha12.DEFAULT_FE,
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
 					},
 				},
 				Status: corev1.PodStatus{
@@ -134,8 +150,8 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 					Name:      "pod2",
 					Namespace: "default",
 					Labels: map[string]string{
-						v1alpha12.OwnerReference:    src.Name + "-" + v1alpha12.DEFAULT_FE,
-						v1alpha12.ComponentLabelKey: v1alpha12.DEFAULT_FE,
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
 					},
 				},
 				Status: corev1.PodStatus{
@@ -149,8 +165,8 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 					Name:      "pod3",
 					Namespace: "default",
 					Labels: map[string]string{
-						v1alpha12.OwnerReference:    src.Name + "-" + v1alpha12.DEFAULT_FE,
-						v1alpha12.ComponentLabelKey: v1alpha12.DEFAULT_FE,
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
 					},
 				},
 				Status: corev1.PodStatus{
@@ -164,7 +180,7 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 	}
 
 	st := &appv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{
-		Name:      src.Name + "-" + v1alpha12.DEFAULT_FE,
+		Name:      src.Name + "-" + srapi.DEFAULT_FE,
 		Namespace: "default",
 	}}
 
@@ -175,19 +191,28 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, reconcile.Result{}, res)
+	require.Equal(t, reconcile.Result{Requeue: true}, res)
 }
 
 func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
-	src := &v1alpha12.StarRocksCluster{
+	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "starrockscluster-sample",
 			Namespace: "default",
 		},
-		Spec: v1alpha12.StarRocksClusterSpec{
-			ServiceAccount:  "starrocksAccount",
-			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{},
-			StarRocksCnSpec: &v1alpha12.StarRocksCnSpec{
+		Spec: srapi.StarRocksClusterSpec{
+			ServiceAccount: "starrocksAccount",
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				Replicas: rutils.GetInt32Pointer(3),
+				Image:    "starrocks.com/fe:2.40",
+				ResourceRequirements: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+						corev1.ResourceMemory: resource.MustParse("16G"),
+					},
+				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/cn:2.40",
 				ResourceRequirements: corev1.ResourceRequirements{
@@ -214,19 +239,28 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 	r := newStarRocksClusterController(src, ep)
 	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
-	require.Equal(t, reconcile.Result{Requeue: false, RequeueAfter: time.Second * 10}, res)
+	require.Equal(t, reconcile.Result{Requeue: true}, res)
 }
 
 func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
-	src := &v1alpha12.StarRocksCluster{
+	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "starrockscluster-sample",
 			Namespace: "default",
 		},
-		Spec: v1alpha12.StarRocksClusterSpec{
-			ServiceAccount:  "starrocksAccount",
-			StarRocksFeSpec: &v1alpha12.StarRocksFeSpec{},
-			StarRocksCnSpec: &v1alpha12.StarRocksCnSpec{
+		Spec: srapi.StarRocksClusterSpec{
+			ServiceAccount: "starrocksAccount",
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				Replicas: rutils.GetInt32Pointer(3),
+				Image:    "starrocks.com/fe:2.40",
+				ResourceRequirements: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+						corev1.ResourceMemory: resource.MustParse("16G"),
+					},
+				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				Replicas: rutils.GetInt32Pointer(3),
 				Image:    "starrocks.com/cn:2.40",
 				ResourceRequirements: corev1.ResourceRequirements{
@@ -260,8 +294,8 @@ func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
 			Replicas: rutils.GetInt32Pointer(3),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					v1alpha12.OwnerReference:    "starrockscluster-sample-cn",
-					v1alpha12.ComponentLabelKey: v1alpha12.DEFAULT_CN,
+					srapi.OwnerReference:    "starrockscluster-sample-cn",
+					srapi.ComponentLabelKey: srapi.DEFAULT_CN,
 				},
 			},
 		},
@@ -270,5 +304,5 @@ func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
 	r := newStarRocksClusterController(src, ep, st)
 	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
-	require.Equal(t, reconcile.Result{Requeue: false, RequeueAfter: time.Second * 10}, res)
+	require.Equal(t, reconcile.Result{Requeue: true}, res)
 }

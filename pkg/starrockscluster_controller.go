@@ -18,20 +18,25 @@ package pkg
 
 import (
 	"context"
+	"errors"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/be_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/cn_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/fe_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/be"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	appv1 "k8s.io/api/apps/v1"
-	v2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
 	"k8s.io/klog/v2"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 func init() {
@@ -49,7 +54,7 @@ var (
 type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
-	Scs      map[string]SubController
+	Scs      map[string]sub_controller.SubController
 }
 
 //+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -77,75 +82,210 @@ type StarRocksClusterReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	klog.FromContext(ctx)
-	klog.Info("StarRocksClusterReconciler reconciler the update crd name ", req.Name, " namespace ", req.Namespace)
+	klog.Info("StarRocksClusterReconciler reconcile the update crd name ", req.Name, " namespace ", req.Namespace)
 	var esrc srapi.StarRocksCluster
-	if err := r.Client.Get(ctx, req.NamespacedName, &esrc); err != nil {
+	err := r.Client.Get(ctx, req.NamespacedName, &esrc)
+	if apierrors.IsNotFound(err) {
+		return ctrl.Result{}, nil
+	}
+
+	if err != nil && !apierrors.IsNotFound(err) {
 		klog.Error(err, " the req kind is not exists ", req.NamespacedName, " name ", req.Name)
 		return requeueIfError(err)
 	}
 
 	src := esrc.DeepCopy()
-	//if the src deleted, clean all resource ownerreference to src.
-	clean := func() (res ctrl.Result, err error) {
-		if err := r.CleanSubResources(ctx, src); err != nil {
-			klog.Error("StarRocksClusterReconciler reconciler", "update faield, message ", err)
-			return requeueIfError(err)
-		}
-		//update the sr finalizers and status.
-		defer func() {
-			err = r.Client.Update(ctx, src)
+
+	//record the src updated or not by process.
+	oldHashValue := r.hashStarRocksCluster(src)
+	//reconcile src deleted
+	if !src.DeletionTimestamp.IsZero() {
+		klog.Info("StarRocksClusterReconciler reconcile the src delete namespace=" + req.Namespace + " name= " + req.Name)
+		src.Status.Phase = srapi.ClusterDeleting
+		//if the src deleted, clean all resource ownerreference to src.
+		clean := func() (res ctrl.Result, err error) {
+			delres, err := r.CleanSubResources(ctx, src)
 			if err != nil {
-				klog.Error("StarRocksClusterReconciler reconciler ", "update resource failed ", "namespace ", src.Namespace, " name ", src.Name, " error ", err)
+				klog.Error("StarRocksClusterReconciler reconcile", "update faield, message ", err)
+				return requeueIfError(err)
 			}
-		}()
 
-		if len(src.Finalizers) == 0 {
-			return res, nil
+			if !delres {
+				//wait for finalizers be cleaned clear.
+				klog.Info("StarRocksClusterReconciler reconcile ", "have sub resosurce to cleaned ", "namespace ", src.Namespace, " starrockscluster ", src.Name)
+				return ctrl.Result{}, nil
+			}
+
+			klog.Infof("StarRocksClusterReconciler reconcile namespace=%s, name=%s, deleted.\n", src.Namespace, src.Name)
+
+			// all resource clear over, clear starrockcluster finalizers.
+			src.Finalizers = nil
+			//delete the src will be hooked by finalizer, we should clear the finalizers.
+			return ctrl.Result{}, r.UpdateStarRocksCluster(ctx, src)
 		}
 
-		//wait for finalizers be cleaned clear.
-		klog.Info("StarRocksClusterReconciler reconciler ", "have sub resosurce to cleaned ", "namespace ", src.Namespace, " starrockscluster ", src.Name, " resources finalizers ", src.Finalizers)
-
-		return requeueAfter(10*time.Second, nil)
+		return clean()
 	}
 
-	//reconcile deleted
-	if !src.DeletionTimestamp.IsZero() {
-		return clean()
+	//add finalizer for linkage subresource delete.
+	if len(src.Finalizers) == 0 {
+		src.Finalizers = append(src.Finalizers, srapi.STARROCKS_FINALIZER)
 	}
 
 	//subControllers reconcile for create or update sub resource.
 	for _, rc := range r.Scs {
 		if err := rc.Sync(ctx, src); err != nil {
-			klog.Error("StarRocksClusterReconciler reconciler ", " sub resource reconcile failed ", "namespace ", src.Namespace, " name ", src.Name, "faield ", err)
+			klog.Error("StarRocksClusterReconciler reconcile ", " sub resource reconcile failed ", "namespace ", src.Namespace, " name ", src.Name, " controller ", rc.GetControllerName(), " faield ", err)
 			return requeueIfError(err)
 		}
 	}
 
-	//generate the status.
-	r.reconcileStatus(ctx, src)
-	if err := r.UpdateStarRocksClusterStatus(ctx, src); err != nil {
-		klog.Error(err, "failed to update cluster status name ", src.Name, " namespace ", src.Namespace)
-		return requeueIfError(err)
+	newHashValue := r.hashStarRocksCluster(src)
+	if oldHashValue != newHashValue {
+		return ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src)
 	}
 
-	if src.Status.Phase != srapi.ClusterRunning {
-		//TODO: or reconcile now
-		return requeueAfter(10*time.Second, nil)
+	for _, rc := range r.Scs {
+		//update component status.
+		if err := rc.UpdateStatus(src); err != nil {
+			klog.Infof("StarRocksClusterReconciler reconcile update component %s status failed.err=%s\n", rc.GetControllerName(), err.Error())
+			return requeueIfError(err)
+		}
 	}
-	klog.Info("")
-	return noRequeue()
+
+	//update restart status.
+	if r.haveRestartOperation(src.Annotations) {
+		r.updateOperationStatus(src)
+		newHashValue = r.hashStarRocksCluster(src)
+		if oldHashValue != newHashValue {
+			return ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src)
+		}
+	}
+
+	//generate the src status.
+	r.reconcileStatus(ctx, src)
+	return ctrl.Result{}, r.UpdateStarRocksClusterStatus(ctx, src)
+}
+
+//UpdateStarRocksClusterStatus update the status of src.
+func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		var esrc srapi.StarRocksCluster
+		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
+			return err
+		}
+
+		esrc.Status = src.Status
+		return r.Client.Status().Update(ctx, &esrc)
+	})
+}
+
+//PatchStarRocksCluster patch spec, metadata
+func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+	klog.Info("StarRocksClusterReconciler reconcile ", "namespace ", src.Namespace, " name ", src.Name)
+
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		var esrc srapi.StarRocksCluster
+		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
+			return err
+		}
+
+		/*esrc.Spec = src.Spec
+		if esrc.Annotations == nil {
+			esrc.Annotations = make(map[string]string, len(src.Annotations))
+		}
+
+		for k, v := range src.Annotations {
+			esrc.Annotations[k] = v
+		}*/
+		src.ResourceVersion = esrc.ResourceVersion
+
+		return k8sutils.PatchClientObject(ctx, r.Client, src)
+	})
+}
+
+//UpdateStarRocksCluster udpate the starrockscluster metadata, spec.
+func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		var esrc srapi.StarRocksCluster
+		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); apierrors.IsNotFound(err) {
+			return nil
+		} else if err != nil {
+			return err
+		}
+
+		src.ResourceVersion = esrc.ResourceVersion
+
+		return k8sutils.UpdateClientObject(ctx, r.Client, src)
+	})
+}
+
+//hash the starrockscluste for check the crd modified or not.
+func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCluster) string {
+	type hashObject struct {
+		metav1.ObjectMeta
+		Spec srapi.StarRocksClusterSpec
+	}
+	ho := &hashObject{
+		ObjectMeta: src.ObjectMeta,
+		Spec:       src.Spec,
+	}
+
+	return hash.HashObject(ho)
+}
+
+//CleanSubResources clean all sub resources ownerreference to src.
+func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+	var cleanErr error
+	res := true
+	for _, c := range r.Scs {
+		subres, err := c.ClearResources(ctx, src)
+		if err != nil {
+			cleanErr = errors.New(c.GetControllerName() + "err=" + err.Error())
+		}
+
+		res = res && subres
+	}
+
+	return res, cleanErr
+}
+
+func (r *StarRocksClusterReconciler) updateOperationStatus(src *srapi.StarRocksCluster) {
+	for _, rc := range r.Scs {
+		rc.SyncRestartStatus(src)
+	}
+}
+
+//checks if user have restart service need.
+func (r *StarRocksClusterReconciler) haveRestartOperation(annos map[string]string) bool {
+
+	if v, ok := annos[string(srapi.AnnotationBERestartKey)]; ok {
+		if v != string(srapi.AnnotationRestartFinished) {
+			return true
+		}
+	}
+	if v, ok := annos[string(srapi.AnnotationFERestartKey)]; ok {
+		if v != string(srapi.AnnotationRestartFinished) {
+			return true
+		}
+	}
+	if v, ok := annos[string(srapi.AnnotationCNRestartKey)]; ok {
+		if v != string(srapi.AnnotationRestartFinished) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {
-	klog.Info("StarRocksClusterReconciler reconcile status.")
 	//calculate the status of starrocks cluster by subresource's status.
-	//clear resources when sub resource deleted.
+	//clear resources when sub resource deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
 	for _, rc := range r.Scs {
 		rc.ClearResources(ctx, src)
 	}
 
-	smap := make(map[string]bool)
+	smap := make(map[srapi.ClusterPhase]bool)
 	src.Status.Phase = srapi.ClusterRunning
 	func() {
 		feStatus := src.Status.StarRocksFeStatus
@@ -158,9 +298,7 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 
 	func() {
 		cnStatus := src.Status.StarRocksCnStatus
-		if cnStatus != nil && cnStatus.Phase == srapi.ComponentWaiting {
-			smap[srapi.ClusterPending] = true
-		} else if cnStatus != nil && cnStatus.Phase == srapi.ComponentReconciling {
+		if cnStatus != nil && cnStatus.Phase == srapi.ComponentReconciling {
 			smap[srapi.ClusterPending] = true
 		} else if cnStatus != nil && cnStatus.Phase == srapi.ComponentFailed {
 			smap[srapi.ClusterFailed] = true
@@ -174,32 +312,23 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 	}
 }
 
-func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
-	klog.Info("StarRocksClusterReconciler reconciler ", "namespace ", src.Namespace, " name ", src.Name)
-
-	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		return r.Client.Status().Update(ctx, src)
-	})
-}
-
 // SetupWithManager sets up the controller with the Manager.
 func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
-		Owns(&v2beta2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
 
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	subcs := make(map[string]SubController)
-	fc := fe_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(feControllerName))
+	subcs := make(map[string]sub_controller.SubController)
+	fc := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor(feControllerName))
 	subcs[feControllerName] = fc
-	cc := cn_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(cnControllerName))
+	cc := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor(cnControllerName))
 	subcs[cnControllerName] = cc
-	be := be_controller.New(mgr.GetClient(), mgr.GetEventRecorderFor(beControllerName))
+	be := be.New(mgr.GetClient(), mgr.GetEventRecorderFor(beControllerName))
 	subcs[beControllerName] = be
 
 	if err := (&StarRocksClusterReconciler{
@@ -210,15 +339,4 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
 		os.Exit(1)
 	}
-}
-
-//CleanSubResources clean all sub resources ownerreference to src.
-func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) error {
-	for _, c := range r.Scs {
-		if _, err := c.ClearResources(ctx, src); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

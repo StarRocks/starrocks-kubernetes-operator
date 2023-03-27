@@ -89,7 +89,7 @@ tidy: ## Run go vet against code.
 	go mod tidy
 
 .PHONY: build
-build: tidy generate fmt vet ## Build operator binary,name=manager, path=bin/ .
+build: tidy generate fmt vet crd-all ## Build operator binary,name=manager, path=bin/ .
 	GOOS=linux GOARCH=amd64 go build -ldflags=$(LDFLAGS) -o bin/sroperator cmd/main.go
 
 .PHONY: run
@@ -97,8 +97,8 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker
-docker: build
-	docker build --rm --no-cache -f Dockerfile -t "$(IMG)"  .
+docker: ## use docker build
+	docker build --rm --no-cache --build-arg LDFLAGS=$(LDFLAGS) -f Dockerfile -t "$(IMG)"  .
 
 .PHONY: push
 push: docker

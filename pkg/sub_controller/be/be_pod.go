@@ -14,39 +14,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package be_controller
+package be
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
+	"time"
 )
 
 const (
 	log_path           = "/opt/starrocks/be/log"
 	log_name           = "be-log"
-	be_config_path     = "/etc/starrocks/cn/conf"
+	be_config_path     = "/etc/starrocks/be/conf"
 	storage_name       = "be-storage"
 	storage_path       = "/opt/starrocks/be/storage"
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
 //cnPodLabels
-func (be *BeController) bePodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[v1alpha12.OwnerReference] = ownerReferenceName
-	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
-	labels.AddLabel(src.Labels)
+func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := be.beStatefulSetsLabels(src)
+	//podLables for classify. operator use statefulsetSelector for manage pods.
+	if src.Spec.StarRocksBeSpec != nil {
+		labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)
+	}
 	return labels
 }
 
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + v1alpha12.DEFAULT_BE
+func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
 	vexist := make(map[string]bool)
@@ -59,7 +61,6 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 			MountPath: sv.MountPath,
 		})
 
-		//TODO: now only support storage class mode.
 		vols = append(vols, corev1.Volume{
 			Name: sv.Name,
 			VolumeSource: corev1.VolumeSource{
@@ -74,12 +75,12 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 	if _, ok := vexist[log_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			//use storage volume.
-			Name:      storage_name,
+			Name:      log_name,
 			MountPath: log_path,
 		})
 		vols = []corev1.Volume{
 			{
-				Name: storage_name,
+				Name: log_name,
 				VolumeSource: corev1.VolumeSource{
 					EmptyDir: &corev1.EmptyDirVolumeSource{},
 				},
@@ -91,6 +92,12 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 			//use storage volume.
 			Name:      storage_name,
 			MountPath: storage_path,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: storage_name,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
 		})
 	}
 
@@ -124,11 +131,11 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 			},
 		}, {
-			Name:  v1alpha12.COMPONENT_NAME,
-			Value: v1alpha12.DEFAULT_CN,
+			Name:  srapi.COMPONENT_NAME,
+			Value: srapi.DEFAULT_CN,
 		}, {
-			Name:  v1alpha12.FE_SERVICE_NAME,
-			Value: v1alpha12.GetFeExternalServiceName(src),
+			Name:  srapi.FE_SERVICE_NAME,
+			Value: srapi.GetFeExternalServiceName(src),
 		}, {
 			Name:  "FE_QUERY_PORT",
 			Value: strconv.FormatInt(int64(rutils.GetPort(beconfig, rutils.QUERY_PORT)), 10),
@@ -143,7 +150,7 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 
 	Envs = append(Envs, beSpec.BeEnvVars...)
 	beContainer := corev1.Container{
-		Name:    v1alpha12.DEFAULT_BE,
+		Name:    srapi.DEFAULT_BE,
 		Image:   beSpec.Image,
 		Command: []string{"/opt/starrocks/be_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -220,8 +227,17 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 		Affinity:                      beSpec.Affinity,
 		Tolerations:                   beSpec.Tolerations,
+		ImagePullSecrets:              beSpec.ImagePullSecrets,
 		NodeSelector:                  beSpec.NodeSelector,
 	}
+
+	annos := make(map[string]string)
+	//add restart annotation in podTemplate.
+	if _, ok := src.Annotations[string(srapi.AnnotationBERestartKey)]; ok {
+		//simulate the kubectl operation.
+		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
+	}
+	rutils.Annotations(annos).AddAnnotation(beSpec.Annotations)
 
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if beSpec.FsGroup == nil {
@@ -240,9 +256,10 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    be.bePodLabels(src, beStatefulSetName(src)),
+			Name:        metaname,
+			Annotations: annos,
+			Namespace:   src.Namespace,
+			Labels:      be.bePodLabels(src),
 		},
 		Spec: podSpec,
 	}

@@ -1,12 +1,11 @@
 package resource_utils
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"strconv"
 )
 
 type StarRocksServiceType string
@@ -28,81 +27,51 @@ type hashService struct {
 	labels map[string]string
 }
 
-//BuildExternalService build the external service.
-func BuildExternalService(src *v1alpha12.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
-	var srPorts []v1alpha12.StarRocksServicePort
+//BuildExternalService build the external service. not have selector
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}, selector map[string]string) corev1.Service {
 	//the k8s service type.
-	var svcType corev1.ServiceType
+	var srPorts []srapi.StarRocksServicePort
+	svc := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: src.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: selector,
+		},
+	}
+	svc.Finalizers = append(svc.Finalizers, srapi.SERVICE_FINALIZER)
+
 	if serviceType == FeService {
-		if src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Type != "" {
-			svcType = src.Spec.StarRocksFeSpec.Service.Type
-		} else {
-			svcType = corev1.ServiceTypeClusterIP
+		if svc.Name == "" {
+			svc.Name = src.Name + "-" + srapi.DEFAULT_FE
 		}
 
-		httpPort := GetPort(config, HTTP_PORT)
-		rpcPort := GetPort(config, RPC_PORT)
-		queryPort := GetPort(config, QUERY_PORT)
-		editPort := GetPort(config, EDIT_LOG_PORT)
-		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-			Port: httpPort, ContainerPort: httpPort, Name: "http",
-		}, v1alpha12.StarRocksServicePort{
-			Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
-		}, v1alpha12.StarRocksServicePort{
-			Port: queryPort, ContainerPort: queryPort, Name: "query",
-		}, v1alpha12.StarRocksServicePort{
-			Port: editPort, ContainerPort: editPort, Name: "edit-log"})
+		setServiceType(src.Spec.StarRocksFeSpec.Service, &svc)
+		srPorts = getFeServicePorts(config)
 	} else if serviceType == BeService {
-		if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Type != "" {
-			svcType = src.Spec.StarRocksBeSpec.Service.Type
-		} else {
-			svcType = corev1.ServiceTypeClusterIP
+		if svc.Name == "" {
+			svc.Name = src.Name + "-" + srapi.DEFAULT_BE
 		}
-		name = v1alpha12.DEFAULT_BE_SERVICE_NAME
-		bePort := GetPort(config, BE_PORT)
-		webseverPort := GetPort(config, WEBSERVER_PORT)
-		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
-		brpcPort := GetPort(config, BRPC_PORT)
-		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-			Port: bePort, ContainerPort: bePort, Name: "be",
-		}, v1alpha12.StarRocksServicePort{
-			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-		}, v1alpha12.StarRocksServicePort{
-			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-		}, v1alpha12.StarRocksServicePort{
-			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-		})
 
+		setServiceType(src.Spec.StarRocksBeSpec.Service, &svc)
+		srPorts = getBeServicePorts(config)
 	} else if serviceType == CnService {
-		if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Type != "" {
-			svcType = src.Spec.StarRocksCnSpec.Service.Type
-		} else {
-			svcType = corev1.ServiceTypeClusterIP
+		if svc.Name == "" {
+			svc.Name = src.Name + "-" + srapi.DEFAULT_CN
 		}
 
-		name = v1alpha12.DEFAULT_CN_SERVICE_NAME
-		thriftPort := GetPort(config, THRIFT_PORT)
-		webseverPort := GetPort(config, WEBSERVER_PORT)
-		heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
-		brpcPort := GetPort(config, BRPC_PORT)
-		srPorts = append(srPorts, v1alpha12.StarRocksServicePort{
-			Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
-		}, v1alpha12.StarRocksServicePort{
-			Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
-		}, v1alpha12.StarRocksServicePort{
-			Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-		}, v1alpha12.StarRocksServicePort{
-			Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-		})
+		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
+		srPorts = getCnServicePorts(config)
 	}
 
-	labels := GenerateServiceLabels(src, serviceType)
 	or := metav1.OwnerReference{
 		APIVersion: src.APIVersion,
 		Kind:       src.Kind,
 		Name:       src.Name,
 		UID:        src.UID,
 	}
+	svc.OwnerReferences = []metav1.OwnerReference{or}
 
 	var ports []corev1.ServicePort
 	for _, sp := range srPorts {
@@ -115,48 +84,96 @@ func BuildExternalService(src *v1alpha12.StarRocksCluster, name string, serviceT
 		})
 	}
 
-	svc := corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       src.Namespace,
-			Labels:          labels,
-			OwnerReferences: []metav1.OwnerReference{or},
-		},
-		Spec: corev1.ServiceSpec{
-			Type:     svcType,
-			Selector: labels,
-			Ports:    ports,
-		},
-	}
-
 	hso := serviceHashObject(&svc)
 	anno := map[string]string{}
-	anno[v1alpha12.ComponentResourceHash] = hash.HashObject(hso)
-	anno[v1alpha12.ComponentGeneration] = "1"
+	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
 	svc.Annotations = anno
-
+	svc.Spec.Ports = ports
 	return svc
 }
 
+func getFeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+	httpPort := GetPort(config, HTTP_PORT)
+	rpcPort := GetPort(config, RPC_PORT)
+	queryPort := GetPort(config, QUERY_PORT)
+	editPort := GetPort(config, EDIT_LOG_PORT)
+	srPorts = append(srPorts, srapi.StarRocksServicePort{
+		Port: httpPort, ContainerPort: httpPort, Name: "http",
+	}, srapi.StarRocksServicePort{
+		Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
+	}, srapi.StarRocksServicePort{
+		Port: queryPort, ContainerPort: queryPort, Name: "query",
+	}, srapi.StarRocksServicePort{
+		Port: editPort, ContainerPort: editPort, Name: "edit-log"})
+
+	return srPorts
+}
+
+func getBeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+	bePort := GetPort(config, BE_PORT)
+	webseverPort := GetPort(config, WEBSERVER_PORT)
+	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
+	brpcPort := GetPort(config, BRPC_PORT)
+
+	srPorts = append(srPorts, srapi.StarRocksServicePort{
+		Port: bePort, ContainerPort: bePort, Name: "be",
+	}, srapi.StarRocksServicePort{
+		Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
+	}, srapi.StarRocksServicePort{
+		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
+	}, srapi.StarRocksServicePort{
+		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
+	})
+
+	return srPorts
+}
+
+func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+	thriftPort := GetPort(config, THRIFT_PORT)
+	webseverPort := GetPort(config, WEBSERVER_PORT)
+	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
+	brpcPort := GetPort(config, BRPC_PORT)
+	srPorts = append(srPorts, srapi.StarRocksServicePort{
+		Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
+	}, srapi.StarRocksServicePort{
+		Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
+	}, srapi.StarRocksServicePort{
+		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
+	}, srapi.StarRocksServicePort{
+		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
+	})
+
+	return srPorts
+}
+func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
+	service.Spec.Type = corev1.ServiceTypeClusterIP
+
+	if svc != nil && svc.Type != "" {
+		service.Spec.Type = svc.Type
+	}
+
+	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
+		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
+	}
+}
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
-	if _, ok := nsvc.Annotations[v1alpha12.ComponentResourceHash]; ok {
-		nhsvcValue = nsvc.Annotations[v1alpha12.ComponentResourceHash]
+	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
+		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
 	} else {
 		nhsvc := serviceHashObject(nsvc)
 		nhsvcValue = hash.HashObject(nhsvc)
 	}
 
-	if _, ok := oldsvc.Annotations[v1alpha12.ComponentResourceHash]; ok {
-		ohsvcValue = oldsvc.Annotations[v1alpha12.ComponentResourceHash]
+	if _, ok := oldsvc.Annotations[srapi.ComponentResourceHash]; ok {
+		ohsvcValue = oldsvc.Annotations[srapi.ComponentResourceHash]
 	} else {
 		ohsvc := serviceHashObject(oldsvc)
 		ohsvcValue = hash.HashObject(ohsvc)
 	}
-	oldGeneration, _ := strconv.ParseInt(oldsvc.Annotations[v1alpha12.ComponentGeneration], 10, 64)
 
-	return nhsvcValue == ohsvcValue && nsvc.Name == oldsvc.Name &&
-		nsvc.Namespace == oldsvc.Namespace && oldGeneration == oldsvc.Generation
+	return nhsvcValue == ohsvcValue &&
+		nsvc.Namespace == oldsvc.Namespace /*&& oldGeneration == oldsvc.Generation*/
 }
 
 func serviceHashObject(svc *corev1.Service) hashService {
@@ -165,22 +182,22 @@ func serviceHashObject(svc *corev1.Service) hashService {
 		namespace: svc.Namespace,
 		ports:     svc.Spec.Ports,
 		selector:  svc.Spec.Selector,
-		//serviceType: svc.Spec.Type,
-		labels: svc.Labels,
+		labels:    svc.Labels,
 	}
 }
 
-//GenerateServiceLabels generate the default labels list starrocks services.
-func GenerateServiceLabels(src *v1alpha12.StarRocksCluster, serviceType StarRocksServiceType) Labels {
-	labels := Labels{}
-	labels.AddLabel(src.Labels)
-	if serviceType == FeService {
-		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_FE)
-	} else if serviceType == BeService {
-		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_BE)
-	} else if serviceType == CnService {
-		labels.Add(v1alpha12.ComponentLabelKey, v1alpha12.DEFAULT_CN)
+func HaveEqualOwnerReference(svc1 *corev1.Service, svc2 *corev1.Service) bool {
+	set := make(map[string]bool)
+	for _, o := range svc1.OwnerReferences {
+		key := o.Kind + o.Name
+		set[key] = true
 	}
 
-	return labels
+	for _, o := range svc2.OwnerReferences {
+		key := o.Kind + o.Name
+		if _, ok := set[key]; ok {
+			return true
+		}
+	}
+	return false
 }
