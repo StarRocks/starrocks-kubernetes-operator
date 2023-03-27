@@ -236,6 +236,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 		//simulate the kubectl operation.
 		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
 	}
+
 	rutils.Annotations(annos).AddAnnotation(beSpec.Annotations)
 
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch

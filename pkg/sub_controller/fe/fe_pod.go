@@ -23,8 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/klog/v2"
 	"time"
 )
 
@@ -72,9 +70,6 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 			},
 		})
 	}
-
-	str, _ := json.Marshal(vols)
-	klog.Info("FeController buildPodTemplate vols ", string(str))
 
 	// add default volume about log ,meta if not configure.
 	if _, ok := vexist[meta_path]; !ok {
