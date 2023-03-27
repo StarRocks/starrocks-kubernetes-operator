@@ -2068,7 +2068,6 @@ map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
 <p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
