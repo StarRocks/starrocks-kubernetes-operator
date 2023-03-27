@@ -197,6 +197,8 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		ImagePullSecrets:              cnSpec.ImagePullSecrets,
 		NodeSelector:                  cnSpec.NodeSelector,
 	}
+	annos := make(map[string]string)
+	rutils.Annotations(annos).AddAnnotation(cnSpec.Annotations)
 
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if cnSpec.FsGroup == nil {
@@ -215,9 +217,10 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    cc.cnPodLabels(src, cnStatefulSetName(src)),
+			Name:        metaname,
+			Namespace:   src.Namespace,
+			Annotations: annos,
+			Labels:      cc.cnPodLabels(src, cnStatefulSetName(src)),
 		},
 		Spec: podSpec,
 	}

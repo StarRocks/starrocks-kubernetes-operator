@@ -912,6 +912,12 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    description: annotation for fe pods. user can config monitor annotation
+                      for collect to monitor system.
+                    type: object
                   beEnvVars:
                     description: beEnvVars is a slice of environment variables that
                       are added to the pods, the default is empty.
@@ -2121,6 +2127,12 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    description: annotation for fe pods. user can config monitor annotation
+                      for collect to monitor system.
                     type: object
                   autoScalingPolicy:
                     description: AutoScalingPolicy auto scaling strategy
@@ -3959,6 +3971,12 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    description: annotation for fe pods. user can config monitor annotation
+                      for collect to monitor system.
                     type: object
                   configMapInfo:
                     description: the reference for fe configMap.

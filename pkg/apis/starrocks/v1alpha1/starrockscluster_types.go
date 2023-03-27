@@ -200,6 +200,9 @@ type StarRocksFeSpec struct {
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	Name string `json:"name,omitempty"`
 
+	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	Annotations map[string]string `json:"annotations,omitempty"`
+
 	//serviceAccount for fe access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
@@ -271,6 +274,9 @@ type StarRocksBeSpec struct {
 
 	//Image for a starrocks be deployment.
 	Image string `json:"image"`
+
+	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
@@ -345,6 +351,9 @@ type StarRocksCnSpec struct {
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	//+optional
 	Name string `json:"name,omitempty"`
+
+	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
