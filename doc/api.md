@@ -19,6 +19,77 @@ toc: true
 </div>
 Resource Types:
 <ul></ul>
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationKey">AnnotationOperationKey
+(<code>string</code> alias)</h3>
+<div>
+<p>Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;app.starrocks.be.io/restart&#34;</p></td>
+<td><p>the be annotation key for restart be</p>
+</td>
+</tr><tr><td><p>&#34;app.starrocks.cn.io/restart&#34;</p></td>
+<td><p>the cn annotation key for restart cn</p>
+</td>
+</tr><tr><td><p>&#34;app.starrocks.fe.io/restart&#34;</p></td>
+<td><p>the fe annotation key for restart</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationValue">AnnotationOperationValue
+(<code>string</code> alias)</h3>
+<div>
+<p>AnnotationOperationValue present the operation for fe, cn, be.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;restart&#34;</p></td>
+<td><p>represent the user want to restart all fe pods.</p>
+</td>
+</tr><tr><td><p>&#34;finished&#34;</p></td>
+<td><p>represent all fe pods have restarted.</p>
+</td>
+</tr><tr><td><p>&#34;restarting&#34;</p></td>
+<td><p>represent at least one pod on restarting</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.AutoScalerVersion">AutoScalerVersion
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;v1&#34;</p></td>
+<td><p>the cn service use v1 autoscaler. reference to <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+</td>
+</tr><tr><td><p>&#34;v2beta2&#34;</p></td>
+<td><p>the cn service use v2beta. reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+</td>
+</tr><tr><td><p>&#34;v2&#34;</p></td>
+<td><p>the cn service use v2. reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+</td>
+</tr></tbody>
+</table>
 <h3 id="starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy
 </h3>
 <p>
@@ -50,6 +121,19 @@ HPAPolicy
 </tr>
 <tr>
 <td>
+<code>version</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
+AutoScalerVersion
+</a>
+</em>
+</td>
+<td>
+<p>version represents the autoscaler version for cn service. only support v1,v2beta2,v2</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>minReplicas</code><br/>
 <em>
 int32
@@ -57,7 +141,6 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>the min numbers of target.</p>
 </td>
 </tr>
 <tr>
@@ -80,7 +163,26 @@ int32
 (<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
+<p>represent the cluster phase. the possible value for cluster phase are: running, failed, pending.</p>
 </div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ClusterFailed represents starrocks cluster failed.</p>
+</td>
+</tr><tr><td><p>&#34;pending&#34;</p></td>
+<td><p>ClusterPending represents the starrocks cluster is creating</p>
+</td>
+</tr><tr><td><p>&#34;running&#34;</p></td>
+<td><p>ClusterRunning represents starrocks cluster is running.</p>
+</td>
+</tr></tbody>
+</table>
 <h3 id="starrocks.com/v1alpha1.ConfigMapInfo">ConfigMapInfo
 </h3>
 <p>
@@ -120,6 +222,165 @@ string
 </tr>
 </tbody>
 </table>
+<h3 id="starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>ContainerResourceMetricSource indicates how to scale on a resource metric known to
+Kubernetes, as specified in requests and limits, describing each pod in the
+current scale target (e.g. CPU or memory).  The values will be averaged
+together before being compared to the target.  Such metrics are built in to
+Kubernetes, and have special scaling options on top of those available to
+normal per-pod metrics using the &ldquo;pods&rdquo; source.  Only one &ldquo;target&rdquo; type
+should be set.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcename-v1-core">
+Kubernetes core/v1.ResourceName
+</a>
+</em>
+</td>
+<td>
+<p>name is the name of the resource in question.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTarget">
+MetricTarget
+</a>
+</em>
+</td>
+<td>
+<p>target specifies the target value for the given metric</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>container</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>container is the name of the container in the pods of the scaling target</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.CrossVersionObjectReference">CrossVersionObjectReference
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>)
+</p>
+<div>
+<p>CrossVersionObjectReference contains enough information to let you identify the referred resource.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>kind</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Kind of the referent; More info: <a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds&quot;">https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds&rdquo;</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Name of the referent; More info: <a href="http://kubernetes.io/docs/user-guide/identifiers#names">http://kubernetes.io/docs/user-guide/identifiers#names</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>apiVersion</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>API version of the referent</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>ExternalMetricSource indicates how to scale on a metric not associated with
+any Kubernetes object (for example length of queue in cloud
+messaging service, or QPS from loadbalancer running outside of cluster).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metric</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
+MetricIdentifier
+</a>
+</em>
+</td>
+<td>
+<p>metric identifies the target metric by name and selector</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTarget">
+MetricTarget
+</a>
+</em>
+</td>
+<td>
+<p>target specifies the target value for the given metric</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="starrocks.com/v1alpha1.HPAPolicy">HPAPolicy
 </h3>
 <p>
@@ -139,28 +400,278 @@ string
 <td>
 <code>metrics</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2beta2-autoscaling">
-[]Kubernetes autoscaling/v2beta2.MetricSpec
+<a href="#starrocks.com/v1alpha1.MetricSpec">
+[]MetricSpec
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Metrics specifies how to scale based on a single metric</p>
+<p>Metrics specifies how to scale based on a single metric
+the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+HorizontalPodAutoscaler version and kubernetes releases matching issue.
+the splice will have unsafe.Pointer convert, so be careful to edit the struct fileds.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>behavior</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2beta2-autoscaling">
-Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
+<a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">
+HorizontalPodAutoscalerBehavior
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target</p>
+<p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
+the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+HorizontalPodAutoscaler version and kubernetes releases matching issue.
+the</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
+</p>
+<div>
+<p>HPAScalingPolicy is a single policy which must hold true for a specified past interval.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicyType">
+HPAScalingPolicyType
+</a>
+</em>
+</td>
+<td>
+<p>Type is used to specify the scaling policy.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>value</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>Value contains the amount of change which is permitted by the policy.
+It must be greater than zero</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>periodSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>PeriodSeconds specifies the window of time for which the policy should hold true.
+PeriodSeconds must be greater than zero and less than or equal to 1800 (30 min).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicyType">HPAScalingPolicyType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy</a>)
+</p>
+<div>
+<p>HPAScalingPolicyType is the type of the policy which could be used while making scaling decisions.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;Percent&#34;</p></td>
+<td><p>PercentScalingPolicy is a policy used to specify a relative amount of change with respect to
+the current number of pods.</p>
+</td>
+</tr><tr><td><p>&#34;Pods&#34;</p></td>
+<td><p>PodsScalingPolicy is a policy used to specify a change in absolute number of pods.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior</a>)
+</p>
+<div>
+<p>HPAScalingRules configures the scaling behavior for one direction.
+These Rules are applied after calculating DesiredReplicas from metrics for the HPA.
+They can limit the scaling velocity by specifying scaling policies.
+They can prevent flapping by specifying the stabilization window, so that the
+number of replicas is not set instantly, instead, the safest value from the stabilization
+window is chosen.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>stabilizationWindowSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StabilizationWindowSeconds is the number of seconds for which past recommendations should be
+considered while scaling up or scaling down.
+StabilizationWindowSeconds must be greater than or equal to zero and less than or equal to 3600 (one hour).
+If not set, use the default values:
+- For scale up: 0 (i.e. no stabilization is done).
+- For scale down: 300 (i.e. the stabilization window is 300 seconds long).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>selectPolicy</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ScalingPolicySelect">
+ScalingPolicySelect
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>selectPolicy is used to specify which policy should be used.
+If not set, the default value MaxPolicySelect is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>policies</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicy">
+[]HPAScalingPolicy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>policies is a list of potential scaling polices which can be used during scaling.
+At least one policy must be specified, otherwise the HPAScalingRules will be discarded as invalid</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
+</p>
+<div>
+<p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target
+in both Up and Down directions (scaleUp and scaleDown fields respectively).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>scaleUp</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
+HPAScalingRules
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>scaleUp is scaling policy for scaling Up.
+If not set, the default value is the higher of:
+* increase no more than 4 pods per 60 seconds
+* double the number of pods per 60 seconds
+No stabilization is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>scaleDown</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
+HPAScalingRules
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>scaleDown is scaling policy for scaling Down.
+If not set, the default value is to allow to scale down to minReplicas pods, with a
+300 second stabilization window (i.e., the highest recommendation for
+the last 300sec is used).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the deploy horizontal scaler name</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
+AutoScalerVersion
+</a>
+</em>
+</td>
+<td>
+<p>the deploy horizontal version.</p>
 </td>
 </tr>
 </tbody>
@@ -171,7 +682,517 @@ Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
 (<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeStatus">StarRocksFeStatus</a>)
 </p>
 <div>
+<p>represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.</p>
 </div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ComponentFailed have at least one service failed.</p>
+</td>
+</tr><tr><td><p>&#34;reconciling&#34;</p></td>
+<td><p>ComponentReconciling the starrocks have component in starting.</p>
+</td>
+</tr><tr><td><p>&#34;running&#34;</p></td>
+<td><p>ComponentRunning all components runs available.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.MetricIdentifier">MetricIdentifier
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>)
+</p>
+<div>
+<p>MetricIdentifier defines the name and optionally selector for a metric</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>name is the name of the given metric</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>selector</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#labelselector-v1-meta">
+Kubernetes meta/v1.LabelSelector
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>selector is the string-encoded form of a standard kubernetes label selector for the given metric
+When set, it is passed as an additional parameter to the metrics server for more specific metrics scoping.
+When unset, just the metricName will be used to gather metrics.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.MetricSourceType">MetricSourceType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>MetricSourceType indicates the type of metric.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ContainerResource&#34;</p></td>
+<td><p>ContainerResourceMetricSourceType is a resource metric known to Kubernetes, as
+specified in requests and limits, describing a single container in each pod in the current
+scale target (e.g. CPU or memory).  Such metrics are built in to
+Kubernetes, and have special scaling options on top of those available
+to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
+</td>
+</tr><tr><td><p>&#34;External&#34;</p></td>
+<td><p>ExternalMetricSourceType is a global metric that is not associated
+with any Kubernetes object. It allows autoscaling based on information
+coming from components running outside of cluster
+(for example length of queue in cloud messaging service, or
+QPS from loadbalancer running outside of cluster).</p>
+</td>
+</tr><tr><td><p>&#34;Object&#34;</p></td>
+<td><p>ObjectMetricSourceType is a metric describing a kubernetes object
+(for example, hits-per-second on an Ingress object).</p>
+</td>
+</tr><tr><td><p>&#34;Pods&#34;</p></td>
+<td><p>PodsMetricSourceType is a metric describing each pod in the current scale
+target (for example, transactions-processed-per-second).  The values
+will be averaged together before being compared to the target value.</p>
+</td>
+</tr><tr><td><p>&#34;Resource&#34;</p></td>
+<td><p>ResourceMetricSourceType is a resource metric known to Kubernetes, as
+specified in requests and limits, describing each pod in the current
+scale target (e.g. CPU or memory).  Such metrics are built in to
+Kubernetes, and have special scaling options on top of those available
+to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.MetricSpec">MetricSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
+</p>
+<div>
+<p>MetricSpec specifies how to scale based on a single metric
+(only <code>type</code> and one other matching field should be set at once).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricSourceType">
+MetricSourceType
+</a>
+</em>
+</td>
+<td>
+<p>type is the type of metric source.  It should be one of &ldquo;ContainerResource&rdquo;, &ldquo;External&rdquo;,
+&ldquo;Object&rdquo;, &ldquo;Pods&rdquo; or &ldquo;Resource&rdquo;, each mapping to a matching field in the object.
+Note: &ldquo;ContainerResource&rdquo; type is available on when the feature-gate
+HPAContainerMetrics is enabled</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>object</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ObjectMetricSource">
+ObjectMetricSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>object refers to a metric describing a single kubernetes object
+(for example, hits-per-second on an Ingress object).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pods</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.PodsMetricSource">
+PodsMetricSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>pods refers to a metric describing each pod in the current scale target
+(for example, transactions-processed-per-second).  The values will be
+averaged together before being compared to the target value.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resource</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ResourceMetricSource">
+ResourceMetricSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>resource refers to a resource metric (such as those specified in
+requests and limits) known to Kubernetes describing each pod in the
+current scale target (e.g. CPU or memory). Such metrics are built in to
+Kubernetes, and have special scaling options on top of those available
+to normal per-pod metrics using the &ldquo;pods&rdquo; source.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>containerResource</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">
+ContainerResourceMetricSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>container resource refers to a resource metric (such as those specified in
+requests and limits) known to Kubernetes describing a single container in
+each pod of the current scale target (e.g. CPU or memory). Such metrics are
+built in to Kubernetes, and have special scaling options on top of those
+available to normal per-pod metrics using the &ldquo;pods&rdquo; source.
+This is an alpha feature and can be enabled by the HPAContainerMetrics feature flag.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>external</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ExternalMetricSource">
+ExternalMetricSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>external refers to a global metric that is not associated
+with any Kubernetes object. It allows autoscaling based on information
+coming from components running outside of cluster
+(for example length of queue in cloud messaging service, or
+QPS from loadbalancer running outside of cluster).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.MetricTarget">MetricTarget
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource</a>, <a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>, <a href="#starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource</a>)
+</p>
+<div>
+<p>MetricTarget defines the target value, average value, or average utilization of a specific metric</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTargetType">
+MetricTargetType
+</a>
+</em>
+</td>
+<td>
+<p>type represents whether the metric type is Utilization, Value, or AverageValue</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>value</code><br/>
+<em>
+k8s.io/apimachinery/pkg/api/resource.Quantity
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>value is the target value of the metric (as a quantity).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>averageValue</code><br/>
+<em>
+k8s.io/apimachinery/pkg/api/resource.Quantity
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>averageValue is the target value of the average of the
+metric across all relevant pods (as a quantity)</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>averageUtilization</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>averageUtilization is the target value of the average of the
+resource metric across all relevant pods, represented as a percentage of
+the requested value of the resource for the pods.
+Currently only valid for Resource metric source type</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.MetricTargetType">MetricTargetType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricTarget">MetricTarget</a>)
+</p>
+<div>
+<p>MetricTargetType specifies the type of metric being targeted, and should be either
+&ldquo;Value&rdquo;, &ldquo;AverageValue&rdquo;, or &ldquo;Utilization&rdquo;</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;AverageValue&#34;</p></td>
+<td><p>AverageValueMetricType declares a MetricTarget is an</p>
+</td>
+</tr><tr><td><p>&#34;Utilization&#34;</p></td>
+<td><p>UtilizationMetricType declares a MetricTarget is an AverageUtilization value</p>
+</td>
+</tr><tr><td><p>&#34;Value&#34;</p></td>
+<td><p>ValueMetricType declares a MetricTarget is a raw value</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>ObjectMetricSource indicates how to scale on a metric describing a
+kubernetes object (for example, hits-per-second on an Ingress object).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>describedObject</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.CrossVersionObjectReference">
+CrossVersionObjectReference
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTarget">
+MetricTarget
+</a>
+</em>
+</td>
+<td>
+<p>target specifies the target value for the given metric</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>metric</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
+MetricIdentifier
+</a>
+</em>
+</td>
+<td>
+<p>metric identifies the target metric by name and selector</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>PodsMetricSource indicates how to scale on a metric describing each pod in
+the current scale target (for example, transactions-processed-per-second).
+The values will be averaged together before being compared to the target
+value.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metric</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
+MetricIdentifier
+</a>
+</em>
+</td>
+<td>
+<p>metric identifies the target metric by name and selector</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTarget">
+MetricTarget
+</a>
+</em>
+</td>
+<td>
+<p>target specifies the target value for the given metric</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
+</p>
+<div>
+<p>ResourceMetricSource indicates how to scale on a resource metric known to
+Kubernetes, as specified in requests and limits, describing each pod in the
+current scale target (e.g. CPU or memory).  The values will be averaged
+together before being compared to the target.  Such metrics are built in to
+Kubernetes, and have special scaling options on top of those available to
+normal per-pod metrics using the &ldquo;pods&rdquo; source.  Only one &ldquo;target&rdquo; type
+should be set.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcename-v1-core">
+Kubernetes core/v1.ResourceName
+</a>
+</em>
+</td>
+<td>
+<p>name is the name of the resource in question.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MetricTarget">
+MetricTarget
+</a>
+</em>
+</td>
+<td>
+<p>target specifies the target value for the given metric</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1alpha1.ScalingPolicySelect">ScalingPolicySelect
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
+</p>
+<div>
+<p>ScalingPolicySelect is used to specify which policy should be used while scaling in a certain direction</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;Disabled&#34;</p></td>
+<td><p>DisabledPolicySelect disables the scaling in this direction.</p>
+</td>
+</tr><tr><td><p>&#34;Max&#34;</p></td>
+<td><p>MaxPolicySelect selects the policy with the highest possible change.</p>
+</td>
+</tr><tr><td><p>&#34;Min&#34;</p></td>
+<td><p>MinPolicySelect selects the policy with the lowest possible change.</p>
+</td>
+</tr></tbody>
+</table>
 <h3 id="starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec
 </h3>
 <p>
@@ -271,7 +1292,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>name of the starrocks be cluster.</p>
+<p>name of the starrocks be cluster.
+Deprecated</p>
 </td>
 </tr>
 <tr>
@@ -372,7 +1394,8 @@ StarRocksProbe
 </td>
 <td>
 <em>(Optional)</em>
-<p>ReplicaInstance is the names of replica starrocksbe cluster.</p>
+<p>ReplicaInstance is the names of replica starrocksbe cluster.
+Deprecated, temp deprecated.</p>
 </td>
 </tr>
 <tr>
@@ -817,7 +1840,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>name of the starrocks cn cluster.</p>
+<p>name of the starrocks cn cluster.
+Deprecated: , the statefulset name don&rsquo;t allow set, prevent accidental modification.</p>
 </td>
 </tr>
 <tr>
@@ -828,7 +1852,7 @@ map[string]string
 </em>
 </td>
 <td>
-<p>annotation for cn pods. user can config monitor annotation for collect to monitor system.</p>
+<p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
@@ -1042,7 +2066,8 @@ map[string]string
 </em>
 </td>
 <td>
-<p>podLabels for user selector or classify pods.</p>
+<em>(Optional)</em>
+<p>podLabels for user selector or classify pods</p>
 </td>
 </tr>
 </tbody>
@@ -1125,7 +2150,21 @@ string
 </em>
 </td>
 <td>
-<p>The policy name of autoScale.</p>
+<p>The policy name of autoScale.
+Deprecated</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>horizontalScaler</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.HorizontalScaler">
+HorizontalScaler
+</a>
+</em>
+</td>
+<td>
+<p>HorizontalAutoscaler have the autoscaler information.</p>
 </td>
 </tr>
 <tr>
@@ -1181,7 +2220,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>name of the starrocks be cluster.</p>
+<p>name of the starrocks be cluster.
+Deprecated, not allow set statefuslet name.</p>
 </td>
 </tr>
 <tr>
@@ -1407,7 +2447,8 @@ map[string]string
 </em>
 </td>
 <td>
-<p>podLabels for user selector or classify pods.</p>
+<em>(Optional)</em>
+<p>the pod labels for user select or classify pods.</p>
 </td>
 </tr>
 </tbody>

@@ -1075,7 +1075,7 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: name of the starrocks be cluster.
+                    description: name of the starrocks be cluster. Deprecated
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -1117,7 +1117,7 @@ spec:
                     type: object
                   replicaInstances:
                     description: ReplicaInstance is the names of replica starrocksbe
-                      cluster.
+                      cluster. Deprecated, temp deprecated.
                     items:
                       type: string
                     type: array
@@ -2131,7 +2131,7 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for cn pods. user can config monitor annotation
+                    description: annotation for fe pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   autoScalingPolicy:
@@ -2143,7 +2143,10 @@ spec:
                         properties:
                           behavior:
                             description: HorizontalPodAutoscalerBehavior configures
-                              the scaling behavior of the target
+                              the scaling behavior of the target. the struct copy
+                              from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy
+                              code will hide the restriction about HorizontalPodAutoscaler
+                              version and kubernetes releases matching issue. the
                             properties:
                               scaleDown:
                                 description: scaleDown is scaling policy for scaling
@@ -2266,7 +2269,11 @@ spec:
                             type: object
                           metrics:
                             description: Metrics specifies how to scale based on a
-                              single metric
+                              single metric the struct copy from k8s.io/api/autoscaling/v2beta2/types.go.
+                              the redundancy code will hide the restriction about
+                              HorizontalPodAutoscaler version and kubernetes releases
+                              matching issue. the splice will have unsafe.Pointer
+                              convert, so be careful to edit the struct fileds.
                             items:
                               description: MetricSpec specifies how to scale based
                                 on a single metric (only `type` and one other matching
@@ -2793,9 +2800,13 @@ spec:
                         format: int32
                         type: integer
                       minReplicas:
-                        description: the min numbers of target.
                         format: int32
                         type: integer
+                      version:
+                        default: v2beta2
+                        description: version represents the autoscaler version for
+                          cn service. only support v1,v2beta2,v2
+                        type: string
                     type: object
                   cnEnvVars:
                     description: cnEnvVars is a slice of environment variables that
@@ -2954,7 +2965,8 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: name of the starrocks cn cluster.
+                    description: 'name of the starrocks cn cluster. Deprecated: ,
+                      the statefulset name don''t allow set, prevent accidental modification.'
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -2966,7 +2978,7 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    description: podLabels for user selector or classify pods.
+                    description: podLabels for user selector or classify pods
                     type: object
                   probe:
                     description: Probe defines the mode probe service in container
@@ -4135,7 +4147,8 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: name of the starrocks be cluster.
+                    description: name of the starrocks be cluster. Deprecated, not
+                      allow set statefuslet name.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -4147,7 +4160,7 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    description: podLabels for user selector or classify pods.
+                    description: the pod labels for user select or classify pods.
                     type: object
                   probe:
                     description: Probe defines the mode probe service in container
@@ -4384,8 +4397,18 @@ spec:
                     items:
                       type: string
                     type: array
+                  horizontalScaler:
+                    description: HorizontalAutoscaler have the autoscaler information.
+                    properties:
+                      name:
+                        description: the deploy horizontal scaler name
+                        type: string
+                      version:
+                        description: the deploy horizontal version.
+                        type: string
+                    type: object
                   hpaName:
-                    description: The policy name of autoScale.
+                    description: The policy name of autoScale. Deprecated
                     type: string
                   phase:
                     description: Phase the value from all pods of cn status. If cn

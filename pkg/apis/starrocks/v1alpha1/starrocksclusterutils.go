@@ -19,26 +19,49 @@ package v1alpha1
 //GetFeExternalServiceName generate the name of service that access the fe.
 func GetFeExternalServiceName(src *StarRocksCluster) string {
 	if src.Spec.StarRocksFeSpec != nil && src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Name != "" {
-		return src.Spec.StarRocksFeSpec.Service.Name + "-" + "service"
+		return src.Spec.StarRocksFeSpec.Service.Name
 	}
 
-	return src.Name + "-" + DEFAULT_FE + "-" + "service"
+	//for compatible version <=1.3
+	return src.Name + "-" + DEFAULT_FE + "-service"
 }
 
 //GetCnExternalServiceName generate the name of service that access the cn
 func GetCnExternalServiceName(src *StarRocksCluster) string {
-	if src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Name != "" {
-		return src.Spec.StarRocksCnSpec.Service.Name + "-" + "service"
+	if src.Spec.StarRocksCnSpec != nil && src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Name != "" {
+		return src.Spec.StarRocksCnSpec.Service.Name
 	}
 
-	return src.Name + "-" + DEFAULT_CN + "-" + "service"
+	return src.Name + "-" + DEFAULT_CN + "-service"
 }
 
 //GetBeExternalServiceName generate the name of service that access the be.
 func GetBeExternalServiceName(src *StarRocksCluster) string {
-	if src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Name != "" {
-		return src.Spec.StarRocksBeSpec.Service.Name + "-" + "service"
+	if src.Spec.StarRocksBeSpec != nil && src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Name != "" {
+		return src.Spec.StarRocksBeSpec.Service.Name
 	}
 
-	return src.Name + "-" + DEFAULT_BE + "-" + "service"
+	return src.Name + "-" + DEFAULT_BE + "-service"
+}
+
+func BeStatefulSetName(src *StarRocksCluster) string {
+	stname := src.Name + "-" + DEFAULT_BE
+	/*if src.Spec.StarRocksBeSpec.Name != "" {
+		stname = src.Spec.StarRocksBeSpec.Name
+	}*/
+	return stname
+}
+
+func CnStatefulSetName(src *StarRocksCluster) string {
+	stname := src.Name + "-" + DEFAULT_CN
+	/*	if src.Spec.StarRocksCnSpec.Name != "" {
+		stname = src.Spec.StarRocksCnSpec.Name
+	}*/
+	return stname
+}
+
+func FeStatefulSetName(src *StarRocksCluster) string {
+	stname := src.Name + "-" + DEFAULT_FE
+
+	return stname
 }

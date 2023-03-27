@@ -55,32 +55,59 @@ type StarRocksClusterStatus struct {
 	StarRocksCnStatus *StarRocksCnStatus `json:"starRocksCnStatus,omitempty"`
 }
 
+//represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
 type ClusterPhase string
+
+//represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.
 type MemberPhase string
 
 const (
 	//ClusterRunning represents starrocks cluster is running.
-	ClusterRunning = "running"
+	ClusterRunning ClusterPhase = "running"
 
 	//ClusterFailed represents starrocks cluster failed.
-	ClusterFailed = "failed"
+	ClusterFailed ClusterPhase = "failed"
 
 	//ClusterPending represents the starrocks cluster is creating
-	ClusterPending = "pending"
+	ClusterPending ClusterPhase = "pending"
 
-	//ClusterWaiting waiting cluster running
-	//ClusterWaiting = "waiting"
+	//ClusterDeleting waiting all resource deleted
+	ClusterDeleting = "deleting"
 )
 
 const (
 	//ComponentReconciling the starrocks have component in starting.
-	ComponentReconciling = "reconciling"
+	ComponentReconciling MemberPhase = "reconciling"
 	//ComponentFailed have at least one service failed.
-	ComponentFailed = "failed"
+	ComponentFailed MemberPhase = "failed"
 	//ComponentRunning all components runs available.
-	ComponentRunning = "running"
-	//ComponentWaiting service wait for reconciling.
-	ComponentWaiting = "waiting"
+	ComponentRunning MemberPhase = "running"
+)
+
+//AnnotationOperationValue present the operation for fe, cn, be.
+type AnnotationOperationValue string
+
+const (
+	//represent the user want to restart all fe pods.
+	AnnotationRestart AnnotationOperationValue = "restart"
+	//represent all fe pods have restarted.
+	AnnotationRestartFinished AnnotationOperationValue = "finished"
+	//represent at least one pod on restarting
+	AnnotationRestarting AnnotationOperationValue = "restarting"
+)
+
+//Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.
+type AnnotationOperationKey string
+
+const (
+	//the fe annotation key for restart
+	AnnotationFERestartKey AnnotationOperationKey = "app.starrocks.fe.io/restart"
+
+	//the be annotation key for restart be
+	AnnotationBERestartKey AnnotationOperationKey = "app.starrocks.be.io/restart"
+
+	//the cn annotation key for restart cn
+	AnnotationCNRestartKey AnnotationOperationKey = "app.starrocks.cn.io/restart"
 )
 
 //StarRocksFeStatus represents the status of starrocks fe.
@@ -135,6 +162,14 @@ type StarRocksBeStatus struct {
 	Reason string `json:"reason"`
 }
 
+type HorizontalScaler struct {
+	//the deploy horizontal scaler name
+	Name string `json:"name,omitempty"`
+
+	//the deploy horizontal version.
+	Version AutoScalerVersion `json:"version,omitempty"`
+}
+
 type StarRocksCnStatus struct {
 	//the name of cn service for fe find cn instance.
 	ServiceName string `json:"serviceName,omitempty"`
@@ -152,7 +187,11 @@ type StarRocksCnStatus struct {
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
 	//The policy name of autoScale.
+	//Deprecated
 	HpaName string `json:"hpaName,omitempty"`
+
+	//HorizontalAutoscaler have the autoscaler information.
+	HorizontalScaler HorizontalScaler `json:"horizontalScaler,omitempty"`
 
 	// Phase the value from all pods of cn status. If cn have one failed pod phase=failed,
 	// also if cn have one creating pod phase=creating, also if cn all running phase=running, others unknown.
@@ -198,6 +237,7 @@ type StarRocksFeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
+	//Deprecated, not allow set statefuslet name.
 	Name string `json:"name,omitempty"`
 
 	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
@@ -262,7 +302,8 @@ type StarRocksFeSpec struct {
 	//+optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	//podLabels for user selector or classify pods.
+	//+optional
+	//the pod labels for user select or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 
@@ -297,6 +338,7 @@ type StarRocksBeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
+	// Deprecated
 	Name string `json:"name,omitempty"`
 
 	//Service defines the template for the associated Kubernetes Service object.
@@ -322,7 +364,7 @@ type StarRocksBeSpec struct {
 
 	//ReplicaInstance is the names of replica starrocksbe cluster.
 	//+optional
-	//+deprecated, temp deprecated.
+	//Deprecated, temp deprecated.
 	ReplicaInstances []string `json:"replicaInstances,omitempty"`
 
 	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
@@ -350,9 +392,10 @@ type StarRocksCnSpec struct {
 	//name of the starrocks cn cluster.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	//+optional
+	//Deprecated: , the statefulset name don't allow set, prevent accidental modification.
 	Name string `json:"name,omitempty"`
 
-	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
+	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.
@@ -384,8 +427,8 @@ type StarRocksCnSpec struct {
 	Service *StarRocksService `json:"service,omitempty"`
 
 	//+optional
-	//+deprecated,
 	//set the fe service for register cn, when not set, will use the fe config to find.
+	//Deprecated,
 	//FeServiceName string `json:"feServiceName,omitempty"`
 
 	//the reference for cn configMap.
@@ -417,7 +460,8 @@ type StarRocksCnSpec struct {
 	//+optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	//podLabels for user selector or classify pods.
+	//+optional
+	// podLabels for user selector or classify pods
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 

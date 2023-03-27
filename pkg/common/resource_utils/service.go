@@ -6,7 +6,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"strconv"
 )
 
 type StarRocksServiceType string
@@ -28,8 +27,9 @@ type hashService struct {
 	labels map[string]string
 }
 
-//BuildExternalService build the external service.
-func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}) corev1.Service {
+//BuildExternalService build the external service. not have selector
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}, selector map[string]string) corev1.Service {
+	//the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -37,9 +37,10 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 			Namespace: src.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: GenerateServiceLabels(src, serviceType),
+			Selector: selector,
 		},
 	}
+	svc.Finalizers = append(svc.Finalizers, srapi.SERVICE_FINALIZER)
 
 	if serviceType == FeService {
 		if svc.Name == "" {
@@ -85,7 +86,6 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 	hso := serviceHashObject(&svc)
 	anno := map[string]string{}
 	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
-	anno[srapi.ComponentGeneration] = "1"
 	svc.Annotations = anno
 	svc.Spec.Ports = ports
 	return svc
@@ -171,10 +171,9 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 		ohsvc := serviceHashObject(oldsvc)
 		ohsvcValue = hash.HashObject(ohsvc)
 	}
-	oldGeneration, _ := strconv.ParseInt(oldsvc.Annotations[srapi.ComponentGeneration], 10, 64)
 
-	return nhsvcValue == ohsvcValue && nsvc.Name == oldsvc.Name &&
-		nsvc.Namespace == oldsvc.Namespace && oldGeneration == oldsvc.Generation
+	return nhsvcValue == ohsvcValue &&
+		nsvc.Namespace == oldsvc.Namespace /*&& oldGeneration == oldsvc.Generation*/
 }
 
 func serviceHashObject(svc *corev1.Service) hashService {
@@ -183,22 +182,23 @@ func serviceHashObject(svc *corev1.Service) hashService {
 		namespace: svc.Namespace,
 		ports:     svc.Spec.Ports,
 		selector:  svc.Spec.Selector,
-		//serviceType: svc.Spec.Type,
-		labels: svc.Labels,
+		labels:    svc.Labels,
 	}
 }
 
-//GenerateServiceLabels generate the default labels list starrocks services.
-func GenerateServiceLabels(src *srapi.StarRocksCluster, serviceType StarRocksServiceType) Labels {
-	labels := Labels{}
-	labels.AddLabel(src.Labels)
-	if serviceType == FeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_FE)
-	} else if serviceType == BeService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_BE)
-	} else if serviceType == CnService {
-		labels.Add(srapi.ComponentLabelKey, srapi.DEFAULT_CN)
+func HaveEqualOwnerReference(svc1 *corev1.Service, svc2 *corev1.Service) bool {
+	set := make(map[string]bool)
+	for _, o := range svc1.OwnerReferences {
+		key := o.Kind + o.Name
+		set[key] = true
+
 	}
 
-	return labels
+	for _, o := range svc2.OwnerReferences {
+		key := o.Kind + o.Name
+		if _, ok := set[key]; ok {
+			return true
+		}
+	}
+	return false
 }

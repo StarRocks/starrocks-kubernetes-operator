@@ -32,7 +32,7 @@ const (
 	ComponentReplicasEmpty string = "app.starrocks.components/replica/empty"
 
 	//ComponentGeneration record for last update generation for compare with new spec.
-	ComponentGeneration string = "app.starrocks.components/generation"
+	//ComponentGeneration string = "app.starrocks.components/generation"
 )
 
 //the labels value. default statefulset name
@@ -54,12 +54,6 @@ const (
 
 	//TODO: when scripts need set.
 	DEFAULT_START_SCRIPT_PATH = ""
-
-	DEFAULT_FE_SERVICE_NAME = "starrocks-fe-service"
-
-	DEFAULT_BE_SERVICE_NAME = "starrocks-be-service"
-
-	DEFAULT_CN_SERVICE_NAME = "starrocks-cn-service"
 )
 
 //the env of container
