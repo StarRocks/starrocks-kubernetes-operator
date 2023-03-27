@@ -332,15 +332,5 @@ func (fc *FeController) generateInternalService(src *srapi.StarRocksCluster, ext
 		PublishNotReadyAddresses: true,
 	}
 
-	//for compatible verison < v1.5
-	//var esearchSvc corev1.Service
-	//if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "fe-domain-search"}, &esearchSvc); err == nil {
-	//	if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
-	//		searchSvc.Name = "fe-domain-search"
-	//	}
-	//} else if !apierrors.IsNotFound(err) {
-	//	klog.Errorf("feController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "fe-domain-search", err.Error())
-	//}
-
 	return searchSvc
 }
