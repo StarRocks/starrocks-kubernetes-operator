@@ -1240,6 +1240,7 @@ map[string]string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>annotation for be pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
@@ -1852,7 +1853,8 @@ map[string]string
 </em>
 </td>
 <td>
-<p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
+<em>(Optional)</em>
+<p>annotation for cn pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
@@ -2066,7 +2068,6 @@ map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
 <p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
@@ -2232,6 +2233,7 @@ map[string]string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>

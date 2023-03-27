@@ -363,7 +363,7 @@ func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return cleared, err
 	}
 
-	stName := srapi.CnStatefulSetName(src)
+	stName := srapi.BeStatefulSetName(src)
 	if err := k8sutils.DeleteStatefulset(ctx, be.k8sclient, src.Namespace, stName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("beController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.\n", src.Namespace, stName, err.Error())
 		return false, err

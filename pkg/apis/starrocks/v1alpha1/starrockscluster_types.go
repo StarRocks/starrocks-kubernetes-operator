@@ -240,6 +240,7 @@ type StarRocksFeSpec struct {
 	Name string `json:"name,omitempty"`
 
 	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for fe access cloud service.
@@ -316,6 +317,7 @@ type StarRocksBeSpec struct {
 	Image string `json:"image"`
 
 	//annotation for be pods. user can config monitor annotation for collect to monitor system.
+	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -395,6 +397,7 @@ type StarRocksCnSpec struct {
 	Name string `json:"name,omitempty"`
 
 	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
+	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.
@@ -460,6 +463,7 @@ type StarRocksCnSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	//+optional
+
 	//podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
