@@ -394,7 +394,7 @@ type StarRocksCnSpec struct {
 	//Deprecated: , the statefulset name don't allow set, prevent accidental modification.
 	Name string `json:"name,omitempty"`
 
-	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.
