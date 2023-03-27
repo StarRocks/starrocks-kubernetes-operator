@@ -229,6 +229,9 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 		NodeSelector:                  beSpec.NodeSelector,
 	}
 
+	annos := make(map[string]string)
+	rutils.Annotations(annos).AddAnnotation(beSpec.Annotations)
+
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if beSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
@@ -246,9 +249,10 @@ func (be *BeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, beconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    be.bePodLabels(src, beStatefulSetName(src)),
+			Name:        metaname,
+			Namespace:   src.Namespace,
+			Annotations: annos,
+			Labels:      be.bePodLabels(src, beStatefulSetName(src)),
 		},
 		Spec: podSpec,
 	}

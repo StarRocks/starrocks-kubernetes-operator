@@ -69,7 +69,7 @@ type hashStatefulsetObject struct {
 	namespace            string
 	labels               map[string]string
 	selector             metav1.LabelSelector
-	podSpec              corev1.PodSpec
+	podSpec              corev1.PodTemplateSpec
 	serviceName          string
 	volumeClaimTemplates []corev1.PersistentVolumeClaim
 	replicas             int32
@@ -94,7 +94,7 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 		namespace:            st.Namespace,
 		labels:               st.Labels,
 		selector:             selector,
-		podSpec:              st.Spec.Template.Spec,
+		podSpec:              st.Spec.Template,
 		serviceName:          st.Spec.ServiceName,
 		volumeClaimTemplates: st.Spec.VolumeClaimTemplates,
 		replicas:             replicas,

@@ -23,8 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -70,9 +68,6 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 			},
 		})
 	}
-
-	str, _ := json.Marshal(vols)
-	klog.Info("FeController buildPodTemplate vols ", string(str))
 
 	// add default volume about log ,meta if not configure.
 	if _, ok := vexist[meta_path]; !ok {
@@ -235,6 +230,9 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 		NodeSelector:                  feSpec.NodeSelector,
 	}
 
+	annos := make(map[string]string)
+	rutils.Annotations(annos).AddAnnotation(feSpec.Annotations)
+
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if feSpec.FsGroup == nil {
 		sc := &corev1.PodSecurityContext{
@@ -252,9 +250,10 @@ func (fc *FeController) buildPodTemplate(src *v1alpha12.StarRocksCluster, feconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    fePodLabels(src, feStatefulSetName(src)),
+			Name:        metaname,
+			Namespace:   src.Namespace,
+			Annotations: annos,
+			Labels:      fePodLabels(src, feStatefulSetName(src)),
 		},
 		Spec: podSpec,
 	}

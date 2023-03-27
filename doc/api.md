@@ -213,6 +213,17 @@ string
 </tr>
 <tr>
 <td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>annotation for be pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>imagePullSecrets</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
@@ -811,6 +822,17 @@ string
 </tr>
 <tr>
 <td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>annotation for cn pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>serviceAccount</code><br/>
 <em>
 string
@@ -1160,6 +1182,17 @@ string
 <td>
 <em>(Optional)</em>
 <p>name of the starrocks be cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
