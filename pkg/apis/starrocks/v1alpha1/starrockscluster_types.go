@@ -275,7 +275,7 @@ type StarRocksBeSpec struct {
 	//Image for a starrocks be deployment.
 	Image string `json:"image"`
 
-	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	//annotation for be pods. user can config monitor annotation for collect to monitor system.
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -352,7 +352,7 @@ type StarRocksCnSpec struct {
 	//+optional
 	Name string `json:"name,omitempty"`
 
-	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.

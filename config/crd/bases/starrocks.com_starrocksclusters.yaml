@@ -915,7 +915,7 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for fe pods. user can config monitor annotation
+                    description: annotation for be pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   beEnvVars:
@@ -2131,7 +2131,7 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for fe pods. user can config monitor annotation
+                    description: annotation for cn pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   autoScalingPolicy:
