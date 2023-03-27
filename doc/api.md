@@ -1852,7 +1852,7 @@ map[string]string
 </em>
 </td>
 <td>
-<p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
+<p>annotation for cn pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
