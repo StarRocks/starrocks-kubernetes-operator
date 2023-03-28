@@ -17,7 +17,7 @@ limitations under the License.
 package be
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -61,7 +61,7 @@ func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beco
 		ServiceName:          internalServiceName,
 		PodTemplateSpec:      podTemplateSpec,
 		Labels:               be.beStatefulSetsLabels(src),
-		Selector:             be.bePodLabels(src),
+		Selector:             be.beStatefulsetSelector(src),
 		OwnerReferences:      []metav1.OwnerReference{*or},
 		Replicas:             beSpec.Replicas,
 		VolumeClaimTemplates: pvcs,

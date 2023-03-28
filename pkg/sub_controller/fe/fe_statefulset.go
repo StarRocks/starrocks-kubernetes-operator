@@ -17,7 +17,7 @@ limitations under the License.
 package fe
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -64,7 +64,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 		ServiceName:          internalServiceName,
 		Labels:               fc.feStatefulSetsLabels(src),
 		PodTemplateSpec:      podTemplateSpec,
-		Selector:             fc.fePodLabels(src),
+		Selector:             fc.feStatefulsetSelector(src),
 		OwnerReferences:      []metav1.OwnerReference{*or},
 	}
 }

@@ -17,7 +17,7 @@ limitations under the License.
 package be
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
@@ -38,7 +38,7 @@ const (
 
 //cnPodLabels
 func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := be.beStatefulSetsLabels(src)
+	labels := be.beStatefulsetSelector(src)
 	//podLables for classify. operator use statefulsetSelector for manage pods.
 	if src.Spec.StarRocksBeSpec != nil {
 		labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)

@@ -18,7 +18,7 @@ package cn
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -80,7 +80,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
 
 	//generate new cn internal service.
-	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config, cc.generateServiceSelector(src))
+	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config, cc.generateServiceSelector(src), cc.generateServiceLabels(src))
 	//create or update fe service, update the status of cn on src.
 	//3. publish the service.
 	//3.1 patch the internal service for fe and cn connection.
@@ -335,21 +335,15 @@ func (cc *CnController) generateInternalService(ctx context.Context, src *srapi.
 	fs := (rutils.Finalizers)(searchSvc.Finalizers)
 	fs.AddFinalizer(srapi.SERVICE_FINALIZER)
 	searchSvc.Finalizers = fs
-	svcList := corev1.ServiceList{}
-	opts := client.ListOptions{
-		Namespace: externalService.Namespace,
-	}
-	matchLabels := client.MatchingLabels{}
-	//for compatible use version <=1.3
-	matchLabels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
-	matchLabels.ApplyToList(&opts)
-	if err := cc.k8sclient.List(ctx, &svcList, &opts); err == nil {
-		for i := range svcList.Items {
-			if rutils.HaveEqualOwnerReference(searchSvc, &svcList.Items[i]) && svcList.Items[i].Spec.PublishNotReadyAddresses {
-				searchSvc.Name = svcList.Items[i].Name
-				break
-			}
+
+	//for compatible verison < v1.5
+	var esearchSvc corev1.Service
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "cn-domain-search"}, &esearchSvc); err == nil {
+		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
+			searchSvc.Name = "cn-domain-search"
 		}
+	} else if !apierrors.IsNotFound(err) {
+		klog.Errorf("ccController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "cn-domain-search", err.Error())
 	}
 
 	return searchSvc
