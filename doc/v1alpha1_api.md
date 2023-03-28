@@ -11,15 +11,15 @@ toc: true
 <p>Packages:</p>
 <ul>
 <li>
-<a href="#starrocks.com%2fv1">starrocks.com/v1</a>
+<a href="#starrocks.com%2fv1alpha1">starrocks.com/v1alpha1</a>
 </li>
 </ul>
-<h2 id="starrocks.com/v1">starrocks.com/v1</h2>
+<h2 id="starrocks.com/v1alpha1">starrocks.com/v1alpha1</h2>
 <div>
 </div>
 Resource Types:
 <ul></ul>
-<h3 id="starrocks.com/v1.AnnotationOperationKey">AnnotationOperationKey
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationKey">AnnotationOperationKey
 (<code>string</code> alias)</h3>
 <div>
 <p>Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.</p>
@@ -42,7 +42,7 @@ Resource Types:
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AnnotationOperationValue">AnnotationOperationValue
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationValue">AnnotationOperationValue
 (<code>string</code> alias)</h3>
 <div>
 <p>AnnotationOperationValue present the operation for fe, cn, be.</p>
@@ -65,10 +65,10 @@ Resource Types:
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AutoScalerVersion">AutoScalerVersion
+<h3 id="starrocks.com/v1alpha1.AutoScalerVersion">AutoScalerVersion
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1.HorizontalScaler">HorizontalScaler</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler</a>)
 </p>
 <div>
 </div>
@@ -90,10 +90,10 @@ Resource Types:
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy
+<h3 id="starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>)
 </p>
 <div>
 <p>AutoScalingPolicy defines the auto scale</p>
@@ -110,7 +110,7 @@ Resource Types:
 <td>
 <code>hpaPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAPolicy">
+<a href="#starrocks.com/v1alpha1.HPAPolicy">
 HPAPolicy
 </a>
 </em>
@@ -123,7 +123,7 @@ HPAPolicy
 <td>
 <code>version</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
 AutoScalerVersion
 </a>
 </em>
@@ -157,10 +157,10 @@ int32
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ClusterPhase">ClusterPhase
+<h3 id="starrocks.com/v1alpha1.ClusterPhase">ClusterPhase
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
 <p>represent the cluster phase. the possible value for cluster phase are: running, failed, pending.</p>
@@ -183,10 +183,10 @@ int32
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.ConfigMapInfo">ConfigMapInfo
+<h3 id="starrocks.com/v1alpha1.ConfigMapInfo">ConfigMapInfo
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 </div>
@@ -222,10 +222,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ContainerResourceMetricSource">ContainerResourceMetricSource
+<h3 id="starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ContainerResourceMetricSource indicates how to scale on a resource metric known to
@@ -261,7 +261,7 @@ Kubernetes core/v1.ResourceName
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -283,10 +283,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.CrossVersionObjectReference">CrossVersionObjectReference
+<h3 id="starrocks.com/v1alpha1.CrossVersionObjectReference">CrossVersionObjectReference
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>)
 </p>
 <div>
 <p>CrossVersionObjectReference contains enough information to let you identify the referred resource.</p>
@@ -335,10 +335,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ExternalMetricSource">ExternalMetricSource
+<h3 id="starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ExternalMetricSource indicates how to scale on a metric not associated with
@@ -357,7 +357,7 @@ messaging service, or QPS from loadbalancer running outside of cluster).</p>
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -370,7 +370,7 @@ MetricIdentifier
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -381,10 +381,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAPolicy">HPAPolicy
+<h3 id="starrocks.com/v1alpha1.HPAPolicy">HPAPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy</a>)
 </p>
 <div>
 </div>
@@ -400,7 +400,7 @@ MetricTarget
 <td>
 <code>metrics</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricSpec">
+<a href="#starrocks.com/v1alpha1.MetricSpec">
 []MetricSpec
 </a>
 </em>
@@ -417,7 +417,7 @@ the splice will have unsafe.Pointer convert, so be careful to edit the struct fi
 <td>
 <code>behavior</code><br/>
 <em>
-<a href="#starrocks.com/v1.HorizontalPodAutoscalerBehavior">
+<a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">
 HorizontalPodAutoscalerBehavior
 </a>
 </em>
@@ -432,10 +432,10 @@ the</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingPolicy">HPAScalingPolicy
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingRules">HPAScalingRules</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
 </p>
 <div>
 <p>HPAScalingPolicy is a single policy which must hold true for a specified past interval.</p>
@@ -452,7 +452,7 @@ the</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingPolicyType">
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicyType">
 HPAScalingPolicyType
 </a>
 </em>
@@ -487,10 +487,10 @@ PeriodSeconds must be greater than zero and less than or equal to 1800 (30 min).
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingPolicyType">HPAScalingPolicyType
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicyType">HPAScalingPolicyType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingPolicy">HPAScalingPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy</a>)
 </p>
 <div>
 <p>HPAScalingPolicyType is the type of the policy which could be used while making scaling decisions.</p>
@@ -511,10 +511,10 @@ the current number of pods.</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingRules">HPAScalingRules
+<h3 id="starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior</a>)
 </p>
 <div>
 <p>HPAScalingRules configures the scaling behavior for one direction.
@@ -553,7 +553,7 @@ If not set, use the default values:
 <td>
 <code>selectPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.ScalingPolicySelect">
+<a href="#starrocks.com/v1alpha1.ScalingPolicySelect">
 ScalingPolicySelect
 </a>
 </em>
@@ -568,7 +568,7 @@ If not set, the default value MaxPolicySelect is used.</p>
 <td>
 <code>policies</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingPolicy">
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicy">
 []HPAScalingPolicy
 </a>
 </em>
@@ -581,10 +581,10 @@ At least one policy must be specified, otherwise the HPAScalingRules will be dis
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior
+<h3 id="starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAPolicy">HPAPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
 </p>
 <div>
 <p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target
@@ -602,7 +602,7 @@ in both Up and Down directions (scaleUp and scaleDown fields respectively).</p>
 <td>
 <code>scaleUp</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingRules">
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
 HPAScalingRules
 </a>
 </em>
@@ -620,7 +620,7 @@ No stabilization is used.</p>
 <td>
 <code>scaleDown</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingRules">
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
 HPAScalingRules
 </a>
 </em>
@@ -635,10 +635,10 @@ the last 300sec is used).</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HorizontalScaler">HorizontalScaler
+<h3 id="starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>)
 </p>
 <div>
 </div>
@@ -665,7 +665,7 @@ string
 <td>
 <code>version</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
 AutoScalerVersion
 </a>
 </em>
@@ -676,10 +676,10 @@ AutoScalerVersion
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MemberPhase">MemberPhase
+<h3 id="starrocks.com/v1alpha1.MemberPhase">MemberPhase
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeStatus">StarRocksFeStatus</a>)
 </p>
 <div>
 <p>represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.</p>
@@ -702,10 +702,10 @@ AutoScalerVersion
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricIdentifier">MetricIdentifier
+<h3 id="starrocks.com/v1alpha1.MetricIdentifier">MetricIdentifier
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1.PodsMetricSource">PodsMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>)
 </p>
 <div>
 <p>MetricIdentifier defines the name and optionally selector for a metric</p>
@@ -747,10 +747,10 @@ When unset, just the metricName will be used to gather metrics.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricSourceType">MetricSourceType
+<h3 id="starrocks.com/v1alpha1.MetricSourceType">MetricSourceType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>MetricSourceType indicates the type of metric.</p>
@@ -794,10 +794,10 @@ to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricSpec">MetricSpec
+<h3 id="starrocks.com/v1alpha1.MetricSpec">MetricSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAPolicy">HPAPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
 </p>
 <div>
 <p>MetricSpec specifies how to scale based on a single metric
@@ -815,7 +815,7 @@ to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricSourceType">
+<a href="#starrocks.com/v1alpha1.MetricSourceType">
 MetricSourceType
 </a>
 </em>
@@ -831,7 +831,7 @@ HPAContainerMetrics is enabled</p>
 <td>
 <code>object</code><br/>
 <em>
-<a href="#starrocks.com/v1.ObjectMetricSource">
+<a href="#starrocks.com/v1alpha1.ObjectMetricSource">
 ObjectMetricSource
 </a>
 </em>
@@ -846,7 +846,7 @@ ObjectMetricSource
 <td>
 <code>pods</code><br/>
 <em>
-<a href="#starrocks.com/v1.PodsMetricSource">
+<a href="#starrocks.com/v1alpha1.PodsMetricSource">
 PodsMetricSource
 </a>
 </em>
@@ -862,7 +862,7 @@ averaged together before being compared to the target value.</p>
 <td>
 <code>resource</code><br/>
 <em>
-<a href="#starrocks.com/v1.ResourceMetricSource">
+<a href="#starrocks.com/v1alpha1.ResourceMetricSource">
 ResourceMetricSource
 </a>
 </em>
@@ -880,7 +880,7 @@ to normal per-pod metrics using the &ldquo;pods&rdquo; source.</p>
 <td>
 <code>containerResource</code><br/>
 <em>
-<a href="#starrocks.com/v1.ContainerResourceMetricSource">
+<a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">
 ContainerResourceMetricSource
 </a>
 </em>
@@ -899,7 +899,7 @@ This is an alpha feature and can be enabled by the HPAContainerMetrics feature f
 <td>
 <code>external</code><br/>
 <em>
-<a href="#starrocks.com/v1.ExternalMetricSource">
+<a href="#starrocks.com/v1alpha1.ExternalMetricSource">
 ExternalMetricSource
 </a>
 </em>
@@ -915,10 +915,10 @@ QPS from loadbalancer running outside of cluster).</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricTarget">MetricTarget
+<h3 id="starrocks.com/v1alpha1.MetricTarget">MetricTarget
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ContainerResourceMetricSource">ContainerResourceMetricSource</a>, <a href="#starrocks.com/v1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1.PodsMetricSource">PodsMetricSource</a>, <a href="#starrocks.com/v1.ResourceMetricSource">ResourceMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource</a>, <a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>, <a href="#starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource</a>)
 </p>
 <div>
 <p>MetricTarget defines the target value, average value, or average utilization of a specific metric</p>
@@ -935,7 +935,7 @@ QPS from loadbalancer running outside of cluster).</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTargetType">
+<a href="#starrocks.com/v1alpha1.MetricTargetType">
 MetricTargetType
 </a>
 </em>
@@ -986,10 +986,10 @@ Currently only valid for Resource metric source type</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricTargetType">MetricTargetType
+<h3 id="starrocks.com/v1alpha1.MetricTargetType">MetricTargetType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricTarget">MetricTarget</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricTarget">MetricTarget</a>)
 </p>
 <div>
 <p>MetricTargetType specifies the type of metric being targeted, and should be either
@@ -1013,10 +1013,10 @@ Currently only valid for Resource metric source type</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.ObjectMetricSource">ObjectMetricSource
+<h3 id="starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ObjectMetricSource indicates how to scale on a metric describing a
@@ -1034,7 +1034,7 @@ kubernetes object (for example, hits-per-second on an Ingress object).</p>
 <td>
 <code>describedObject</code><br/>
 <em>
-<a href="#starrocks.com/v1.CrossVersionObjectReference">
+<a href="#starrocks.com/v1alpha1.CrossVersionObjectReference">
 CrossVersionObjectReference
 </a>
 </em>
@@ -1046,7 +1046,7 @@ CrossVersionObjectReference
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1059,7 +1059,7 @@ MetricTarget
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -1070,10 +1070,10 @@ MetricIdentifier
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.PodsMetricSource">PodsMetricSource
+<h3 id="starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>PodsMetricSource indicates how to scale on a metric describing each pod in
@@ -1093,7 +1093,7 @@ value.</p>
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -1106,7 +1106,7 @@ MetricIdentifier
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1117,10 +1117,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ResourceMetricSource">ResourceMetricSource
+<h3 id="starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ResourceMetricSource indicates how to scale on a resource metric known to
@@ -1156,7 +1156,7 @@ Kubernetes core/v1.ResourceName
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1167,10 +1167,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ScalingPolicySelect">ScalingPolicySelect
+<h3 id="starrocks.com/v1alpha1.ScalingPolicySelect">ScalingPolicySelect
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingRules">HPAScalingRules</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
 </p>
 <div>
 <p>ScalingPolicySelect is used to specify which policy should be used while scaling in a certain direction</p>
@@ -1193,10 +1193,10 @@ MetricTarget
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
 <p>StarRocksBeSpec defines the desired state of be.</p>
@@ -1300,7 +1300,7 @@ Deprecated</p>
 <td>
 <code>service</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksService">
+<a href="#starrocks.com/v1alpha1.StarRocksService">
 StarRocksService
 </a>
 </em>
@@ -1347,7 +1347,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 <td>
 <code>configMapInfo</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
 ConfigMapInfo
 </a>
 </em>
@@ -1361,7 +1361,7 @@ ConfigMapInfo
 <td>
 <code>probe</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
 StarRocksProbe
 </a>
 </em>
@@ -1375,7 +1375,7 @@ StarRocksProbe
 <td>
 <code>storageVolumes</code><br/>
 <em>
-<a href="#starrocks.com/v1.StorageVolume">
+<a href="#starrocks.com/v1alpha1.StorageVolume">
 []StorageVolume
 </a>
 </em>
@@ -1465,10 +1465,10 @@ map[string]string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
 <p>StarRocksBeStatus represents the status of starrocks be.</p>
@@ -1489,7 +1489,7 @@ string
 </em>
 </td>
 <td>
-<p>the name of be service exposed for user.</p>
+<p>the name of be service for fe find be instance.</p>
 </td>
 </tr>
 <tr>
@@ -1540,7 +1540,7 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
+<a href="#starrocks.com/v1alpha1.MemberPhase">
 MemberPhase
 </a>
 </em>
@@ -1564,7 +1564,7 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCluster">StarRocksCluster
+<h3 id="starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster
 </h3>
 <div>
 <p>StarRocksCluster defines a starrocks cluster deployment.</p>
@@ -1595,7 +1595,7 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">
 StarRocksClusterSpec
 </a>
 </em>
@@ -1622,7 +1622,7 @@ Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 <td>
 <code>starRocksFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksFeSpec">
 StarRocksFeSpec
 </a>
 </em>
@@ -1635,7 +1635,7 @@ StarRocksFeSpec
 <td>
 <code>starRocksBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksBeSpec">
 StarRocksBeSpec
 </a>
 </em>
@@ -1648,7 +1648,7 @@ StarRocksBeSpec
 <td>
 <code>starRocksCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksCnSpec">
 StarRocksCnSpec
 </a>
 </em>
@@ -1664,7 +1664,7 @@ StarRocksCnSpec
 <td>
 <code>status</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">
 StarRocksClusterStatus
 </a>
 </em>
@@ -1675,10 +1675,10 @@ StarRocksClusterStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster</a>)
 </p>
 <div>
 <p>StarRocksClusterSpec defines the desired state of StarRocksCluster</p>
@@ -1708,7 +1708,7 @@ Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 <td>
 <code>starRocksFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksFeSpec">
 StarRocksFeSpec
 </a>
 </em>
@@ -1721,7 +1721,7 @@ StarRocksFeSpec
 <td>
 <code>starRocksBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksBeSpec">
 StarRocksBeSpec
 </a>
 </em>
@@ -1734,7 +1734,7 @@ StarRocksBeSpec
 <td>
 <code>starRocksCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksCnSpec">
 StarRocksCnSpec
 </a>
 </em>
@@ -1745,10 +1745,10 @@ StarRocksCnSpec
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster</a>)
 </p>
 <div>
 <p>StarRocksClusterStatus defines the observed state of StarRocksCluster.</p>
@@ -1765,7 +1765,7 @@ StarRocksCnSpec
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.ClusterPhase">
+<a href="#starrocks.com/v1alpha1.ClusterPhase">
 ClusterPhase
 </a>
 </em>
@@ -1778,7 +1778,7 @@ ClusterPhase
 <td>
 <code>starRocksFeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksFeStatus">
 StarRocksFeStatus
 </a>
 </em>
@@ -1791,7 +1791,7 @@ StarRocksFeStatus
 <td>
 <code>starRocksBeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksBeStatus">
 StarRocksBeStatus
 </a>
 </em>
@@ -1804,7 +1804,7 @@ StarRocksBeStatus
 <td>
 <code>starRocksCnStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksCnStatus">
 StarRocksCnStatus
 </a>
 </em>
@@ -1815,10 +1815,10 @@ StarRocksCnStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
 <p>StarRocksCnSpec defines the desired state of cn.</p>
@@ -1922,7 +1922,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specif
 <td>
 <code>service</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksService">
+<a href="#starrocks.com/v1alpha1.StarRocksService">
 StarRocksService
 </a>
 </em>
@@ -1936,7 +1936,7 @@ the service for user access cn.</p>
 <td>
 <code>configMapInfo</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
 ConfigMapInfo
 </a>
 </em>
@@ -1982,7 +1982,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 <td>
 <code>probe</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
 StarRocksProbe
 </a>
 </em>
@@ -1995,7 +1995,7 @@ StarRocksProbe
 <td>
 <code>autoScalingPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalingPolicy">
+<a href="#starrocks.com/v1alpha1.AutoScalingPolicy">
 AutoScalingPolicy
 </a>
 </em>
@@ -2072,10 +2072,10 @@ map[string]string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
 </div>
@@ -2095,7 +2095,7 @@ string
 </em>
 </td>
 <td>
-<p>the name of cn service exposed for user.</p>
+<p>the name of cn service for fe find cn instance.</p>
 </td>
 </tr>
 <tr>
@@ -2158,7 +2158,7 @@ Deprecated</p>
 <td>
 <code>horizontalScaler</code><br/>
 <em>
-<a href="#starrocks.com/v1.HorizontalScaler">
+<a href="#starrocks.com/v1alpha1.HorizontalScaler">
 HorizontalScaler
 </a>
 </em>
@@ -2171,7 +2171,7 @@ HorizontalScaler
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
+<a href="#starrocks.com/v1alpha1.MemberPhase">
 MemberPhase
 </a>
 </em>
@@ -2195,10 +2195,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
 <p>StarRocksFeSpec defines the desired state of fe.</p>
@@ -2301,7 +2301,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specif
 <td>
 <code>service</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksService">
+<a href="#starrocks.com/v1alpha1.StarRocksService">
 StarRocksService
 </a>
 </em>
@@ -2347,7 +2347,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 <td>
 <code>configMapInfo</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
 ConfigMapInfo
 </a>
 </em>
@@ -2361,7 +2361,7 @@ ConfigMapInfo
 <td>
 <code>probe</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
 StarRocksProbe
 </a>
 </em>
@@ -2375,7 +2375,7 @@ StarRocksProbe
 <td>
 <code>storageVolumes</code><br/>
 <em>
-<a href="#starrocks.com/v1.StorageVolume">
+<a href="#starrocks.com/v1alpha1.StorageVolume">
 []StorageVolume
 </a>
 </em>
@@ -2453,10 +2453,10 @@ map[string]string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksFeStatus">StarRocksFeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
 <p>StarRocksFeStatus represents the status of starrocks fe.</p>
@@ -2528,7 +2528,7 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
+<a href="#starrocks.com/v1alpha1.MemberPhase">
 MemberPhase
 </a>
 </em>
@@ -2552,10 +2552,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
+<h3 id="starrocks.com/v1alpha1.StarRocksProbe">StarRocksProbe
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 <p>StarRocksProbe defines the mode for probe be alive.</p>
@@ -2607,10 +2607,10 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksService">StarRocksService
+<h3 id="starrocks.com/v1alpha1.StarRocksService">StarRocksService
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 </div>
@@ -2672,7 +2672,7 @@ This field may be removed in a future API version.</p>
 <td>
 <code>ports</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksServicePort">
+<a href="#starrocks.com/v1alpha1.StarRocksServicePort">
 []StarRocksServicePort
 </a>
 </em>
@@ -2684,10 +2684,10 @@ This field may be removed in a future API version.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksServicePort">StarRocksServicePort
+<h3 id="starrocks.com/v1alpha1.StarRocksServicePort">StarRocksServicePort
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksService">StarRocksService</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksService">StarRocksService</a>)
 </p>
 <div>
 </div>
@@ -2745,10 +2745,10 @@ int32
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StorageVolume">StorageVolume
+<h3 id="starrocks.com/v1alpha1.StorageVolume">StorageVolume
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 <p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC</p>

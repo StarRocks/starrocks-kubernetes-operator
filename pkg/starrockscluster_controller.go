@@ -19,7 +19,7 @@ package pkg
 import (
 	"context"
 	"errors"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
@@ -106,7 +106,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		clean := func() (res ctrl.Result, err error) {
 			delres, err := r.CleanSubResources(ctx, src)
 			if err != nil {
-				klog.Error("StarRocksClusterReconciler reconcile", "update faield, message ", err)
+				klog.Errorf("StarRocksClusterReconciler reconcile update faield, message=%s\n", err.Error())
 				return requeueIfError(err)
 			}
 

@@ -18,7 +18,7 @@ package fe
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -70,7 +70,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	//generate new fe service.
-	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config, fc.generateServiceSelector(src))
+	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config, fc.generateServiceSelector(src), fc.generateServiceLabels(src))
 
 	//create or update fe external and domain search service, update the status of fe on src.
 	internalService := fc.generateInternalService(ctx, src, &svc, config)
@@ -324,21 +324,14 @@ func (fc *FeController) generateInternalService(ctx context.Context, src *srapi.
 		PublishNotReadyAddresses: true,
 	}
 
-	svcList := corev1.ServiceList{}
-	opts := client.ListOptions{
-		Namespace: externalService.Namespace,
-	}
-	matchLabels := client.MatchingLabels{}
-	//for compatible use version <=1.3
-	matchLabels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
-	matchLabels.ApplyToList(&opts)
-	if err := fc.k8sclient.List(ctx, &svcList, &opts); err == nil {
-		for i, _ := range svcList.Items {
-			if rutils.HaveEqualOwnerReference(searchSvc, &svcList.Items[i]) && svcList.Items[i].Spec.PublishNotReadyAddresses {
-				searchSvc.Name = svcList.Items[i].Name
-				break
-			}
+	//for compatible verison < v1.5
+	var esearchSvc corev1.Service
+	if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "fe-domain-search"}, &esearchSvc); err == nil {
+		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
+			searchSvc.Name = "fe-domain-search"
 		}
+	} else if !apierrors.IsNotFound(err) {
+		klog.Errorf("feController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "fe-domain-search", err.Error())
 	}
 
 	return searchSvc
