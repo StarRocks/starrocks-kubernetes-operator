@@ -4,6 +4,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased](https://github.com/StarRocks/starrocks-kubernetes-operator/compare/v1.4...master)
 
+[v1.5](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1.5...v1.4)
+## Added
+[Feature] support annotations for all components. [#48](https://github.com/StarRocks/starrocks-kubernetes-operator/issues/48)
+
 [v1.4](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1.4...v1.3)
 ## Added
 [Feature] use EmptyDir for be/log. [#57](https://github.com/StarRocks/starrocks-kubernetes-operator/issues/57)
