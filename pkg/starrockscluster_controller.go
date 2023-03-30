@@ -190,14 +190,6 @@ func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, 
 			return err
 		}
 
-		/*esrc.Spec = src.Spec
-		if esrc.Annotations == nil {
-			esrc.Annotations = make(map[string]string, len(src.Annotations))
-		}
-
-		for k, v := range src.Annotations {
-			esrc.Annotations[k] = v
-		}*/
 		src.ResourceVersion = esrc.ResourceVersion
 
 		return k8sutils.PatchClientObject(ctx, r.Client, src)

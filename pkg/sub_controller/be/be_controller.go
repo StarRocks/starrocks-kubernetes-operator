@@ -98,7 +98,6 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//4. create cn statefulset.
 	st := rutils.NewStatefulset(be.buildStatefulSetParams(src, config, internalService.Name))
-	st.Spec.PodManagementPolicy = appv1.ParallelPodManagement
 
 	//5. last update the status.
 	//if the spec is changed, update the status of be on src.

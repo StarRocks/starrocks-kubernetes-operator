@@ -72,6 +72,11 @@ func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.St
 		return nil
 	}
 
+	//for compatible version <= v1.5
+	if est.Spec.PodManagementPolicy == appv1.OrderedReadyPodManagement {
+		st.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
+	}
+
 	st.ResourceVersion = est.ResourceVersion
 	return PatchClientObject(ctx, k8sclient, st)
 }
