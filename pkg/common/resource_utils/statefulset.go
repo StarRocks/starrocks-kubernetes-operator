@@ -57,16 +57,10 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 			Template:             params.PodTemplateSpec,
 			ServiceName:          params.ServiceName,
 			VolumeClaimTemplates: params.VolumeClaimTemplates,
+			//all components use parallel.
+			PodManagementPolicy: appv1.ParallelPodManagement,
 		},
 	}
-
-	//_, ok := st.Annotations[srapi.ComponentResourceHash]
-	//if !ok {
-	//	if st.Annotations == nil {
-	//		st.Annotations = make(map[string]string)
-	//	}
-	//	st.Annotations[srapi.ComponentGeneration] = "1"
-	//}
 
 	return st
 }

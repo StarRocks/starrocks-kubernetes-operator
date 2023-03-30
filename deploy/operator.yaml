@@ -240,7 +240,7 @@ spec:
         - /sroperator
         args:
         - --leader-elect
-        image: starrocks/operator:v1.3
+        image: starrocks/operator:latest
         name: sroperator
         securityContext:
           allowPrivilegeEscalation: false

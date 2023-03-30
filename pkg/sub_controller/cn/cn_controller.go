@@ -97,7 +97,6 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//4. create cn statefulset.
 	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src, config, internalService.Name))
-	st.Spec.PodManagementPolicy = appv1.ParallelPodManagement
 
 	//5. create or update the status. create statefulset return, must ensure the
 	var est appv1.StatefulSet
