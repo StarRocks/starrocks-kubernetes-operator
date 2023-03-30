@@ -71,22 +71,12 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	//generate new fe service.
 	svc := rutils.BuildExternalService(src, srapi.GetFeExternalServiceName(src), rutils.FeService, config, fc.generateServiceSelector(src), fc.generateServiceLabels(src))
-
 	//create or update fe external and domain search service, update the status of fe on src.
-	internalService := fc.generateInternalService(ctx, src, &svc, config)
-	if err := k8sutils.ApplyService(ctx, fc.k8sclient, internalService, rutils.ServiceDeepEqual); err != nil {
-		klog.Error("FeController Sync ", "create or patch internal service namespace ", internalService.Namespace, " name ", internalService.Name, " failed, message ", err.Error())
-		return err
-	}
+	internalService := fc.generateInternalService(src, &svc, config)
 
-	if err := k8sutils.ApplyService(ctx, fc.k8sclient, &svc, rutils.ServiceDeepEqual); err != nil {
-		klog.Error("FeController Sync ", "create or patch external service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
-		return err
-	}
-
-	// apply statefulset for update pod.
+	// first deploy statefuslet for compatible v1.5, apply statefulset for update pod.
 	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src, config, internalService.Name))
-	err = k8sutils.ApplyStatefulSet(ctx, fc.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		//exclude the restart annotation interference,
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
 		if !fc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
@@ -98,8 +88,26 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 		// if have restart annotation, we should exclude the interference for comparison.
 		return rutils.StatefulSetDeepEqual(new, est, false)
-	})
-	return err
+	}); err != nil {
+		return err
+	}
+
+	if err = k8sutils.ApplyService(ctx, fc.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
+		//for compatible v1.5, we use `fe-domain-search` for internal communicating.
+		internalService.Name = st.Spec.ServiceName
+
+		return rutils.ServiceDeepEqual(new, esvc)
+	}); err != nil {
+		klog.Error("FeController Sync ", "create or patch internal service namespace ", internalService.Namespace, " name ", internalService.Name, " failed, message ", err.Error())
+		return err
+	}
+
+	if err = k8sutils.ApplyService(ctx, fc.k8sclient, &svc, rutils.ServiceDeepEqual); err != nil {
+		klog.Error("FeController Sync ", "create or patch external service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (fc *FeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
@@ -301,7 +309,7 @@ func (fc *FeController) getSearchServiceName(src *srapi.StarRocksCluster) string
 	return src.Name + "-fe" + FE_SEARCH_SUFFIX
 }
 
-func (fc *FeController) generateInternalService(ctx context.Context, src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
+func (fc *FeController) generateInternalService(src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
 	fs := (rutils.Finalizers)(searchSvc.Finalizers)
@@ -325,14 +333,14 @@ func (fc *FeController) generateInternalService(ctx context.Context, src *srapi.
 	}
 
 	//for compatible verison < v1.5
-	var esearchSvc corev1.Service
-	if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "fe-domain-search"}, &esearchSvc); err == nil {
-		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
-			searchSvc.Name = "fe-domain-search"
-		}
-	} else if !apierrors.IsNotFound(err) {
-		klog.Errorf("feController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "fe-domain-search", err.Error())
-	}
+	//var esearchSvc corev1.Service
+	//if err := fc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "fe-domain-search"}, &esearchSvc); err == nil {
+	//	if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
+	//		searchSvc.Name = "fe-domain-search"
+	//	}
+	//} else if !apierrors.IsNotFound(err) {
+	//	klog.Errorf("feController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "fe-domain-search", err.Error())
+	//}
 
 	return searchSvc
 }

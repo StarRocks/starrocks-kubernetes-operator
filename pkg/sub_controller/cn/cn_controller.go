@@ -82,59 +82,30 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//generate new cn internal service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetCnExternalServiceName(src), rutils.CnService, config, cc.generateServiceSelector(src), cc.generateServiceLabels(src))
 	//create or update fe service, update the status of cn on src.
-	//3. publish the service.
-	//3.1 patch the internal service for fe and cn connection.
-	internalService := cc.generateInternalService(ctx, src, &externalsvc, config)
-	if err := k8sutils.ApplyService(ctx, cc.k8sclient, internalService, rutils.ServiceDeepEqual); err != nil {
-		klog.Infof("CnController Sync patch internal service namespace=%s, name=%s, error=%s", internalService.Namespace, internalService.Name)
+	//publish the service.
+	//patch the internal service for fe and cn connection.
+	internalService := cc.generateInternalService(src, &externalsvc, config)
+
+	//create cn statefulset.
+	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src, config, internalService.Name))
+	if err = cc.applyStatefulset(ctx, src, &st); err != nil {
+		klog.Errorf("CnController Sync applyStatefulset name=%s, namespace=%s, failed. err=%s\n", st.Name, st.Namespace, err.Error())
+		return err
+	}
+
+	if err := k8sutils.ApplyService(ctx, cc.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
+		//for compatible v1.5, we use `cn-domain-search` for internal communicating.
+		internalService.Name = st.Spec.ServiceName
+		return rutils.ServiceDeepEqual(new, esvc)
+	}); err != nil {
+		klog.Infof(""+
+			" Sync patch internal service namespace=%s, name=%s, error=%s", internalService.Namespace, internalService.Name)
 		return err
 	}
 	//3.2 patch the external service for users access cn service.
 	if err := k8sutils.ApplyService(ctx, cc.k8sclient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
 		klog.Infof("CnController Sync patch external service namespace=%s, name=%s, error=%s", externalsvc.Namespace, externalsvc.Name)
 		return err
-	}
-
-	//4. create cn statefulset.
-	st := rutils.NewStatefulset(cc.buildStatefulSetParams(src, config, internalService.Name))
-
-	//5. create or update the status. create statefulset return, must ensure the
-	var est appv1.StatefulSet
-	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est); apierrors.IsNotFound(err) {
-		return k8sutils.CreateClientObject(ctx, cc.k8sclient, &st)
-	} else if err != nil {
-		klog.Errorf("CnController Sync create statefulset name=%s, namespace=%s error=%s", st.Name, st.Namespace, err.Error())
-		return err
-	}
-	//if the spec is changed, update the status of cn on src.
-	var excludeReplica bool
-	//if replicas =0 and not the first time, exclude the hash for autoscaler
-	if st.Spec.Replicas == nil {
-		if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; !ok {
-			excludeReplica = true
-		}
-	}
-	//exclude the restart annotation interference,
-	_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
-	if !cc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
-		// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
-		anno := rutils.Annotations{}
-		anno.Add(common.KubectlRestartAnnotationKey, est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey])
-		st.Spec.Template.Annotations = anno
-	}
-
-	if !rutils.StatefulSetDeepEqual(&st, &est, excludeReplica) {
-		//if the replicas not zero, represent user have cancel autoscaler.
-		if st.Spec.Replicas != nil {
-			if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; ok {
-				rutils.MergeStatefulSets(&st, est)
-				delete(st.Annotations, srapi.ComponentReplicasEmpty)
-				return k8sutils.UpdateClientObject(ctx, cc.k8sclient, &st)
-			}
-		}
-
-		st.ResourceVersion = est.ResourceVersion
-		return k8sutils.PatchClientObject(ctx, cc.k8sclient, &st)
 	}
 
 	//5. create autoscaler.
@@ -154,6 +125,53 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	return err
+}
+
+func (cc *CnController) applyStatefulset(ctx context.Context, src *srapi.StarRocksCluster, st *appv1.StatefulSet) error {
+	//create or update the status. create statefulset return, must ensure the
+	var est appv1.StatefulSet
+	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est); apierrors.IsNotFound(err) {
+		return k8sutils.CreateClientObject(ctx, cc.k8sclient, st)
+	} else if err != nil {
+		klog.Errorf("CnController Sync create statefulset name=%s, namespace=%s error=%s", st.Name, st.Namespace, err.Error())
+		return err
+	}
+	//if the spec is changed, update the status of cn on src.
+	var excludeReplica bool
+	//if replicas =0 and not the first time, exclude the hash for autoscaler
+	if st.Spec.Replicas == nil {
+		if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; !ok {
+			excludeReplica = true
+		}
+	}
+
+	//exclude the restart annotation interference,
+	_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
+	if !cc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
+		// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
+		anno := rutils.Annotations{}
+		anno.Add(common.KubectlRestartAnnotationKey, est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey])
+		st.Spec.Template.Annotations = anno
+	}
+
+	//for compatible version <= v1.5, use `cn-domain-search` for internal service. we should exclude the interference.
+	st.Spec.ServiceName = est.Spec.ServiceName
+
+	if !rutils.StatefulSetDeepEqual(st, &est, excludeReplica) {
+		//if the replicas not zero, represent user have cancel autoscaler.
+		if st.Spec.Replicas != nil {
+			if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; ok {
+				rutils.MergeStatefulSets(st, est)
+				delete(st.Annotations, srapi.ComponentReplicasEmpty)
+				return k8sutils.UpdateClientObject(ctx, cc.k8sclient, st)
+			}
+		}
+
+		st.ResourceVersion = est.ResourceVersion
+		return k8sutils.PatchClientObject(ctx, cc.k8sclient, st)
+	}
+
+	return nil
 }
 
 func (cc *CnController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
@@ -312,7 +330,7 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRoc
 }
 
 //generateInternalService the service for fe communicate with cn.
-func (cc *CnController) generateInternalService(ctx context.Context, src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
+func (cc *CnController) generateInternalService(src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
 	searchSvc.Name = cc.getCnSearchServiceName(src)
@@ -334,16 +352,6 @@ func (cc *CnController) generateInternalService(ctx context.Context, src *srapi.
 	fs := (rutils.Finalizers)(searchSvc.Finalizers)
 	fs.AddFinalizer(srapi.SERVICE_FINALIZER)
 	searchSvc.Finalizers = fs
-
-	//for compatible verison < v1.5
-	var esearchSvc corev1.Service
-	if err := cc.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "cn-domain-search"}, &esearchSvc); err == nil {
-		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
-			searchSvc.Name = "cn-domain-search"
-		}
-	} else if !apierrors.IsNotFound(err) {
-		klog.Errorf("ccController generateInternalService get old svc  namespace=%s, name=%s,failed, error=%s.\n", src.Namespace, "cn-domain-search", err.Error())
-	}
 
 	return searchSvc
 }
