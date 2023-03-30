@@ -80,28 +80,16 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	feconfig, _ := be.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
 	//annotation: add query port in cnconfig.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
-	//generate new cn internal service.
+	//generate new cn external service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetBeExternalServiceName(src), rutils.BeService, config, be.generateServiceSelector(src), be.generateServiceLabels(src))
-
-	//create or update fe service, update the status of cn on src.
-	//3. issue the service.
+	//generate internal fe service, update the status of cn on src.
 	internalService := be.generateInternalService(ctx, src, &externalsvc, config)
-	if err := k8sutils.ApplyService(ctx, be.k8sclient, internalService, rutils.ServiceDeepEqual); err != nil {
-		klog.Errorf("BeController Sync patch internal service name=%s, namespace=%s, error=%s\n", internalService.Name, internalService.Namespace, err.Error())
-		return err
-	}
 
-	if err := k8sutils.ApplyService(ctx, be.k8sclient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
-		klog.Error("BeController Sync ", "patch external service namespace ", externalsvc.Namespace, " name ", externalsvc.Name)
-		return err
-	}
-
-	//4. create cn statefulset.
+	//create cn statefulset.
 	st := rutils.NewStatefulset(be.buildStatefulSetParams(src, config, internalService.Name))
 
-	//5. last update the status.
-	//if the spec is changed, update the status of be on src.
-	err = k8sutils.ApplyStatefulSet(ctx, be.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
+	//update the statefulset if fespec be updated.
+	if err = k8sutils.ApplyStatefulSet(ctx, be.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		//exclude the restart annotation interference. annotation
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
 		if !be.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
@@ -113,7 +101,24 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 		// if have restart annotation, we should exclude the interference for comparison.
 		return rutils.StatefulSetDeepEqual(new, est, false)
-	})
+	}); err != nil {
+		klog.Errorf("BeController Sync patch statefulset name=%s, namespace=%s, error=%s\n", st.Name, st.Namespace, err.Error())
+		return err
+	}
+
+	if err := k8sutils.ApplyService(ctx, be.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
+		//for compatible v1.5, we use `cn-domain-search` for internal communicating.
+		internalService.Name = st.Spec.ServiceName
+		return rutils.ServiceDeepEqual(new, esvc)
+	}); err != nil {
+		klog.Errorf("BeController Sync patch internal service name=%s, namespace=%s, error=%s\n", internalService.Name, internalService.Namespace, err.Error())
+		return err
+	}
+
+	if err := k8sutils.ApplyService(ctx, be.k8sclient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
+		klog.Error("BeController Sync ", "patch external service namespace ", externalsvc.Namespace, " name ", externalsvc.Name)
+		return err
+	}
 
 	return err
 }
