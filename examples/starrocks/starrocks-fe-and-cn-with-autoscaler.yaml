@@ -5,13 +5,13 @@ metadata:
   namespace: starrocks
 spec:
   starRocksFeSpec:
-    image: starrocks/alpine-fe:2.4.1
+    image: starrocks/fe-ubuntu:2.5.4
     replicas: 3
     requests:
       cpu: 4
       memory: 16Gi
   starRocksCnSpec:
-    image: starrocks/centos-cn:2.4.1
+    image: starrocks/cn-ubuntu:2.5.4
     requests:
       cpu: 4
       memory: 4Gi
