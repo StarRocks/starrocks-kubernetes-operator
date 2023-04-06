@@ -14,15 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
-
-const (
-	//STATEFULSET_FINALIZER pre hook wait for fe statefulset deleted.
-	STATEFULSET_FINALIZER = "starrocks.com.statefulset/protection"
-
-	SERVICE_FINALIZER = "starrocks.com.service/protection"
-
-	STARROCKS_FINALIZER = "starrocks.com.starrockscluster/protection"
-
-	AUTOSCALER_FINALIZER = "starrocks.com.autoscaler/protection"
-)
+// +k8s:deepcopy-gen=package
+// +groupName=starrocks.com
+package v1

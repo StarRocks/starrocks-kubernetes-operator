@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package be_controller
+package be
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -25,7 +25,7 @@ import (
 )
 
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (be *BeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, beconfig map[string]interface{}) rutils.StatefulSetParams {
+func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
 	beSpec := src.Spec.StarRocksBeSpec
 
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -48,31 +48,38 @@ func (be *BeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, 
 		})
 	}
 
+	annos := rutils.Annotations{}
+	// add restart annotation on statefulset.
+	if _, ok := src.Annotations[string(srapi.AnnotationBERestartKey)]; ok {
+		annos.Add(string(srapi.AnnotationBERestartKey), string(srapi.AnnotationRestart))
+	}
+
 	return rutils.StatefulSetParams{
-		Name:                 beStatefulSetName(src),
+		Name:                 srapi.BeStatefulSetName(src),
 		Namespace:            src.Namespace,
-		ServiceName:          be.getBeSearchService(),
+		Annotations:          annos,
+		ServiceName:          internalServiceName,
 		PodTemplateSpec:      podTemplateSpec,
-		Labels:               beStatefulSetsLabels(src),
-		Selector:             be.bePodLabels(src, beStatefulSetName(src)),
+		Labels:               be.beStatefulSetsLabels(src),
+		Selector:             be.beStatefulsetSelector(src),
 		OwnerReferences:      []metav1.OwnerReference{*or},
 		Replicas:             beSpec.Replicas,
 		VolumeClaimTemplates: pvcs,
 	}
 }
 
-func beStatefulSetsLabels(src *v1alpha12.StarRocksCluster) rutils.Labels {
+func (be *BeController) beStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
-	labels[v1alpha12.OwnerReference] = src.Name
-	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_BE
-	labels.AddLabel(src.Labels)
+	labels[srapi.OwnerReference] = src.Name
+	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_BE
+	//once the src labels updated, the statefulset will enter into a can't be modified state.
+	//labels.AddLabel(src.Labels)
 	return labels
 }
 
-func beStatefulSetName(src *v1alpha12.StarRocksCluster) string {
-	stname := src.Name + "-" + v1alpha12.DEFAULT_BE
-	if src.Spec.StarRocksBeSpec.Name != "" {
-		stname = src.Spec.StarRocksBeSpec.Name
-	}
-	return stname
+func (be *BeController) beStatefulsetSelector(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := rutils.Labels{}
+	labels[srapi.OwnerReference] = srapi.BeStatefulSetName(src)
+	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_BE
+	return labels
 }

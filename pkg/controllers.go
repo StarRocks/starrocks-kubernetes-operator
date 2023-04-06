@@ -17,7 +17,8 @@ limitations under the License.
 package pkg
 
 import (
-	starrockscomv1alpha1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -32,8 +33,8 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
-
-	utilruntime.Must(starrockscomv1alpha1.AddToScheme(Scheme))
+	utilruntime.Must(v1alpha1.AddToScheme(Scheme))
+	utilruntime.Must(v1.AddToScheme(Scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

@@ -14,36 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fe_controller
+package fe
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/klog/v2"
 )
 
-func feStatefulSetsLabels(src *v1alpha12.StarRocksCluster) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[v1alpha12.OwnerReference] = src.Name
-	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_FE
-	labels.AddLabel(src.Labels)
-	return labels
-}
-
-func feStatefulSetName(src *v1alpha12.StarRocksCluster) string {
-	stname := src.Name + "-" + v1alpha12.DEFAULT_FE
-	if src.Spec.StarRocksFeSpec.Name != "" {
-		stname = src.Spec.StarRocksFeSpec.Name
-	}
-	return stname
-}
-
 //buildStatefulSetParams generate the params of construct the statefulset.
-func (fc *FeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, feconfig map[string]interface{}) rutils.StatefulSetParams {
+func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
 	feSpec := src.Spec.StarRocksFeSpec
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range feSpec.StorageVolumes {
@@ -64,22 +46,42 @@ func (fc *FeController) buildStatefulSetParams(src *v1alpha12.StarRocksCluster, 
 		})
 	}
 
-	str, _ := json.Marshal(pvcs)
-	klog.Info("FeController buildStatefulSetParams ", string(str))
-	stname := feStatefulSetName(src)
+	stname := srapi.FeStatefulSetName(src)
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
 	podTemplateSpec := fc.buildPodTemplate(src, feconfig)
+	annos := rutils.Annotations{}
+	// add restart annotation on statefulset.
+	if _, ok := src.Annotations[string(srapi.AnnotationFERestartKey)]; ok {
+		annos.Add(string(srapi.AnnotationFERestartKey), string(srapi.AnnotationRestart))
+	}
 
 	return rutils.StatefulSetParams{
 		Name:                 stname,
 		Namespace:            src.Namespace,
 		Replicas:             feSpec.Replicas,
-		Annotations:          make(map[string]string),
+		Annotations:          annos,
 		VolumeClaimTemplates: pvcs,
-		ServiceName:          fc.getSearchService(),
-		Labels:               feStatefulSetsLabels(src),
+		ServiceName:          internalServiceName,
+		Labels:               fc.feStatefulSetsLabels(src),
 		PodTemplateSpec:      podTemplateSpec,
-		Selector:             fePodLabels(src, stname),
+		Selector:             fc.feStatefulsetSelector(src),
 		OwnerReferences:      []metav1.OwnerReference{*or},
 	}
+}
+
+//try not to modify the labels, as the statefulset don't alloy do it.
+func (fc *FeController) feStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := rutils.Labels{}
+	labels[srapi.OwnerReference] = src.Name
+	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
+	//once the labels updated, the statefulset will enter into a not reconcile state.
+	//labels.AddLabel(src.Labels)
+	return labels
+}
+
+func (fc *FeController) feStatefulsetSelector(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := rutils.Labels{}
+	labels[srapi.OwnerReference] = srapi.FeStatefulSetName(src)
+	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_FE
+	return labels
 }

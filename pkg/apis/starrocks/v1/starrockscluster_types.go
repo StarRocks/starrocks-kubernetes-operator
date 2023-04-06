@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -138,7 +138,7 @@ type StarRocksFeStatus struct {
 
 // StarRocksBeStatus represents the status of starrocks be.
 type StarRocksBeStatus struct {
-	//the name of be service for fe find be instance.
+	//the name of be service exposed for user.
 	ServiceName string `json:"serviceName,omitempty"`
 
 	//FailedInstances deploy failed instance of be.
@@ -171,7 +171,7 @@ type HorizontalScaler struct {
 }
 
 type StarRocksCnStatus struct {
-	//the name of cn service for fe find cn instance.
+	//the name of cn service exposed for user.
 	ServiceName string `json:"serviceName,omitempty"`
 
 	//FailedInstances deploy failed cn pod names.
@@ -210,6 +210,7 @@ type StarRocksCnStatus struct {
 //+kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
 //+kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
 //+kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
+//+kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient
 type StarRocksCluster struct {
@@ -240,7 +241,6 @@ type StarRocksFeSpec struct {
 	Name string `json:"name,omitempty"`
 
 	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
-	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for fe access cloud service.
@@ -257,7 +257,6 @@ type StarRocksFeSpec struct {
 
 	//Image for a starrocks fe deployment..
 	Image string `json:"image"`
-
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
 	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
@@ -317,7 +316,6 @@ type StarRocksBeSpec struct {
 	Image string `json:"image"`
 
 	//annotation for be pods. user can config monitor annotation for collect to monitor system.
-	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -396,8 +394,7 @@ type StarRocksCnSpec struct {
 	//Deprecated: , the statefulset name don't allow set, prevent accidental modification.
 	Name string `json:"name,omitempty"`
 
-	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
-	//+optional
+	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	//serviceAccount for cn access cloud service.
@@ -463,8 +460,7 @@ type StarRocksCnSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	//+optional
-
-	//podLabels for user selector or classify pods.
+	// podLabels for user selector or classify pods
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 }
 
