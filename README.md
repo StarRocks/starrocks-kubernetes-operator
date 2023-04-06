@@ -62,10 +62,10 @@ You can use any of the template yaml file as a starting point. You can further a
 Official FE/CN/BE components images can be found from [dockerhub](https://hub.docker.com/u/starrocks):
 
 You can specify the image name in the yaml file.
-For example, the below configuration uses the `starrocks/alpine-fe:2.4.1` image for FE.
+For example, the below configuration uses the `starrocks/fe-ubuntu:2.5.4` image for FE.
 ```yaml
 starRocksFeSpec:
-  image: starrocks/alpine-fe:2.4.1
+  image: starrocks/fe-ubuntu:2.5.4
 ```
 
 ### (Optional) Using ConfigMap to configure your StarRocks cluster
