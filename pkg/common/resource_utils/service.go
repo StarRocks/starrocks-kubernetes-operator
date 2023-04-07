@@ -147,7 +147,7 @@ func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocks
 
 func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	service.Spec.Type = corev1.ServiceTypeClusterIP
-	if svc != nil && svc.Type == "" {
+	if svc != nil && svc.Type != "" {
 		service.Spec.Type = svc.Type
 	}
 
