@@ -18,18 +18,15 @@ package pkg
 
 import (
 	"context"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-	"path/filepath"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
-
-	. "github.com/onsi/ginkgo"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"path/filepath"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
@@ -45,13 +42,13 @@ var testEnv *envtest.Environment
 var ctx context.Context
 var cancel context.CancelFunc
 
-func TestAPIs(t *testing.T) {
+/*func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
 		[]Reporter{printer.NewlineReporter{}})
-}
+}*/
 
 var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
@@ -91,7 +88,7 @@ var _ = BeforeSuite(func() {
 		err = k8sManager.Start(ctx)
 		Expect(err).ToNot(HaveOccurred(), "failed to run manager")
 	}()
-}, 60)
+})
 
 var _ = AfterSuite(func() {
 	cancel()

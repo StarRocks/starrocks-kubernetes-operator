@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cn_controller
+package cn
 
 import (
-	v1alpha12 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
+	"time"
 )
 
 const (
@@ -33,18 +34,9 @@ const (
 	env_cn_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//cnPodLabels
-func (cc *CnController) cnPodLabels(src *v1alpha12.StarRocksCluster, ownerReferenceName string) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[v1alpha12.OwnerReference] = ownerReferenceName
-	labels[v1alpha12.ComponentLabelKey] = v1alpha12.DEFAULT_CN
-	labels.AddLabel(src.Spec.StarRocksCnSpec.PodLabels)
-	return labels
-}
-
 //buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + v1alpha12.DEFAULT_CN
+func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
+	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
 	//generate the default emptydir for log.
@@ -95,11 +87,11 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
 			},
 		}, {
-			Name:  v1alpha12.COMPONENT_NAME,
-			Value: v1alpha12.DEFAULT_CN,
+			Name:  srapi.COMPONENT_NAME,
+			Value: srapi.DEFAULT_CN,
 		}, {
-			Name:  v1alpha12.FE_SERVICE_NAME,
-			Value: v1alpha12.GetFeExternalServiceName(src),
+			Name:  srapi.FE_SERVICE_NAME,
+			Value: srapi.GetFeExternalServiceName(src),
 		}, {
 			Name:  "FE_QUERY_PORT",
 			Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
@@ -114,7 +106,7 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 
 	Envs = append(Envs, cnSpec.CnEnvVars...)
 	cnContainer := corev1.Container{
-		Name:    v1alpha12.DEFAULT_CN,
+		Name:    srapi.DEFAULT_CN,
 		Image:   cnSpec.Image,
 		Command: []string{"/opt/starrocks/cn_entrypoint.sh"},
 		Args:    []string{"$(FE_SERVICE_NAME)"},
@@ -197,6 +189,13 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 		ImagePullSecrets:              cnSpec.ImagePullSecrets,
 		NodeSelector:                  cnSpec.NodeSelector,
 	}
+	annos := make(map[string]string)
+	//add restart
+	if _, ok := src.Annotations[string(srapi.AnnotationCNRestartKey)]; ok {
+		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
+	}
+	//add annotations for cn pods.
+	rutils.Annotations(annos).AddAnnotation(cnSpec.Annotations)
 
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if cnSpec.FsGroup == nil {
@@ -215,10 +214,20 @@ func (cc *CnController) buildPodTemplate(src *v1alpha12.StarRocksCluster, cnconf
 
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaname,
-			Namespace: src.Namespace,
-			Labels:    cc.cnPodLabels(src, cnStatefulSetName(src)),
+			Name:        metaname,
+			Annotations: annos,
+			Namespace:   src.Namespace,
+			Labels:      cc.cnPodLabels(src),
 		},
 		Spec: podSpec,
 	}
+}
+
+func (cc *CnController) cnPodLabels(src *srapi.StarRocksCluster) rutils.Labels {
+	labels := cc.cnStatefulsetSelector(src)
+	//podLables for classify. operator use statefulsetSelector for manage pods.
+	if src.Spec.StarRocksCnSpec != nil {
+		labels.AddLabel(src.Spec.StarRocksCnSpec.PodLabels)
+	}
+	return labels
 }

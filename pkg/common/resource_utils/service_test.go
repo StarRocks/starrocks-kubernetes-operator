@@ -1,7 +1,7 @@
 package resource_utils
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,6 +24,6 @@ func Test_BuildExternalService(t *testing.T) {
 		},
 	}
 
-	svc := BuildExternalService(&src, "test", FeService, make(map[string]interface{}))
+	svc := BuildExternalService(&src, "test", FeService, make(map[string]interface{}), make(map[string]string), make(map[string]string))
 	require.Equal(t, corev1.ServiceTypeLoadBalancer, svc.Spec.Type)
 }

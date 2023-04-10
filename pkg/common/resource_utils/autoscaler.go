@@ -17,12 +17,24 @@ limitations under the License.
 package resource_utils
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
-	v2beta2 "k8s.io/api/autoscaling/v2beta2"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	appv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/autoscaling/v1"
+	v2 "k8s.io/api/autoscaling/v2"
+	"k8s.io/api/autoscaling/v2beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"unsafe"
+)
+
+var (
+	AutoscalerKind  = "HorizontalPodAutoscaler"
+	StatefulSetKind = "StatefulSet"
+	ServiceKind     = "Service"
 )
 
 type PodAutoscalerParams struct {
+	AutoscalerType  srapi.AutoScalerVersion
 	Namespace       string
 	Name            string
 	Labels          Labels
@@ -31,28 +43,115 @@ type PodAutoscalerParams struct {
 	ScalerPolicy    *srapi.AutoScalingPolicy
 }
 
-func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAutoscaler {
-	return &v2beta2.HorizontalPodAutoscaler{
+func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) client.Object {
+	switch pap.AutoscalerType {
+	case srapi.AutoScalerV1:
+		return buildAutoscalerV1(pap)
+	case srapi.AutoSclaerV2:
+		return buildAutoscalerV2(pap)
+	default:
+		return buildAutoscalerV2beta2(pap)
+	}
+}
+
+//build v1 autoscaler
+func buildAutoscalerV1(pap *PodAutoscalerParams) *v1.HorizontalPodAutoscaler {
+	ha := &v1.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "HorizontalPodAutoscaler",
-			APIVersion: "autoscaling/v2",
+			Kind:       AutoscalerKind,
+			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            pap.Name,
 			Namespace:       pap.Namespace,
 			Labels:          pap.Labels,
+			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
+			OwnerReferences: pap.OwnerReferences,
+		},
+		Spec: v1.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v1.CrossVersionObjectReference{
+				Name:       pap.TargetName,
+				Kind:       StatefulSetKind,
+				APIVersion: appv1.SchemeGroupVersion.String(),
+			},
+			MaxReplicas: pap.ScalerPolicy.MaxReplicas,
+			MinReplicas: pap.ScalerPolicy.MinReplicas,
+		},
+	}
+
+	return ha
+}
+
+//build AutoscalerV2beta2
+func buildAutoscalerV2beta2(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAutoscaler {
+	ha := &v2beta2.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       AutoscalerKind,
+			APIVersion: v2beta2.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            pap.Name,
+			Namespace:       pap.Namespace,
+			Labels:          pap.Labels,
+			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
 			OwnerReferences: pap.OwnerReferences,
 		},
 		Spec: v2beta2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2beta2.CrossVersionObjectReference{
 				Name:       pap.TargetName,
-				Kind:       "StatefulSet",
-				APIVersion: "apps/v1",
+				Kind:       StatefulSetKind,
+				APIVersion: appv1.SchemeGroupVersion.String(),
 			},
 			MaxReplicas: pap.ScalerPolicy.MaxReplicas,
 			MinReplicas: pap.ScalerPolicy.MinReplicas,
-			Metrics:     pap.ScalerPolicy.HPAPolicy.Metrics,
-			Behavior:    pap.ScalerPolicy.HPAPolicy.Behavior,
 		},
 	}
+
+	//the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign align.
+	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
+		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
+			metrics := unsafe.Slice((*v2beta2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))
+			ha.Spec.Metrics = metrics
+		}
+		ha.Spec.Behavior = (*v2beta2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(pap.ScalerPolicy.HPAPolicy.Behavior))
+
+	}
+
+	return ha
+}
+
+func buildAutoscalerV2(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
+	ha := &v2.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       AutoscalerKind,
+			APIVersion: v2.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            pap.Name,
+			Namespace:       pap.Namespace,
+			Labels:          pap.Labels,
+			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
+			OwnerReferences: pap.OwnerReferences,
+		},
+		Spec: v2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v2.CrossVersionObjectReference{
+				Name:       pap.TargetName,
+				Kind:       StatefulSetKind,
+				APIVersion: appv1.SchemeGroupVersion.String(),
+			},
+			MaxReplicas: pap.ScalerPolicy.MaxReplicas,
+			MinReplicas: pap.ScalerPolicy.MinReplicas,
+		},
+	}
+
+	//the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign.
+	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
+		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
+			metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))
+			ha.Spec.Metrics = metrics
+		}
+		ha.Spec.Behavior = (*v2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(pap.ScalerPolicy.HPAPolicy.Behavior))
+	}
+
+	return ha
 }

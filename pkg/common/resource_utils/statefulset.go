@@ -1,16 +1,19 @@
 package resource_utils
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1"
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"strconv"
 )
 
 type StatefulSetType string
+
+const (
+	defaultRollingUpdateStartPod int32 = 0
+)
 
 type StatefulSetParams struct {
 	Name                 string
@@ -29,13 +32,15 @@ type StatefulSetParams struct {
 
 //NewStatefulset  statefulset
 func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
-	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
+	//
+	//TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	st := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            params.Name,
 			Namespace:       params.Namespace,
 			Labels:          params.Labels,
 			Annotations:     params.Annotations,
+			Finalizers:      []string{srapi.STATEFULSET_FINALIZER},
 			OwnerReferences: params.OwnerReferences,
 		},
 		Spec: appv1.StatefulSetSpec{
@@ -45,21 +50,18 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 			},
 			UpdateStrategy: appv1.StatefulSetUpdateStrategy{
 				Type: appv1.RollingUpdateStatefulSetStrategyType,
+				RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+					Partition: GetInt32Pointer(defaultRollingUpdateStartPod),
+				},
 			},
 			Template:             params.PodTemplateSpec,
 			ServiceName:          params.ServiceName,
 			VolumeClaimTemplates: params.VolumeClaimTemplates,
+			//all components use parallel.
+			PodManagementPolicy: appv1.ParallelPodManagement,
 		},
 	}
 
-	hst := statefulSetHashObject(&st, false)
-	hvalue := hash.HashObject(hst)
-
-	anno := Annotations{}
-	anno.AddAnnotation(params.Annotations)
-	anno[srapi.ComponentResourceHash] = hvalue
-	anno[srapi.ComponentGeneration] = "1"
-	st.Annotations = anno
 	return st
 }
 
@@ -69,7 +71,7 @@ type hashStatefulsetObject struct {
 	namespace            string
 	labels               map[string]string
 	selector             metav1.LabelSelector
-	podSpec              corev1.PodSpec
+	podTemplate          corev1.PodTemplateSpec
 	serviceName          string
 	volumeClaimTemplates []corev1.PersistentVolumeClaim
 	replicas             int32
@@ -94,7 +96,7 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 		namespace:            st.Namespace,
 		labels:               st.Labels,
 		selector:             selector,
-		podSpec:              st.Spec.Template.Spec,
+		podTemplate:          st.Spec.Template,
 		serviceName:          st.Spec.ServiceName,
 		volumeClaimTemplates: st.Spec.VolumeClaimTemplates,
 		replicas:             replicas,
@@ -102,7 +104,7 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 }
 
 //StatefulSetDeepEqual judge two statefulset equal or not.
-func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet, excludeReplicas bool) bool {
+func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
@@ -115,21 +117,26 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old appv1.StatefulSet, exclude
 	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
 		oldHashv = old.Annotations[srapi.ComponentResourceHash]
 	} else {
-		oldHso := statefulSetHashObject(&old, excludeReplicas)
+		oldHso := statefulSetHashObject(old, excludeReplicas)
 		oldHashv = hash.HashObject(oldHso)
 	}
 
-	var oldGeneration int64
-	if _, ok := old.Annotations[srapi.ComponentGeneration]; ok {
-		oldGeneration, _ = strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
-	}
+	//var oldGeneration int64
+	//if _, ok := old.Annotations[srapi.ComponentGeneration]; ok {
+	//	oldGeneration, _ = strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
+	//}
 
-	new.Annotations[srapi.ComponentGeneration] = strconv.FormatInt(old.Generation+1, 10)
-	klog.Info("the statefulset new hash value ", newHashv, " old have value ", oldHashv, " oldGeneration ", oldGeneration, " new Generation ", old.Generation)
+	anno := Annotations{}
+	anno.AddAnnotation(new.Annotations)
+	//anno.Add(srapi.ComponentGeneration, strconv.FormatInt(old.Generation+1, 10))
+	anno.Add(srapi.ComponentResourceHash, newHashv)
+	new.Annotations = anno
+
+	klog.Info("the statefulset name "+new.Name+" new hash value ", newHashv, " old have value ", oldHashv)
 	//avoid the update from kubectl.
-	return newHashv == oldHashv && new.Name == old.Name &&
-		new.Namespace == old.Namespace &&
-		oldGeneration == old.Generation
+	return newHashv == oldHashv &&
+		new.Namespace == old.Namespace /* &&
+		oldGeneration == old.Generation*/
 }
 
 //MergeStatefulSets merge exist statefulset and new statefulset.
