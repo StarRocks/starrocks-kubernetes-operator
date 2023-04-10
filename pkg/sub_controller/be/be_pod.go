@@ -230,6 +230,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 		Tolerations:                   beSpec.Tolerations,
 		ImagePullSecrets:              beSpec.ImagePullSecrets,
 		NodeSelector:                  beSpec.NodeSelector,
+		HostAliases:                   beSpec.HostAliases,
 	}
 
 	annos := make(map[string]string)
