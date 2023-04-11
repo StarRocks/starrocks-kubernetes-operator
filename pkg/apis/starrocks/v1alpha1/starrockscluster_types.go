@@ -305,6 +305,11 @@ type StarRocksFeSpec struct {
 	//+optional
 	//the pod labels for user select or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
+
+	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
+	// file if specified. This is only valid for non-hostNetwork pods.
+	// +optional
+	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
 }
 
 //StarRocksBeSpec defines the desired state of be.
@@ -386,6 +391,11 @@ type StarRocksBeSpec struct {
 
 	//podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
+
+	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
+	// file if specified. This is only valid for non-hostNetwork pods.
+	// +optional
+	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
 }
 
 //StarRocksCnSpec defines the desired state of cn.
@@ -466,6 +476,11 @@ type StarRocksCnSpec struct {
 
 	//podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
+
+	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
+	// file if specified. This is only valid for non-hostNetwork pods.
+	// +optional
+	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
 }
 
 type ConfigMapInfo struct {

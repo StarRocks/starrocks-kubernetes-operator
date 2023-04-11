@@ -188,6 +188,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 		Tolerations:                   cnSpec.Tolerations,
 		ImagePullSecrets:              cnSpec.ImagePullSecrets,
 		NodeSelector:                  cnSpec.NodeSelector,
+		HostAliases:                   cnSpec.HostAliases,
 	}
 	annos := make(map[string]string)
 	//add restart

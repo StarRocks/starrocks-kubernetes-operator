@@ -230,6 +230,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		ImagePullSecrets:              feSpec.ImagePullSecrets,
 		Tolerations:                   feSpec.Tolerations,
 		NodeSelector:                  feSpec.NodeSelector,
+		HostAliases:                   feSpec.HostAliases,
 	}
 
 	annos := make(map[string]string)

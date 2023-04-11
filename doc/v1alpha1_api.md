@@ -1464,6 +1464,21 @@ map[string]string
 <p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>hostAliases</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostalias-v1-core">
+[]Kubernetes core/v1.HostAlias
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
+file if specified. This is only valid for non-hostNetwork pods.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus
@@ -2071,6 +2086,21 @@ map[string]string
 <p>podLabels for user selector or classify pods.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>hostAliases</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostalias-v1-core">
+[]Kubernetes core/v1.HostAlias
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
+file if specified. This is only valid for non-hostNetwork pods.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus
@@ -2451,6 +2481,21 @@ map[string]string
 <td>
 <em>(Optional)</em>
 <p>the pod labels for user select or classify pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hostAliases</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostalias-v1-core">
+[]Kubernetes core/v1.HostAlias
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
+file if specified. This is only valid for non-hostNetwork pods.</p>
 </td>
 </tr>
 </tbody>
