@@ -2,7 +2,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[v1.6](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1..6..v1.5)
+[v1.6.1](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1.6.1...v1.6)
+[Enhancement] support config /etc/hosts.[#83](https://github.com/StarRocks/starrocks-kubernetes-operator/issues/83)
+
+[v1.6](https://github.com/StarRocks/starrocks-kubernetes-operatorr/compare/v1.6...v1.5)
 ## Added
 This version add v1 version for starrockscluster CRD. now v1alpha1 all function added in v1. in future v1alpha1 will verify the new functions, If the function is ok and client like will added to v1.  
 [Feature] support deploy one more starrocks clusters in one namespace.
