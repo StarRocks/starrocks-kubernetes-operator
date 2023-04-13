@@ -1,0 +1,30 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1alpha1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-starrocks-com-v1-starrockscluster
+  failurePolicy: Ignore
+  matchPolicy: Exact
+  name: starrockscluster.starrocks.com
+  rules:
+  - apiGroups:
+    - starrocks.com
+    apiVersions:
+    - v1
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - starrockscluster
+  sideEffects: None

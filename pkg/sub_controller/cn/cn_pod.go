@@ -199,14 +199,9 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 	rutils.Annotations(annos).AddAnnotation(cnSpec.Annotations)
 
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if cnSpec.FsGroup == nil {
+	if cnSpec.FsGroup != nil {
 		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		podSpec.SecurityContext = sc
-	} else if *cnSpec.FsGroup != 0 {
-		sc := &corev1.PodSecurityContext{
+			FSGroup:             cnSpec.FsGroup,
 			RunAsUser:           cnSpec.FsGroup,
 			FSGroupChangePolicy: &onrootMismatch,
 		}

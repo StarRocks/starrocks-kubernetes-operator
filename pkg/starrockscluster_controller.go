@@ -313,6 +313,12 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *StarRocksClusterReconciler) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(&srapi.StarRocksCluster{}).
+		Complete()
+}
+
 //Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	subcs := make(map[string]sub_controller.SubController)
@@ -330,5 +336,12 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	}).SetupWithManager(mgr); err != nil {
 		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
 		os.Exit(1)
+	}
+
+	if os.Getenv("WEBHOOK") == "TRUE" {
+		if err := (&StarRocksClusterReconciler{}).SetupWebhookWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create webhook", "webhook", "StarRocksCluster")
+			os.Exit(1)
+		}
 	}
 }

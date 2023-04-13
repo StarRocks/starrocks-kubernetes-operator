@@ -7,6 +7,8 @@ This operator is developed with [kubebuilder](https://github.com/kubernetes-sigs
 
 This Kubernetes Operator is able to deploy StarRocks' Front End (FE), Back End (BE) and Compute Node (CN) components into your kubernetes environment. These components run in FQDN (fully qualified domain name) mode by default.
 
+Now we support v1 CRD definication, the v1alpha1 is always supported. the different between v1 and v1alpha1 is that the v1 ability is always supported in future, the v1alpha1 some abilities are experimental nature.
+
 ## Requirements
  * kubernetes 1.18+
  * golang 1.18+
