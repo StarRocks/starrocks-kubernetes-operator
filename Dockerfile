@@ -13,7 +13,7 @@ COPY . .
 RUN make test
 
 # Build the binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${BUILDARCH} go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go
 
 FROM starrocks/static-debian11
 
