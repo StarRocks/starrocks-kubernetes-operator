@@ -5,13 +5,13 @@ metadata:
   namespace: starrocks
 spec:
   starRocksFeSpec:
-    image: starrocks/fe-ubuntu:2.5.4
+    image: starrocks.gateway.scarf.sh/starrocks/fe-ubuntu:2.5.4
     replicas: 3
     requests:
       cpu: 4
       memory: 16Gi
   starRocksBeSpec:
-    image: starrocks/be-ubuntu:2.5.4
+    image: starrocks.gateway.scarf.sh/starrocks/be-ubuntu:2.5.4
     replicas: 3
     requests:
       cpu: 4
