@@ -300,7 +300,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, policy srapi.AutoS
 	params := cc.buildCnAutoscalerParams(policy, target, src)
 	autoScaler := rutils.BuildHorizontalPodAutoscaler(params)
 	if err := k8sutils.PatchOrCreate(ctx, cc.k8sclient, autoScaler); err != nil {
-		klog.Errorf("cnController deployAutoscaler failed, namespace=%s,name=%s,version=%s,error=%s", autoScaler.GetNamespace(), autoScaler.GetNamespace(), policy.Version)
+		klog.Errorf("cnController deployAutoscaler failed, namespace=%s,name=%s,version=%s,error=%s", autoScaler.GetNamespace(), autoScaler.GetName(), policy.Version, err.Error())
 		return err
 	}
 
