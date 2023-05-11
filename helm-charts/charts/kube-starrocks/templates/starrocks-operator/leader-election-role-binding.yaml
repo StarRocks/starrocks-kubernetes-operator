@@ -1,0 +1,15 @@
+{{ if and .Values.starrocksOperator.enabled .Values.global.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cn-leader-election-rolebinding
+  namespace: {{ template  "kube-starrocks.operator.namespace" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cn-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: {{ template  "kube-starrocks.operator.serviceAccountName" . }}
+  namespace: {{ template  "kube-starrocks.operator.namespace" . }}
+{{- end }}

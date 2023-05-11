@@ -1,0 +1,13 @@
+{{- if .Values.starrocksCluster.enabledCn }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockscluster.cn.configmap.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "kube-starrocks.name" . }}
+    app: "cn"
+data:
+{{ include "starrockscluster.cn.config" . | indent 2 }}
+
+{{- end }}
