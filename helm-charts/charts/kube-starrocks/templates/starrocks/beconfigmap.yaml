@@ -1,0 +1,14 @@
+{{- if .Values.starrocksBeSpec }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template  "starrockscluster.be.configmap.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "kube-starrocks.name" . }}
+    app: "be"
+data:
+{{ include "starrocksclster.be.config" . | indent 2 }}
+
+{{- end }}
+

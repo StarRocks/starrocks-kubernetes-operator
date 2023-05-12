@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-operator
+  namespace: {{ template "kube-starrocks.operator.namespace" . }}
+  labels:
+    app: {{ template "kube-starrocks.name" . }}-operator
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "kube-starrocks.name" . }}-operator
+      version: {{ $.Chart.Version }}
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app: {{ template "kube-starrocks.name" . }}-operator
+        version: {{ $.Chart.Version }}
+    spec:
+      securityContext:
+        runAsNonRoot: false
+      containers:
+      - command:
+        - /sroperator
+        args:
+        - --leader-elect
+        image: "{{ .Values.starrocksOperator.image.repository }}:{{ .Values.starrocksOperator.image.tag }}"
+        imagePullPolicy: {{ .Values.starrocksOperator.imagePullPolicy }}
+        name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # TODO(user): Configure the resources accordingly based on the project requirements.
+        # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        resources:
+{{ toYaml .Values.starrocksOperator.resources | indent 10 }}
+      serviceAccountName: {{ template "kube-starrocks.operator.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 10

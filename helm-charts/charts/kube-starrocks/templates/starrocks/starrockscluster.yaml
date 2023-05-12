@@ -1,0 +1,200 @@
+apiVersion: starrocks.com/{{ .Values.global.crdVersion }}
+kind: StarRocksCluster
+metadata:
+  name: {{ template "starrockscluster.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+{{- include "kube-starrocks.labels" . | nindent 4 }}
+{{- if .Values.starrocksCluster.annotations }}
+  annotations:
+    {{ toYaml .Values.starrocksCluster.annotations | nindent 4 }}
+{{- end }}
+spec:
+  starRocksFeSpec:
+    image: "{{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}"
+    replicas: {{ .Values.starrocksFESpec.replicas }}
+{{- if .Values.starrocksFESpec.resources }}
+{{ toYaml .Values.starrocksFESpec.resources | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.service.type }}
+    service:
+      type: {{ .Values.starrocksFESpec.service.type }}
+{{- if and (eq "LoadBalancer" .Values.starrocksFESpec.service.type) .Values.starrocksFESpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksFESpec.service.loadbalancerIP }}
+{{- end }}
+{{- end }}
+{{- if .Values.starrocksFESpec.annotations }}
+    annotations:
+{{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.imagePullSecrets }}
+    imagePullSecrets:
+{{toYaml .Values.starrocksFESpec.imagePullSecrets | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.serviceAccount }}
+    serviceAccount: {{ .Values.starrocksFESpec.serviceAccount }}
+{{- end }}
+    fsGroup: {{ .Values.starrocksFESpec.fsGroup }}
+{{- if .Values.starrocksFESpec.nodeSelector }}
+    nodeSelector:
+{{ toYaml .Values.starrocksFESpec.nodeSelector | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.podLabels }}
+    podLabels:
+{{toYaml .Values.starrocksFESpec.podLabels | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.hostAliases }}
+    hostAliases:
+{{toYaml .Values.starrocksFESpec.hostAliases | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.feEnvVars }}
+    feEnvVars:
+{{ toYaml .Values.starrocksFESpec.feEnvVars | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.affinity }}
+    affinity:
+{{ toYaml .Values.starrocksFESpec.affinity | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksFESpec.tolerations }}
+    tolerations:
+{{toYaml .Values.starrocksFESpec.tolerations | indent 4 }}
+{{- end }}
+    configMapInfo:
+      configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
+      resolveKey: fe.conf
+{{- if .Values.starrocksFESpec.storageSpec.name }}
+    storageVolumes:
+    - name: {{ .Values.starrocksFESpec.storageSpec.name }}
+{{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksFESpec.storageSpec.storageSize }}
+      storageSize: {{ .Values.starrocksFESpec.storageSpec.storageSize }}
+{{- end }}
+      mountPath: {{ template "starrockscluster.fe.meta.path" . }}
+{{- end }}
+
+{{- if .Values.starrocksBeSpec }}
+  starRocksBeSpec:
+    image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
+    replicas: {{ .Values.starrocksBeSpec.replicas }}
+{{- if .Values.starrocksBeSpec.resource }}
+{{ toYaml .Values.starrocksBeSpec.resource | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.service.type }}
+    service:
+      type: {{ .Values.starrocksBeSpec.service.type }}
+{{- if and (eq "LoadBalancer" .Values.starrocksBeSpec.service.type) .Values.starrocksBeSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksBeSpec.service.loadbalancerIP }}
+{{- end }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.annotations }}
+    annotations:
+{{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.imagePullSecrets }}
+    imagePullSecrets:
+{{toYaml .Values.starrocksBeSpec.imagePullSecrets | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.serviceAccount }}
+    serviceAccount: {{ .Values.starrocksBeSpec.serviceAccount }}
+{{- end }}
+    fsGroup: {{ .Values.starrocksBeSpec.fsGroup }}
+{{- if .Values.starrocksBeSpec.podLabels }}
+    podLabels:
+{{toYaml .Values.starrocksBeSpec.podLabels | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.hostAliases }}
+    hostAliases:
+{{toYaml .Values.starrocksBeSpec.hostAliases | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.nodeSelector }}
+    nodeSelector:
+{{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.beEnvVars }}
+    beEnvVars:
+{{ toYaml .Values.starrocksBeSpec.beEnvVars | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.affinity }}
+    affinity:
+{{ toYaml .Values.starrocksBeSpec.affinity | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.tolerations }}
+    tolerations:
+{{toYaml .Values.starrocksBeSpec.tolerations | indent 4 }}
+{{- end }}
+    configMapInfo:
+      configMapName: {{template "starrockscluster.be.configmap.name" . }}
+      resolveKey: be.conf
+{{- if .Values.starrocksBeSpec.storageSpec.name }}
+    storageVolumes:
+    - name: {{ .Values.starrocksBeSpec.storageSpec.name }}
+{{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.storageSpec.storageSize }}
+      storageSize: {{ .Values.starrocksBeSpec.storageSpec.storageSize }}
+{{- end }}
+      mountPath: {{template "starrockscluster.be.data.path" . }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.starrocksCluster.enabledCn }}
+  starRocksCnSpec:
+    image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ .Values.starrocksCnSpec.image.tag }}"
+{{- if .Values.starrocksCnSpec.serviceAccount }}
+    serviceAccount: {{ .Values.starrocksCnSpec.serviceAccount }}
+{{- end }}
+    fsGroup: {{ .Values.starrocksCnSpec.fsGroup }}
+{{- if .Values.starrocksCnSpec.podLabels }}
+    podLabels:
+{{toYaml .Values.starrocksCnSpec.podLabels | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.hostAliases }}
+    hostAliases:
+{{toYaml .Values.starrocksCnSpec.hostAliases | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.nodeSelector }}
+    nodeSelector:
+{{ toYaml .Values.starrocksCnSpec.nodeSelector | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.cnEnvVars }}
+    cnEnvVars:
+{{ toYaml .Values.starrocksCnSpec.cnEnvVars | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.affinity }}
+    affinity:
+{{ toYaml .Values.starrocksCnSpec.affinity | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.tolerations }}
+    tolerations:
+{{toYaml .Values.starrocksCnSpec.tolerations | indent 4 }}
+{{- end }}
+{{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
+    autoScalingPolicy:
+{{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.resource }}
+{{ toYaml .Values.starrocksCnSpec.resource | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.service.type }}
+    service:
+      type: {{ .Values.starrocksCnSpec.service.type }}
+{{- if and (eq "LoadBalancer" .Values.starrocksCnSpec.service.type) .Values.starrocksCnSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksCnSpec.service.loadbalancerIP }}
+{{- end }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.annotations }}
+    annotations:
+{{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.imagePullSecrets }}
+    imagePullSecrets:
+{{toYaml .Values.starrocksCnSpec.imagePullSecrets | indent 4 }}
+{{- end }}
+    configMapInfo:
+      configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
+      resolveKey: cn.conf
+{{- end }}
