@@ -4,7 +4,7 @@ The password is empty for the `root` user when deploying a StarRocks cluster fro
 
 In the following examples, `mysql_password` is taken as the password for the root user, it can be replaced with any password chosen for the root.
 
-## Prerequisition
+## Prerequisites
 
 A StarRocks cluster is deployed and up with empty root password by the operator.
 
