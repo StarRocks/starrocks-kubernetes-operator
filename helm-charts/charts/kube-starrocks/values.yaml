@@ -139,6 +139,8 @@ starrocksFESpec:
     storageClassName: ""
     #the persistent volume size default 1 Gi.
     storageSize: 1Gi
+    # Setting this parameter can persist log storage
+    logStorageSize: 1Gi
 
   # the config for start fe. the base information as follows.
   config: |
@@ -150,7 +152,7 @@ starrocksFESpec:
     rpc_port = 9020
     query_port = 9030
     edit_log_port = 9010
-    mysql_service_nio_enabled = true   
+    mysql_service_nio_enabled = true
     sys_log_level = INFO
 
 ## spec for compute node, compute node provide compute function.
@@ -325,7 +327,7 @@ starrocksBeSpec:
   # - ip: "127.0.0.1"
   #   hostnames:
   #   - "example.com"
-  
+
   # Additional be container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # This means you can bind in environment variables from secrets.
@@ -377,6 +379,8 @@ starrocksBeSpec:
     # you must set name when you set storageClassName
     storageClassName: ""
     storageSize: 1Ti
+    # Setting this parameter can persist log storage
+    logStorageSize: 1Gi
 
   # the config for start be. the base information as follows.
   config: |

@@ -65,7 +65,7 @@ spec:
       resolveKey: fe.conf
 {{- if .Values.starrocksFESpec.storageSpec.name }}
     storageVolumes:
-    - name: {{ .Values.starrocksFESpec.storageSpec.name }}
+    - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.meta.suffix" . }}
 {{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}
 {{- end }}
@@ -73,6 +73,16 @@ spec:
       storageSize: {{ .Values.starrocksFESpec.storageSpec.storageSize }}
 {{- end }}
       mountPath: {{ template "starrockscluster.fe.meta.path" . }}
+{{- end }}
+{{- if .Values.starrocksFESpec.storageSpec.logStorageSize }}
+    - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.log.suffix" . }}
+{{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksFESpec.storageSpec.logStorageSize }}
+      storageSize: {{ .Values.starrocksFESpec.storageSpec.logStorageSize }}
+{{- end }}      
+      mountPath: {{ template "starrockscluster.fe.log.path" . }}
 {{- end }}
 
 {{- if .Values.starrocksBeSpec }}
@@ -130,7 +140,7 @@ spec:
       resolveKey: be.conf
 {{- if .Values.starrocksBeSpec.storageSpec.name }}
     storageVolumes:
-    - name: {{ .Values.starrocksBeSpec.storageSpec.name }}
+    - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.data.suffix" . }}
 {{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
 {{- end }}
@@ -138,6 +148,16 @@ spec:
       storageSize: {{ .Values.starrocksBeSpec.storageSpec.storageSize }}
 {{- end }}
       mountPath: {{template "starrockscluster.be.data.path" . }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.storageSpec.logStorageSize }}
+    - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.log.suffix" . }}
+{{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.storageSpec.logStorageSize }}
+      storageSize: {{ .Values.starrocksBeSpec.storageSpec.logStorageSize }}
+{{- end }}
+      mountPath: {{template "starrockscluster.be.log.path" . }}
 {{- end }}
 {{- end }}
 

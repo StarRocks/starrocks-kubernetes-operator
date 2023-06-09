@@ -89,10 +89,34 @@ be.conf: |-
 {{- end }}
 {{- end }}
 
+{{- define "starrockscluster.fe.meta.suffix" -}}
+{{- print "-meta" }}
+{{- end }}
+
 {{- define "starrockscluster.fe.meta.path" -}}
 {{- print "/opt/starrocks/fe/meta" }}
 {{- end }}
 
+{{- define "starrockscluster.fe.log.suffix" -}}
+{{- print "-log" }}
+{{- end }}
+
+{{- define "starrockscluster.fe.log.path" -}}
+{{- print "/opt/starrocks/fe/log" }}
+{{- end }}
+
+{{- define "starrockscluster.be.data.suffix" -}}
+{{- print "-data" }}
+{{- end }}
+
 {{- define "starrockscluster.be.data.path" -}}
 {{- print "/opt/starrocks/be/storage" }}
+{{- end }}
+
+{{- define "starrockscluster.be.log.suffix" -}}
+{{- print "-log" }}
+{{- end }}
+
+{{- define "starrockscluster.be.log.path" -}}
+{{- print "/opt/starrocks/be/log" }}
 {{- end }}
