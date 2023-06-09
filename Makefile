@@ -94,7 +94,7 @@ build: tidy generate fmt vet crd-all ## Build operator binary,name=manager, path
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run -ldflags=$(LDFLAGS) cmd/main.go
 
 .PHONY: docker
 docker: ## use docker build
@@ -112,7 +112,8 @@ endif
 
 .PHONY: install
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+	# if kubectl create command failed, because crd already exists, use kubectl replace instead.
+	$(KUSTOMIZE) build config/crd | kubectl create -f - || $(KUSTOMIZE) build config/crd | kubectl replace -f -
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
