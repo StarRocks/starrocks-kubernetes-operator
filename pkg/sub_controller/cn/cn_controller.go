@@ -108,7 +108,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	//5. create autoscaler.
+	//4. create autoscaler.
 	if cnSpec.AutoScalingPolicy != nil {
 		err = cc.deployAutoScaler(ctx, *cnSpec.AutoScalingPolicy, &st, src)
 	} else {

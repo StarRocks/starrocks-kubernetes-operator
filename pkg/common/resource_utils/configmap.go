@@ -76,5 +76,4 @@ func GetPort(config map[string]interface{}, key string) int32 {
 		}
 	}
 	return defMap[key]
-
 }

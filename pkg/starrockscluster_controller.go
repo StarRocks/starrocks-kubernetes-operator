@@ -81,16 +81,15 @@ type StarRocksClusterReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	klog.FromContext(ctx)
 	klog.Info("StarRocksClusterReconciler reconcile the update crd name ", req.Name, " namespace ", req.Namespace)
 	var esrc srapi.StarRocksCluster
 	err := r.Client.Get(ctx, req.NamespacedName, &esrc)
-	if apierrors.IsNotFound(err) {
-		return ctrl.Result{}, nil
-	}
-
-	if err != nil && !apierrors.IsNotFound(err) {
-		klog.Error(err, " the req kind is not exists ", req.NamespacedName, " name ", req.Name)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+		klog.Errorf("the req kind does not exist, namespacedName = %v, name=%v, error = %v",
+			req.NamespacedName, req.Name, err)
 		return requeueIfError(err)
 	}
 
@@ -135,7 +134,8 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	//subControllers reconcile for create or update sub resource.
 	for _, rc := range r.Scs {
 		if err := rc.Sync(ctx, src); err != nil {
-			klog.Error("StarRocksClusterReconciler reconcile ", " sub resource reconcile failed ", "namespace ", src.Namespace, " name ", src.Name, " controller ", rc.GetControllerName(), " faield ", err)
+			klog.Errorf("StarRocksClusterReconciler reconcile sub resource reconcile failed, "+
+				"namespace=%v, name=%v, controller=%v, error=%v", src.Namespace, src.Name, rc.GetControllerName(), err)
 			return requeueIfError(err)
 		}
 	}
@@ -212,7 +212,7 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context,
 	})
 }
 
-//hash the starrockscluste for check the crd modified or not.
+//hash the starrockscluster for check the crd modified or not.
 func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCluster) string {
 	type hashObject struct {
 		metav1.ObjectMeta

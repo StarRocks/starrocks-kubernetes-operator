@@ -38,7 +38,7 @@ const (
 //fePodLabels generate the fe pod labels and statefulset selector
 func (fc *FeController) fePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := fc.feStatefulsetSelector(src)
-	//podLables for classify. operator use statefulsetSelector for manage pods.
+	//podLabels for classify. operator use statefulsetSelector for manage pods.
 	if src.Spec.StarRocksFeSpec != nil {
 		labels.AddLabel(src.Spec.StarRocksFeSpec.PodLabels)
 	}
