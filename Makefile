@@ -94,7 +94,7 @@ build: tidy generate fmt vet crd-all ## Build operator binary,name=manager, path
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run -ldflags=$(LDFLAGS) cmd/main.go
 
 .PHONY: docker
 docker: ## use docker build
