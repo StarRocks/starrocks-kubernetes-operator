@@ -74,7 +74,7 @@ func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.St
 
 	//if have restart annotation we should exclude it impacts on hash.
 	if equal(st, &est) {
-		klog.Infof("ApplyStatefulSEt Sync exist statefulset name=%s, namespace=%s, equals to new statefuslet.", est.Name, est.Namespace)
+		klog.Infof("ApplyStatefulSet Sync exist statefulset name=%s, namespace=%s, equals to new statefulset.", est.Name, est.Namespace)
 		return nil
 	}
 

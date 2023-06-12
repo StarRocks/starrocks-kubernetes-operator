@@ -57,7 +57,7 @@ func (fc *FeController) GetControllerName() string {
 //Sync starRocksCluster spec to fe statefulset and service.
 func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksFeSpec == nil {
-		klog.Info("FeController Sync ", "the fe component is not needed ", "namespace ", src.Namespace, " starrocks cluster name ", src.Name)
+		klog.Infof("FeController Sync: the fe component is not needed, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
 		return nil
 	}
 
@@ -65,7 +65,9 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//get the fe configMap for resolve ports.
 	config, err := fc.GetFeConfig(ctx, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
-		klog.Error("FeController Sync ", "resolve fe configmap failed, namespace ", src.Namespace, " configmapName ", feSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", feSpec.ConfigMapInfo.ResolveKey, " error ", err)
+		klog.Errorf("FeController Sync: get fe configmap failed, "+
+			"namespace = %v, configmapName = %v, configmapKey = %v, error = %v",
+			src.Namespace, feSpec.ConfigMapInfo.ConfigMapName, feSpec.ConfigMapInfo.ResolveKey, err)
 		return err
 	}
 
@@ -74,7 +76,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//create or update fe external and domain search service, update the status of fe on src.
 	internalService := fc.generateInternalService(src, &svc, config)
 
-	// first deploy statefuslet for compatible v1.5, apply statefulset for update pod.
+	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	st := rutils.NewStatefulset(fc.buildStatefulSetParams(src, config, internalService.Name))
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		//exclude the restart annotation interference,
@@ -231,9 +233,13 @@ func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.Co
 		return make(map[string]interface{}), nil
 	}
 	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sclient, namespace, configMapInfo.ConfigMapName)
-	if err != nil && apierrors.IsNotFound(err) {
-		klog.Info("the FeController get fe config is not exist namespace ", namespace, " configmapName ", configMapInfo.ConfigMapName)
-		return make(map[string]interface{}), nil
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			klog.Infof("the FeController get fe config is not exist, namespace = %s configmapName = %s", namespace, configMapInfo.ConfigMapName)
+			return make(map[string]interface{}), nil
+		}
+		klog.Errorf("error occurred when FeController get fe config, namespace = %s configmapName = %s", namespace, configMapInfo.ConfigMapName)
+		return nil, err
 	}
 
 	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
