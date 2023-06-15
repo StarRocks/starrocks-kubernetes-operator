@@ -20,6 +20,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -99,22 +100,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		})
 	}
 
-	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
-		volMounts = append(volMounts, corev1.VolumeMount{
-			Name:      feSpec.ConfigMapInfo.ConfigMapName,
-			MountPath: fe_config_path,
-		})
-		vols = append(vols, corev1.Volume{
-			Name: feSpec.ConfigMapInfo.ConfigMapName,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: feSpec.ConfigMapInfo.ConfigMapName,
-					},
-				},
-			},
-		})
-	}
+	// mount configmap, secrets to pod if needed
+	vols, volMounts = pod.MountConfigMap(vols, volMounts, feSpec.ConfigMapInfo, fe_config_path)
+	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
 	Envs := []corev1.EnvVar{
 		{

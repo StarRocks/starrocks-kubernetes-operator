@@ -123,7 +123,7 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	return err
 }
 
-//check statefuslet rolling restart is needed.
+//check statefulset rolling restart is needed.
 func (be *BeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
 	srcRestartValue := srcAnnotations[string(srapi.AnnotationBERestartKey)]
 	statefulsetRestartValue := existStatefulsetAnnotations[string(srapi.AnnotationBERestartKey)]

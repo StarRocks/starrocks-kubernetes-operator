@@ -236,7 +236,7 @@ type StarRocksFeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-	//Deprecated, not allow set statefuslet name.
+	//Deprecated, not allow set statefulset name.
 	Name string `json:"name,omitempty"`
 
 	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
