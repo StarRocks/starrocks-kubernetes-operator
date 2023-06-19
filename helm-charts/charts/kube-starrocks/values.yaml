@@ -155,6 +155,12 @@ starrocksFESpec:
     mysql_service_nio_enabled = true
     sys_log_level = INFO
 
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
+
 ## spec for compute node, compute node provide compute function.
 starrocksCnSpec:
   image:
@@ -279,6 +285,12 @@ starrocksCnSpec:
     heartbeat_service_port = 9050
     brpc_port = 8060
 
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
+
 ## spec for component be, be provide storage and compute function.
 starrocksBeSpec:
   ## Number of replicas to deploy for a be statefulset.
@@ -389,3 +401,18 @@ starrocksBeSpec:
     brpc_port = 8060
     sys_log_level = INFO
     default_rowset_type = beta
+
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
+
+# you can create secrets if necessary.
+secrets: []
+# e.g. create my-secret
+#  - name: my-secret
+#    data:
+#      key: |
+#        this is the content of the secret
+#        when mounted, key will be the name of the file
