@@ -60,6 +60,13 @@ spec:
     tolerations:
 {{toYaml .Values.starrocksFESpec.tolerations | indent 4 }}
 {{- end }}
+{{- if .Values.starrocksFESpec.secrets }}
+    secrets:
+    {{- range .Values.starrocksFESpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+    {{- end }}
+{{- end }}
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
@@ -73,7 +80,6 @@ spec:
       storageSize: {{ .Values.starrocksFESpec.storageSpec.storageSize }}
 {{- end }}
       mountPath: {{ template "starrockscluster.fe.meta.path" . }}
-{{- end }}
 {{- if .Values.starrocksFESpec.storageSpec.logStorageSize }}
     - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.log.suffix" . }}
 {{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
@@ -83,6 +89,7 @@ spec:
       storageSize: {{ .Values.starrocksFESpec.storageSpec.logStorageSize }}
 {{- end }}      
       mountPath: {{ template "starrockscluster.fe.log.path" . }}
+{{- end }}
 {{- end }}
 
 {{- if .Values.starrocksBeSpec }}
@@ -135,6 +142,13 @@ spec:
     tolerations:
 {{toYaml .Values.starrocksBeSpec.tolerations | indent 4 }}
 {{- end }}
+{{- if .Values.starrocksBeSpec.secrets }}
+    secrets:
+    {{- range .Values.starrocksBeSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+    {{- end }}
+{{- end }}
     configMapInfo:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
@@ -148,7 +162,6 @@ spec:
       storageSize: {{ .Values.starrocksBeSpec.storageSpec.storageSize }}
 {{- end }}
       mountPath: {{template "starrockscluster.be.data.path" . }}
-{{- end }}
 {{- if .Values.starrocksBeSpec.storageSpec.logStorageSize }}
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.log.suffix" . }}
 {{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
@@ -158,6 +171,7 @@ spec:
       storageSize: {{ .Values.starrocksBeSpec.storageSpec.logStorageSize }}
 {{- end }}
       mountPath: {{template "starrockscluster.be.log.path" . }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -213,6 +227,13 @@ spec:
 {{- if .Values.starrocksCnSpec.imagePullSecrets }}
     imagePullSecrets:
 {{toYaml .Values.starrocksCnSpec.imagePullSecrets | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.secrets }}
+    secrets:
+    {{- range .Values.starrocksCnSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+    {{- end }}
 {{- end }}
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}

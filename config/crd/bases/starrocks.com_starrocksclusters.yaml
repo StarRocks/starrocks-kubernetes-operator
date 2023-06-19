@@ -1156,6 +1156,19 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  secrets:
+                    description: the reference for be secrets.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   service:
                     description: Service defines the template for the associated Kubernetes
                       Service object. the service for user access be.
@@ -3059,6 +3072,19 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  secrets:
+                    description: the reference for cn secrets.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   service:
                     description: Service defines the template for the associated Kubernetes
                       Service object. the service for user access cn.
@@ -4202,7 +4228,7 @@ spec:
                     type: object
                   name:
                     description: name of the starrocks be cluster. Deprecated, not
-                      allow set statefuslet name.
+                      allow set statefulset name.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -4259,6 +4285,19 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  secrets:
+                    description: the reference for fe secrets.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   service:
                     description: Service defines the template for the associated Kubernetes
                       Service object.
@@ -8722,7 +8761,7 @@ spec:
                     type: object
                   name:
                     description: name of the starrocks be cluster. Deprecated, not
-                      allow set statefuslet name.
+                      allow set statefulset name.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:

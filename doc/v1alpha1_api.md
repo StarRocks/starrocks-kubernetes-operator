@@ -2252,7 +2252,7 @@ string
 <td>
 <em>(Optional)</em>
 <p>name of the starrocks be cluster.
-Deprecated, not allow set statefuslet name.</p>
+Deprecated, not allow set statefulset name.</p>
 </td>
 </tr>
 <tr>

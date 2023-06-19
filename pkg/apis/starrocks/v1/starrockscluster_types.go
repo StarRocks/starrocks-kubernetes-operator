@@ -237,7 +237,7 @@ type StarRocksFeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-	//Deprecated, not allow set statefuslet name.
+	//Deprecated, not allow set statefulset name.
 	Name string `json:"name,omitempty"`
 
 	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
@@ -276,6 +276,10 @@ type StarRocksFeSpec struct {
 	//the reference for fe configMap.
 	//+optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
+	//the reference for fe secrets.
+	//+optional
+	Secrets []SecretInfo `json:"secrets,omitempty"`
 
 	//Probe defines the mode probe service in container is alive.
 	//+optional
@@ -357,6 +361,10 @@ type StarRocksBeSpec struct {
 	//the reference for be configMap.
 	//+optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
+	//the reference for be secrets.
+	//+optional
+	Secrets []SecretInfo `json:"secrets,omitempty"`
 
 	//Probe defines the mode probe service in container is alive.
 	//+optional
@@ -444,6 +452,10 @@ type StarRocksCnSpec struct {
 	//+optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
+	//the reference for cn secrets.
+	//+optional
+	Secrets []SecretInfo `json:"secrets,omitempty"`
+
 	//defines the specification of resource cpu and mem.
 	corev1.ResourceRequirements `json:",inline"`
 
@@ -485,6 +497,15 @@ type ConfigMapInfo struct {
 
 	//the config response key in configmap.
 	ResolveKey string `json:"resolveKey,omitempty"`
+}
+
+type SecretInfo struct {
+	// This must match the Name of a Volume.
+	Name string `json:"name,omitempty"`
+
+	// Path within the container at which the volume should be mounted.  Must
+	// not contain ':'.
+	MountPath string `json:"mountPath,omitempty"`
 }
 
 //StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC

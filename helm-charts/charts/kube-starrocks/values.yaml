@@ -63,7 +63,7 @@ starrocksFESpec:
   service:
     # the fe service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
     type: "ClusterIP"
-    # the loadbalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
+    # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
 
   # contains the secret name
@@ -155,6 +155,12 @@ starrocksFESpec:
     mysql_service_nio_enabled = true
     sys_log_level = INFO
 
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
+
 ## spec for compute node, compute node provide compute function.
 starrocksCnSpec:
   image:
@@ -176,7 +182,7 @@ starrocksCnSpec:
   service:
     # the fe service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
     type: "ClusterIP"
-    # the loadbalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
+    # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
 
   # contains the secret name
@@ -279,6 +285,11 @@ starrocksCnSpec:
     heartbeat_service_port = 9050
     brpc_port = 8060
 
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
 
 ## spec for component be, be provide storage and compute function.
 starrocksBeSpec:
@@ -390,3 +401,18 @@ starrocksBeSpec:
     brpc_port = 8060
     sys_log_level = INFO
     default_rowset_type = beta
+
+  # you can mount secrets if necessary.
+  secrets: []
+# e.g. mount my-secret to /etc/my-secret
+#    - name: my-secret
+#      mountPath: /etc/my-secret
+
+# you can create secrets if necessary.
+secrets: []
+# e.g. create my-secret
+#  - name: my-secret
+#    data:
+#      key: |
+#        this is the content of the secret
+#        when mounted, key will be the name of the file
