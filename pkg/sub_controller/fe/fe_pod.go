@@ -23,7 +23,6 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"time"
 )
 
@@ -164,37 +163,10 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		Resources:       feSpec.ResourceRequirements,
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
-		StartupProbe: &corev1.Probe{
-			FailureThreshold: 60,
-			PeriodSeconds:    5,
-			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: rutils.GetPort(feconfig, rutils.HTTP_PORT),
-			}}},
-		},
-		ReadinessProbe: &corev1.Probe{
-			PeriodSeconds:    5,
-			FailureThreshold: 3,
-			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: rutils.GetPort(feconfig, rutils.QUERY_PORT),
-			}}},
-		},
-		LivenessProbe: &corev1.Probe{
-			PeriodSeconds:    5,
-			FailureThreshold: 3,
-			ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: rutils.GetPort(feconfig, rutils.RPC_PORT),
-			}}},
-		},
-		Lifecycle: &corev1.Lifecycle{
-			PreStop: &corev1.LifecycleHandler{
-				Exec: &corev1.ExecAction{
-					Command: []string{"/opt/starrocks/fe_prestop.sh"},
-				},
-			},
-		},
+		StartupProbe:    pod.MakeStartupProbe(rutils.GetPort(feconfig, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.MakeLivenessProbe(rutils.GetPort(feconfig, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.MakeReadinessProbe(rutils.GetPort(feconfig, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
+		Lifecycle:       pod.MakeLifeCycle("/opt/starrocks/fe_prestop.sh"),
 	}
 
 	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
