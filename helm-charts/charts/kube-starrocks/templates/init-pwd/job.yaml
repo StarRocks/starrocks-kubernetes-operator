@@ -1,0 +1,51 @@
+
+{{- if .Values.initPassword.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-credential
+  namespace: {{ .Release.Namespace }}
+stringData:
+  password: {{ .Values.initPassword.password }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: starrocks-initpwd
+  namespace: {{ .Release.Namespace }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: {{ template "kube-starrocks.name" . }}-initpwd
+        image: {{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        args:
+        - /opt/starrocks/fe_initpwd.sh
+        - {{ template "kube-starrocks.name" . }}-fe-0.{{ template "kube-starrocks.name" . }}-fe-search
+        - "9030"
+        - "SET PASSWORD = PASSWORD(''$INIT_PWD'');"
+        env:
+        - name: INIT_PWD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ template "kube-starrocks.name" . }}-credential
+        volumeMounts:
+        - mountPath: /opt/starrocks/fe_initpwd.sh
+          name: fe-initpwd-shell
+          subPath: fe_initpwd.sh
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+            - key: fe_initpwd.sh
+              path: fe_initpwd.sh
+          name: init-pwd-shell
+          optional: false
+        name: fe-initpwd-shell
+      restartPolicy: OnFailure
+  backoffLimit: 10
+{{- end }}

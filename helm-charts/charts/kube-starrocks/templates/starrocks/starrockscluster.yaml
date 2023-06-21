@@ -59,6 +59,14 @@ spec:
     feEnvVars:
 {{ toYaml .Values.starrocksFESpec.feEnvVars | indent 4 }}
 {{- end }}
+{{- if .Values.initPassword.enabled }}
+    feEnvVars: 
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
+{{- end }}
 {{- if .Values.starrocksFESpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksFESpec.affinity | indent 6 }}
@@ -148,6 +156,14 @@ spec:
     beEnvVars:
 {{ toYaml .Values.starrocksBeSpec.beEnvVars | indent 4 }}
 {{- end }}
+{{- if .Values.initPassword.enabled }}
+    beEnvVars: 
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
+{{- end }}
 {{- if .Values.starrocksBeSpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksBeSpec.affinity | indent 6 }}
@@ -214,6 +230,14 @@ spec:
 {{- if .Values.starrocksCnSpec.cnEnvVars }}
     cnEnvVars:
 {{ toYaml .Values.starrocksCnSpec.cnEnvVars | indent 4 }}
+{{- end }}
+{{- if .Values.initPassword.enabled }}
+    cnEnvVars: 
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
 {{- end }}
 {{- if .Values.starrocksCnSpec.affinity }}
     affinity:

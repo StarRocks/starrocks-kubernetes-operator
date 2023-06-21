@@ -14,6 +14,10 @@ global:
 
 # the starrockscluster crd' name.
 nameOverride: ""
+# the starrocks password
+initPassword:
+  enabled: false
+  password: ""
 
 starrocksOperator:
   enabled: true
