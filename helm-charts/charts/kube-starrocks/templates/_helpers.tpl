@@ -69,21 +69,21 @@ starrockscluster
 {{- end }}
 
 {{- define "starrockscluster.fe.config" -}}
-fe.conf: |-
+fe.conf: |
 {{- if .Values.starrocksFESpec.config }}
 {{ .Values.starrocksFESpec.config | indent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.config" -}}
-cn.conf: |-
+cn.conf: |
 {{- if .Values.starrocksCnSpec.config | indent 2 }}
 {{ .Values.starrocksCnSpec.config | indent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrocksclster.be.config" -}}
-be.conf: |-
+be.conf: |
 {{- if .Values.starrocksBeSpec.config | indent 2 }}
 {{ .Values.starrocksBeSpec.config | indent 2 }}
 {{- end }}
