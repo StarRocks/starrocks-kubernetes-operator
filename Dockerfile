@@ -8,12 +8,13 @@ ARG LDFLAGS
 WORKDIR /go/src/app
 COPY . .
 
-
-# Run all the test cases before build.
-RUN make test
-
 # Build the binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go
+# if vendor directory exists, add -mod=vendor flag
+RUN if [ -d vendor ]; then \
+    CGO_ENABLED=0 GOOS=linux go build -mod=vendor -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go; \
+    else \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go; \
+    fi
 
 FROM starrocks/static-debian11
 

@@ -90,7 +90,7 @@ tidy: ## Run go vet against code.
 
 .PHONY: build
 build: tidy generate fmt vet crd-all ## Build operator binary,name=manager, path=bin/ .
-	GOOS=linux GOARCH=amd64 go build -ldflags=$(LDFLAGS) -o bin/sroperator cmd/main.go
+	GOOS=linux go build -ldflags=$(LDFLAGS) -o bin/sroperator cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
