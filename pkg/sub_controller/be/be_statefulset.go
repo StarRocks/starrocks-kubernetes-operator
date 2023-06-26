@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//buildStatefulSetParams generate the params of construct the statefulset.
+// buildStatefulSetParams generate the params of construct the statefulset.
 func (be *BeController) buildStatefulSetParams(src *srapi.StarRocksCluster, beconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
 	beSpec := src.Spec.StarRocksBeSpec
 

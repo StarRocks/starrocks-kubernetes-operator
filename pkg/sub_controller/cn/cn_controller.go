@@ -257,7 +257,7 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	return nil
 }
 
-//updateCnStatus update the src status about cn status.
+// updateCnStatus update the src status about cn status.
 func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, labels map[string]string, namespace string, replicas int32) error {
 	var podList corev1.PodList
 	if err := cc.k8sclient.List(context.Background(), &podList, client.InNamespace(namespace), client.MatchingLabels(labels)); err != nil {
@@ -295,7 +295,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, labels map[s
 	return nil
 }
 
-//Deploy autoscaler
+// Deploy autoscaler
 func (cc *CnController) deployAutoScaler(ctx context.Context, policy srapi.AutoScalingPolicy, target *appv1.StatefulSet, src *srapi.StarRocksCluster) error {
 	params := cc.buildCnAutoscalerParams(policy, target, src)
 	autoScaler := rutils.BuildHorizontalPodAutoscaler(params)
@@ -307,7 +307,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, policy srapi.AutoS
 	return nil
 }
 
-//deleteAutoScaler delete the autoscaler.
+// deleteAutoScaler delete the autoscaler.
 func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Status.StarRocksCnStatus == nil {
 		return nil
@@ -329,7 +329,7 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRoc
 	return nil
 }
 
-//generateInternalService the service for fe communicate with cn.
+// generateInternalService the service for fe communicate with cn.
 func (cc *CnController) generateInternalService(src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
@@ -356,7 +356,7 @@ func (cc *CnController) generateInternalService(src *srapi.StarRocksCluster, ext
 	return searchSvc
 }
 
-//check the fe cluster is ok for add cn node.
+// check the fe cluster is ok for add cn node.
 func (cc *CnController) checkFEOk(ctx context.Context, src *srapi.StarRocksCluster) bool {
 	endpoints := corev1.Endpoints{}
 	//1. wait for fe ok.
@@ -409,7 +409,7 @@ func (cc *CnController) clearFinalizersOnCnResources(ctx context.Context, src *s
 	return cleared, nil
 }
 
-//ClearResources clear the deployed resource about cn. statefulset, services, hpa.
+// ClearResources clear the deployed resource about cn. statefulset, services, hpa.
 func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	//if the starrocks is not have cn.
 	cnStatus := src.Status.StarRocksCnStatus

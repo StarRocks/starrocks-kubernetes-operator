@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//AutoScalingPolicy defines the auto scale
+// AutoScalingPolicy defines the auto scale
 type AutoScalingPolicy struct {
 	//the policy of cn autoscale. operator use autoscaling v2.
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
@@ -53,7 +53,6 @@ const (
 	AutoSclaerV2 AutoScalerVersion = "v2"
 )
 
-//
 type HPAPolicy struct {
 	// +optional
 	// Metrics specifies how to scale based on a single metric
