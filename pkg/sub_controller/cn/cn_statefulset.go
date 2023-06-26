@@ -31,7 +31,7 @@ func (cc *CnController) cnStatefulSetsLabels(src *srapi.StarRocksCluster) rutils
 	return labels
 }
 
-//buildStatefulSetParams generate the params of construct the statefulset.
+// buildStatefulSetParams generate the params of construct the statefulset.
 func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
 	cnSpec := src.Spec.StarRocksCnSpec
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())

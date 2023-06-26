@@ -42,7 +42,7 @@ type FeController struct {
 	feConfig    map[string]interface{}
 }
 
-//New construct a FeController.
+// New construct a FeController.
 func New(k8sclient client.Client, k8sRecorder record.EventRecorder) *FeController {
 	return &FeController{
 		k8sclient:   k8sclient,
@@ -54,7 +54,7 @@ func (fc *FeController) GetControllerName() string {
 	return "feController"
 }
 
-//Sync starRocksCluster spec to fe statefulset and service.
+// Sync starRocksCluster spec to fe statefulset and service.
 func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksFeSpec == nil {
 		klog.Infof("FeController Sync: the fe component is not needed, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
@@ -190,7 +190,7 @@ func (fc *FeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	return nil
 }
 
-//UpdateFeStatus update the starrockscluster fe status.
+// UpdateFeStatus update the starrockscluster fe status.
 func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, labels map[string]string, namespace string, replicas int32) error {
 	var podList corev1.PodList
 	if err := fc.k8sclient.List(context.Background(), &podList, client.InNamespace(namespace), client.MatchingLabels(labels)); err != nil {
@@ -227,7 +227,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, labels map[s
 	return nil
 }
 
-//GetFeConfig get the fe start config.
+// GetFeConfig get the fe start config.
 func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
 		return make(map[string]interface{}), nil
@@ -246,7 +246,7 @@ func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.Co
 	return res, err
 }
 
-//ClearResources clear resource about fe.
+// ClearResources clear resource about fe.
 func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	//if the starrocks is not have fe.
 	if src.Status.StarRocksFeStatus == nil {
@@ -281,7 +281,7 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return true, nil
 }
 
-//clearFinalizersOnFeResources if resources have finalizers delete it or return true.
+// clearFinalizersOnFeResources if resources have finalizers delete it or return true.
 func (fc *FeController) clearFinalizersOnFeResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	cleared := true
 	var err error
@@ -309,8 +309,8 @@ func (fc *FeController) clearFinalizersOnFeResources(ctx context.Context, src *s
 	return cleared, nil
 }
 
-//getSearchServiceName get the domain service name, the domain service for statefulset.
-//domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
+// getSearchServiceName get the domain service name, the domain service for statefulset.
+// domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
 func (fc *FeController) getSearchServiceName(src *srapi.StarRocksCluster) string {
 	return src.Name + "-fe" + FE_SEARCH_SUFFIX
 }

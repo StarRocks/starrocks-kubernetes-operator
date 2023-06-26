@@ -9,7 +9,7 @@ func (cc *CnController) generateServiceSelector(src *srapi.StarRocksCluster) rut
 	return cc.cnStatefulsetSelector(src)
 }
 
-//generateServiceLabels generate service labels for user.
+// generateServiceLabels generate service labels for user.
 func (cc *CnController) generateServiceLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name

@@ -123,7 +123,7 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	return err
 }
 
-//check statefulset rolling restart is needed.
+// check statefulset rolling restart is needed.
 func (be *BeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
 	srcRestartValue := srcAnnotations[string(srapi.AnnotationBERestartKey)]
 	statefulsetRestartValue := existStatefulsetAnnotations[string(srapi.AnnotationBERestartKey)]
@@ -283,7 +283,7 @@ func (be *BeController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 	return res, err
 }
 
-//updateCnStatus update the src status about cn status.
+// updateCnStatus update the src status about cn status.
 func (be *BeController) updateBeStatus(bs *srapi.StarRocksBeStatus, labels map[string]string, namespace string, replicas int32) error {
 	var podList corev1.PodList
 	if err := be.k8sclient.List(context.Background(), &podList, client.InNamespace(namespace), client.MatchingLabels(labels)); err != nil {

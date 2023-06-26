@@ -54,7 +54,7 @@ func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) client.Object {
 	}
 }
 
-//build v1 autoscaler
+// build v1 autoscaler
 func buildAutoscalerV1(pap *PodAutoscalerParams) *v1.HorizontalPodAutoscaler {
 	ha := &v1.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
@@ -82,7 +82,7 @@ func buildAutoscalerV1(pap *PodAutoscalerParams) *v1.HorizontalPodAutoscaler {
 	return ha
 }
 
-//build AutoscalerV2beta2
+// build AutoscalerV2beta2
 func buildAutoscalerV2beta2(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAutoscaler {
 	ha := &v2beta2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{

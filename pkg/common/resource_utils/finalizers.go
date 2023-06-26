@@ -23,7 +23,7 @@ func (fs Finalizers) AddFinalizer(finalizer string) Finalizers {
 
 func (fs Finalizers) DeleteFinalizer(finalizer string) Finalizers {
 	index := -1
-	for i, _ := range fs {
+	for i := range fs {
 		if fs[i] == finalizer {
 			index = i
 			break

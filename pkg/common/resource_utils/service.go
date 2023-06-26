@@ -17,7 +17,7 @@ const (
 	CnService = "cn"
 )
 
-//HashService service hash components
+// HashService service hash components
 type hashService struct {
 	name      string
 	namespace string
@@ -28,7 +28,7 @@ type hashService struct {
 	labels map[string]string
 }
 
-//BuildExternalService build the external service. not have selector
+// BuildExternalService build the external service. not have selector
 func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
 	//the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
