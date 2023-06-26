@@ -36,7 +36,7 @@ const (
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//bePodLabels
+// bePodLabels
 func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := be.beStatefulsetSelector(src)
 	//podLables for classify. operator use statefulsetSelector for manage pods.
@@ -47,7 +47,7 @@ func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	return labels
 }
 
-//buildPodTemplate construct the podTemplate for deploy cn.
+// buildPodTemplate construct the podTemplate for deploy cn.
 func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
@@ -190,6 +190,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 		ImagePullSecrets:              beSpec.ImagePullSecrets,
 		NodeSelector:                  beSpec.NodeSelector,
 		HostAliases:                   beSpec.HostAliases,
+		SchedulerName:                 beSpec.SchedulerName,
 	}
 
 	annos := make(map[string]string)

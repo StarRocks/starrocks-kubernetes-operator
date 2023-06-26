@@ -34,7 +34,7 @@ const (
 	env_cn_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//buildPodTemplate construct the podTemplate for deploy cn.
+// buildPodTemplate construct the podTemplate for deploy cn.
 func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
@@ -146,6 +146,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 		ImagePullSecrets:              cnSpec.ImagePullSecrets,
 		NodeSelector:                  cnSpec.NodeSelector,
 		HostAliases:                   cnSpec.HostAliases,
+		SchedulerName:                 cnSpec.SchedulerName,
 	}
 	annos := make(map[string]string)
 	//add restart
