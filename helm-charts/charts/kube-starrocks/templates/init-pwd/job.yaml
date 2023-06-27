@@ -26,6 +26,7 @@ spec:
         - /opt/starrocks/fe_initpwd.sh
         - {{ template "kube-starrocks.name" . }}-fe-0.{{ template "kube-starrocks.name" . }}-fe-search
         - "9030"
+<<<<<<< HEAD:helm-charts/charts/kube-starrocks/templates/init-pwd/job.yaml
         - "SET PASSWORD = PASSWORD(''$INIT_PWD'');"
         env:
         - name: INIT_PWD
@@ -33,6 +34,9 @@ spec:
             secretKeyRef:
               key: password
               name: {{ template "kube-starrocks.name" . }}-credential
+=======
+        - "SET PASSWORD = PASSWORD('{{ .Values.initPassword.password }}');"
+>>>>>>> 2c3afa7... 在初始化密码时，增加状态判断能力，当链接不通时才进行重试，当发现时密码错误时，认为上一次尝试修改密码已成功:helm-charts/charts/kube-starrocks/templates/init-pwd/initpwd.yaml
         volumeMounts:
         - mountPath: /opt/starrocks/fe_initpwd.sh
           name: fe-initpwd-shell
@@ -46,6 +50,10 @@ spec:
           name: init-pwd-shell
           optional: false
         name: fe-initpwd-shell
+<<<<<<< HEAD:helm-charts/charts/kube-starrocks/templates/init-pwd/job.yaml
+=======
+
+>>>>>>> 2c3afa7... 在初始化密码时，增加状态判断能力，当链接不通时才进行重试，当发现时密码错误时，认为上一次尝试修改密码已成功:helm-charts/charts/kube-starrocks/templates/init-pwd/initpwd.yaml
       restartPolicy: OnFailure
   backoffLimit: 10
 {{- end }}

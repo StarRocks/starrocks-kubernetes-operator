@@ -7,6 +7,7 @@ data:
   fe_initpwd.sh: |-
     #!/bin/bash
 
+<<<<<<< HEAD
     # ensure `mysql` command can be ended with 30 seconds
     # Change the root password during initial installation
     success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$3" 2>&1`
@@ -30,4 +31,26 @@ data:
 
     echo "Successfully modified password"
     exit 0
+=======
+    # ensure `mysql` command can be ended with 15 seconds
+    # Change the root password during initial installation
+    success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$3" 2>&1`
+
+    if [ $? != 0 ] ; then
+    echo $success
+    errcode=`echo $success | awk -F " " '{print $2}'`
+    echo $errcode
+
+    # Password error, believed to have been changed, exiting normally
+    if [ $errcode = '1045' ] ; then
+    exit 0
+    fi
+
+    # connect unsuccessful, abnormal exit
+    if [ $errcode = '2003' ]  ; then
+    exit 1
+    fi
+
+    fi
+>>>>>>> 2c3afa7... 在初始化密码时，增加状态判断能力，当链接不通时才进行重试，当发现时密码错误时，认为上一次尝试修改密码已成功
 
