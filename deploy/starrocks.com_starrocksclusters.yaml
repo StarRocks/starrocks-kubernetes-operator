@@ -556,6 +556,10 @@ spec:
                     type: array
                   service:
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
                       loadBalancerIP:
                         type: string
                       name:
@@ -1461,6 +1465,10 @@ spec:
                     type: array
                   service:
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
                       loadBalancerIP:
                         type: string
                       name:
@@ -2020,6 +2028,10 @@ spec:
                     type: array
                   service:
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
                       loadBalancerIP:
                         type: string
                       name:

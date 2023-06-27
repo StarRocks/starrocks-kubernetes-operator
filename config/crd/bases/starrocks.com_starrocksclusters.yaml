@@ -1177,6 +1177,11 @@ spec:
                     description: Service defines the template for the associated Kubernetes
                       Service object. the service for user access be.
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations store Kubernetes Service annotations.
+                        type: object
                       loadBalancerIP:
                         description: 'Only applies to Service Type: LoadBalancer.
                           This feature depends on whether the underlying cloud-provider
@@ -3097,6 +3102,11 @@ spec:
                     description: Service defines the template for the associated Kubernetes
                       Service object. the service for user access cn.
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations store Kubernetes Service annotations.
+                        type: object
                       loadBalancerIP:
                         description: 'Only applies to Service Type: LoadBalancer.
                           This feature depends on whether the underlying cloud-provider
@@ -4314,6 +4324,11 @@ spec:
                     description: Service defines the template for the associated Kubernetes
                       Service object.
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations store Kubernetes Service annotations.
+                        type: object
                       loadBalancerIP:
                         description: 'Only applies to Service Type: LoadBalancer.
                           This feature depends on whether the underlying cloud-provider
