@@ -1156,6 +1156,10 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  schedulerName:
+                    description: SchedulerName is the name of the kubernetes scheduler
+                      that will be used to schedule the pods.
+                    type: string
                   secrets:
                     description: the reference for be secrets.
                     items:
@@ -3072,6 +3076,10 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  schedulerName:
+                    description: SchedulerName is the name of the kubernetes scheduler
+                      that will be used to schedule the pods.
+                    type: string
                   secrets:
                     description: the reference for cn secrets.
                     items:
@@ -4285,6 +4293,10 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  schedulerName:
+                    description: SchedulerName is the name of the kubernetes scheduler
+                      that will be used to schedule the pods.
+                    type: string
                   secrets:
                     description: the reference for fe secrets.
                     items:

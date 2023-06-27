@@ -48,6 +48,9 @@ spec:
     hostAliases:
 {{toYaml .Values.starrocksFESpec.hostAliases | indent 4 }}
 {{- end }}
+{{- if .Values.starrocksFESpec.schedulerName }}
+    schedulerName: {{ .Values.starrocksFESpec.schedulerName }}
+{{- end }}
 {{- if .Values.starrocksFESpec.feEnvVars }}
     feEnvVars:
 {{ toYaml .Values.starrocksFESpec.feEnvVars | indent 4 }}
@@ -126,6 +129,9 @@ spec:
     hostAliases:
 {{toYaml .Values.starrocksBeSpec.hostAliases | indent 4 }}
 {{- end }}
+{{- if .Values.starrocksBeSpec.schedulerName }}
+    schedulerName: {{ .Values.starrocksBeSpec.schedulerName }}
+{{- end }}
 {{- if .Values.starrocksBeSpec.nodeSelector }}
     nodeSelector:
 {{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
@@ -189,6 +195,9 @@ spec:
 {{- if .Values.starrocksCnSpec.hostAliases }}
     hostAliases:
 {{toYaml .Values.starrocksCnSpec.hostAliases | indent 4 }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.schedulerName }}
+    schedulerName: {{ .Values.starrocksCnSpec.schedulerName }}
 {{- end }}
 {{- if .Values.starrocksCnSpec.nodeSelector }}
     nodeSelector:

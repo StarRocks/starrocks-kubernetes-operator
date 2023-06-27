@@ -88,6 +88,9 @@ starrocksFESpec:
   #   hostnames:
   #   - "example.com"
 
+  # schedulerName allows you to specify which scheduler will be used for your pods.
+  schedulerName: ""
+
   # Additional fe container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # This means you can bind in environment variables from secrets.
@@ -206,6 +209,9 @@ starrocksCnSpec:
   # - ip: "127.0.0.1"
   #   hostnames:
   #   - "example.com"
+
+  # schedulerName allows you to specify which scheduler will be used for the pod
+  schedulerName: ""
 
   # Additional cn container environment variables
   # You specify this manually like you would a raw deployment manifest.
@@ -339,6 +345,9 @@ starrocksBeSpec:
   #   hostnames:
   #   - "example.com"
 
+  # schedulerName allows you to specify which scheduler will be used for the pod
+  schedulerName: ""
+
   # Additional be container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # This means you can bind in environment variables from secrets.
@@ -386,7 +395,7 @@ starrocksBeSpec:
   storageSpec:
     # the name of volume for mount. if not will use emptyDir.
     name: ""
-    # the storageClassName represent the used storageclss name. if not set will use k8s cluster default storageclass.
+    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # you must set name when you set storageClassName
     storageClassName: ""
     storageSize: 1Ti

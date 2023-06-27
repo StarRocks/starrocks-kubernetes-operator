@@ -55,10 +55,10 @@ type StarRocksClusterStatus struct {
 	StarRocksCnStatus *StarRocksCnStatus `json:"starRocksCnStatus,omitempty"`
 }
 
-//represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
+// represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
 type ClusterPhase string
 
-//represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.
+// represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.
 type MemberPhase string
 
 const (
@@ -84,7 +84,7 @@ const (
 	ComponentRunning MemberPhase = "running"
 )
 
-//AnnotationOperationValue present the operation for fe, cn, be.
+// AnnotationOperationValue present the operation for fe, cn, be.
 type AnnotationOperationValue string
 
 const (
@@ -96,7 +96,7 @@ const (
 	AnnotationRestarting AnnotationOperationValue = "restarting"
 )
 
-//Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.
+// Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.
 type AnnotationOperationKey string
 
 const (
@@ -110,7 +110,7 @@ const (
 	AnnotationCNRestartKey AnnotationOperationKey = "app.starrocks.cn.io/restart"
 )
 
-//StarRocksFeStatus represents the status of starrocks fe.
+// StarRocksFeStatus represents the status of starrocks fe.
 type StarRocksFeStatus struct {
 	//the name of fe service exposed for user.
 	ServiceName string `json:"serviceName,omitempty"`
@@ -203,14 +203,14 @@ type StarRocksCnStatus struct {
 }
 
 // StarRocksCluster defines a starrocks cluster deployment.
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:shortName=src
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
-//+kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
-//+kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
-//+kubebuilder:storageversion
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:shortName=src
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
+// +kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
+// +kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
+// +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient
 type StarRocksCluster struct {
@@ -232,7 +232,7 @@ const (
 	CommandProbeType string = "command"
 )
 
-//StarRocksFeSpec defines the desired state of fe.
+// StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
 	//name of the starrocks be cluster.
 	//+optional
@@ -313,9 +313,13 @@ type StarRocksFeSpec struct {
 	// file if specified. This is only valid for non-hostNetwork pods.
 	// +optional
 	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
+
+	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
+	// +optional
+	SchedulerName string `json:"schedulerName,omitempty"`
 }
 
-//StarRocksBeSpec defines the desired state of be.
+// StarRocksBeSpec defines the desired state of be.
 type StarRocksBeSpec struct {
 	//Replicas is the number of desired be Pod. the default value=3
 	// Optional
@@ -402,9 +406,13 @@ type StarRocksBeSpec struct {
 	// file if specified. This is only valid for non-hostNetwork pods.
 	// +optional
 	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
+
+	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
+	// +optional
+	SchedulerName string `json:"schedulerName,omitempty"`
 }
 
-//StarRocksCnSpec defines the desired state of cn.
+// StarRocksCnSpec defines the desired state of cn.
 type StarRocksCnSpec struct {
 	//name of the starrocks cn cluster.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
@@ -489,6 +497,10 @@ type StarRocksCnSpec struct {
 	// file if specified. This is only valid for non-hostNetwork pods.
 	// +optional
 	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
+
+	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
+	// +optional
+	SchedulerName string `json:"schedulerName,omitempty"`
 }
 
 type ConfigMapInfo struct {
@@ -508,7 +520,7 @@ type SecretInfo struct {
 	MountPath string `json:"mountPath,omitempty"`
 }
 
-//StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
+// StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
 type StorageVolume struct {
 	//name of a storage volume.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
@@ -569,7 +581,7 @@ type StarRocksServicePort struct {
 	NodePort int32 `json:"nodePort,omitempty"`
 }
 
-//StarRocksProbe defines the mode for probe be alive.
+// StarRocksProbe defines the mode for probe be alive.
 type StarRocksProbe struct {
 	//Type identifies the mode of probe main container
 	// +kubebuilder:validation:Enum=tcp;command
@@ -589,7 +601,7 @@ type StarRocksProbe struct {
 }
 
 // StarRocksClusterList contains a list of StarRocksCluster
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 type StarRocksClusterList struct {

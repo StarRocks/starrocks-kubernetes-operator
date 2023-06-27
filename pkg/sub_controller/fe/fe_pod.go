@@ -35,7 +35,7 @@ const (
 	env_fe_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-//fePodLabels generate the fe pod labels and statefulset selector
+// fePodLabels generate the fe pod labels and statefulset selector
 func (fc *FeController) fePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := fc.feStatefulsetSelector(src)
 	//podLabels for classify. operator use statefulsetSelector for manage pods.
@@ -45,7 +45,7 @@ func (fc *FeController) fePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	return labels
 }
 
-//buildPodTemplate construct the podTemplate for deploy fe.
+// buildPodTemplate construct the podTemplate for deploy fe.
 func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
@@ -191,6 +191,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, feconfig m
 		Tolerations:                   feSpec.Tolerations,
 		NodeSelector:                  feSpec.NodeSelector,
 		HostAliases:                   feSpec.HostAliases,
+		SchedulerName:                 feSpec.SchedulerName,
 	}
 
 	annos := make(map[string]string)
