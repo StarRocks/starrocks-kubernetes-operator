@@ -23,7 +23,7 @@ import (
 	"strconv"
 )
 
-//the fe ports key
+// the fe ports key
 const (
 	HTTP_PORT     = "http_port"
 	RPC_PORT      = "rpc_port"
@@ -31,7 +31,7 @@ const (
 	EDIT_LOG_PORT = "edit_log_port"
 )
 
-//the cn or be ports key
+// the cn or be ports key
 const (
 	THRIFT_PORT            = "thrift_port"
 	BE_PORT                = "be_port"
@@ -68,7 +68,7 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 	return viper.AllSettings(), nil
 }
 
-//getPort get ports from config file.
+// getPort get ports from config file.
 func GetPort(config map[string]interface{}, key string) int32 {
 	if v, ok := config[key]; ok {
 		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {

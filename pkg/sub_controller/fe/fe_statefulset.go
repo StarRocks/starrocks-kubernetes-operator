@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//buildStatefulSetParams generate the params of construct the statefulset.
+// buildStatefulSetParams generate the params of construct the statefulset.
 func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
 	feSpec := src.Spec.StarRocksFeSpec
 	var pvcs []corev1.PersistentVolumeClaim
@@ -69,7 +69,7 @@ func (fc *FeController) buildStatefulSetParams(src *srapi.StarRocksCluster, feco
 	}
 }
 
-//try not to modify the labels, as the statefulset don't alloy do it.
+// try not to modify the labels, as the statefulset don't alloy do it.
 func (fc *FeController) feStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name

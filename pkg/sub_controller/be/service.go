@@ -10,7 +10,7 @@ func (be *BeController) generateServiceSelector(src *srapi.StarRocksCluster) rut
 	return be.beStatefulsetSelector(src)
 }
 
-//generateServiceLabels generate service labels for user.
+// generateServiceLabels generate service labels for user.
 func (be *BeController) generateServiceLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name

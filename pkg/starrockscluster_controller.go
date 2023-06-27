@@ -167,7 +167,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return ctrl.Result{}, r.UpdateStarRocksClusterStatus(ctx, src)
 }
 
-//UpdateStarRocksClusterStatus update the status of src.
+// UpdateStarRocksClusterStatus update the status of src.
 func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
@@ -180,7 +180,7 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 	})
 }
 
-//PatchStarRocksCluster patch spec, metadata
+// PatchStarRocksCluster patch spec, metadata
 func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	klog.Info("StarRocksClusterReconciler reconcile ", "namespace ", src.Namespace, " name ", src.Name)
 
@@ -196,7 +196,7 @@ func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, 
 	})
 }
 
-//UpdateStarRocksCluster udpate the starrockscluster metadata, spec.
+// UpdateStarRocksCluster udpate the starrockscluster metadata, spec.
 func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
@@ -212,7 +212,7 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context,
 	})
 }
 
-//hash the starrockscluster for check the crd modified or not.
+// hash the starrockscluster for check the crd modified or not.
 func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCluster) string {
 	type hashObject struct {
 		metav1.ObjectMeta
@@ -226,7 +226,7 @@ func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCl
 	return hash.HashObject(ho)
 }
 
-//CleanSubResources clean all sub resources ownerreference to src.
+// CleanSubResources clean all sub resources ownerreference to src.
 func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	var cleanErr error
 	res := true
@@ -248,7 +248,7 @@ func (r *StarRocksClusterReconciler) updateOperationStatus(src *srapi.StarRocksC
 	}
 }
 
-//checks if user have restart service need.
+// checks if user have restart service need.
 func (r *StarRocksClusterReconciler) haveRestartOperation(annos map[string]string) bool {
 
 	if v, ok := annos[string(srapi.AnnotationBERestartKey)]; ok {
@@ -313,7 +313,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-//Init initial the StarRocksClusterReconciler for reconcile.
+// Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	subcs := make(map[string]sub_controller.SubController)
 	fc := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor(feControllerName))

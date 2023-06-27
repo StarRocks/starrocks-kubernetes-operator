@@ -9,7 +9,7 @@ func (fc *FeController) generateServiceSelector(src *srapi.StarRocksCluster) rut
 	return fc.fePodLabels(src)
 }
 
-//GenerateServiceLabels generate service labels for user list.
+// GenerateServiceLabels generate service labels for user list.
 func (fc *FeController) generateServiceLabels(src *srapi.StarRocksCluster) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[srapi.OwnerReference] = src.Name

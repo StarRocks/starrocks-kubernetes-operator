@@ -30,7 +30,7 @@ type StatefulSetParams struct {
 	VolumeClaimTemplates []corev1.PersistentVolumeClaim
 }
 
-//NewStatefulset  statefulset
+// NewStatefulset  statefulset
 func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 	//
 	//TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
@@ -65,7 +65,7 @@ func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
 	return st
 }
 
-//hashStatefulsetObject contains the info for hash comparison.
+// hashStatefulsetObject contains the info for hash comparison.
 type hashStatefulsetObject struct {
 	name                 string
 	namespace            string
@@ -77,7 +77,7 @@ type hashStatefulsetObject struct {
 	replicas             int32
 }
 
-//StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
+// StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
 func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	//set -1 for the initial is zero.
 	replicas := int32(-1)
@@ -103,7 +103,7 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 	}
 }
 
-//StatefulSetDeepEqual judge two statefulset equal or not.
+// StatefulSetDeepEqual judge two statefulset equal or not.
 func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
@@ -139,7 +139,7 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 		oldGeneration == old.Generation*/
 }
 
-//MergeStatefulSets merge exist statefulset and new statefulset.
+// MergeStatefulSets merge exist statefulset and new statefulset.
 func MergeStatefulSets(new *appv1.StatefulSet, old appv1.StatefulSet) {
 	MergeMetadata(&new.ObjectMeta, old.ObjectMeta)
 }

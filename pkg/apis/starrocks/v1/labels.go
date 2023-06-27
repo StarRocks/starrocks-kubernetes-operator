@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1
 
-//the labels key
+// the labels key
 const (
 	// ComponentLabelKey is Kubernetes recommended label key, it represents the component within the architecture
 	ComponentLabelKey string = "app.kubernetes.io/component"
@@ -35,14 +35,14 @@ const (
 	//ComponentGeneration string = "app.starrocks.components/generation"
 )
 
-//the labels value. default statefulset name
+// the labels value. default statefulset name
 const (
 	DEFAULT_FE = "fe"
 	DEFAULT_BE = "be"
 	DEFAULT_CN = "cn"
 )
 
-//config value
+// config value
 const (
 	DEFAULT_FE_CONFIG_NAME = "fe-config"
 
@@ -56,7 +56,7 @@ const (
 	DEFAULT_START_SCRIPT_PATH = ""
 )
 
-//the env of container
+// the env of container
 const (
 	COMPONENT_NAME      = "COMPONENT_NAME"
 	FE_SERVICE_NAME     = "FE_SERVICE_NAME"

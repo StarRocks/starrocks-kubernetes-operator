@@ -56,7 +56,7 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 	return PatchClientObject(ctx, k8sclient, svc)
 }
 
-//ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
+// ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
 func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.StatefulSet, equal StatefulSetEqual) error {
 	var est appv1.StatefulSet
 	err := k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
@@ -98,7 +98,7 @@ func UpdateClientObject(ctx context.Context, k8sclient client.Client, object cli
 	return nil
 }
 
-//PatchClientObject patch object when the object exist. if not return error.
+// PatchClientObject patch object when the object exist. if not return error.
 func PatchClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
 	klog.V(4).Infof("patch resource namespace=%s,name=%s,kind=%s.", object.GetNamespace(), object.GetName(), object.GetObjectKind())
 	if err := k8sclient.Patch(ctx, object, client.Merge); err != nil {
@@ -108,7 +108,7 @@ func PatchClientObject(ctx context.Context, k8sclient client.Client, object clie
 	return nil
 }
 
-//PatchOrCreate patch object if not exist create object.
+// PatchOrCreate patch object if not exist create object.
 func PatchOrCreate(ctx context.Context, k8sclient client.Client, object client.Object) error {
 	klog.V(4).Infof("patch or create resource namespace=%s,name=%s,kind=%s.", object.GetNamespace(), object.GetName(), object.GetObjectKind())
 	if err := k8sclient.Patch(ctx, object, client.Merge); apierrors.IsNotFound(err) {
@@ -127,7 +127,7 @@ func DeleteClientObject(ctx context.Context, k8sclient client.Client, object cli
 	return nil
 }
 
-//DeleteStatefulset delete statefulset.
+// DeleteStatefulset delete statefulset.
 func DeleteStatefulset(ctx context.Context, k8sclient client.Client, namespace, name string) error {
 	var st appv1.StatefulSet
 	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &st); apierrors.IsNotFound(err) {
@@ -139,7 +139,7 @@ func DeleteStatefulset(ctx context.Context, k8sclient client.Client, namespace, 
 	return k8sclient.Delete(ctx, &st)
 }
 
-//DeleteService delete service.
+// DeleteService delete service.
 func DeleteService(ctx context.Context, k8sclient client.Client, namespace, name string) error {
 	var svc corev1.Service
 	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &svc); apierrors.IsNotFound(err) {
@@ -151,7 +151,7 @@ func DeleteService(ctx context.Context, k8sclient client.Client, namespace, name
 	return k8sclient.Delete(ctx, &svc)
 }
 
-//DeleteAutoscaler as version type delete response autoscaler.
+// DeleteAutoscaler as version type delete response autoscaler.
 func DeleteAutoscaler(ctx context.Context, k8sclient client.Client, namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
 	var autoscaler client.Object
 	switch autoscalerVersion {
@@ -188,7 +188,7 @@ func PodIsReady(status *corev1.PodStatus) bool {
 	return true
 }
 
-//GetConfigMap get the configmap name=name, namespace=namespace.
+// GetConfigMap get the configmap name=name, namespace=namespace.
 func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name string) (*corev1.ConfigMap, error) {
 	var configMap corev1.ConfigMap
 	if err := k8scient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &configMap); err != nil {
@@ -198,7 +198,7 @@ func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name s
 	return &configMap, nil
 }
 
-//check the statefulset finalizers exist. if exist, clear all finalizers.
+// check the statefulset finalizers exist. if exist, clear all finalizers.
 func ClearFinalizersOnStatefulset(ctx context.Context, k8sclient client.Client, namespace, name string) (bool, error) {
 	var st appv1.StatefulSet
 	if err := k8sclient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &st); err != nil && !apierrors.IsNotFound(err) {
@@ -213,7 +213,7 @@ func ClearFinalizersOnStatefulset(ctx context.Context, k8sclient client.Client, 
 	return false, UpdateClientObject(ctx, k8sclient, &st)
 }
 
-//ClearFinalizersOnServices clear finalizers on service.
+// ClearFinalizersOnServices clear finalizers on service.
 func ClearFinalizersOnServices(ctx context.Context, k8sclient client.Client, namespace string, names []string) (bool, error) {
 	cleared := true
 	for _, name := range names {
