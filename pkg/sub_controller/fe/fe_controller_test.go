@@ -219,4 +219,6 @@ func Test_SyncDeploy(t *testing.T) {
 	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: fc.getSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, fc.getSearchServiceName(src), rsvc.Name)
 	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.FeStatefulSetName(src), Namespace: "default"}, &st))
+	// validate service selector matches statefulset selector
+	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

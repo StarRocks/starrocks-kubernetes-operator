@@ -201,4 +201,5 @@ func Test_Sync(t *testing.T) {
 	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
 	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.CnStatefulSetName(src), Namespace: "default"}, &st))
+	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

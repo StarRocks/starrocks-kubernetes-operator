@@ -6,7 +6,7 @@ import (
 )
 
 func (fc *FeController) generateServiceSelector(src *srapi.StarRocksCluster) rutils.Labels {
-	return fc.fePodLabels(src)
+	return fc.feStatefulsetSelector(src)
 }
 
 // GenerateServiceLabels generate service labels for user list.

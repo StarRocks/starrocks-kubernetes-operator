@@ -224,4 +224,5 @@ func Test_Sync(t *testing.T) {
 	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: bc.getBeSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, bc.getBeSearchServiceName(src), rsvc.Name)
 	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.BeStatefulSetName(src), Namespace: "default"}, &st))
+	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
