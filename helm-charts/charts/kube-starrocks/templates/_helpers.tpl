@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "kube-starrocks.name" -}}
-{{- default .Chart.Name .Values.nameOverride -}}
+{{- .Chart.Name }}
 {{- end }}
 
 

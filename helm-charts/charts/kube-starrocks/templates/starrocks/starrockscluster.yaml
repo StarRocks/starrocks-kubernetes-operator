@@ -20,8 +20,8 @@ spec:
 {{- if .Values.starrocksFESpec.service.type }}
     service:
       type: {{ .Values.starrocksFESpec.service.type }}
-{{- if and (eq "LoadBalancer" .Values.starrocksFESpec.service.type) .Values.starrocksFESpec.service.loadbalancerIP }}
-      loadBalancerIP: {{ .Values.starrocksFESpec.service.loadbalancerIP }}
+{{- if and (eq "LoadBalancer" .Values.starrocksFESpec.service.type) .Values.starrocksFESpec.service.loadBalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksFESpec.service.loadBalancerIP }}
 {{- end }}
 {{- if .Values.starrocksFESpec.service.annotations }}
       annotations:
