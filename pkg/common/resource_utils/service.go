@@ -2,7 +2,6 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,11 +43,13 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 	}
 	svc.Finalizers = append(svc.Finalizers, srapi.SERVICE_FINALIZER)
 
+	anno := map[string]string{}
 	if serviceType == FeService {
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_FE
 		}
 		setServiceType(src.Spec.StarRocksFeSpec.Service, &svc)
+		anno = getServiceAnnotations(src.Spec.StarRocksFeSpec.Service)
 		srPorts = getFeServicePorts(config)
 	} else if serviceType == BeService {
 		if svc.Name == "" {
@@ -56,6 +57,7 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		}
 
 		setServiceType(src.Spec.StarRocksBeSpec.Service, &svc)
+		anno = getServiceAnnotations(src.Spec.StarRocksBeSpec.Service)
 		srPorts = getBeServicePorts(config)
 	} else if serviceType == CnService {
 		if svc.Name == "" {
@@ -63,6 +65,7 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		}
 
 		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
+		anno = getServiceAnnotations(src.Spec.StarRocksCnSpec.Service)
 		srPorts = getCnServicePorts(config)
 	}
 
@@ -84,12 +87,12 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 			TargetPort: intstr.FromInt(int(sp.ContainerPort)),
 		})
 	}
+	// set Ports field before calculate resource hash
+	svc.Spec.Ports = ports
 
 	hso := serviceHashObject(&svc)
-	anno := map[string]string{}
 	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
 	svc.Annotations = anno
-	svc.Spec.Ports = ports
 	return svc
 }
 
@@ -156,6 +159,17 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
 		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
 	}
+}
+
+func getServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
+	if svc != nil && svc.Annotations != nil {
+		annotations := map[string]string{}
+		for key, val := range svc.Annotations {
+			annotations[key] = val
+		}
+		return annotations
+	}
+	return map[string]string{}
 }
 
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {

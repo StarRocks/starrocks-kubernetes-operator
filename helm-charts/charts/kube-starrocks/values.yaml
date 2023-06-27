@@ -65,6 +65,8 @@ starrocksFESpec:
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
+    # add annotations for fe service.
+    annotations: {}
 
   # contains the secret name
   imagePullSecrets: []
@@ -183,16 +185,18 @@ starrocksCnSpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the fe service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    # the cn service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
+    # add annotations for cn service.
+    annotations: {}
 
   # contains the secret name
   imagePullSecrets: []
   # - name: "image-pull-secret"
 
-  # serviceAccount for fe access cloud service.
+  # serviceAccount for cn access cloud service.
   serviceAccount: ""
 
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
@@ -318,16 +322,18 @@ starrocksBeSpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the fe service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    # the be service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
     type: "ClusterIP"
     # the loadbalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
+    # add annotations for be service.
+    annotations: {}
 
   # contains the secret name
   imagePullSecrets: []
   # - name: "image-pull-secret"
 
-  # serviceAccount for fe access cloud service.
+  # serviceAccount for be access cloud service.
   serviceAccount: ""
 
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"

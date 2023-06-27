@@ -565,6 +565,9 @@ type StarRocksService struct {
 	//Ports the components exposed ports and listen ports in pod.
 	// +optional
 	Ports []StarRocksServicePort `json:"ports"`
+
+	// Annotations store Kubernetes Service annotations.
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 type StarRocksServicePort struct {
