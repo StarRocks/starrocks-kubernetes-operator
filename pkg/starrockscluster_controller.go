@@ -126,11 +126,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return clean()
 	}
 
-	//add finalizer for linkage subresource delete.
-	if len(src.Finalizers) == 0 {
-		src.Finalizers = append(src.Finalizers, srapi.STARROCKS_FINALIZER)
-	}
-
 	//subControllers reconcile for create or update sub resource.
 	for _, rc := range r.Scs {
 		if err := rc.Sync(ctx, src); err != nil {

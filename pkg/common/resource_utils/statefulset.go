@@ -15,32 +15,31 @@ const (
 	defaultRollingUpdateStartPod int32 = 0
 )
 
+// StatefulSetParams has two parts: metadata and spec
 type StatefulSetParams struct {
-	Name                 string
-	Namespace            string
-	ServiceName          string
-	StatefulSetType      string
-	Selector             map[string]string
-	Labels               Labels
-	OwnerReferences      []metav1.OwnerReference
-	Annotations          map[string]string
-	PodTemplateSpec      corev1.PodTemplateSpec
-	RevisionHistoryLimit *int32
+	Name            string
+	Namespace       string
+	Annotations     map[string]string
+	Labels          Labels
+	OwnerReferences []metav1.OwnerReference
+	Finalizers      []string
+
 	Replicas             *int32
+	Selector             map[string]string
+	PodTemplateSpec      corev1.PodTemplateSpec
+	ServiceName          string
 	VolumeClaimTemplates []corev1.PersistentVolumeClaim
 }
 
 // NewStatefulset  statefulset
 func NewStatefulset(params StatefulSetParams) appv1.StatefulSet {
-	//
-	//TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
+	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	st := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            params.Name,
 			Namespace:       params.Namespace,
 			Labels:          params.Labels,
 			Annotations:     params.Annotations,
-			Finalizers:      []string{srapi.STATEFULSET_FINALIZER},
 			OwnerReferences: params.OwnerReferences,
 		},
 		Spec: appv1.StatefulSetSpec{

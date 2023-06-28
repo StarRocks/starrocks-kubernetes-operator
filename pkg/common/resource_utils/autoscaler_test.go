@@ -42,10 +42,9 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 			APIVersion: "autoscaling/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       pap.Name,
-			Namespace:  pap.Namespace,
-			Labels:     ls,
-			Finalizers: []string{srapi.AUTOSCALER_FINALIZER},
+			Name:      pap.Name,
+			Namespace: pap.Namespace,
+			Labels:    ls,
 			OwnerReferences: []metav1.OwnerReference{{
 				Kind: "StarRocksCluster",
 				Name: "test-starrockscluster",
@@ -157,10 +156,9 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 			APIVersion: v2beta2.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test",
-			Namespace:  "default",
-			Labels:     labels,
-			Finalizers: []string{srapi.AUTOSCALER_FINALIZER},
+			Name:      "test",
+			Namespace: "default",
+			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
 				Kind: "StarRocksCluster",
 				Name: "test-starrockscluster",
@@ -337,10 +335,9 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 			APIVersion: v2.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test",
-			Namespace:  "default",
-			Labels:     labels,
-			Finalizers: []string{srapi.AUTOSCALER_FINALIZER},
+			Name:      "test",
+			Namespace: "default",
+			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
 				Kind: "StarRocksCluster",
 				Name: "test-starrockscluster",

@@ -11,9 +11,9 @@ import (
 type StarRocksServiceType string
 
 const (
-	FeService = "fe"
-	BeService = "be"
-	CnService = "cn"
+	FeService StarRocksServiceType = "fe"
+	BeService StarRocksServiceType = "be"
+	CnService StarRocksServiceType = "cn"
 )
 
 // HashService service hash components
@@ -41,7 +41,6 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 			Selector: selector,
 		},
 	}
-	svc.Finalizers = append(svc.Finalizers, srapi.SERVICE_FINALIZER)
 
 	anno := map[string]string{}
 	if serviceType == FeService {
@@ -55,7 +54,6 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_BE
 		}
-
 		setServiceType(src.Spec.StarRocksBeSpec.Service, &svc)
 		anno = getServiceAnnotations(src.Spec.StarRocksBeSpec.Service)
 		srPorts = getBeServicePorts(config)
@@ -63,7 +61,6 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_CN
 		}
-
 		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
 		anno = getServiceAnnotations(src.Spec.StarRocksCnSpec.Service)
 		srPorts = getCnServicePorts(config)

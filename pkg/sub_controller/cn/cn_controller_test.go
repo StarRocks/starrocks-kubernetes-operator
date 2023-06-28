@@ -5,6 +5,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,71 +32,6 @@ func init() {
 	clientgoscheme.AddToScheme(sch)
 	chemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
 	chemeBuilder.AddToScheme(sch)
-}
-
-func TestCnController_clearFinalizersOnCnResources(t *testing.T) {
-	st := appv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       rutils.StatefulSetKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test-cn",
-			Namespace:  "default",
-			Finalizers: []string{srapi.STATEFULSET_FINALIZER},
-		},
-		Spec: appv1.StatefulSetSpec{},
-	}
-
-	src := srapi.StarRocksCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksCnSpec: &srapi.StarRocksCnSpec{},
-		},
-		Status: srapi.StarRocksClusterStatus{
-			StarRocksCnStatus: &srapi.StarRocksCnStatus{
-				ResourceNames: []string{"test-cn"},
-				ServiceName:   "test-cn-service",
-			},
-		},
-	}
-
-	svc := corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test-cn-service",
-			Namespace:  "default",
-			Finalizers: []string{srapi.SERVICE_FINALIZER},
-		},
-	}
-
-	feep := corev1.Endpoints{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-fe-service",
-			Namespace: "default",
-		},
-		Subsets: []corev1.EndpointSubset{{
-			Addresses: []corev1.EndpointAddress{{
-				IP:       "172.0.0.1",
-				Hostname: "test-fe-access-01.cluster.local",
-			}},
-		}},
-	}
-
-	fakeclient := k8sutils.NewFakeClient(sch, &src, &st, &svc, &feep)
-	cc := New(fakeclient, record.NewFakeRecorder(10))
-	exist, err := cc.clearFinalizersOnCnResources(context.Background(), &src)
-	require.Equal(t, false, exist)
-	require.Equal(t, nil, err)
-	var est appv1.StatefulSet
-	require.NoError(t, fakeclient.Get(context.Background(), types.NamespacedName{Name: "test-cn", Namespace: "default"}, &est))
-	require.True(t, len(est.Finalizers) == 0)
-
-	var esvc corev1.Service
-	require.NoError(t, fakeclient.Get(context.Background(), types.NamespacedName{Name: "test-cn-service", Namespace: "default"}, &esvc))
-	require.True(t, len(esvc.Finalizers) == 0)
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -200,6 +136,6 @@ func Test_Sync(t *testing.T) {
 	require.Equal(t, srapi.GetCnExternalServiceName(src), asvc.Name)
 	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.CnStatefulSetName(src), Namespace: "default"}, &st))
+	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.MakeName(src.Name, src.Spec.StarRocksCnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

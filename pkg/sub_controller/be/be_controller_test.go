@@ -5,6 +5,8 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,75 +35,6 @@ func init() {
 	clientgoscheme.AddToScheme(sch)
 	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
 	schemeBuilder.AddToScheme(sch)
-}
-
-func Test_clearFinalizersOnBeResources(t *testing.T) {
-	st := appv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       rutils.StatefulSetKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test",
-			Namespace:  "default",
-			Finalizers: []string{srapi.STATEFULSET_FINALIZER},
-		},
-		Spec: appv1.StatefulSetSpec{},
-	}
-
-	src := srapi.StarRocksCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksBeSpec: &srapi.StarRocksBeSpec{},
-		},
-		Status: srapi.StarRocksClusterStatus{
-			StarRocksBeStatus: &srapi.StarRocksBeStatus{
-				ResourceNames: []string{"test"},
-				ServiceName:   "test-be-service",
-			},
-		},
-	}
-
-	svc := corev1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       rutils.ServiceKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test-be-service",
-			Namespace:  "default",
-			Finalizers: []string{srapi.SERVICE_FINALIZER},
-		},
-	}
-	ssvc := corev1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       rutils.ServiceKind,
-			APIVersion: corev1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "test-be-search",
-			Namespace:  "default",
-			Finalizers: []string{srapi.SERVICE_FINALIZER},
-		},
-	}
-
-	fakeclient := k8sutils.NewFakeClient(sch, &src, &st, &svc, &ssvc)
-	bc := New(fakeclient, record.NewFakeRecorder(10))
-	exist, err := bc.clearFinalizersOnBeResources(context.Background(), &src)
-
-	var ust appv1.StatefulSet
-	bc.k8sclient.Get(context.Background(), types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &ust)
-	var usvc corev1.Service
-	bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, &usvc)
-	var ussvc corev1.Service
-	require.Equal(t, false, exist)
-	require.Equal(t, nil, err)
-	require.Equal(t, 0, len(ust.Finalizers))
-	require.Equal(t, 0, len(usvc.Finalizers))
-	require.Equal(t, 0, len(ussvc.Finalizers))
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -219,10 +152,12 @@ func Test_Sync(t *testing.T) {
 	var st appv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
+	spec := src.Spec.StarRocksBeSpec
+	searchServiceName := service.SearchServiceName(src.Name, spec)
 	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetBeExternalServiceName(src), Namespace: "default"}, &asvc))
 	require.Equal(t, srapi.GetBeExternalServiceName(src), asvc.Name)
-	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: bc.getBeSearchServiceName(src), Namespace: "default"}, &rsvc))
-	require.Equal(t, bc.getBeSearchServiceName(src), rsvc.Name)
-	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.BeStatefulSetName(src), Namespace: "default"}, &st))
+	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
+	require.Equal(t, searchServiceName, rsvc.Name)
+	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.MakeName(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
