@@ -38,6 +38,10 @@ starrocksCluster:
   # the namespace of starrockscluster cluster, if not set, the release namespace will be used.
   namespace: ""
   # annotations for starrocks cluster.
+  # there are few special annotations:
+  #   1. when key is "app.starrocks.fe.io/restart", and value is "restart", the fe component will be restarted.
+  #   2. when key is "app.starrocks.be.io/restart", and value is "restart", the be component will be restarted.
+  #   3. when key is "app.starrocks.cn.io/restart", and value is "restart", the cn component will be restarted.
   annotations: {}
   # specify the cn deploy or not.
   enabledCn: false
@@ -73,8 +77,8 @@ starrocksFESpec:
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
-    # beta.kubernetes.io/arch: amd64
-    # beta.kubernetes.io/os: linux
+    # kubernetes.io/arch: amd64
+    # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
   # hostAliases allows adding entries to /etc/hosts inside the containers
@@ -181,8 +185,8 @@ starrocksCnSpec:
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
-    # beta.kubernetes.io/arch: amd64
-    # beta.kubernetes.io/os: linux
+    # kubernetes.io/arch: amd64
+    # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
   ## hostAliases allows adding entries to /etc/hosts inside the containers
@@ -301,8 +305,8 @@ starrocksBeSpec:
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
-    # beta.kubernetes.io/arch: amd64
-    # beta.kubernetes.io/os: linux
+    # kubernetes.io/arch: amd64
+    # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
   ## hostAliases allows adding entries to /etc/hosts inside the containers
