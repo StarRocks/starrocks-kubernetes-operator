@@ -50,7 +50,7 @@ starrocksFESpec:
     # image sliced by "repository:tag"
     repository: starrocks/fe-ubuntu
     tag: 2.5.5
-  # add annotations for fe pods. example, if you want to config monitor for datadog, you can config the annotations.
+  # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
   # the ownership of that volume to be owned by the pod.
