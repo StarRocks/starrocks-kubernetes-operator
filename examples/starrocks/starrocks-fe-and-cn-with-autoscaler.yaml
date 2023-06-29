@@ -1,17 +1,16 @@
-apiVersion: starrocks.com/v1alpha1
+apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
   name: starrockscluster-sample
-  namespace: starrocks
 spec:
   starRocksFeSpec:
-    image: starrocks/fe-ubuntu:2.5.4
+    image: starrocks/fe-ubuntu:latest
     replicas: 3
     requests:
       cpu: 4
       memory: 16Gi
   starRocksCnSpec:
-    image: starrocks/cn-ubuntu:2.5.4
+    image: starrocks/cn-ubuntu:latest
     requests:
       cpu: 4
       memory: 4Gi
