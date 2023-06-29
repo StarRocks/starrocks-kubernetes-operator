@@ -59,8 +59,10 @@ func Test_ClearResources(t *testing.T) {
 		},
 		Status: srapi.StarRocksClusterStatus{
 			StarRocksCnStatus: &srapi.StarRocksCnStatus{
-				ResourceNames: []string{"test-cn"},
-				ServiceName:   "test-cn-access",
+				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+					ResourceNames: []string{"test-cn"},
+					ServiceName:   "test-cn-access",
+				},
 			},
 		},
 	}
@@ -117,8 +119,10 @@ func Test_Sync(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
-				Image:    "test.image",
-				Replicas: rutils.GetInt32Pointer(3),
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					Image:    "test.image",
+					Replicas: rutils.GetInt32Pointer(3),
+				},
 			},
 		},
 	}
@@ -146,10 +150,11 @@ func Test_Sync(t *testing.T) {
 	var st appv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetCnExternalServiceName(src), Namespace: "default"}, &asvc))
-	require.Equal(t, srapi.GetCnExternalServiceName(src), asvc.Name)
+	cnSpec := src.Spec.StarRocksCnSpec
+	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
+	require.Equal(t, srapi.GetExternalServiceName(src.Name, cnSpec), asvc.Name)
 	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.MakeName(src.Name, src.Spec.StarRocksCnSpec), Namespace: "default"}, &st))
+	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

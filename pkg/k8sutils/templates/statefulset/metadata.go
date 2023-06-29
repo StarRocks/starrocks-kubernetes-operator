@@ -19,7 +19,7 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
-func MakeLabels(ownerReference string, spec interface{}) rutils.Labels {
+func Labels(ownerReference string, spec v1.SpecInterface) rutils.Labels {
 	labels := rutils.Labels{}
 	labels[v1.OwnerReference] = ownerReference
 	switch spec.(type) {
@@ -33,15 +33,33 @@ func MakeLabels(ownerReference string, spec interface{}) rutils.Labels {
 	return labels
 }
 
-func MakeName(clusterName string, spec interface{}) string {
+func Name(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return clusterName + "-" + v1.DEFAULT_FE
 	case *v1.StarRocksBeSpec:
 		return clusterName + "-" + v1.DEFAULT_BE
 	case *v1.StarRocksCnSpec:
 		return clusterName + "-" + v1.DEFAULT_CN
-	case *v1.StarRocksFeSpec:
-		return clusterName + "-" + v1.DEFAULT_FE
-	default:
-		return ""
 	}
+	return ""
+}
+
+func Annotations(clusterAnnotations map[string]string, spec v1.SpecInterface) map[string]string {
+	annotations := map[string]string{}
+	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		if _, ok := clusterAnnotations[string(v1.AnnotationFERestartKey)]; ok {
+			annotations[string(v1.AnnotationFERestartKey)] = string(v1.AnnotationRestart)
+		}
+	case *v1.StarRocksBeSpec:
+		if _, ok := clusterAnnotations[string(v1.AnnotationBERestartKey)]; ok {
+			annotations[string(v1.AnnotationBERestartKey)] = string(v1.AnnotationRestart)
+		}
+	case *v1.StarRocksCnSpec:
+		if _, ok := clusterAnnotations[string(v1.AnnotationCNRestartKey)]; ok {
+			annotations[string(v1.AnnotationCNRestartKey)] = string(v1.AnnotationRestart)
+		}
+	}
+	return annotations
 }

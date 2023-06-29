@@ -19,7 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MakeSearchService(serviceName string, spec interface{}, externalService *corev1.Service, ports []corev1.ServicePort) *corev1.Service {
+func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
 	searchSvc.Name = serviceName
@@ -36,7 +36,7 @@ func MakeSearchService(serviceName string, spec interface{}, externalService *co
 
 // SearchServiceName get the domain service name, the domain service for statefulset.
 // domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
-func SearchServiceName(clusterName string, spec interface{}) string {
+func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
 	case *v1.StarRocksBeSpec:
 		return clusterName + "-be-search"

@@ -24,7 +24,7 @@ import (
 )
 
 func (cc *CnController) generateAutoScalerName(src *srapi.StarRocksCluster) string {
-	return statefulset.MakeName(src.Name, src.Spec.StarRocksCnSpec) + "-autoscaler"
+	return statefulset.Name(src.Name, src.Spec.StarRocksCnSpec) + "-autoscaler"
 }
 
 func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPolicy, target *appv1.StatefulSet, src *srapi.StarRocksCluster) *rutils.PodAutoscalerParams {

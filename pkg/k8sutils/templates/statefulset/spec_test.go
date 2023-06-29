@@ -34,7 +34,7 @@ func TestMakePVCList(t *testing.T) {
 		want []corev1.PersistentVolumeClaim
 	}{
 		{
-			name: "test MakePVCList",
+			name: "test PVCList",
 			args: args{
 				volumes: []v1.StorageVolume{
 					{
@@ -64,8 +64,8 @@ func TestMakePVCList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakePVCList(tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MakePVCList() = %v, want %v", got, tt.want)
+			if got := PVCList(tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PVCList() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -74,7 +74,7 @@ func TestMakePVCList(t *testing.T) {
 func TestMakeSelector(t *testing.T) {
 	type args struct {
 		clusterName string
-		spec        interface{}
+		spec        v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -82,7 +82,7 @@ func TestMakeSelector(t *testing.T) {
 		want resource_utils.Labels
 	}{
 		{
-			name: "test MakeSelector",
+			name: "test Selector",
 			args: args{
 				clusterName: "test",
 				spec:        &v1.StarRocksFeSpec{},
@@ -95,8 +95,8 @@ func TestMakeSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSelector(tt.args.clusterName, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MakeSelector() = %v, want %v", got, tt.want)
+			if got := Selector(tt.args.clusterName, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Selector() = %v, want %v", got, tt.want)
 			}
 		})
 	}

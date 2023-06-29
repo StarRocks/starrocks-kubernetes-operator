@@ -915,7 +915,7 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for be pods. user can config monitor annotation
+                    description: annotation for pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   beEnvVars:
@@ -1030,7 +1030,7 @@ spec:
                       type: object
                     type: array
                   configMapInfo:
-                    description: the reference for be configMap.
+                    description: the reference for configMap.
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -1064,7 +1064,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks be deployment.
+                    description: Image for a starrocks deployment..
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -1093,7 +1093,8 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: name of the starrocks be cluster. Deprecated
+                    description: name of the starrocks be cluster. Deprecated, not
+                      allow set statefulset name.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -1105,7 +1106,7 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    description: podLabels for user selector or classify pods.
+                    description: the pod labels for user select or classify pods.
                     type: object
                   probe:
                     description: Probe defines the mode probe service in container
@@ -1133,16 +1134,11 @@ spec:
                     required:
                     - type
                     type: object
-                  replicaInstances:
-                    description: ReplicaInstance is the names of replica starrocksbe
-                      cluster. Deprecated, temp deprecated.
-                    items:
-                      type: string
-                    type: array
                   replicas:
-                    description: Replicas is the number of desired be Pod. the default
-                      value=3 Optional
+                    description: Replicas is the number of desired Pod, the number
+                      is 1,3,5
                     format: int32
+                    minimum: 0
                     type: integer
                   requests:
                     additionalProperties:
@@ -1161,7 +1157,7 @@ spec:
                       that will be used to schedule the pods.
                     type: string
                   secrets:
-                    description: the reference for be secrets.
+                    description: the reference for secrets.
                     items:
                       properties:
                         mountPath:
@@ -1175,7 +1171,7 @@ spec:
                     type: array
                   service:
                     description: Service defines the template for the associated Kubernetes
-                      Service object. the service for user access be.
+                      Service object.
                     properties:
                       annotations:
                         additionalProperties:
@@ -1231,11 +1227,11 @@ spec:
                         type: string
                     type: object
                   serviceAccount:
-                    description: serviceAccount for be access cloud service.
+                    description: serviceAccount for access cloud service.
                     type: string
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
-                      be storage data and log.
+                      meta storage.
                     items:
                       description: StorageVolume defines additional PVC template for
                         StatefulSets and volumeMount for pods that mount this PVC
@@ -2171,7 +2167,7 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for fe pods. user can config monitor annotation
+                    description: annotation for pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   autoScalingPolicy:
@@ -2960,7 +2956,7 @@ spec:
                       type: object
                     type: array
                   configMapInfo:
-                    description: the reference for cn configMap.
+                    description: the reference for configMap.
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -2994,7 +2990,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks cn deployment.
+                    description: Image for a starrocks deployment..
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -3023,8 +3019,8 @@ spec:
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   name:
-                    description: 'name of the starrocks cn cluster. Deprecated: ,
-                      the statefulset name don''t allow set, prevent accidental modification.'
+                    description: name of the starrocks be cluster. Deprecated, not
+                      allow set statefulset name.
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   nodeSelector:
@@ -3036,7 +3032,7 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    description: podLabels for user selector or classify pods
+                    description: the pod labels for user select or classify pods.
                     type: object
                   probe:
                     description: Probe defines the mode probe service in container
@@ -3065,7 +3061,8 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired cn Pod.
+                    description: Replicas is the number of desired Pod, the number
+                      is 1,3,5
                     format: int32
                     minimum: 0
                     type: integer
@@ -3086,7 +3083,7 @@ spec:
                       that will be used to schedule the pods.
                     type: string
                   secrets:
-                    description: the reference for cn secrets.
+                    description: the reference for secrets.
                     items:
                       properties:
                         mountPath:
@@ -3100,7 +3097,7 @@ spec:
                     type: array
                   service:
                     description: Service defines the template for the associated Kubernetes
-                      Service object. the service for user access cn.
+                      Service object.
                     properties:
                       annotations:
                         additionalProperties:
@@ -3156,7 +3153,7 @@ spec:
                         type: string
                     type: object
                   serviceAccount:
-                    description: serviceAccount for cn access cloud service.
+                    description: serviceAccount for access cloud service.
                     type: string
                   tolerations:
                     description: (Optional) Tolerations for scheduling pods onto some
@@ -4067,11 +4064,11 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
-                    description: annotation for fe pods. user can config monitor annotation
+                    description: annotation for pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
                   configMapInfo:
-                    description: the reference for fe configMap.
+                    description: the reference for configMap.
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -4216,7 +4213,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks fe deployment..
+                    description: Image for a starrocks deployment..
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -4287,9 +4284,10 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired fe Pod, the number
+                    description: Replicas is the number of desired Pod, the number
                       is 1,3,5
                     format: int32
+                    minimum: 0
                     type: integer
                   requests:
                     additionalProperties:
@@ -4308,7 +4306,7 @@ spec:
                       that will be used to schedule the pods.
                     type: string
                   secrets:
-                    description: the reference for fe secrets.
+                    description: the reference for secrets.
                     items:
                       properties:
                         mountPath:
@@ -4378,11 +4376,11 @@ spec:
                         type: string
                     type: object
                   serviceAccount:
-                    description: serviceAccount for fe access cloud service.
+                    description: serviceAccount for access cloud service.
                     type: string
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
-                      fe meta storage.
+                      meta storage.
                     items:
                       description: StorageVolume defines additional PVC template for
                         StatefulSets and volumeMount for pods that mount this PVC
@@ -4467,38 +4465,37 @@ spec:
                   failed and creating pods.
                 properties:
                   creatingInstances:
-                    description: CreatingInstances represents status in creating pods
-                      of be.
+                    description: CreatingInstances in creating pod names.
                     items:
                       type: string
                     type: array
                   failedInstances:
-                    description: FailedInstances deploy failed instance of be.
+                    description: FailedInstances failed pod names.
                     items:
                       type: string
                     type: array
                   phase:
-                    description: Phase the value from all pods of be status. If be
-                      have one failed pod phase=failed, also if be have one creating
-                      pod phase=creating, also if be all running phase=running, others
-                      unknown.
+                    description: Phase the value from all pods of component status.
+                      If component have one failed pod phase=failed, also if fe have
+                      one creating pod phase=creating, also if component all running
+                      phase=running, others unknown.
                     type: string
                   reason:
-                    description: the reason for the phase.
+                    description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: The statefulset names of be.
+                    description: ResourceNames the statefulset names of fe in v1alpha1
+                      version.
                     items:
                       type: string
                     type: array
                   runningInstances:
-                    description: RunningInstances represents status in running pods
-                      of be.
+                    description: RunningInstances in running status pod names.
                     items:
                       type: string
                     type: array
                   serviceName:
-                    description: the name of be service exposed for user.
+                    description: the name of fe service exposed for user.
                     type: string
                 required:
                 - phase
@@ -4508,12 +4505,12 @@ spec:
                   failed and creating pods.
                 properties:
                   creatingInstances:
-                    description: CreatingInstances in creating status cn pod names.
+                    description: CreatingInstances in creating pod names.
                     items:
                       type: string
                     type: array
                   failedInstances:
-                    description: FailedInstances deploy failed cn pod names.
+                    description: FailedInstances failed pod names.
                     items:
                       type: string
                     type: array
@@ -4521,36 +4518,37 @@ spec:
                     description: HorizontalAutoscaler have the autoscaler information.
                     properties:
                       name:
-                        description: the deploy horizontal scaler name
+                        description: the horizontal scaler name
                         type: string
                       version:
-                        description: the deploy horizontal version.
+                        description: the horizontal version.
                         type: string
                     type: object
                   hpaName:
                     description: The policy name of autoScale. Deprecated
                     type: string
                   phase:
-                    description: Phase the value from all pods of cn status. If cn
-                      have one failed pod phase=failed, also if cn have one creating
-                      pod phase=creating, also if cn all running phase=running, others
-                      unknown.
+                    description: Phase the value from all pods of component status.
+                      If component have one failed pod phase=failed, also if fe have
+                      one creating pod phase=creating, also if component all running
+                      phase=running, others unknown.
                     type: string
                   reason:
-                    description: the reason for the phase.
+                    description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: The statefulset names of be.
+                    description: ResourceNames the statefulset names of fe in v1alpha1
+                      version.
                     items:
                       type: string
                     type: array
                   runningInstances:
-                    description: RunningInstances in running status be pod names.
+                    description: RunningInstances in running status pod names.
                     items:
                       type: string
                     type: array
                   serviceName:
-                    description: the name of cn service exposed for user.
+                    description: the name of fe service exposed for user.
                     type: string
                 required:
                 - phase
@@ -4565,15 +4563,15 @@ spec:
                       type: string
                     type: array
                   failedInstances:
-                    description: FailedInstances failed fe pod names.
+                    description: FailedInstances failed pod names.
                     items:
                       type: string
                     type: array
                   phase:
-                    description: Phase the value from all pods of fe status. If fe
-                      have one failed pod phase=failed, also if fe have one creating
-                      pod phase=creating, also if fe all running phase=running, others
-                      unknown.
+                    description: Phase the value from all pods of component status.
+                      If component have one failed pod phase=failed, also if fe have
+                      one creating pod phase=creating, also if component all running
+                      phase=running, others unknown.
                     type: string
                   reason:
                     description: Reason represents the reason of not running.

@@ -24,7 +24,7 @@ import (
 func TestMakeName(t *testing.T) {
 	type args struct {
 		clusterName string
-		spec        interface{}
+		spec        v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -32,7 +32,7 @@ func TestMakeName(t *testing.T) {
 		want string
 	}{
 		{
-			name: "test MakeName for Be",
+			name: "test Name for Be",
 			args: args{
 				clusterName: "test",
 				spec:        &v1.StarRocksBeSpec{},
@@ -40,7 +40,7 @@ func TestMakeName(t *testing.T) {
 			want: "test-be",
 		},
 		{
-			name: "test MakeName for Cn",
+			name: "test Name for Cn",
 			args: args{
 				clusterName: "test",
 				spec:        &v1.StarRocksCnSpec{},
@@ -48,7 +48,7 @@ func TestMakeName(t *testing.T) {
 			want: "test-cn",
 		},
 		{
-			name: "test MakeName for Fe",
+			name: "test Name for Fe",
 			args: args{
 				clusterName: "test",
 				spec:        &v1.StarRocksFeSpec{},
@@ -58,8 +58,8 @@ func TestMakeName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeName(tt.args.clusterName, tt.args.spec); got != tt.want {
-				t.Errorf("MakeName() = %v, want %v", got, tt.want)
+			if got := Name(tt.args.clusterName, tt.args.spec); got != tt.want {
+				t.Errorf("Name() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -68,7 +68,7 @@ func TestMakeName(t *testing.T) {
 func TestMakeLabels(t *testing.T) {
 	type args struct {
 		ownerReference string
-		spec           interface{}
+		spec           v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -76,7 +76,7 @@ func TestMakeLabels(t *testing.T) {
 		want resource_utils.Labels
 	}{
 		{
-			name: "test MakeLabels for Be",
+			name: "test Labels for Be",
 			args: args{
 				ownerReference: "test",
 				spec:           &v1.StarRocksBeSpec{},
@@ -87,7 +87,7 @@ func TestMakeLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "test MakeLabels for Cn",
+			name: "test Labels for Cn",
 			args: args{
 				ownerReference: "test",
 				spec:           &v1.StarRocksCnSpec{},
@@ -98,7 +98,7 @@ func TestMakeLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "test MakeLabels for Fe",
+			name: "test Labels for Fe",
 			args: args{
 				ownerReference: "test",
 				spec:           &v1.StarRocksFeSpec{},
@@ -111,8 +111,64 @@ func TestMakeLabels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeLabels(tt.args.ownerReference, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MakeLabels() = %v, want %v", got, tt.want)
+			if got := Labels(tt.args.ownerReference, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Labels() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAnnotations(t *testing.T) {
+	type args struct {
+		spec               v1.SpecInterface
+		clusterAnnotations map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "test Annotations for fe",
+			args: args{
+				spec: &v1.StarRocksFeSpec{},
+				clusterAnnotations: map[string]string{
+					string(v1.AnnotationFERestartKey): "true",
+				},
+			},
+			want: map[string]string{
+				string(v1.AnnotationFERestartKey): string(v1.AnnotationRestart),
+			},
+		},
+		{
+			name: "test Annotations for be",
+			args: args{
+				spec: &v1.StarRocksBeSpec{},
+				clusterAnnotations: map[string]string{
+					string(v1.AnnotationBERestartKey): "true",
+				},
+			},
+			want: map[string]string{
+				string(v1.AnnotationBERestartKey): string(v1.AnnotationRestart),
+			},
+		},
+		{
+			name: "test Annotations for cn",
+			args: args{
+				spec: &v1.StarRocksCnSpec{},
+				clusterAnnotations: map[string]string{
+					string(v1.AnnotationCNRestartKey): "true",
+				},
+			},
+			want: map[string]string{
+				string(v1.AnnotationCNRestartKey): string(v1.AnnotationRestart),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Annotations(tt.args.clusterAnnotations, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Annotations() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -62,8 +62,10 @@ func Test_ClearResources(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{},
 		Status: srapi.StarRocksClusterStatus{
 			StarRocksFeStatus: &srapi.StarRocksFeStatus{
-				ResourceNames: []string{"test-fe"},
-				ServiceName:   "test-fe-access",
+				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+					ResourceNames: []string{"test-fe"},
+					ServiceName:   "test-fe-access",
+				},
 			},
 		},
 	}
@@ -133,13 +135,15 @@ func Test_Sync(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{},
 			StarRocksBeSpec: &srapi.StarRocksBeSpec{
-				Replicas:       rutils.GetInt32Pointer(3),
-				Image:          "test.image",
-				ServiceAccount: "test-sa",
-				ResourceRequirements: corev1.ResourceRequirements{
-					Requests: requests,
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					Replicas:       rutils.GetInt32Pointer(3),
+					Image:          "test.image",
+					ServiceAccount: "test-sa",
+					ResourceRequirements: corev1.ResourceRequirements{
+						Requests: requests,
+					},
+					PodLabels: labels,
 				},
-				PodLabels: labels,
 			},
 		},
 	}
@@ -168,10 +172,10 @@ func Test_Sync(t *testing.T) {
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
-	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetBeExternalServiceName(src), Namespace: "default"}, &asvc))
-	require.Equal(t, srapi.GetBeExternalServiceName(src), asvc.Name)
+	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, spec), Namespace: "default"}, &asvc))
+	require.Equal(t, srapi.GetExternalServiceName(src.Name, spec), asvc.Name)
 	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
 	require.Equal(t, searchServiceName, rsvc.Name)
-	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.MakeName(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
+	require.NoError(t, bc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

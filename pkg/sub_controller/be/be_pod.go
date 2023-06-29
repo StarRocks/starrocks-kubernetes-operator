@@ -18,13 +18,10 @@ package be
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 	"time"
 )
 
@@ -37,42 +34,12 @@ const (
 	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
 )
 
-// bePodLabels
-func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := statefulset.MakeSelector(src.Name, src.Spec.StarRocksBeSpec)
-	//podLables for classify. operator use statefulsetSelector for manage pods.
-	if src.Spec.StarRocksBeSpec != nil {
-		labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)
-	}
-
-	return labels
-}
-
 // buildPodTemplate construct the podTemplate for deploy cn.
-func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig map[string]interface{}) corev1.PodTemplateSpec {
+func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
-	vexist := make(map[string]bool)
-	var volumeMounts []corev1.VolumeMount
-	var vols []corev1.Volume
-	for _, sv := range beSpec.StorageVolumes {
-		vexist[sv.MountPath] = true
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      sv.Name,
-			MountPath: sv.MountPath,
-		})
-
-		vols = append(vols, corev1.Volume{
-			Name: sv.Name,
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: sv.Name,
-				},
-			},
-		})
-	}
-
+	vols, volumeMounts, vexist := pod.MountStorageVolumes(beSpec)
 	// add default volume about log, if meta not configure.
 	if _, ok := vexist[log_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
@@ -107,67 +74,23 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 	vols, volumeMounts = pod.MountConfigMap(vols, volumeMounts, beSpec.ConfigMapInfo, be_config_path)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, beSpec.Secrets)
 
-	Envs := []corev1.EnvVar{
-		{
-			Name: "POD_NAME",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-			},
-		}, {
-			Name: "POD_NAMESPACE",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-			},
-		}, {
-			Name:  srapi.COMPONENT_NAME,
-			Value: srapi.DEFAULT_CN,
-		}, {
-			Name:  srapi.FE_SERVICE_NAME,
-			Value: srapi.GetFeExternalServiceName(src),
-		}, {
-			Name:  "FE_QUERY_PORT",
-			Value: strconv.FormatInt(int64(rutils.GetPort(beconfig, rutils.QUERY_PORT)), 10),
-		}, {
-			Name:  "HOST_TYPE",
-			Value: "FQDN",
-		}, {
-			Name:  "USER",
-			Value: "root",
-		},
-	}
-
+	feExternalServiceName := srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	Envs := pod.Envs(src.Name, src.Namespace, src.Spec.StarRocksBeSpec, config, feExternalServiceName)
 	Envs = append(Envs, beSpec.BeEnvVars...)
 	beContainer := corev1.Container{
-		Name:    srapi.DEFAULT_BE,
-		Image:   beSpec.Image,
-		Command: []string{"/opt/starrocks/be_entrypoint.sh"},
-		Args:    []string{"$(FE_SERVICE_NAME)"},
-		Ports: []corev1.ContainerPort{
-			{
-				Name:          "be-port",
-				ContainerPort: rutils.GetPort(beconfig, rutils.BE_PORT),
-			}, {
-				Name:          "webserver-port",
-				ContainerPort: rutils.GetPort(beconfig, rutils.WEBSERVER_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "heartbeat-port",
-				ContainerPort: rutils.GetPort(beconfig, rutils.HEARTBEAT_SERVICE_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "brpc-port",
-				ContainerPort: rutils.GetPort(beconfig, rutils.BRPC_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			},
-		},
+		Name:            srapi.DEFAULT_BE,
+		Image:           beSpec.Image,
+		Command:         []string{"/opt/starrocks/be_entrypoint.sh"},
+		Args:            []string{"$(FE_SERVICE_NAME)"},
+		Ports:           pod.Ports(beSpec, config),
 		Env:             Envs,
 		Resources:       beSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
-		StartupProbe:    pod.MakeStartupProbe(rutils.GetPort(beconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.MakeLivenessProbe(rutils.GetPort(beconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.MakeReadinessProbe(rutils.GetPort(beconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		Lifecycle:       pod.MakeLifeCycle("/opt/starrocks/be_prestop.sh"),
+		StartupProbe:    pod.StartupProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		Lifecycle:       pod.LifeCycle("/opt/starrocks/be_prestop.sh"),
 	}
 	if beSpec.ConfigMapInfo.ConfigMapName != "" && beSpec.ConfigMapInfo.ResolveKey != "" {
 		beContainer.Env = append(beContainer.Env, corev1.EnvVar{
@@ -176,54 +99,17 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, beconfig m
 		})
 	}
 
-	sa := src.Spec.ServiceAccount
-	if beSpec.ServiceAccount != "" {
-		sa = beSpec.ServiceAccount
-	}
+	podSpec := pod.Spec(beSpec, src.Spec.ServiceAccount, beContainer, vols)
 
-	podSpec := corev1.PodSpec{
-		Containers:                    []corev1.Container{beContainer},
-		Volumes:                       vols,
-		ServiceAccountName:            sa,
-		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
-		Affinity:                      beSpec.Affinity,
-		Tolerations:                   beSpec.Tolerations,
-		ImagePullSecrets:              beSpec.ImagePullSecrets,
-		NodeSelector:                  beSpec.NodeSelector,
-		HostAliases:                   beSpec.HostAliases,
-		SchedulerName:                 beSpec.SchedulerName,
-	}
-
-	annos := make(map[string]string)
-	//add restart annotation in podTemplate.
-	if _, ok := src.Annotations[string(srapi.AnnotationBERestartKey)]; ok {
-		//simulate the kubectl operation.
-		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
-	}
-
-	rutils.Annotations(annos).AddAnnotation(beSpec.Annotations)
-
-	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if beSpec.FsGroup == nil {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		podSpec.SecurityContext = sc
-	} else if *beSpec.FsGroup != 0 {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             beSpec.FsGroup,
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		podSpec.SecurityContext = sc
-	}
-
+	now := time.Now().Format(time.RFC3339)
+	annotations := pod.Annotations(beSpec, src.Annotations, now)
+	podSpec.SecurityContext = pod.SecurityContext(beSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaname,
-			Annotations: annos,
+			Annotations: annotations,
 			Namespace:   src.Namespace,
-			Labels:      be.bePodLabels(src),
+			Labels:      pod.Labels(src.Name, beSpec),
 		},
 		Spec: podSpec,
 	}
