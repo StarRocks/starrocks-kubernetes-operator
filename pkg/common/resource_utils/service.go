@@ -6,6 +6,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/klog/v2"
 )
 
 type StarRocksServiceType string
@@ -18,10 +19,11 @@ const (
 
 // HashService service hash components
 type hashService struct {
-	name      string
-	namespace string
-	ports     []corev1.ServicePort
-	selector  map[string]string
+	name       string
+	namespace  string
+	finalizers []string
+	ports      []corev1.ServicePort
+	selector   map[string]string
 	//deal with external access load balancer.
 	//serviceType corev1.ServiceType
 	labels map[string]string
@@ -171,19 +173,19 @@ func getServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
 
 func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
+
+	nhsvc := serviceHashObject(nsvc)
+	klog.V(4).Infof("new service hash object: %+v", nhsvc)
 	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
 		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
 	} else {
-		nhsvc := serviceHashObject(nsvc)
 		nhsvcValue = hash.HashObject(nhsvc)
 	}
 
-	if _, ok := oldsvc.Annotations[srapi.ComponentResourceHash]; ok {
-		ohsvcValue = oldsvc.Annotations[srapi.ComponentResourceHash]
-	} else {
-		ohsvc := serviceHashObject(oldsvc)
-		ohsvcValue = hash.HashObject(ohsvc)
-	}
+	// calculate the old hash value from the old service, not from annotation.
+	ohsvc := serviceHashObject(oldsvc)
+	klog.V(4).Infof("old service hash object: %+v", ohsvc)
+	ohsvcValue = hash.HashObject(ohsvc)
 
 	return nhsvcValue == ohsvcValue &&
 		nsvc.Namespace == oldsvc.Namespace /*&& oldGeneration == oldsvc.Generation*/
@@ -191,11 +193,12 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 
 func serviceHashObject(svc *corev1.Service) hashService {
 	return hashService{
-		name:      svc.Name,
-		namespace: svc.Namespace,
-		ports:     svc.Spec.Ports,
-		selector:  svc.Spec.Selector,
-		labels:    svc.Labels,
+		name:       svc.Name,
+		namespace:  svc.Namespace,
+		finalizers: svc.Finalizers,
+		ports:      svc.Spec.Ports,
+		selector:   svc.Spec.Selector,
+		labels:     svc.Labels,
 	}
 }
 

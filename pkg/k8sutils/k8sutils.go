@@ -53,7 +53,7 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 		return nil
 	}
 
-	return PatchClientObject(ctx, k8sclient, svc)
+	return UpdateClientObject(ctx, k8sclient, svc)
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
@@ -79,7 +79,7 @@ func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.St
 	}
 
 	st.ResourceVersion = est.ResourceVersion
-	return PatchClientObject(ctx, k8sclient, st)
+	return UpdateClientObject(ctx, k8sclient, st)
 }
 
 func CreateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
@@ -108,10 +108,10 @@ func PatchClientObject(ctx context.Context, k8sclient client.Client, object clie
 	return nil
 }
 
-// PatchOrCreate patch object if not exist create object.
-func PatchOrCreate(ctx context.Context, k8sclient client.Client, object client.Object) error {
+// CreateOrUpdate patch object if not exist create object.
+func CreateOrUpdate(ctx context.Context, k8sclient client.Client, object client.Object) error {
 	klog.V(4).Infof("patch or create resource namespace=%s,name=%s,kind=%s.", object.GetNamespace(), object.GetName(), object.GetObjectKind())
-	if err := k8sclient.Patch(ctx, object, client.Merge); apierrors.IsNotFound(err) {
+	if err := k8sclient.Update(ctx, object); apierrors.IsNotFound(err) {
 		return k8sclient.Create(ctx, object)
 	} else if err != nil {
 		return err

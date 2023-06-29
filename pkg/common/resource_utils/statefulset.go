@@ -69,6 +69,7 @@ type hashStatefulsetObject struct {
 	name                 string
 	namespace            string
 	labels               map[string]string
+	finalizers           []string
 	selector             metav1.LabelSelector
 	podTemplate          corev1.PodTemplateSpec
 	serviceName          string
@@ -94,6 +95,7 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 		name:                 st.Name,
 		namespace:            st.Namespace,
 		labels:               st.Labels,
+		finalizers:           st.Finalizers,
 		selector:             selector,
 		podTemplate:          st.Spec.Template,
 		serviceName:          st.Spec.ServiceName,
@@ -106,24 +108,18 @@ func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashState
 func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
+	newHso := statefulSetHashObject(new, excludeReplicas)
+	klog.V(4).Infof("new statefulset hash object: %+v", newHso)
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
-		newHso := statefulSetHashObject(new, excludeReplicas)
 		newHashv = hash.HashObject(newHso)
 	}
 
-	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
-		oldHashv = old.Annotations[srapi.ComponentResourceHash]
-	} else {
-		oldHso := statefulSetHashObject(old, excludeReplicas)
-		oldHashv = hash.HashObject(oldHso)
-	}
-
-	//var oldGeneration int64
-	//if _, ok := old.Annotations[srapi.ComponentGeneration]; ok {
-	//	oldGeneration, _ = strconv.ParseInt(old.Annotations[srapi.ComponentGeneration], 10, 64)
-	//}
+	// calculate the old hash value from the old statefulset, not from annotation.
+	oldHso := statefulSetHashObject(old, excludeReplicas)
+	klog.V(4).Infof("old statefulset hash object: %+v", oldHso)
+	oldHashv = hash.HashObject(oldHso)
 
 	anno := Annotations{}
 	anno.AddAnnotation(new.Annotations)

@@ -87,7 +87,7 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	//create cn statefulset.
 	st := rutils.NewStatefulset(be.buildStatefulSetParams(src, config, internalService.Name))
 
-	//update the statefulset if fespec be updated.
+	//update the statefulset if feSpec be updated.
 	if err = k8sutils.ApplyStatefulSet(ctx, be.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		//exclude the restart annotation interference. annotation
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]

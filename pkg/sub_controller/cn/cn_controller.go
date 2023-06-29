@@ -172,7 +172,7 @@ func (cc *CnController) applyStatefulset(ctx context.Context, src *srapi.StarRoc
 		}
 
 		st.ResourceVersion = est.ResourceVersion
-		return k8sutils.PatchClientObject(ctx, cc.k8sclient, st)
+		return k8sutils.UpdateClientObject(ctx, cc.k8sclient, st)
 	}
 
 	return nil
@@ -305,7 +305,7 @@ func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, labels map[s
 func (cc *CnController) deployAutoScaler(ctx context.Context, policy srapi.AutoScalingPolicy, target *appv1.StatefulSet, src *srapi.StarRocksCluster) error {
 	params := cc.buildCnAutoscalerParams(policy, target, src)
 	autoScaler := rutils.BuildHorizontalPodAutoscaler(params)
-	if err := k8sutils.PatchOrCreate(ctx, cc.k8sclient, autoScaler); err != nil {
+	if err := k8sutils.CreateOrUpdate(ctx, cc.k8sclient, autoScaler); err != nil {
 		klog.Errorf("cnController deployAutoscaler failed, namespace=%s,name=%s,version=%s,error=%s", autoScaler.GetNamespace(), autoScaler.GetName(), policy.Version, err.Error())
 		return err
 	}
@@ -320,7 +320,7 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRoc
 	}
 
 	if src.Status.StarRocksCnStatus.HorizontalScaler.Name == "" {
-		klog.V(6).Infof("cnController not need delete the autoScaler, namespace=%s, src name=%s.", src.Namespace, src.Name)
+		klog.V(4).Infof("cnController not need delete the autoScaler, namespace=%s, src name=%s.", src.Namespace, src.Name)
 		return nil
 	}
 
@@ -405,7 +405,7 @@ func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 
 	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sclient, namespace, feconfigMapInfo.ConfigMapName)
 	if err != nil && apierrors.IsNotFound(err) {
-		klog.V(6).Info("CnController getFeConfig fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
+		klog.V(4).Info("CnController getFeConfig fe config is not exist namespace ", namespace, " configmapName ", feconfigMapInfo.ConfigMapName)
 		return make(map[string]interface{}), nil
 	} else if err != nil {
 		return make(map[string]interface{}), err

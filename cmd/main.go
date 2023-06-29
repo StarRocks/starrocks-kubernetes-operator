@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"k8s.io/klog/v2"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -65,7 +66,11 @@ func init() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&printVar, "version", false, "Prints current version.")
-	flag.BoolVar(&printVar, "v", false, "Prints current version.")
+
+	// set klog flag
+	klog.InitFlags(nil)
+	// to use klog.V for debugging, we have to set the flag.
+	flag.Set("v", "2")
 }
 
 func main() {
