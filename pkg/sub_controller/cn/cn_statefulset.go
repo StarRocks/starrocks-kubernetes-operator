@@ -19,17 +19,9 @@ package cn
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-func (cc *CnController) cnStatefulSetsLabels(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = src.Name
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
-	//once src labels updated, the statefulset will enter into a not reconcile state.
-	//labels.AddLabel(src.Labels)
-	return labels
-}
 
 // buildStatefulSetParams generate the params of construct the statefulset.
 func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnconfig map[string]interface{}, internalServiceName string) rutils.StatefulSetParams {
@@ -44,21 +36,14 @@ func (cc *CnController) buildStatefulSetParams(src *srapi.StarRocksCluster, cnco
 	}
 
 	return rutils.StatefulSetParams{
-		Name:            srapi.CnStatefulSetName(src),
-		Annotations:     annos,
+		Name:            statefulset.MakeName(src.Name, cnSpec),
 		Namespace:       src.Namespace,
-		ServiceName:     internalServiceName,
-		PodTemplateSpec: podTemplateSpec,
-		Labels:          cc.cnStatefulSetsLabels(src),
-		Selector:        cc.cnPodLabels(src),
+		Annotations:     annos,
+		Labels:          statefulset.MakeLabels(src.Name, cnSpec),
 		OwnerReferences: []metav1.OwnerReference{*or},
 		Replicas:        cnSpec.Replicas,
+		Selector:        cc.cnPodLabels(src),
+		PodTemplateSpec: podTemplateSpec,
+		ServiceName:     internalServiceName,
 	}
-}
-
-func (cc *CnController) cnStatefulsetSelector(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := rutils.Labels{}
-	labels[srapi.OwnerReference] = srapi.CnStatefulSetName(src)
-	labels[srapi.ComponentLabelKey] = srapi.DEFAULT_CN
-	return labels
 }

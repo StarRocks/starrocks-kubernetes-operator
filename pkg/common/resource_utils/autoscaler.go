@@ -65,7 +65,6 @@ func buildAutoscalerV1(pap *PodAutoscalerParams) *v1.HorizontalPodAutoscaler {
 			Name:            pap.Name,
 			Namespace:       pap.Namespace,
 			Labels:          pap.Labels,
-			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
 			OwnerReferences: pap.OwnerReferences,
 		},
 		Spec: v1.HorizontalPodAutoscalerSpec{
@@ -93,7 +92,6 @@ func buildAutoscalerV2beta2(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAuto
 			Name:            pap.Name,
 			Namespace:       pap.Namespace,
 			Labels:          pap.Labels,
-			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
 			OwnerReferences: pap.OwnerReferences,
 		},
 		Spec: v2beta2.HorizontalPodAutoscalerSpec{
@@ -130,7 +128,6 @@ func buildAutoscalerV2(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
 			Name:            pap.Name,
 			Namespace:       pap.Namespace,
 			Labels:          pap.Labels,
-			Finalizers:      []string{srapi.AUTOSCALER_FINALIZER},
 			OwnerReferences: pap.OwnerReferences,
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{

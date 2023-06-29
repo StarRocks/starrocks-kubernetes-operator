@@ -21,6 +21,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
@@ -38,7 +39,7 @@ const (
 
 // bePodLabels
 func (be *BeController) bePodLabels(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := be.beStatefulsetSelector(src)
+	labels := statefulset.MakeSelector(src.Name, src.Spec.StarRocksBeSpec)
 	//podLables for classify. operator use statefulsetSelector for manage pods.
 	if src.Spec.StarRocksBeSpec != nil {
 		labels.AddLabel(src.Spec.StarRocksBeSpec.PodLabels)

@@ -43,25 +43,3 @@ func GetBeExternalServiceName(src *StarRocksCluster) string {
 
 	return src.Name + "-" + DEFAULT_BE + "-service"
 }
-
-func BeStatefulSetName(src *StarRocksCluster) string {
-	stname := src.Name + "-" + DEFAULT_BE
-	/*if src.Spec.StarRocksBeSpec.Name != "" {
-		stname = src.Spec.StarRocksBeSpec.Name
-	}*/
-	return stname
-}
-
-func CnStatefulSetName(src *StarRocksCluster) string {
-	stname := src.Name + "-" + DEFAULT_CN
-	/*	if src.Spec.StarRocksCnSpec.Name != "" {
-		stname = src.Spec.StarRocksCnSpec.Name
-	}*/
-	return stname
-}
-
-func FeStatefulSetName(src *StarRocksCluster) string {
-	stname := src.Name + "-" + DEFAULT_FE
-
-	return stname
-}
