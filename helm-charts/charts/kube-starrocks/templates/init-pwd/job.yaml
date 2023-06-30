@@ -26,10 +26,6 @@ spec:
         - /opt/starrocks/fe_initpwd.sh
         - {{ template "kube-starrocks.name" . }}-fe-0.{{ template "kube-starrocks.name" . }}-fe-search
         - "9030"
-<<<<<<< HEAD
-<<<<<<< HEAD:helm-charts/charts/kube-starrocks/templates/init-pwd/job.yaml
-=======
->>>>>>> 38a7399... 修改密码时，引用secret传入初始化密码，重新整理了脚本缩进，规范了部分写法
         - "SET PASSWORD = PASSWORD(''$INIT_PWD'');"
         env:
         - name: INIT_PWD
@@ -37,12 +33,6 @@ spec:
             secretKeyRef:
               key: password
               name: {{ template "kube-starrocks.name" . }}-credential
-<<<<<<< HEAD
-=======
-        - "SET PASSWORD = PASSWORD('{{ .Values.initPassword.password }}');"
->>>>>>> 2c3afa7... 在初始化密码时，增加状态判断能力，当链接不通时才进行重试，当发现时密码错误时，认为上一次尝试修改密码已成功:helm-charts/charts/kube-starrocks/templates/init-pwd/initpwd.yaml
-=======
->>>>>>> 38a7399... 修改密码时，引用secret传入初始化密码，重新整理了脚本缩进，规范了部分写法
         volumeMounts:
         - mountPath: /opt/starrocks/fe_initpwd.sh
           name: fe-initpwd-shell
@@ -56,13 +46,6 @@ spec:
           name: init-pwd-shell
           optional: false
         name: fe-initpwd-shell
-<<<<<<< HEAD
-<<<<<<< HEAD:helm-charts/charts/kube-starrocks/templates/init-pwd/job.yaml
-=======
-
->>>>>>> 2c3afa7... 在初始化密码时，增加状态判断能力，当链接不通时才进行重试，当发现时密码错误时，认为上一次尝试修改密码已成功:helm-charts/charts/kube-starrocks/templates/init-pwd/initpwd.yaml
-=======
->>>>>>> 38a7399... 修改密码时，引用secret传入初始化密码，重新整理了脚本缩进，规范了部分写法
       restartPolicy: OnFailure
   backoffLimit: 10
 {{- end }}
