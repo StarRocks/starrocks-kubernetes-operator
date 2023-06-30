@@ -4,8 +4,8 @@ kind: Secret
 metadata:
   name: {{ template "kube-starrocks.name" . }}-credential
   namespace: {{ .Release.Namespace }}
-stringData:
-  password: {{ .Values.initPassword.password }}
+data:
+  password: {{ .Values.initPassword.password | b64enc }}
 ---
 apiVersion: batch/v1
 kind: Job
