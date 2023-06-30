@@ -1,4 +1,3 @@
-
 {{- if .Values.initPassword.enabled }}
 apiVersion: v1
 kind: Secret
