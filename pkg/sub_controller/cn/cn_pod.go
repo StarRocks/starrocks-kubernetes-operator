@@ -37,21 +37,19 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
-	//generate the default emptydir for log.
-	volumeMounts := []corev1.VolumeMount{
-		{
+	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
+	// add default volume about log
+	if _, ok := vexist[log_path]; !ok {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      log_name,
 			MountPath: log_path,
-		},
-	}
-
-	vols := []corev1.Volume{
-		{
+		})
+		vols = append(vols, corev1.Volume{
 			Name: log_name,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
-		},
+		})
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -59,8 +57,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
 
 	feExternalServiceName := srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
-	Envs := pod.Envs(src.Name, src.Namespace, src.Spec.StarRocksCnSpec, config, feExternalServiceName)
-	Envs = append(Envs, cnSpec.CnEnvVars...)
+	Envs := pod.Envs(src.Spec.StarRocksCnSpec, config, feExternalServiceName, src.Namespace, cnSpec.CnEnvVars)
 	cnContainer := corev1.Container{
 		Name:            srapi.DEFAULT_CN,
 		Image:           cnSpec.Image,

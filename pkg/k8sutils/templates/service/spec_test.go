@@ -25,7 +25,6 @@ import (
 func TestMakeSearchService(t *testing.T) {
 	type args struct {
 		serviceName     string
-		spec            interface{}
 		externalService *corev1.Service
 		ports           []corev1.ServicePort
 	}
@@ -38,7 +37,6 @@ func TestMakeSearchService(t *testing.T) {
 			name: "test MakeSearchService",
 			args: args{
 				serviceName: "test",
-				spec:        &v1.StarRocksBeSpec{},
 				externalService: &corev1.Service{
 					Spec: corev1.ServiceSpec{
 						Selector: map[string]string{

@@ -47,7 +47,6 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 			Name:      log_name,
 			MountPath: log_path,
 		})
-
 		vols = append(vols, corev1.Volume{
 			Name: log_name,
 			VolumeSource: corev1.VolumeSource{
@@ -75,8 +74,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, beSpec.Secrets)
 
 	feExternalServiceName := srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
-	Envs := pod.Envs(src.Name, src.Namespace, src.Spec.StarRocksBeSpec, config, feExternalServiceName)
-	Envs = append(Envs, beSpec.BeEnvVars...)
+	Envs := pod.Envs(src.Spec.StarRocksBeSpec, config, feExternalServiceName, src.Namespace, beSpec.BeEnvVars)
 	beContainer := corev1.Container{
 		Name:            srapi.DEFAULT_BE,
 		Image:           beSpec.Image,

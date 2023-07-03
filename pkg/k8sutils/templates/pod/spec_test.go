@@ -326,12 +326,14 @@ func TestMountStorageVolumes(t *testing.T) {
 			name: "test mount storage volumes",
 			args: args{
 				spec: &v1.StarRocksFeSpec{
-					StorageVolumes: []v1.StorageVolume{
-						{
-							Name:             "s1",
-							MountPath:        "/pkg/mounts/volumes1",
-							StorageClassName: func() *string { s := "sc1"; return &s }(),
-							StorageSize:      "1GB",
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StorageVolumes: []v1.StorageVolume{
+							{
+								Name:             "s1",
+								MountPath:        "/pkg/mounts/volumes1",
+								StorageClassName: func() *string { s := "sc1"; return &s }(),
+								StorageSize:      "1GB",
+							},
 						},
 					},
 				},
@@ -524,7 +526,7 @@ func TestEnvs(t *testing.T) {
 	for _, tt := range tests {
 		feExternalServiceName := v1.GetExternalServiceName("test", &v1.StarRocksFeSpec{})
 		t.Run(tt.name, func(t *testing.T) {
-			got := Envs(tt.args.clusterName, tt.args.namespace, tt.args.spec, tt.args.config, feExternalServiceName)
+			got := Envs(tt.args.spec, tt.args.config, feExternalServiceName, tt.args.namespace, nil)
 			if len(got) != len(tt.want) {
 				t.Errorf("Envs() = %v, want %v", got, tt.want)
 			}

@@ -45,10 +45,6 @@ var _ SpecInterface = &StarRocksCnSpec{}
 type StarRocksFeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
 
-	//StorageVolumes defines the additional storage for meta storage.
-	//+optional
-	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
-
 	//+optional
 	//feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
@@ -57,10 +53,6 @@ type StarRocksFeSpec struct {
 // StarRocksBeSpec defines the desired state of be.
 type StarRocksBeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
-
-	//StorageVolumes defines the additional storage for meta storage.
-	//+optional
-	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 
 	//+optional
 	//beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
@@ -97,12 +89,12 @@ type StarRocksComponentSpec struct {
 	// to be owned by the pod:
 	FsGroup *int64 `json:"fsGroup,omitempty"`
 
-	//Replicas is the number of desired Pod, the number is 1,3,5
+	//Replicas is the number of desired Pod
 	// +kubebuilder:validation:Minimum=0
 	//+optional: Defaults to 3
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image for a starrocks deployment..
+	//Image for a starrocks deployment.
 	Image string `json:"image"`
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
@@ -156,6 +148,10 @@ type StarRocksComponentSpec struct {
 	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
 	// +optional
 	SchedulerName string `json:"schedulerName,omitempty"`
+
+	//StorageVolumes defines the additional storage for meta storage.
+	//+optional
+	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 }
 
 func (spec *StarRocksComponentSpec) GetAnnotations() map[string]string {
@@ -349,16 +345,8 @@ func (spec *StarRocksCnSpec) GetServiceName() string {
 	return spec.StarRocksComponentSpec.GetServiceName()
 }
 
-func (spec *StarRocksFeSpec) GetStorageVolumes() []StorageVolume {
+func (spec *StarRocksComponentSpec) GetStorageVolumes() []StorageVolume {
 	return spec.StorageVolumes
-}
-
-func (spec *StarRocksBeSpec) GetStorageVolumes() []StorageVolume {
-	return spec.StorageVolumes
-}
-
-func (spec *StarRocksCnSpec) GetStorageVolumes() []StorageVolume {
-	return nil
 }
 
 func (spec *StarRocksComponentSpec) GetAffinity() *corev1.Affinity {

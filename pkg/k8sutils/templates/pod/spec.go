@@ -160,9 +160,23 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 	return labels
 }
 
-func Envs(clusterName string, namespace string,
-	spec v1.SpecInterface, config map[string]interface{}, feExternalServiceName string) []corev1.EnvVar {
-	envs := []corev1.EnvVar{
+func Envs(spec v1.SpecInterface, config map[string]interface{}, feExternalServiceName string, namespace string, envs []corev1.EnvVar) []corev1.EnvVar {
+	// copy envs
+	envs = append([]corev1.EnvVar(nil), envs...)
+
+	keys := make(map[string]bool)
+	for _, env := range envs {
+		keys[env.Name] = true
+	}
+
+	addEnv := func(envVar corev1.EnvVar) {
+		if !keys[envVar.Name] {
+			keys[envVar.Name] = true
+			envs = append(envs, envVar)
+		}
+	}
+
+	for _, envVar := range []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
 			ValueFrom: &corev1.EnvVarSource{
@@ -195,11 +209,13 @@ func Envs(clusterName string, namespace string,
 			Name:  "USER",
 			Value: "root",
 		},
+	} {
+		addEnv(envVar)
 	}
 
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
-		envs = append(envs, []corev1.EnvVar{
+		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
 				Value: v1.DEFAULT_FE,
@@ -208,9 +224,11 @@ func Envs(clusterName string, namespace string,
 				Name:  v1.FE_SERVICE_NAME,
 				Value: feExternalServiceName + "." + namespace,
 			},
-		}...)
+		} {
+			addEnv(envVar)
+		}
 	case *v1.StarRocksBeSpec:
-		envs = append(envs, []corev1.EnvVar{
+		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
 				Value: v1.DEFAULT_BE,
@@ -223,9 +241,11 @@ func Envs(clusterName string, namespace string,
 				Name:  "FE_QUERY_PORT",
 				Value: strconv.FormatInt(int64(rutils.GetPort(config, rutils.QUERY_PORT)), 10),
 			},
-		}...)
+		} {
+			addEnv(envVar)
+		}
 	case *v1.StarRocksCnSpec:
-		envs = append(envs, []corev1.EnvVar{
+		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
 				Value: v1.DEFAULT_CN,
@@ -238,7 +258,9 @@ func Envs(clusterName string, namespace string,
 				Name:  "FE_QUERY_PORT",
 				Value: strconv.FormatInt(int64(rutils.GetPort(config, rutils.QUERY_PORT)), 10),
 			},
-		}...)
+		} {
+			addEnv(envVar)
+		}
 	}
 
 	return envs

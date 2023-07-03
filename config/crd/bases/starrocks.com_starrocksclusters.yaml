@@ -1064,7 +1064,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks deployment..
+                    description: Image for a starrocks deployment.
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -1135,8 +1135,7 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod, the number
-                      is 1,3,5
+                    description: Replicas is the number of desired Pod
                     format: int32
                     minimum: 0
                     type: integer
@@ -2990,7 +2989,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks deployment..
+                    description: Image for a starrocks deployment.
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -3061,8 +3060,7 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod, the number
-                      is 1,3,5
+                    description: Replicas is the number of desired Pod
                     format: int32
                     minimum: 0
                     type: integer
@@ -3155,6 +3153,35 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  storageVolumes:
+                    description: StorageVolumes defines the additional storage for
+                      meta storage.
+                    items:
+                      description: StorageVolume defines additional PVC template for
+                        StatefulSets and volumeMount for pods that mount this PVC
+                      properties:
+                        mountPath:
+                          description: MountPath specify the path of volume mount.
+                          type: string
+                        name:
+                          description: name of a storage volume.
+                          pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+                          type: string
+                        storageClassName:
+                          description: 'storageClassName is the name of the StorageClass
+                            required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                          type: string
+                        storageSize:
+                          description: 'StorageSize is a valid memory size type based
+                            on powers-of-2, so 1Mi is 1024Ki. Supported units:Mi,
+                            Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.'
+                          pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
+                          type: string
+                      required:
+                      - name
+                      - storageSize
+                      type: object
+                    type: array
                   tolerations:
                     description: (Optional) Tolerations for scheduling pods onto some
                       dedicated nodes
@@ -4213,7 +4240,7 @@ spec:
                       type: object
                     type: array
                   image:
-                    description: Image for a starrocks deployment..
+                    description: Image for a starrocks deployment.
                     type: string
                   imagePullSecrets:
                     description: 'ImagePullSecrets is an optional list of references
@@ -4284,8 +4311,7 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod, the number
-                      is 1,3,5
+                    description: Replicas is the number of desired Pod
                     format: int32
                     minimum: 0
                     type: integer

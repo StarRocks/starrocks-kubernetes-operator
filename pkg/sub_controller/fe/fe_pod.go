@@ -73,8 +73,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
 	feExternalServiceName := srapi.GetExternalServiceName(src.Name, feSpec)
-	Envs := pod.Envs(src.Name, src.Namespace, src.Spec.StarRocksFeSpec, config, feExternalServiceName)
-	Envs = append(Envs, feSpec.FeEnvVars...)
+	Envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
 		Image:           feSpec.Image,
