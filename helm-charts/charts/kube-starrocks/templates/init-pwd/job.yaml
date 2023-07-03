@@ -25,7 +25,6 @@ spec:
         - /opt/starrocks/fe_initpwd.sh
         - {{ template "kube-starrocks.name" . }}-fe-0.{{ template "kube-starrocks.name" . }}-fe-search
         - "9030"
-        - "SET PASSWORD = PASSWORD(''$INIT_PWD'');"
         env:
         - name: INIT_PWD
           valueFrom:

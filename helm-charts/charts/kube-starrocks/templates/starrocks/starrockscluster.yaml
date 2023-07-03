@@ -57,7 +57,7 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled }}
     feEnvVars:
-{{- if .Values.initPassword.enabled }}
+{{- if and .Values.initPassword.enabled .Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
@@ -156,7 +156,7 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled }}
     beEnvVars:
-{{- if .Values.initPassword.enabled }}
+{{- if and .Values.initPassword.enabled .Values.starrocksBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
@@ -233,7 +233,7 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled }}
     cnEnvVars:
-{{- if .Values.initPassword.enabled }}
+{{- if and .Values.initPassword.enabled .Values.starrocksCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:

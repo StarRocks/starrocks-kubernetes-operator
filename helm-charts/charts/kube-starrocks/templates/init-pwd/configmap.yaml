@@ -10,8 +10,8 @@ data:
 
     # ensure `mysql` command can be ended with 30 seconds
     # Change the root password during initial installation
-    success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$3" 2>&1`
-  
+    init_pwd_sql="SET PASSWORD = PASSWORD('$INIT_PWD');"
+    success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$init_pwd_sql" 2>&1`
     if [ $? -ne 0 ] ; then
       echo $success
       errcode=`echo $success | awk -F " " '{print $2}'`
