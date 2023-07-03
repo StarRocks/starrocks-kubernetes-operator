@@ -61,7 +61,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
-	//get the fe configMap for resolve ports.
+	// get the fe configMap for resolve ports.
 	config, err := fc.GetFeConfig(ctx, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		klog.Errorf("FeController Sync: get fe configmap failed, "+
@@ -70,10 +70,10 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	//generate new fe service.
+	// generate new fe service.
 	svc := rutils.BuildExternalService(src, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), rutils.FeService, config,
 		statefulset.Selector(src.Name, feSpec), statefulset.Labels(src.Name, feSpec))
-	//create or update fe external and domain search service, update the status of fe on src.
+	// create or update fe external and domain search service, update the status of fe on src.
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{
@@ -87,7 +87,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, feSpec, podTemplateSpec))
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
-		//exclude the restart annotation interference,
+		// exclude the restart annotation interference,
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
 		if !fc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
 			// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
@@ -103,7 +103,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	if err = k8sutils.ApplyService(ctx, fc.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
-		//for compatible v1.5, we use `fe-domain-search` for internal communicating.
+		// for compatible v1.5, we use `fe-domain-search` for internal communicating.
 		internalService.Name = st.Spec.ServiceName
 
 		return rutils.ServiceDeepEqual(new, esvc)
@@ -132,7 +132,7 @@ func (fc *FeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]
 
 // UpdateStatus update the all resource status about fe.
 func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
-	//if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
+	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
 	if src.Spec.StarRocksFeSpec == nil {
 		src.Status.StarRocksFeStatus = nil
 		return nil
@@ -162,7 +162,7 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 		return err
 	}
 
-	//if have pod not running that the operation is not finished, we don't need update statefulset annotation.
+	// if have pod not running that the operation is not finished, we don't need update statefulset annotation.
 	if fs.Phase != srapi.ComponentRunning {
 		operationValue := st.Annotations[string(srapi.AnnotationFERestartKey)]
 		if string(srapi.AnnotationRestart) == operationValue {
@@ -210,7 +210,7 @@ func (fc *FeController) updateFeStatus(fs *srapi.StarRocksFeStatus, labels map[s
 
 	var creatings, readys, faileds []string
 	podmap := make(map[string]corev1.Pod)
-	//get all pod status that controlled by st.
+	// get all pod status that controlled by st.
 	for _, pod := range podList.Items {
 		podmap[pod.Name] = pod
 		if ready := k8sutils.PodIsReady(&pod.Status); ready {
@@ -259,7 +259,7 @@ func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.Co
 
 // ClearResources clear resource about fe.
 func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
-	//if the starrocks is not have fe.
+	// if the starrocks is not have fe.
 	if src.Status.StarRocksFeStatus == nil {
 		return true, nil
 	}

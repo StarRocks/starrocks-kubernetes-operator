@@ -23,16 +23,16 @@ const (
 	// NameLabelKey is Kubernetes recommended label key, it represents the name of the application
 	NameLabelKey string = "app.kubernetes.io/name"
 
-	//OwnerReference list object depended by this object
+	// OwnerReference list object depended by this object
 	OwnerReference string = "app.starrocks.ownerreference/name"
 
-	//ComponentsResourceHash the component hash
+	// ComponentsResourceHash the component hash
 	ComponentResourceHash string = "app.starrocks.components/hash"
 
 	ComponentReplicasEmpty string = "app.starrocks.components/replica/empty"
 
-	//ComponentGeneration record for last update generation for compare with new spec.
-	//ComponentGeneration string = "app.starrocks.components/generation"
+	// ComponentGeneration record for last update generation for compare with new spec.
+	// ComponentGeneration string = "app.starrocks.components/generation"
 )
 
 // the labels value. default statefulset name
@@ -52,7 +52,7 @@ const (
 
 	DEFAULT_START_SCRIPT_NAME = "fe-start-scripts"
 
-	//TODO: when scripts need set.
+	// TODO: when scripts need set.
 	DEFAULT_START_SCRIPT_PATH = ""
 )
 

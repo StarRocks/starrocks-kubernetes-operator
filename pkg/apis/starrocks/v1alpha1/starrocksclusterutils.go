@@ -22,7 +22,7 @@ func GetFeExternalServiceName(src *StarRocksCluster) string {
 		return src.Spec.StarRocksFeSpec.Service.Name
 	}
 
-	//for compatible version <=1.3
+	// for compatible version <=1.3
 	return src.Name + "-" + DEFAULT_FE + "-service"
 }
 

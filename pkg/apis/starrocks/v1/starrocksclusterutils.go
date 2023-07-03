@@ -21,7 +21,7 @@ func GetExternalServiceName(clusterName string, spec SpecInterface) string {
 	if spec.GetServiceName() != "" {
 		return spec.GetServiceName()
 	}
-	//for compatible version <=1.3
+	// for compatible version <=1.3
 	switch spec.(type) {
 	case *StarRocksFeSpec:
 		return clusterName + "-" + DEFAULT_FE + "-service"

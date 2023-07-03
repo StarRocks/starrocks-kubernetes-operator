@@ -30,14 +30,14 @@ func TestGetFeExternalServiceName(t *testing.T) {
 	}{
 		// NOTE: we must not input a nil value for spec, otherwise the following error will occur:
 		// panic: runtime error: invalid memory address or nil pointer dereference [recovered]
-		//{
+		// {
 		//	name: "test1",
 		//	args: args{
 		//		clusterName: "test",
 		//		spec:        (*StarRocksFeSpec)(nil),
 		//	},
 		//	want: "test-fe-service",
-		//},
+		// },
 		{
 			name: "test2",
 			args: args{

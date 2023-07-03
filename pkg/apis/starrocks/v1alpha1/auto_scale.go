@@ -24,47 +24,47 @@ import (
 
 // AutoScalingPolicy defines the auto scale
 type AutoScalingPolicy struct {
-	//the policy of cn autoscale. operator use autoscaling v2.
+	// the policy of cn autoscale. operator use autoscaling v2.
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
 
-	//the min numbers of target.
+	// the min numbers of target.
 
-	//version represents the autoscaler version for cn service. only support v1,v2beta2,v2
+	// version represents the autoscaler version for cn service. only support v1,v2beta2,v2
 	// +kubebuilder:default:="v2beta2"
 	Version AutoScalerVersion `json:"version,omitempty"`
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 
 	// the max numbers of target.
-	//+optional
+	// +optional
 	MaxReplicas int32 `json:"maxReplicas"`
 }
 
 type AutoScalerVersion string
 
 const (
-	//the cn service use v1 autoscaler. reference to https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+	// the cn service use v1 autoscaler. reference to https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 	AutoScalerV1 AutoScalerVersion = "v1"
 
-	//the cn service use v2beta. reference to  https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+	// the cn service use v2beta. reference to  https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 	AutoScalerV2Beta2 AutoScalerVersion = "v2beta2"
 
-	//the cn service use v2. reference to  https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+	// the cn service use v2. reference to  https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 	AutoSclaerV2 AutoScalerVersion = "v2"
 )
 
 type HPAPolicy struct {
 	// +optional
 	// Metrics specifies how to scale based on a single metric
-	//the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-	//HorizontalPodAutoscaler version and kubernetes releases matching issue.
+	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
 	// the splice will have unsafe.Pointer convert, so be careful to edit the struct fileds.
 	Metrics []MetricSpec `json:"metrics,omitempty"`
 
 	// +optional
 	// HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
-	//the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-	//HorizontalPodAutoscaler version and kubernetes releases matching issue.
+	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
 	// the
 	Behavior *HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }

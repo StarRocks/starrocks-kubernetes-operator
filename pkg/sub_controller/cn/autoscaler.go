@@ -39,7 +39,7 @@ func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPoli
 		Labels:         labels,
 		AutoscalerType: src.Spec.StarRocksCnSpec.AutoScalingPolicy.Version,
 		TargetName:     target.Name,
-		//use src as ownerReference for reconciling on autoscaler updated.
+		// use src as ownerReference for reconciling on autoscaler updated.
 		OwnerReferences: target.OwnerReferences,
 		ScalerPolicy:    &scalerInfo,
 	}
