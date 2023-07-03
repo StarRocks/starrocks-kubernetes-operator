@@ -28,8 +28,9 @@ spec:
 {{ toYaml .Values.starrocksFESpec.service.annotations | indent 8 }}
 {{- end }}
 {{- end }}
-{{- if .Values.starrocksFESpec.annotations }}
     annotations:
+      app.starrocks.io/fe-config-hash: {{template "starrockscluster.fe.config.hash" . }}
+{{- if .Values.starrocksFESpec.annotations }}
 {{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
 {{- end }}
 {{- if .Values.starrocksFESpec.imagePullSecrets }}
@@ -134,8 +135,9 @@ spec:
 {{ toYaml .Values.starrocksBeSpec.service.annotations | indent 8 }}
 {{- end }}
 {{- end }}
-{{- if .Values.starrocksBeSpec.annotations }}
     annotations:
+      app.starrocks.io/be-config-hash: {{template "starrockscluster.be.config.hash" . }}
+{{- if .Values.starrocksBeSpec.annotations }}
 {{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
 {{- end }}
 {{- if .Values.starrocksBeSpec.imagePullSecrets }}
@@ -284,8 +286,9 @@ spec:
 {{ toYaml .Values.starrocksCnSpec.service.annotations | indent 8 }}
 {{- end }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.annotations }}
     annotations:
+      app.starrocks.io/cn-config-hash: {{template "starrockscluster.cn.config.hash" . }}
+{{- if .Values.starrocksCnSpec.annotations }}
 {{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}
 {{- end }}
 {{- if .Values.starrocksCnSpec.imagePullSecrets }}
