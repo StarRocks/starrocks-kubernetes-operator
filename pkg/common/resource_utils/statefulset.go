@@ -38,7 +38,7 @@ type hashStatefulsetObject struct {
 
 // StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
 func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
-	//set -1 for the initial is zero.
+	// set -1 for the initial is zero.
 	replicas := int32(-1)
 	if !excludeReplica {
 		if st.Spec.Replicas != nil {
@@ -82,12 +82,12 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 
 	anno := Annotations{}
 	anno.AddAnnotation(new.Annotations)
-	//anno.Add(srapi.ComponentGeneration, strconv.FormatInt(old.Generation+1, 10))
+	// anno.Add(srapi.ComponentGeneration, strconv.FormatInt(old.Generation+1, 10))
 	anno.Add(srapi.ComponentResourceHash, newHashv)
 	new.Annotations = anno
 
 	klog.Info("the statefulset name "+new.Name+" new hash value ", newHashv, " old have value ", oldHashv)
-	//avoid the update from kubectl.
+	// avoid the update from kubectl.
 	return newHashv == oldHashv &&
 		new.Namespace == old.Namespace /* &&
 		oldGeneration == old.Generation*/

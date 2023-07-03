@@ -105,7 +105,7 @@ func buildAutoscalerV2beta2(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAuto
 		},
 	}
 
-	//the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign align.
+	// the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign align.
 	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
 		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
 			metrics := unsafe.Slice((*v2beta2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))
@@ -141,7 +141,7 @@ func buildAutoscalerV2(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
 		},
 	}
 
-	//the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign.
+	// the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign.
 	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
 		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
 			metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))

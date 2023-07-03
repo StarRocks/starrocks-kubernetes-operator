@@ -68,8 +68,8 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	beSpec := src.Spec.StarRocksBeSpec
 
-	//get the be configMap for resolve ports.
-	//2. get config for generate statefulset and service.
+	// get the be configMap for resolve ports.
+	// 2. get config for generate statefulset and service.
 	config, err := be.GetConfig(ctx, &beSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		klog.Error("BeController Sync ", "resolve cn configmap failed, namespace ", src.Namespace, " configmapName ", beSpec.ConfigMapInfo.ConfigMapName, " configMapKey ", beSpec.ConfigMapInfo.ResolveKey, " error ", err)
@@ -77,21 +77,21 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	feconfig, _ := be.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
-	//annotation: add query port in cnconfig.
+	// annotation: add query port in cnconfig.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
-	//generate new cn external service.
+	// generate new cn external service.
 	externalsvc := rutils.BuildExternalService(src, srapi.GetExternalServiceName(src.Name, beSpec), rutils.BeService, config,
 		statefulset.Selector(src.Name, beSpec), statefulset.Labels(src.Name, beSpec))
-	//generate internal fe service, update the status of cn on src.
+	// generate internal fe service, update the status of cn on src.
 	internalService := be.generateInternalService(ctx, src, &externalsvc, config)
 
-	//create cn statefulset.
+	// create cn statefulset.
 	podTemplateSpec := be.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, beSpec, podTemplateSpec))
 
-	//update the statefulset if feSpec be updated.
+	// update the statefulset if feSpec be updated.
 	if err = k8sutils.ApplyStatefulSet(ctx, be.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
-		//exclude the restart annotation interference. annotation
+		// exclude the restart annotation interference. annotation
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
 		if !be.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
 			// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
@@ -108,7 +108,7 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	if err := k8sutils.ApplyService(ctx, be.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
-		//for compatible v1.5, we use `cn-domain-search` for internal communicating.
+		// for compatible v1.5, we use `cn-domain-search` for internal communicating.
 		internalService.Name = st.Spec.ServiceName
 		return rutils.ServiceDeepEqual(new, esvc)
 	}); err != nil {
@@ -137,7 +137,7 @@ func (be *BeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]
 
 // UpdateStatus update the all resource status about be.
 func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
-	//if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
+	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
 	if src.Spec.StarRocksBeSpec == nil {
 		src.Status.StarRocksBeStatus = nil
 		return nil
@@ -172,7 +172,7 @@ func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 		return err
 	}
 
-	//if have pod not running that the operation is not finished, we don't need update statefulset annotation.
+	// if have pod not running that the operation is not finished, we don't need update statefulset annotation.
 	if bs.Phase != srapi.ComponentRunning {
 		operationValue := st.Annotations[string(srapi.AnnotationBERestartKey)]
 		if string(srapi.AnnotationRestart) == operationValue {
@@ -213,7 +213,7 @@ func (be *BeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 }
 
 func (be *BeController) checkFEOK(ctx context.Context, src *srapi.StarRocksCluster) bool {
-	//1. wait for fe ok.
+	// 1. wait for fe ok.
 	endpoints := corev1.Endpoints{}
 	if err := be.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
 		klog.Infof("BeController Sync wait fe service name %s available occur failed %s\n", srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
@@ -239,7 +239,7 @@ func (be *BeController) generateInternalService(ctx context.Context, src *srapi.
 		},
 	})
 
-	//for compatible verison < v1.5
+	// for compatible verison < v1.5
 	var esearchSvc corev1.Service
 	if err := be.k8sclient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "be-domain-search"}, &esearchSvc); err == nil {
 		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
@@ -287,7 +287,7 @@ func (be *BeController) updateBeStatus(bs *srapi.StarRocksBeStatus, labels map[s
 
 	var creatings, readys, faileds []string
 	podmap := make(map[string]corev1.Pod)
-	//get all pod status that controlled by st.
+	// get all pod status that controlled by st.
 	for _, pod := range podList.Items {
 		podmap[pod.Name] = pod
 		if ready := k8sutils.PodIsReady(&pod.Status); ready {
@@ -316,12 +316,12 @@ func (be *BeController) updateBeStatus(bs *srapi.StarRocksBeStatus, labels map[s
 }
 
 func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
-	//if the starrocks is not have cn.
+	// if the starrocks is not have cn.
 	if src.Status.StarRocksBeStatus == nil {
 		return true, nil
 	}
 
-	//no delete.
+	// no delete.
 	if src.DeletionTimestamp.IsZero() {
 		return true, nil
 	}

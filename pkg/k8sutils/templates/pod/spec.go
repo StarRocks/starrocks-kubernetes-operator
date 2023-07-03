@@ -389,7 +389,7 @@ func SecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
 func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, now string) map[string]string {
 	annotations := make(map[string]string)
 
-	//add restart annotation in podTemplate.
+	// add restart annotation in podTemplate.
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		if _, ok := clusterAnnotations[string(v1.AnnotationFERestartKey)]; ok {

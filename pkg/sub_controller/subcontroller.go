@@ -24,18 +24,18 @@ import (
 )
 
 type SubController interface {
-	//Sync reconcile for sub controller. bool represent the component have updated.
+	// Sync reconcile for sub controller. bool represent the component have updated.
 	Sync(ctx context.Context, src *srapi.StarRocksCluster) error
 
-	//ClearResources clear all resource about sub-component.
+	// ClearResources clear all resource about sub-component.
 	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error)
 
-	//GetControllerName return the controller name, beController, feController,cnController for log.
+	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string
 
-	//UpdateStatus update the component status on src.
+	// UpdateStatus update the component status on src.
 	UpdateStatus(src *srapi.StarRocksCluster) error
 
-	//SyncRestartStatus sync the status of restart.
+	// SyncRestartStatus sync the status of restart.
 	SyncRestartStatus(src *srapi.StarRocksCluster) error
 }

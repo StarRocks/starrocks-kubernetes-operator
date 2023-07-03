@@ -27,7 +27,7 @@ func MakeSearchService(serviceName string, externalService *corev1.Service, port
 		ClusterIP: "None",
 		Ports:     ports,
 		Selector:  externalService.Spec.Selector,
-		//value = true, Pod don't need to become ready that be search by domain.
+		// value = true, Pod don't need to become ready that be search by domain.
 		PublishNotReadyAddresses: true,
 	}
 

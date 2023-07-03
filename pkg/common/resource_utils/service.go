@@ -38,14 +38,14 @@ type hashService struct {
 	finalizers []string
 	ports      []corev1.ServicePort
 	selector   map[string]string
-	//deal with external access load balancer.
-	//serviceType corev1.ServiceType
+	// deal with external access load balancer.
+	// serviceType corev1.ServiceType
 	labels map[string]string
 }
 
 // BuildExternalService build the external service. not have selector
 func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
-	//the k8s service type.
+	// the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
