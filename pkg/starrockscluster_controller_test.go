@@ -66,13 +66,13 @@ func TestReconcileConstructFeResource(t *testing.T) {
 							corev1.ResourceMemory: resource.MustParse("16G"),
 						},
 					},
-				},
-				StorageVolumes: []srapi.StorageVolume{
-					{
-						Name:             "fe-storage",
-						StorageClassName: rutils.GetStringPointer("shard-data"),
-						MountPath:        "/data/fe/meta",
-						StorageSize:      "10Gi",
+					StorageVolumes: []srapi.StorageVolume{
+						{
+							Name:             "fe-storage",
+							StorageClassName: rutils.GetStringPointer("shard-data"),
+							MountPath:        "/data/fe/meta",
+							StorageSize:      "10Gi",
+						},
 					},
 				},
 			},
@@ -115,13 +115,13 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 							corev1.ResourceMemory: resource.MustParse("16G"),
 						},
 					},
-				},
-				StorageVolumes: []srapi.StorageVolume{
-					{
-						Name:             "fe-storage",
-						StorageClassName: rutils.GetStringPointer("shard-data"),
-						StorageSize:      "10Gi",
-						MountPath:        "/data/fe/meta",
+					StorageVolumes: []srapi.StorageVolume{
+						{
+							Name:             "fe-storage",
+							StorageClassName: rutils.GetStringPointer("shard-data"),
+							StorageSize:      "10Gi",
+							MountPath:        "/data/fe/meta",
+						},
 					},
 				},
 			},
