@@ -10,7 +10,7 @@ spec:
     matchLabels:
       app: {{ template "kube-starrocks.name" . }}-operator
       version: {{ $.Chart.Version }}
-  replicas: 1
+  replicas: {{ .Values.starrocksOperator.replicaCount }}
   template:
     metadata:
       annotations:

@@ -78,8 +78,29 @@ func getProbe(port int32, path string) corev1.ProbeHandler {
 	}
 }
 
+func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	configMaps []v1.ConfigMapReference) ([]corev1.Volume, []corev1.VolumeMount) {
+	for _, configMap := range configMaps {
+		volumes = append(volumes, corev1.Volume{
+			Name: configMap.Name,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: configMap.Name,
+					},
+				},
+			},
+		})
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      configMap.Name,
+			MountPath: configMap.MountPath,
+		})
+	}
+	return volumes, volumeMounts
+}
+
 func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
-	secrets []v1.SecretInfo) ([]corev1.Volume, []corev1.VolumeMount) {
+	secrets []v1.SecretReference) ([]corev1.Volume, []corev1.VolumeMount) {
 	for _, secret := range secrets {
 		volumes = append(volumes, corev1.Volume{
 			Name: secret.Name,
@@ -120,7 +141,7 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 	return volumes, volumeMounts, vexist
 }
 
-func MountConfigMap(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+func MountConfigMapInfo(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 	cmInfo v1.ConfigMapInfo, mountPath string) ([]corev1.Volume, []corev1.VolumeMount) {
 	if cmInfo.ConfigMapName != "" && cmInfo.ResolveKey != "" {
 		volumes = append(volumes, corev1.Volume{

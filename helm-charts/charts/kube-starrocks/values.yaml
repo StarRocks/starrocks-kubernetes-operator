@@ -155,6 +155,11 @@ starrocksFESpec:
     # e.g. mount my-secret to /etc/my-secret
     # - name: my-secret
     #   mountPath: /etc/my-secret
+  # mount configmaps if necessary.
+  configMaps: []
+    # e.g. mount my-configmap to /etc/my-configmap
+    # - name: my-configmap
+    #   mountPath: /etc/my-configmap
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -273,6 +278,11 @@ starrocksCnSpec:
     # e.g. mount my-secret to /etc/my-secret
     # - name: my-secret
     #   mountPath: /etc/my-secret
+  # mount configmaps if necessary.
+  configMaps: []
+    # e.g. mount my-configmap to /etc/my-configmap
+    # - name: my-configmap
+    #   mountPath: /etc/my-configmap
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -379,6 +389,11 @@ starrocksBeSpec:
     # e.g. mount my-secret to /etc/my-secret
     # - name: my-secret
     #   mountPath: /etc/my-secret
+  # mount configmaps if necessary.
+  configMaps: []
+    # e.g. mount my-configmap to /etc/my-configmap
+    # - name: my-configmap
+    #  mountPath: /etc/my-configmap
 
 # create secrets if necessary.
 secrets: []
@@ -387,4 +402,13 @@ secrets: []
   #   data:
   #     key: |
   #       this is the content of the secret
+  #       when mounted, key will be the name of the file
+
+# create configmaps if necessary.
+configMaps: []
+  # e.g. create my-configmap
+  # - name: my-configmap
+  #   data:
+  #     key: |
+  #       this is the content of the configmap
   #       when mounted, key will be the name of the file

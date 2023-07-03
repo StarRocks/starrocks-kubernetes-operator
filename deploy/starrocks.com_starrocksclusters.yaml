@@ -468,6 +468,15 @@ spec:
                       resolveKey:
                         type: string
                     type: object
+                  configMaps:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    type: array
                   fsGroup:
                     format: int64
                     type: integer
@@ -1377,6 +1386,15 @@ spec:
                       resolveKey:
                         type: string
                     type: object
+                  configMaps:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    type: array
                   fsGroup:
                     format: int64
                     type: integer
@@ -1899,6 +1917,15 @@ spec:
                       resolveKey:
                         type: string
                     type: object
+                  configMaps:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    type: array
                   feEnvVars:
                     items:
                       properties:

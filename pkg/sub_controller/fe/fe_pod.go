@@ -69,7 +69,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volMounts = pod.MountConfigMap(vols, volMounts, feSpec.ConfigMapInfo, fe_config_path)
+	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, fe_config_path)
+	vols, volMounts = pod.MountConfigMaps(vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
 	feExternalServiceName := srapi.GetExternalServiceName(src.Name, feSpec)
