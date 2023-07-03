@@ -1030,7 +1030,8 @@ spec:
                       type: object
                     type: array
                   configMapInfo:
-                    description: the reference for configMap.
+                    description: the reference for configMap which store the config
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -1039,6 +1040,20 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  configMaps:
+                    description: the reference for configMap which allow users to
+                      mount any files to container.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   fsGroup:
                     description: 'A special supplemental group that applies to all
                       containers in a pod. Some volume types allow the Kubelet to
@@ -2956,7 +2971,8 @@ spec:
                       type: object
                     type: array
                   configMapInfo:
-                    description: the reference for configMap.
+                    description: the reference for configMap which store the config
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -2965,6 +2981,20 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  configMaps:
+                    description: the reference for configMap which allow users to
+                      mount any files to container.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   fsGroup:
                     description: 'A special supplemental group that applies to all
                       containers in a pod. Some volume types allow the Kubelet to
@@ -4068,7 +4098,8 @@ spec:
                       for collect to monitor system.
                     type: object
                   configMapInfo:
-                    description: the reference for configMap.
+                    description: the reference for configMap which store the config
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -4077,6 +4108,20 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
+                  configMaps:
+                    description: the reference for configMap which allow users to
+                      mount any files to container.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                      type: object
+                    type: array
                   feEnvVars:
                     description: feEnvVars is a slice of environment variables that
                       are added to the pods, the default is empty.
