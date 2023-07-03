@@ -16,30 +16,19 @@ limitations under the License.
 
 package v1
 
-// GetFeExternalServiceName generate the name of service that access the fe.
-func GetFeExternalServiceName(src *StarRocksCluster) string {
-	if src.Spec.StarRocksFeSpec != nil && src.Spec.StarRocksFeSpec.Service != nil && src.Spec.StarRocksFeSpec.Service.Name != "" {
-		return src.Spec.StarRocksFeSpec.Service.Name
+// GetExternalServiceName generate the name of service that access the fe.
+func GetExternalServiceName(clusterName string, spec SpecInterface) string {
+	if spec.GetServiceName() != "" {
+		return spec.GetServiceName()
 	}
-
 	//for compatible version <=1.3
-	return src.Name + "-" + DEFAULT_FE + "-service"
-}
-
-// GetCnExternalServiceName generate the name of service that access the cn
-func GetCnExternalServiceName(src *StarRocksCluster) string {
-	if src.Spec.StarRocksCnSpec != nil && src.Spec.StarRocksCnSpec.Service != nil && src.Spec.StarRocksCnSpec.Service.Name != "" {
-		return src.Spec.StarRocksCnSpec.Service.Name
+	switch spec.(type) {
+	case *StarRocksFeSpec:
+		return clusterName + "-" + DEFAULT_FE + "-service"
+	case *StarRocksBeSpec:
+		return clusterName + "-" + DEFAULT_BE + "-service"
+	case *StarRocksCnSpec:
+		return clusterName + "-" + DEFAULT_CN + "-service"
 	}
-
-	return src.Name + "-" + DEFAULT_CN + "-service"
-}
-
-// GetBeExternalServiceName generate the name of service that access the be.
-func GetBeExternalServiceName(src *StarRocksCluster) string {
-	if src.Spec.StarRocksBeSpec != nil && src.Spec.StarRocksBeSpec.Service != nil && src.Spec.StarRocksBeSpec.Service.Name != "" {
-		return src.Spec.StarRocksBeSpec.Service.Name
-	}
-
-	return src.Name + "-" + DEFAULT_BE + "-service"
+	return ""
 }

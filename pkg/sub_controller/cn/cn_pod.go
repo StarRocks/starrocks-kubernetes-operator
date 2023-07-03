@@ -18,13 +18,10 @@ package cn
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 	"time"
 )
 
@@ -36,93 +33,45 @@ const (
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig map[string]interface{}) corev1.PodTemplateSpec {
+func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
 	metaname := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
-	//generate the default emptydir for log.
-	volumeMounts := []corev1.VolumeMount{
-		{
+	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
+	// add default volume about log
+	if _, ok := vexist[log_path]; !ok {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      log_name,
 			MountPath: log_path,
-		},
-	}
-
-	vols := []corev1.Volume{
-		{
+		})
+		vols = append(vols, corev1.Volume{
 			Name: log_name,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
-		},
+		})
 	}
 
 	// mount configmap, secrets to pod if needed
 	vols, volumeMounts = pod.MountConfigMap(vols, volumeMounts, cnSpec.ConfigMapInfo, cn_config_path)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
 
-	Envs := []corev1.EnvVar{
-		{
-			Name: "POD_NAME",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.name"},
-			},
-		}, {
-			Name: "POD_NAMESPACE",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
-			},
-		}, {
-			Name:  srapi.COMPONENT_NAME,
-			Value: srapi.DEFAULT_CN,
-		}, {
-			Name:  srapi.FE_SERVICE_NAME,
-			Value: srapi.GetFeExternalServiceName(src),
-		}, {
-			Name:  "FE_QUERY_PORT",
-			Value: strconv.FormatInt(int64(rutils.GetPort(cnconfig, rutils.QUERY_PORT)), 10),
-		}, {
-			Name:  "HOST_TYPE",
-			Value: "FQDN",
-		}, {
-			Name:  "USER",
-			Value: "root",
-		},
-	}
-
-	Envs = append(Envs, cnSpec.CnEnvVars...)
+	feExternalServiceName := srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	Envs := pod.Envs(src.Spec.StarRocksCnSpec, config, feExternalServiceName, src.Namespace, cnSpec.CnEnvVars)
 	cnContainer := corev1.Container{
-		Name:    srapi.DEFAULT_CN,
-		Image:   cnSpec.Image,
-		Command: []string{"/opt/starrocks/cn_entrypoint.sh"},
-		Args:    []string{"$(FE_SERVICE_NAME)"},
-		Ports: []corev1.ContainerPort{
-			{
-				Name:          "thrift-port",
-				ContainerPort: rutils.GetPort(cnconfig, rutils.THRIFT_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "webserver-port",
-				ContainerPort: rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "heartbeat-port",
-				ContainerPort: rutils.GetPort(cnconfig, rutils.HEARTBEAT_SERVICE_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			}, {
-				Name:          "brpc-port",
-				ContainerPort: rutils.GetPort(cnconfig, rutils.BRPC_PORT),
-				Protocol:      corev1.ProtocolTCP,
-			},
-		},
+		Name:            srapi.DEFAULT_CN,
+		Image:           cnSpec.Image,
+		Command:         []string{"/opt/starrocks/cn_entrypoint.sh"},
+		Args:            []string{"$(FE_SERVICE_NAME)"},
+		Ports:           pod.Ports(cnSpec, config),
 		Env:             Envs,
 		Resources:       cnSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
-		StartupProbe:    pod.MakeStartupProbe(rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.MakeLivenessProbe(rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.MakeReadinessProbe(rutils.GetPort(cnconfig, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		Lifecycle:       pod.MakeLifeCycle("/opt/starrocks/cn_prestop.sh"),
+		StartupProbe:    pod.StartupProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		Lifecycle:       pod.LifeCycle("/opt/starrocks/cn_prestop.sh"),
 	}
 
 	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {
@@ -132,62 +81,17 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, cnconfig m
 		})
 	}
 
-	sa := src.Spec.ServiceAccount
-	if cnSpec.ServiceAccount != "" {
-		sa = cnSpec.ServiceAccount
-	}
-
-	podSpec := corev1.PodSpec{
-		Containers:                    []corev1.Container{cnContainer},
-		Volumes:                       vols,
-		ServiceAccountName:            sa,
-		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
-		Affinity:                      cnSpec.Affinity,
-		Tolerations:                   cnSpec.Tolerations,
-		ImagePullSecrets:              cnSpec.ImagePullSecrets,
-		NodeSelector:                  cnSpec.NodeSelector,
-		HostAliases:                   cnSpec.HostAliases,
-		SchedulerName:                 cnSpec.SchedulerName,
-	}
-	annos := make(map[string]string)
-	//add restart
-	if _, ok := src.Annotations[string(srapi.AnnotationCNRestartKey)]; ok {
-		annos[common.KubectlRestartAnnotationKey] = time.Now().Format(time.RFC3339)
-	}
-	//add annotations for cn pods.
-	rutils.Annotations(annos).AddAnnotation(cnSpec.Annotations)
-
-	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if cnSpec.FsGroup == nil {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		podSpec.SecurityContext = sc
-	} else if *cnSpec.FsGroup != 0 {
-		sc := &corev1.PodSecurityContext{
-			RunAsUser:           cnSpec.FsGroup,
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		podSpec.SecurityContext = sc
-	}
-
+	podSpec := pod.Spec(cnSpec, src.Spec.ServiceAccount, cnContainer, vols)
+	now := time.Now().Format(time.RFC3339)
+	annotations := pod.Annotations(cnSpec, src.Annotations, now)
+	podSpec.SecurityContext = pod.SecurityContext(cnSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaname,
-			Annotations: annos,
+			Annotations: annotations,
 			Namespace:   src.Namespace,
-			Labels:      cc.cnPodLabels(src),
+			Labels:      pod.Labels(src.Name, cnSpec),
 		},
 		Spec: podSpec,
 	}
-}
-
-func (cc *CnController) cnPodLabels(src *srapi.StarRocksCluster) rutils.Labels {
-	labels := statefulset.MakeSelector(src.Name, src.Spec.StarRocksCnSpec)
-	//podLables for classify. operator use statefulsetSelector for manage pods.
-	if src.Spec.StarRocksCnSpec != nil {
-		labels.AddLabel(src.Spec.StarRocksCnSpec.PodLabels)
-	}
-	return labels
 }

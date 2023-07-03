@@ -40,8 +40,8 @@ const (
 	BRPC_PORT              = "brpc_port"
 )
 
-// defMap the default port about abilities.
-var defMap = map[string]int32{
+// DefMap the default port about abilities.
+var DefMap = map[string]int32{
 	HTTP_PORT:              8030,
 	RPC_PORT:               9020,
 	QUERY_PORT:             9030,
@@ -75,5 +75,5 @@ func GetPort(config map[string]interface{}, key string) int32 {
 			return int32(port)
 		}
 	}
-	return defMap[key]
+	return DefMap[key]
 }

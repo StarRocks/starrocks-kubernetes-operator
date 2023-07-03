@@ -528,12 +528,9 @@ spec:
                     required:
                     - type
                     type: object
-                  replicaInstances:
-                    items:
-                      type: string
-                    type: array
                   replicas:
                     format: int32
+                    minimum: 0
                     type: integer
                   requests:
                     additionalProperties:
@@ -1498,6 +1495,24 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  storageVolumes:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        name:
+                          pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+                          type: string
+                        storageClassName:
+                          type: string
+                        storageSize:
+                          pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
+                          type: string
+                      required:
+                      - name
+                      - storageSize
+                      type: object
+                    type: array
                   tolerations:
                     items:
                       properties:
@@ -2006,6 +2021,7 @@ spec:
                     type: object
                   replicas:
                     format: int32
+                    minimum: 0
                     type: integer
                   requests:
                     additionalProperties:

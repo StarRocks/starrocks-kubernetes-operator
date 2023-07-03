@@ -25,7 +25,6 @@ import (
 func TestMakeSearchService(t *testing.T) {
 	type args struct {
 		serviceName     string
-		spec            interface{}
 		externalService *corev1.Service
 		ports           []corev1.ServicePort
 	}
@@ -38,7 +37,6 @@ func TestMakeSearchService(t *testing.T) {
 			name: "test MakeSearchService",
 			args: args{
 				serviceName: "test",
-				spec:        &v1.StarRocksBeSpec{},
 				externalService: &corev1.Service{
 					Spec: corev1.ServiceSpec{
 						Selector: map[string]string{
@@ -75,7 +73,7 @@ func TestMakeSearchService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSearchService(tt.args.serviceName, tt.args.spec, tt.args.externalService, tt.args.ports); !reflect.DeepEqual(got, tt.want) {
+			if got := MakeSearchService(tt.args.serviceName, tt.args.externalService, tt.args.ports); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSearchService() = %v, want %v", got, tt.want)
 			}
 		})
@@ -85,7 +83,7 @@ func TestMakeSearchService(t *testing.T) {
 func TestSearchServiceName(t *testing.T) {
 	type args struct {
 		clusterName string
-		spec        interface{}
+		spec        v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -129,7 +127,7 @@ func TestSearchServiceName(t *testing.T) {
 func TestSearchServiceName_WithNil(t *testing.T) {
 	type args struct {
 		clusterName string
-		spec        interface{}
+		spec        v1.SpecInterface
 	}
 	tests := []struct {
 		name string

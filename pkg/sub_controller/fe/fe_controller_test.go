@@ -86,8 +86,10 @@ func Test_ClearResources(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{},
 		Status: srapi.StarRocksClusterStatus{
 			StarRocksFeStatus: &srapi.StarRocksFeStatus{
-				ResourceNames: []string{"test-fe"},
-				ServiceName:   "test-fe-access",
+				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+					ResourceNames: []string{"test-fe"},
+					ServiceName:   "test-fe-access",
+				},
 			},
 		},
 	}
@@ -139,13 +141,15 @@ func Test_SyncDeploy(t *testing.T) {
 		},
 		Spec: srapi.StarRocksClusterSpec{
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
-				Replicas:       rutils.GetInt32Pointer(3),
-				Image:          "test.image",
-				ServiceAccount: "test-sa",
-				ResourceRequirements: corev1.ResourceRequirements{
-					Requests: requests,
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					Replicas:       rutils.GetInt32Pointer(3),
+					Image:          "test.image",
+					ServiceAccount: "test-sa",
+					ResourceRequirements: corev1.ResourceRequirements{
+						Requests: requests,
+					},
+					PodLabels: labels,
 				},
-				PodLabels: labels,
 			},
 		},
 	}
@@ -157,17 +161,17 @@ func Test_SyncDeploy(t *testing.T) {
 	festatus := src.Status.StarRocksFeStatus
 	require.Equal(t, nil, err)
 	require.Equal(t, festatus.Phase, srapi.ComponentReconciling)
-	require.Equal(t, festatus.ServiceName, srapi.GetFeExternalServiceName(src))
+	require.Equal(t, festatus.ServiceName, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec))
 
 	var st appv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksFeSpec
-	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetFeExternalServiceName(src), Namespace: "default"}, &asvc))
-	require.Equal(t, srapi.GetFeExternalServiceName(src), asvc.Name)
+	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
+	require.Equal(t, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
 	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
-	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.MakeName(src.Name, spec), Namespace: "default"}, &st))
+	require.NoError(t, fc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, spec), Namespace: "default"}, &st))
 	// validate service selector matches statefulset selector
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
