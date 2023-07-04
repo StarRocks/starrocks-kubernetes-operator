@@ -14,6 +14,11 @@ global:
 
 # the starrockscluster crd' name.
 nameOverride: ""
+# This configuration is used to modify the root password during initial deployment.
+# After deployment is completed, modify the password here and upgrade, does not modify the running root password
+initPassword:
+  enabled: false
+  password: ""
 
 starrocksOperator:
   enabled: true

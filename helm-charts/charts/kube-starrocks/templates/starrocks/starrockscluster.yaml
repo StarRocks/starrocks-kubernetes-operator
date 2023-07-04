@@ -55,10 +55,20 @@ spec:
 {{- if .Values.starrocksFESpec.schedulerName }}
     schedulerName: {{ .Values.starrocksFESpec.schedulerName }}
 {{- end }}
-{{- if .Values.starrocksFESpec.feEnvVars }}
+{{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled }}
     feEnvVars:
+{{- if and .Values.initPassword.enabled .Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
+{{- end }}
+{{- if .Values.starrocksFESpec.feEnvVars }}
 {{ toYaml .Values.starrocksFESpec.feEnvVars | indent 4 }}
 {{- end }}
+{{- end }}
+
 {{- if .Values.starrocksFESpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksFESpec.affinity | indent 6 }}
@@ -144,10 +154,20 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksBeSpec.beEnvVars }}
+{{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled }}
     beEnvVars:
+{{- if and .Values.initPassword.enabled .Values.starrocksBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
+{{- end }}
+{{- if .Values.starrocksBeSpec.beEnvVars }}
 {{ toYaml .Values.starrocksBeSpec.beEnvVars | indent 4 }}
 {{- end }}
+{{- end }}
+
 {{- if .Values.starrocksBeSpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksBeSpec.affinity | indent 6 }}
@@ -211,9 +231,18 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksCnSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.cnEnvVars }}
+{{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled }}
     cnEnvVars:
+{{- if and .Values.initPassword.enabled .Values.starrocksCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "kube-starrocks.name" . }}-credential
+            key: password
+{{- end }}
+{{- if .Values.starrocksCnSpec.cnEnvVars }}
 {{ toYaml .Values.starrocksCnSpec.cnEnvVars | indent 4 }}
+{{- end }}
 {{- end }}
 {{- if .Values.starrocksCnSpec.affinity }}
     affinity:

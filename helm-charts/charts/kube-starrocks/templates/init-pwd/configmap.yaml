@@ -1,0 +1,35 @@
+{{- if .Values.initPassword.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-pwd-shell
+  namespace: {{ .Release.Namespace }}
+data:
+  fe_initpwd.sh: |-
+    #!/bin/bash
+
+    # ensure `mysql` command can be ended with 30 seconds
+    # Change the root password during initial installation
+    init_pwd_sql="SET PASSWORD = PASSWORD('$INIT_PWD');"
+    success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$init_pwd_sql" 2>&1`
+    if [ $? -ne 0 ] ; then
+      echo $success
+      errcode=`echo $success | awk -F " " '{print $2}'`
+      echo "error code: $errcode"
+
+      # Password error, believed to have been changed, exiting normally
+      if [[ $errcode = '1045' || $errcode = '1064' ]] ; then
+        echo "Password error, believed to have been changed, exiting normally"
+        exit 0
+      fi
+
+      # Other unsuccessful errors, abnormal exit
+      echo "Other unsuccessful errors, abnormal exit"
+      exit 1
+
+    fi
+
+    echo "Successfully modified password"
+    exit 0
+
+{{- end }}
