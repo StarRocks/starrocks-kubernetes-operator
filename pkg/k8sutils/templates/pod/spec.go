@@ -21,6 +21,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"math/rand"
 	"strconv"
 )
 
@@ -78,11 +79,17 @@ func getProbe(port int32, path string) corev1.ProbeHandler {
 	}
 }
 
+func appendRandomNumber(name string) string {
+	// generate a random number to avoid name conflict, and append the number to the name
+	return name + "-" + strconv.Itoa(rand.Intn(102400))
+}
+
 func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 	configMaps []v1.ConfigMapReference) ([]corev1.Volume, []corev1.VolumeMount) {
 	for _, configMap := range configMaps {
+		volumeName := appendRandomNumber(configMap.Name)
 		volumes = append(volumes, corev1.Volume{
-			Name: configMap.Name,
+			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -92,7 +99,7 @@ func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 			},
 		})
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      configMap.Name,
+			Name:      volumeName,
 			MountPath: configMap.MountPath,
 		})
 	}
