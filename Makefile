@@ -63,7 +63,7 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
-	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
 	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
 
 
@@ -151,8 +151,8 @@ envtest: ## Download envtest-setup locally if necessary.
 
 .PHONY: gen-api
 gen-api: gen-tool
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md"
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.md"
+	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.html"
+	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.html"
 
 
 .PHONY: crd-all
