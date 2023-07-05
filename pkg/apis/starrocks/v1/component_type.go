@@ -286,7 +286,8 @@ type ConfigMapReference MountInfo
 type SecretReference MountInfo
 
 type MountInfo struct {
-	// This must match the Name of a Volume.
+	// This must match the Name of a ConfigMap or Secret in the same namespace, and
+	// the length of name must not more than 50 characters.
 	Name string `json:"name,omitempty"`
 
 	// Path within the container at which the volume should be mounted.  Must

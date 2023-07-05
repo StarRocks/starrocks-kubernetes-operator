@@ -270,7 +270,7 @@ func TestMountSecrets(t *testing.T) {
 			},
 			want: []corev1.Volume{
 				{
-					Name: "s1",
+					Name: "s1-4145",
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName: "s1",
@@ -278,7 +278,7 @@ func TestMountSecrets(t *testing.T) {
 					},
 				},
 				{
-					Name: "s2",
+					Name: "s2-1955",
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName: "s2",
@@ -288,11 +288,11 @@ func TestMountSecrets(t *testing.T) {
 			},
 			want1: []corev1.VolumeMount{
 				{
-					Name:      "s1",
+					Name:      "s1-4145",
 					MountPath: "/pkg/mounts/volumes1",
 				},
 				{
-					Name:      "s2",
+					Name:      "s2-1955",
 					MountPath: "/pkg/mounts/volumes2",
 				},
 			},
@@ -339,7 +339,7 @@ func TestMountConfigMaps(t *testing.T) {
 			},
 			want: []corev1.Volume{
 				{
-					Name: "s1",
+					Name: "s1-4145",
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
@@ -349,7 +349,7 @@ func TestMountConfigMaps(t *testing.T) {
 					},
 				},
 				{
-					Name: "s2",
+					Name: "s2-1955",
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
@@ -361,11 +361,11 @@ func TestMountConfigMaps(t *testing.T) {
 			},
 			want1: []corev1.VolumeMount{
 				{
-					Name:      "s1",
+					Name:      "s1-4145",
 					MountPath: "/pkg/mounts/volumes1",
 				},
 				{
-					Name:      "s2",
+					Name:      "s2-1955",
 					MountPath: "/pkg/mounts/volumes2",
 				},
 			},
@@ -750,6 +750,35 @@ func TestAnnotations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Annotations(tt.args.spec, tt.args.clusterAnnotations, tt.args.now); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Annotations() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getVolumeName(t *testing.T) {
+	type args struct {
+		mountInfo v1.MountInfo
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test get volume name",
+			args: args{
+				mountInfo: v1.MountInfo{
+					Name:      "test",
+					MountPath: "/my/path",
+				},
+			},
+			want: "test-3195",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getVolumeName(tt.args.mountInfo); got != tt.want {
+				t.Errorf("getVolumeName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
