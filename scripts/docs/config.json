@@ -1,41 +1,37 @@
 {
-    "hideMemberFields": [
-        "TypeMeta"
-    ],
-    "hideTypePatterns": [
-        "ParseError$",
-        "List$"
-    ],
-    "externalPackages": [
-        {
-            "typeMatchPrefix": "^k8s\\.io/apimachinery/pkg/apis/meta/v1\\.Duration$",
-            "docsURLTemplate": "https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"
-        },
-        {
-            "typeMatchPrefix": "^k8s\\.io/apimachinery/pkg/util/intstr\\.IntOrString$",
-            "docsURLTemplate": "https://pkg.go.dev/k8s.io/apimachinery/pkg/util/intstr#IntOrString"
-        },
-        {
-            "typeMatchPrefix": "^k8s\\.io/(api|apimachinery/pkg/apis)/",
-            "docsURLTemplate": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#{{lower .TypeIdentifier}}-{{arrIndex .PackageSegments -1}}-{{arrIndex .PackageSegments -2}}"
-        },
-        {
-            "typeMatchPrefix": "^k8s\\.io/apiextensions-apiserver/pkg/apis/apiextensions/v1\\.JSON$",
-            "docsURLTemplate": "https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON"
-        },
-        {
-            "typeMatchPrefix": "^github\\.com/knative/pkg/apis/duck/",
-            "docsURLTemplate": "https://godoc.org/github.com/knative/pkg/apis/duck/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
-        },
-        {
-            "typeMatchPrefix": "^github\\.com/shileifu/starrocks-kubernetes-operator/api/v1alpha1",
-            "docsURLTemplate": "../v1alpha1/api.md#starrocks.com/v1alpha1.{{ .TypeIdentifier}}"
-        }
-    ],
-    "typeDisplayNamePrefixOverrides": {
-        "k8s.io/api/": "Kubernetes ",
-        "k8s.io/apimachinery/pkg/apis/": "Kubernetes ",
-        "github.com/StarRocks/starrocks-kubernetes-operator": "StarRocks v1beta1"
+  "hideMemberFields": [
+    "TypeMeta"
+  ],
+  "hideTypePatterns": [
+    "ParseError$",
+    "List$"
+  ],
+  "externalPackages": [
+    {
+      "typeMatchPrefix": "^k8s\\.io/apimachinery/pkg/apis/meta/v1\\.Duration$",
+      "docsURLTemplate": "https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration"
     },
-    "markdownDisabled": false
+    {
+      "typeMatchPrefix": "^k8s\\.io/apimachinery/pkg/api/resource\\.Quantity$",
+      "docsURLTemplate": "https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity"
+    },
+    {
+      "typeMatchPrefix": "^k8s\\.io/apimachinery/pkg/util/intstr\\.IntOrString$",
+      "docsURLTemplate": "https://pkg.go.dev/k8s.io/apimachinery/pkg/util/intstr#IntOrString"
+    },
+    {
+      "typeMatchPrefix": "^k8s\\.io/(api|apimachinery/pkg/apis)/",
+      "docsURLTemplate": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#{{lower .TypeIdentifier}}-{{arrIndex .PackageSegments -1}}-{{arrIndex .PackageSegments -2}}"
+    },
+    {
+      "typeMatchPrefix": "^k8s\\.io/apiextensions-apiserver/pkg/apis/apiextensions/v1\\.JSON$",
+      "docsURLTemplate": "https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON"
+    }
+  ],
+  "typeDisplayNamePrefixOverrides": {
+    "k8s.io/api/": "Kubernetes ",
+    "k8s.io/apimachinery/pkg/apis/": "Kubernetes ",
+    "github.com/StarRocks/starrocks-kubernetes-operator": "StarRocks v1"
+  },
+  "markdownDisabled": false
 }
