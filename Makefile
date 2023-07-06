@@ -63,17 +63,17 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
-	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
-	$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
-
+	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
+	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
+	@git status | grep "starrocks.com_starrocksclusters.yaml" && echo "the crd file need to be updated" && exit 1 || exit 0
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile=".header" paths="./pkg/apis/..."
+	@$(CONTROLLER_GEN) object:headerFile=".header" paths="./pkg/apis/..."
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
-	go fmt ./...
+	@go fmt ./... | grep '.go' && echo "there is files needed to be formatted" && exit 1 || exit 0
 
 .PHONY: vet
 vet: ## Run go vet against code.
@@ -81,7 +81,8 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test ./... -coverprofile=coverage.data -timeout 30m || return 1
+	@go tool cover -func=coverage.data
 
 ##@ Build
 .PHONY: tidy
@@ -151,8 +152,8 @@ envtest: ## Download envtest-setup locally if necessary.
 
 .PHONY: gen-api
 gen-api: gen-tool
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md"
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.md"
+	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.html"
+	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.html"
 
 
 .PHONY: crd-all
@@ -173,4 +174,3 @@ GOBIN=$(GOBIN) go install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
-

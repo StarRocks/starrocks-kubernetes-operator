@@ -1,0 +1,39 @@
+name: CI PIPELINE
+
+on:
+  push:
+    branches: ["feature/add-unit-test-workflow"]
+
+jobs:
+  operator:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Call make test
+        run: make test
+  chart:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.10.0
+    - name: Run helm template
+      run: |
+        cd helm-charts/charts/kube-starrocks/
+        helm template -f values.yaml .

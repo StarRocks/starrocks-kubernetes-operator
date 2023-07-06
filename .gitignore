@@ -25,3 +25,4 @@ testbin/*
 
 bin
 main
+coverage.data
