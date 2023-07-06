@@ -17,6 +17,7 @@ package pod
 import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	corev1 "k8s.io/api/core/v1"
@@ -78,20 +79,51 @@ func getProbe(port int32, path string) corev1.ProbeHandler {
 	}
 }
 
-func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
-	secrets []v1.SecretInfo) ([]corev1.Volume, []corev1.VolumeMount) {
-	for _, secret := range secrets {
+func getVolumeName(mountInfo v1.MountInfo) string {
+	suffix := hash.HashObject(mountInfo)
+	if len(suffix) > 4 {
+		suffix = suffix[:4]
+	}
+	return mountInfo.Name + "-" + suffix
+}
+
+func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	references []v1.ConfigMapReference) ([]corev1.Volume, []corev1.VolumeMount) {
+	for _, reference := range references {
+		volumeName := getVolumeName(v1.MountInfo(reference))
 		volumes = append(volumes, corev1.Volume{
-			Name: secret.Name,
+			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: secret.Name,
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: reference.Name,
+					},
 				},
 			},
 		})
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      secret.Name,
-			MountPath: secret.MountPath,
+			Name:      volumeName,
+			MountPath: reference.MountPath,
+		})
+	}
+	return volumes, volumeMounts
+}
+
+func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	references []v1.SecretReference) ([]corev1.Volume, []corev1.VolumeMount) {
+	for _, reference := range references {
+		volumeName := getVolumeName(v1.MountInfo(reference))
+		volumes = append(volumes, corev1.Volume{
+			Name: volumeName,
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: reference.Name,
+				},
+			},
+		})
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      volumeName,
+			MountPath: reference.MountPath,
 		})
 	}
 	return volumes, volumeMounts
@@ -102,6 +134,7 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 	var volumeMounts []corev1.VolumeMount
 	vexist := make(map[string]bool)
 	for _, sv := range spec.GetStorageVolumes() {
+		// do not use getVolumeName for backward compatibility
 		vexist[sv.MountPath] = true
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      sv.Name,
@@ -120,9 +153,10 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 	return volumes, volumeMounts, vexist
 }
 
-func MountConfigMap(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+func MountConfigMapInfo(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 	cmInfo v1.ConfigMapInfo, mountPath string) ([]corev1.Volume, []corev1.VolumeMount) {
 	if cmInfo.ConfigMapName != "" && cmInfo.ResolveKey != "" {
+		// do not use getVolumeName for backward compatibility
 		volumes = append(volumes, corev1.Volume{
 			Name: cmInfo.ConfigMapName,
 			VolumeSource: corev1.VolumeSource{
@@ -368,7 +402,7 @@ func SecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
 func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, now string) map[string]string {
 	annotations := make(map[string]string)
 
-	//add restart annotation in podTemplate.
+	// add restart annotation in podTemplate.
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		if _, ok := clusterAnnotations[string(v1.AnnotationFERestartKey)]; ok {

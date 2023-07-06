@@ -112,13 +112,17 @@ type StarRocksComponentSpec struct {
 	//+optional
 	corev1.ResourceRequirements `json:",inline"`
 
-	//the reference for configMap.
+	//the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
 	//+optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
+	// the reference for configMap which allow users to mount any files to container.
+	//+optional
+	ConfigMaps []ConfigMapReference `json:"configMaps,omitempty"`
+
 	//the reference for secrets.
 	//+optional
-	Secrets []SecretInfo `json:"secrets,omitempty"`
+	Secrets []SecretReference `json:"secrets,omitempty"`
 
 	//Probe defines the mode probe service in container is alive.
 	//+optional
@@ -277,8 +281,13 @@ type ConfigMapInfo struct {
 	ResolveKey string `json:"resolveKey,omitempty"`
 }
 
-type SecretInfo struct {
-	// This must match the Name of a Volume.
+type ConfigMapReference MountInfo
+
+type SecretReference MountInfo
+
+type MountInfo struct {
+	// This must match the Name of a ConfigMap or Secret in the same namespace, and
+	// the length of name must not more than 50 characters.
 	Name string `json:"name,omitempty"`
 
 	// Path within the container at which the volume should be mounted.  Must

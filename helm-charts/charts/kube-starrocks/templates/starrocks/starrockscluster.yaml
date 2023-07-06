@@ -84,6 +84,13 @@ spec:
       mountPath: {{ .mountPath }}
     {{- end }}
 {{- end }}
+{{- if .Values.starrocksFESpec.configMaps }}
+    configMaps:
+    {{- range .Values.starrocksFESpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+    {{- end }}
+{{- end }}
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
@@ -181,6 +188,13 @@ spec:
     {{- range .Values.starrocksBeSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
+    {{- end }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.configMaps }}
+    configMaps:
+    {{- range .Values.starrocksBeSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
     {{- end }}
 {{- end }}
     configMapInfo:
@@ -283,6 +297,13 @@ spec:
     {{- range .Values.starrocksCnSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
+    {{- end }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.configMaps }}
+    configMaps:
+    {{- range .Values.starrocksCnSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
     {{- end }}
 {{- end }}
     configMapInfo:
