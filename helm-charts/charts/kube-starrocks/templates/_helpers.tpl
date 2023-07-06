@@ -120,3 +120,43 @@ be.conf: |
 {{- define "starrockscluster.be.log.path" -}}
 {{- print "/opt/starrocks/be/log" }}
 {{- end }}
+
+{{/*
+starrockscluster.fe.config.hash is used to calculate the hash value of the fe.conf, and due to the length limit, only
+the first 8 digits are taken, which will be used as the annotations for pods.
+*/}}
+{{- define "starrockscluster.fe.config.hash" }}
+  {{- if .Values.starrocksFESpec.config }}
+    {{- $hash := toJson .Values.starrocksFESpec.config | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+
+{{/*
+starrockscluster.be.config.hash is used to calculate the hash value of the be.conf, and due to the length limit, only
+the first 8 digits are taken, which will be used as the annotations for pods.
+*/}}
+{{- define "starrockscluster.be.config.hash" }}
+  {{- if .Values.starrocksBeSpec.config }}
+    {{- $hash := toJson .Values.starrocksBeSpec.config | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{/*
+starrockscluster.cn.config.hash is used to calculate the hash value of the cn.conf, and due to the length limit, only
+the first 8 digits are taken, which will be used as the annotations for pods.
+*/}}
+{{- define "starrockscluster.cn.config.hash" }}
+  {{- if .Values.starrocksCnSpec.config }}
+    {{- $hash := toJson .Values.starrocksCnSpec.config | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
