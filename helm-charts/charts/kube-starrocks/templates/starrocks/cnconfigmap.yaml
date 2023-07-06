@@ -1,4 +1,4 @@
-{{- if .Values.starrocksCluster.enabledCn }}
+{{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec .Values.starrocksCnSpec.config }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

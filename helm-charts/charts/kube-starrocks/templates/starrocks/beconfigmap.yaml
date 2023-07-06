@@ -1,4 +1,4 @@
-{{- if .Values.starrocksBeSpec }}
+{{- if and .Values.starrocksBeSpec .Values.starrocksBeSpec.config }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
