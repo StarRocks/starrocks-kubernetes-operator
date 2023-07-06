@@ -1031,7 +1031,7 @@ spec:
                     type: array
                   configMapInfo:
                     description: the reference for configMap which store the config
-                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -2971,7 +2971,7 @@ spec:
                     type: array
                   configMapInfo:
                     description: the reference for configMap which store the config
-                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
                     properties:
                       configMapName:
                         description: the config info for start progress.
@@ -4126,7 +4126,7 @@ spec:
                     type: object
                   configMapInfo:
                     description: the reference for configMap which store the config
-                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
                     properties:
                       configMapName:
                         description: the config info for start progress.

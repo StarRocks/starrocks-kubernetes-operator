@@ -43,7 +43,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	// add default volume about log, if meta not configure.
 	if _, ok := vexist[log_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			//use storage volume.
+			// use storage volume.
 			Name:      log_name,
 			MountPath: log_path,
 		})
@@ -56,7 +56,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 	if _, ok := vexist[storage_path]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			//use storage volume.
+			// use storage volume.
 			Name:      storage_name,
 			MountPath: storage_path,
 		})

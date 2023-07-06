@@ -68,7 +68,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 	}
 
 	k8sclient := NewFakeClient(sch, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
-	//confirm the v1autoscaler is exist.
+	// confirm the v1autoscaler is exist.
 	var cv1autoscaler v1.HorizontalPodAutoscaler
 	cerr := k8sclient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv1autoscaler)
 	require.Equal(t, nil, cerr)

@@ -57,7 +57,7 @@ func init() {
 func TestFeController_updateStatus(t *testing.T) {
 	var creatings, readys, faileds []string
 	podmap := make(map[string]corev1.Pod)
-	//get all pod status that controlled by st.
+	// get all pod status that controlled by st.
 	var podList corev1.PodList
 	podList.Items = append(podList.Items, corev1.Pod{Status: corev1.PodStatus{Phase: corev1.PodPending}})
 

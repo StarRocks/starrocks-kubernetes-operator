@@ -27,31 +27,31 @@ import (
 // StarRocksClusterSpec defines the desired state of StarRocksCluster
 type StarRocksClusterSpec struct {
 	// Specify a Service Account for starRocksCluster use k8s cluster.
-	//+optional
-	//Deprecated: component use serviceAccount in own's field.
+	// +optional
+	// Deprecated: component use serviceAccount in own's field.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//StarRocksFeSpec define fe configuration for start fe service.
+	// StarRocksFeSpec define fe configuration for start fe service.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
 
-	//StarRocksBeSpec define be configuration for start be service.
+	// StarRocksBeSpec define be configuration for start be service.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
 
-	//StarRocksCnSpec define cn configuration for start cn service.
+	// StarRocksCnSpec define cn configuration for start cn service.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
 type StarRocksClusterStatus struct {
-	//Represents the state of cluster. the possible value are: running, failed, pending
+	// Represents the state of cluster. the possible value are: running, failed, pending
 	Phase ClusterPhase `json:"phase"`
-	//Represents the status of fe. the status have running, failed and creating pods.
+	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
 
-	//Represents the status of be. the status have running, failed and creating pods.
+	// Represents the status of be. the status have running, failed and creating pods.
 	StarRocksBeStatus *StarRocksBeStatus `json:"starRocksBeStatus,omitempty"`
 
-	//Represents the status of cn. the status have running, failed and creating pods.
+	// Represents the status of cn. the status have running, failed and creating pods.
 	StarRocksCnStatus *StarRocksCnStatus `json:"starRocksCnStatus,omitempty"`
 }
 
@@ -62,25 +62,25 @@ type ClusterPhase string
 type MemberPhase string
 
 const (
-	//ClusterRunning represents starrocks cluster is running.
+	// ClusterRunning represents starrocks cluster is running.
 	ClusterRunning ClusterPhase = "running"
 
-	//ClusterFailed represents starrocks cluster failed.
+	// ClusterFailed represents starrocks cluster failed.
 	ClusterFailed ClusterPhase = "failed"
 
-	//ClusterPending represents the starrocks cluster is creating
+	// ClusterPending represents the starrocks cluster is creating
 	ClusterPending ClusterPhase = "pending"
 
-	//ClusterDeleting waiting all resource deleted
+	// ClusterDeleting waiting all resource deleted
 	ClusterDeleting = "deleting"
 )
 
 const (
-	//ComponentReconciling the starrocks have component in starting.
+	// ComponentReconciling the starrocks have component in starting.
 	ComponentReconciling MemberPhase = "reconciling"
-	//ComponentFailed have at least one service failed.
+	// ComponentFailed have at least one service failed.
 	ComponentFailed MemberPhase = "failed"
-	//ComponentRunning all components runs available.
+	// ComponentRunning all components runs available.
 	ComponentRunning MemberPhase = "running"
 )
 
@@ -88,11 +88,11 @@ const (
 type AnnotationOperationValue string
 
 const (
-	//represent the user want to restart all fe pods.
+	// represent the user want to restart all fe pods.
 	AnnotationRestart AnnotationOperationValue = "restart"
-	//represent all fe pods have restarted.
+	// represent all fe pods have restarted.
 	AnnotationRestartFinished AnnotationOperationValue = "finished"
-	//represent at least one pod on restarting
+	// represent at least one pod on restarting
 	AnnotationRestarting AnnotationOperationValue = "restarting"
 )
 
@@ -100,57 +100,57 @@ const (
 type AnnotationOperationKey string
 
 const (
-	//the fe annotation key for restart
+	// the fe annotation key for restart
 	AnnotationFERestartKey AnnotationOperationKey = "app.starrocks.fe.io/restart"
 
-	//the be annotation key for restart be
+	// the be annotation key for restart be
 	AnnotationBERestartKey AnnotationOperationKey = "app.starrocks.be.io/restart"
 
-	//the cn annotation key for restart cn
+	// the cn annotation key for restart cn
 	AnnotationCNRestartKey AnnotationOperationKey = "app.starrocks.cn.io/restart"
 )
 
 // StarRocksFeStatus represents the status of starrocks fe.
 type StarRocksFeStatus struct {
-	//the name of fe service exposed for user.
+	// the name of fe service exposed for user.
 	ServiceName string `json:"serviceName,omitempty"`
 
-	//FailedInstances failed fe pod names.
+	// FailedInstances failed fe pod names.
 	FailedInstances []string `json:"failedInstances,omitempty"`
 
-	//CreatingInstances in creating pod names.
+	// CreatingInstances in creating pod names.
 	CreatingInstances []string `json:"creatingInstances,omitempty"`
 
-	//RunningInstances in running status pod names.
+	// RunningInstances in running status pod names.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
-	//ResourceNames the statefulset names of fe in v1alpha1 version.
+	// ResourceNames the statefulset names of fe in v1alpha1 version.
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
 	// Phase the value from all pods of fe status. If fe have one failed pod phase=failed,
 	// also if fe have one creating pod phase=creating, also if fe all running phase=running, others unknown.
 	Phase MemberPhase `json:"phase"`
 
-	//+optional
-	//Reason represents the reason of not running.
+	// +optional
+	// Reason represents the reason of not running.
 	Reason string `json:"reason"`
 }
 
 // StarRocksBeStatus represents the status of starrocks be.
 type StarRocksBeStatus struct {
-	//the name of be service for fe find be instance.
+	// the name of be service for fe find be instance.
 	ServiceName string `json:"serviceName,omitempty"`
 
-	//FailedInstances deploy failed instance of be.
+	// FailedInstances deploy failed instance of be.
 	FailedInstances []string `json:"failedInstances,omitempty"`
 
-	//CreatingInstances represents status in creating pods of be.
+	// CreatingInstances represents status in creating pods of be.
 	CreatingInstances []string `json:"creatingInstances,omitempty"`
 
-	//RunningInstances represents status in running pods of be.
+	// RunningInstances represents status in running pods of be.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
-	//The statefulset names of be.
+	// The statefulset names of be.
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
 	// Phase the value from all pods of be status. If be have one failed pod phase=failed,
@@ -158,39 +158,39 @@ type StarRocksBeStatus struct {
 	Phase MemberPhase `json:"phase"`
 
 	// the reason for the phase.
-	//+optional
+	// +optional
 	Reason string `json:"reason"`
 }
 
 type HorizontalScaler struct {
-	//the deploy horizontal scaler name
+	// the deploy horizontal scaler name
 	Name string `json:"name,omitempty"`
 
-	//the deploy horizontal version.
+	// the deploy horizontal version.
 	Version AutoScalerVersion `json:"version,omitempty"`
 }
 
 type StarRocksCnStatus struct {
-	//the name of cn service for fe find cn instance.
+	// the name of cn service for fe find cn instance.
 	ServiceName string `json:"serviceName,omitempty"`
 
-	//FailedInstances deploy failed cn pod names.
+	// FailedInstances deploy failed cn pod names.
 	FailedInstances []string `json:"failedInstances,omitempty"`
 
-	//CreatingInstances in creating status cn pod names.
+	// CreatingInstances in creating status cn pod names.
 	CreatingInstances []string `json:"creatingInstances,omitempty"`
 
-	//RunningInstances in running status be pod names.
+	// RunningInstances in running status be pod names.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
-	//The statefulset names of be.
+	// The statefulset names of be.
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
-	//The policy name of autoScale.
-	//Deprecated
+	// The policy name of autoScale.
+	// Deprecated
 	HpaName string `json:"hpaName,omitempty"`
 
-	//HorizontalAutoscaler have the autoscaler information.
+	// HorizontalAutoscaler have the autoscaler information.
 	HorizontalScaler HorizontalScaler `json:"horizontalScaler,omitempty"`
 
 	// Phase the value from all pods of cn status. If cn have one failed pod phase=failed,
@@ -198,7 +198,7 @@ type StarRocksCnStatus struct {
 	Phase MemberPhase `json:"phase"`
 
 	// the reason for the phase.
-	//+optional
+	// +optional
 	Reason string `json:"reason"`
 }
 
@@ -217,10 +217,10 @@ type StarRocksCluster struct {
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	//Specification of the desired state of the starrocks cluster.
+	// Specification of the desired state of the starrocks cluster.
 	Spec StarRocksClusterSpec `json:"spec,omitempty"`
 
-	//Most recent observed status of the starrocks cluster
+	// Most recent observed status of the starrocks cluster
 	Status StarRocksClusterStatus `json:"status,omitempty"`
 }
 
@@ -233,29 +233,29 @@ const (
 
 // StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
-	//name of the starrocks be cluster.
-	//+optional
+	// name of the starrocks be cluster.
+	// +optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-	//Deprecated, not allow set statefulset name.
+	// Deprecated, not allow set statefulset name.
 	Name string `json:"name,omitempty"`
 
-	//annotation for fe pods. user can config monitor annotation for collect to monitor system.
-	//+optional
+	// annotation for fe pods. user can config monitor annotation for collect to monitor system.
+	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
-	//serviceAccount for fe access cloud service.
+	// serviceAccount for fe access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//A special supplemental group that applies to all containers in a pod.
+	// A special supplemental group that applies to all containers in a pod.
 	// Some volume types allow the Kubelet to change the ownership of that volume
 	// to be owned by the pod:
 	FsGroup *int64 `json:"fsGroup,omitempty"`
 
-	//Replicas is the number of desired fe Pod, the number is 1,3,5
-	//+optional: Defaults to 3
+	// Replicas is the number of desired fe Pod, the number is 1,3,5
+	// +optional: Defaults to 3
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image for a starrocks fe deployment..
+	// Image for a starrocks fe deployment..
 	Image string `json:"image"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -266,44 +266,44 @@ type StarRocksFeSpec struct {
 	// +patchStrategy=merge
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
 
-	//Service defines the template for the associated Kubernetes Service object.
-	//+optional
+	// Service defines the template for the associated Kubernetes Service object.
+	// +optional
 	Service *StarRocksService `json:"service,omitempty"`
 
-	//defines the specification of resource cpu and mem.
-	//+optional
+	// defines the specification of resource cpu and mem.
+	// +optional
 	corev1.ResourceRequirements `json:",inline"`
 
-	//the reference for fe configMap.
-	//+optional
+	// the reference for fe configMap.
+	// +optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
-	//Probe defines the mode probe service in container is alive.
-	//+optional
+	// Probe defines the mode probe service in container is alive.
+	// +optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//StorageVolumes defines the additional storage for fe meta storage.
-	//+optional
+	// StorageVolumes defines the additional storage for fe meta storage.
+	// +optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 
 	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
-	//+optional
-	//feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	// +optional
+	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
 
-	//+optional
-	//If specified, the pod's scheduling constraints.
+	// +optional
+	// If specified, the pod's scheduling constraints.
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
-	//+optional
+	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	//+optional
-	//the pod labels for user select or classify pods.
+	// +optional
+	// the pod labels for user select or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 
 	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
@@ -314,15 +314,15 @@ type StarRocksFeSpec struct {
 
 // StarRocksBeSpec defines the desired state of be.
 type StarRocksBeSpec struct {
-	//Replicas is the number of desired be Pod. the default value=3
+	// Replicas is the number of desired be Pod. the default value=3
 	// Optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image for a starrocks be deployment.
+	// Image for a starrocks be deployment.
 	Image string `json:"image"`
 
-	//annotation for be pods. user can config monitor annotation for collect to monitor system.
-	//+optional
+	// annotation for be pods. user can config monitor annotation for collect to monitor system.
+	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -333,63 +333,63 @@ type StarRocksBeSpec struct {
 	// +patchStrategy=merge
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
 
-	//serviceAccount for be access cloud service.
+	// serviceAccount for be access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//A special supplemental group that applies to all containers in a pod.
+	// A special supplemental group that applies to all containers in a pod.
 	// Some volume types allow the Kubelet to change the ownership of that volume
 	// to be owned by the pod:
 	FsGroup *int64 `json:"fsGroup,omitempty"`
 
-	//name of the starrocks be cluster.
-	//+optional
+	// name of the starrocks be cluster.
+	// +optional
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	// Deprecated
 	Name string `json:"name,omitempty"`
 
-	//Service defines the template for the associated Kubernetes Service object.
-	//the service for user access be.
-	//+optional
+	// Service defines the template for the associated Kubernetes Service object.
+	// the service for user access be.
+	// +optional
 	Service *StarRocksService `json:"service,omitempty"`
 
-	//defines the specification of resource cpu and mem.
-	//+optional
+	// defines the specification of resource cpu and mem.
+	// +optional
 	corev1.ResourceRequirements `json:",inline"`
 
-	//the reference for be configMap.
-	//+optional
+	// the reference for be configMap.
+	// +optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
-	//Probe defines the mode probe service in container is alive.
-	//+optional
+	// Probe defines the mode probe service in container is alive.
+	// +optional
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//StorageVolumes defines the additional storage for be storage data and log.
-	//+optional
+	// StorageVolumes defines the additional storage for be storage data and log.
+	// +optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 
-	//ReplicaInstance is the names of replica starrocksbe cluster.
-	//+optional
-	//Deprecated, temp deprecated.
+	// ReplicaInstance is the names of replica starrocksbe cluster.
+	// +optional
+	// Deprecated, temp deprecated.
 	ReplicaInstances []string `json:"replicaInstances,omitempty"`
 
 	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
-	//+optional
-	//beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	// +optional
+	// beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	BeEnvVars []corev1.EnvVar `json:"beEnvVars,omitempty"`
 
-	//+optional
-	//If specified, the pod's scheduling constraints.
+	// +optional
+	// If specified, the pod's scheduling constraints.
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
-	//+optional
+	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	//podLabels for user selector or classify pods.
+	// podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 
 	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
@@ -400,30 +400,30 @@ type StarRocksBeSpec struct {
 
 // StarRocksCnSpec defines the desired state of cn.
 type StarRocksCnSpec struct {
-	//name of the starrocks cn cluster.
+	// name of the starrocks cn cluster.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-	//+optional
-	//Deprecated: , the statefulset name don't allow set, prevent accidental modification.
+	// +optional
+	// Deprecated: , the statefulset name don't allow set, prevent accidental modification.
 	Name string `json:"name,omitempty"`
 
-	//annotation for cn pods. user can config monitor annotation for collect to monitor system.
-	//+optional
+	// annotation for cn pods. user can config monitor annotation for collect to monitor system.
+	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
-	//serviceAccount for cn access cloud service.
+	// serviceAccount for cn access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	//A special supplemental group that applies to all containers in a pod.
+	// A special supplemental group that applies to all containers in a pod.
 	// Some volume types allow the Kubelet to change the ownership of that volume
 	// to be owned by the pod:
 	FsGroup *int64 `json:"fsGroup,omitempty"`
 
-	//Replicas is the number of desired cn Pod.
+	// Replicas is the number of desired cn Pod.
 	// +kubebuilder:validation:Minimum=0
-	//+optional
+	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	//Image for a starrocks cn deployment.
+	// Image for a starrocks cn deployment.
 	Image string `json:"image"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -434,47 +434,47 @@ type StarRocksCnSpec struct {
 	// +patchStrategy=merge
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
 
-	//Service defines the template for the associated Kubernetes Service object.
-	//the service for user access cn.
+	// Service defines the template for the associated Kubernetes Service object.
+	// the service for user access cn.
 	Service *StarRocksService `json:"service,omitempty"`
 
-	//+optional
-	//set the fe service for register cn, when not set, will use the fe config to find.
-	//Deprecated,
-	//FeServiceName string `json:"feServiceName,omitempty"`
+	// +optional
+	// set the fe service for register cn, when not set, will use the fe config to find.
+	// Deprecated,
+	// FeServiceName string `json:"feServiceName,omitempty"`
 
-	//the reference for cn configMap.
-	//+optional
+	// the reference for cn configMap.
+	// +optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
-	//defines the specification of resource cpu and mem.
+	// defines the specification of resource cpu and mem.
 	corev1.ResourceRequirements `json:",inline"`
 
-	//Probe defines the mode probe service in container is alive.
+	// Probe defines the mode probe service in container is alive.
 	Probe *StarRocksProbe `json:"probe,omitempty"`
 
-	//AutoScalingPolicy auto scaling strategy
+	// AutoScalingPolicy auto scaling strategy
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
 
 	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
-	//+optional
-	//cnEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	// +optional
+	// cnEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	CnEnvVars []corev1.EnvVar `json:"cnEnvVars,omitempty"`
 
-	//+optional
-	//If specified, the pod's scheduling constraints.
+	// +optional
+	// If specified, the pod's scheduling constraints.
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
-	//+optional
+	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	//+optional
+	// +optional
 
-	//podLabels for user selector or classify pods.
+	// podLabels for user selector or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 
 	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
@@ -484,16 +484,16 @@ type StarRocksCnSpec struct {
 }
 
 type ConfigMapInfo struct {
-	//the config info for start progress.
+	// the config info for start progress.
 	ConfigMapName string `json:"configMapName,omitempty"`
 
-	//the config response key in configmap.
+	// the config response key in configmap.
 	ResolveKey string `json:"resolveKey,omitempty"`
 }
 
 // StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
 type StorageVolume struct {
-	//name of a storage volume.
+	// name of a storage volume.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	Name string `json:"name"`
 
@@ -507,18 +507,18 @@ type StorageVolume struct {
 	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
 	StorageSize string `json:"storageSize"`
 
-	//MountPath specify the path of volume mount.
+	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath,omitempty"`
 }
 
 type StarRocksService struct {
-	//Name assigned to service.
+	// Name assigned to service.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	// +optional
 	Name string `json:"name,omitempty"`
 
-	//type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
-	//More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+	// type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 	// +optional
 	Type corev1.ServiceType `json:"type,omitempty"`
 
@@ -533,28 +533,28 @@ type StarRocksService struct {
 	// +optional
 	LoadBalancerIP string `json:"loadBalancerIP,omitempty"`
 
-	//Ports the components exposed ports and listen ports in pod.
+	// Ports the components exposed ports and listen ports in pod.
 	// +optional
 	Ports []StarRocksServicePort `json:"ports"`
 }
 
 type StarRocksServicePort struct {
-	//Name of the map about coming port and target port
+	// Name of the map about coming port and target port
 	Name string `json:"name,omitempty"`
 
-	//Port the pod is exposed on service.
+	// Port the pod is exposed on service.
 	Port int32 `json:"port"`
 
-	//ContainerPort the service listen in pod.
+	// ContainerPort the service listen in pod.
 	ContainerPort int32 `json:"containerPort"`
 
-	//The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
+	// The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
 	NodePort int32 `json:"nodePort,omitempty"`
 }
 
 // StarRocksProbe defines the mode for probe be alive.
 type StarRocksProbe struct {
-	//Type identifies the mode of probe main container
+	// Type identifies the mode of probe main container
 	// +kubebuilder:validation:Enum=tcp;command
 	Type string `json:"type"`
 

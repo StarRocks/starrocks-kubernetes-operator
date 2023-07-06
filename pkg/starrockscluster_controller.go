@@ -57,19 +57,19 @@ type StarRocksClusterReconciler struct {
 	Scs      map[string]sub_controller.SubController
 }
 
-//+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/finalizers,verbs=update
-//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
-//+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="core",resources=endpoints,verbs=get;watch;list
-//+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch
+// +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="core",resources=endpoints,verbs=get;watch;list
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -95,13 +95,13 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	src := esrc.DeepCopy()
 
-	//record the src updated or not by process.
+	// record the src updated or not by process.
 	oldHashValue := r.hashStarRocksCluster(src)
-	//reconcile src deleted
+	// reconcile src deleted
 	if !src.DeletionTimestamp.IsZero() {
 		klog.Info("StarRocksClusterReconciler reconcile the src delete namespace=" + req.Namespace + " name= " + req.Name)
 		src.Status.Phase = srapi.ClusterDeleting
-		//if the src deleted, clean all resource ownerreference to src.
+		// if the src deleted, clean all resource ownerreference to src.
 		clean := func() (res ctrl.Result, err error) {
 			delres, err := r.CleanSubResources(ctx, src)
 			if err != nil {
@@ -110,7 +110,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			}
 
 			if !delres {
-				//wait for finalizers be cleaned clear.
+				// wait for finalizers be cleaned clear.
 				klog.Info("StarRocksClusterReconciler reconcile ", "have sub resosurce to cleaned ", "namespace ", src.Namespace, " starrockscluster ", src.Name)
 				return ctrl.Result{}, nil
 			}
@@ -119,14 +119,14 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 			// all resource clear over, clear starrockcluster finalizers.
 			src.Finalizers = nil
-			//delete the src will be hooked by finalizer, we should clear the finalizers.
+			// delete the src will be hooked by finalizer, we should clear the finalizers.
 			return ctrl.Result{}, r.UpdateStarRocksCluster(ctx, src)
 		}
 
 		return clean()
 	}
 
-	//subControllers reconcile for create or update sub resource.
+	// subControllers reconcile for create or update sub resource.
 	for _, rc := range r.Scs {
 		if err := rc.Sync(ctx, src); err != nil {
 			klog.Errorf("StarRocksClusterReconciler reconcile sub resource reconcile failed, "+
@@ -141,14 +141,14 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	for _, rc := range r.Scs {
-		//update component status.
+		// update component status.
 		if err := rc.UpdateStatus(src); err != nil {
 			klog.Infof("StarRocksClusterReconciler reconcile update component %s status failed.err=%s\n", rc.GetControllerName(), err.Error())
 			return requeueIfError(err)
 		}
 	}
 
-	//update restart status.
+	// update restart status.
 	if r.haveRestartOperation(src.Annotations) {
 		r.updateOperationStatus(src)
 		newHashValue = r.hashStarRocksCluster(src)
@@ -157,7 +157,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
-	//generate the src status.
+	// generate the src status.
 	r.reconcileStatus(ctx, src)
 	return ctrl.Result{}, r.UpdateStarRocksClusterStatus(ctx, src)
 }
@@ -266,8 +266,8 @@ func (r *StarRocksClusterReconciler) haveRestartOperation(annos map[string]strin
 }
 
 func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {
-	//calculate the status of starrocks cluster by subresource's status.
-	//clear resources when sub resource deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
+	// calculate the status of starrocks cluster by subresource's status.
+	// clear resources when sub resource deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
 	for _, rc := range r.Scs {
 		rc.ClearResources(ctx, src)
 	}

@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	//Controllers through the init for add Controller.
+	// Controllers through the init for add Controller.
 	Controllers []Controller
 	Scheme      = runtime.NewScheme()
 )
@@ -35,7 +35,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(v1alpha1.AddToScheme(Scheme))
 	utilruntime.Must(v1.AddToScheme(Scheme))
-	//+kubebuilder:scaffold:scheme
+	// +kubebuilder:scaffold:scheme
 }
 
 type Controller interface {
