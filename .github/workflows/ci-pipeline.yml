@@ -1,8 +1,8 @@
 name: CI PIPELINE
 
 on:
-  push:
-    branches: ["feature/add-unit-test-workflow"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   operator:
