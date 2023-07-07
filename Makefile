@@ -63,7 +63,7 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
-	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
+	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
 	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
 	@git status | grep "starrocks.com_starrocksclusters.yaml" && echo "the crd file need to be updated" && exit 1 || exit 0
 
