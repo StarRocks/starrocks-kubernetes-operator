@@ -1050,7 +1050,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
@@ -1179,7 +1181,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
@@ -2990,7 +2994,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
@@ -3119,7 +3125,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
@@ -4145,7 +4153,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
@@ -4385,7 +4395,9 @@ spec:
                             should be mounted.  Must not contain ':'.
                           type: string
                         name:
-                          description: This must match the Name of a Volume.
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
                           type: string
                       type: object
                     type: array
