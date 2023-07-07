@@ -26,3 +26,4 @@ testbin/*
 bin
 main
 coverage.data
+artifacts
