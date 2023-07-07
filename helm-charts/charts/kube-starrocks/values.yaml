@@ -22,12 +22,15 @@ initPassword:
 
 starrocksOperator:
   enabled: true
+  # annotations for starrocks operator.
+  annotations: {}
   namespaceOverride: ""
   image:
     # image sliced by "repository:tag"
     repository: starrocks/operator
     tag: latest
   imagePullPolicy: Always
+  replicaCount: 1
   resources:
     limits:
       cpu: 500m
@@ -35,6 +38,14 @@ starrocksOperator:
     requests:
       cpu: 500m
       memory: 200Mi
+  # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+  tolerations: []
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
 # deploy a starrocks cluster
 starrocksCluster:
