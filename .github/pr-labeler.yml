@@ -1,5 +1,4 @@
-feature: ['feature/*', 'feat/*']
+enhancement: ['feature/*', 'feat/*']
 bugfix: ['bugfix/*', 'fix/*']
 refactor: refactor/*
 doc: doc/*
-
