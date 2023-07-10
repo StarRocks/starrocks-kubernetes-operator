@@ -5,6 +5,7 @@ if [ $# -ne 1 ]; then
   echo "Usage: $0 <release_tag>"
   exit 1
 fi
+release_tag=$1
 
 # set the home path
 HOME_PATH=$(
@@ -30,7 +31,7 @@ name=${package_name%-*}
 version=${package_name##*-}
 
 # helm repo index
-url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${1}/${name}-chart-${version}.tgz
+url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${name}-chart-${version}.tgz
 if [ -f $HOME_PATH/helm-charts/charts/index.yaml ]; then
   helm repo index --merge $HOME_PATH/helm-charts/charts/index.yaml --url $url ..
 else
