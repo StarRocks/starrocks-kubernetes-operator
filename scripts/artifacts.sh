@@ -20,28 +20,38 @@ cd $HOME_PATH/helm-charts/charts/kube-starrocks/
 # must be executed before helm index operation
 helm package .
 
-# parse the package name
-# get the name from the path, e.g. kube-starrocks-1.6.1.tgz
-package_name=$(ls -t $HOME_PATH/helm-charts/charts/kube-starrocks/*.tgz | head -1 | awk -F '/' '{print $NF}')
-# remove the suffix from package_name, e.g. kube-starrocks-1.6.1
-package_name=${package_name%.tgz}
-# remove the version from package_name, e.g. kube-starrocks
-name=${package_name%-*}
-# get the version from package_name, e.g. 1.6.1
-version=${package_name##*-}
+# get the package name from Chart.yaml
+chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
+# get the chart version from Chart.yaml
+chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
+# make the package name
+package_name=${chart_name}-${chart_version}.tgz
+# make sure the package exists
+if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} ]; then
+  echo "package ${package_name} not found"
+  exit 1
+fi
 
 # helm repo index
-url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${name}-chart-${version}.tgz
+url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${chart_name}-chart-${chart_version}.tgz
 if [ -f $HOME_PATH/helm-charts/charts/index.yaml ]; then
   helm repo index --merge $HOME_PATH/helm-charts/charts/index.yaml --url $url ..
 else
   helm repo index --url $url ..
 fi
+# the generated index.yaml is not correct, so we need to fix it
+# the wrong one, e.g. https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-chart-1.7.0.tgz/kube-starrocks/kube-starrocks-1.7.0.tgz
+# first get the url in index.yaml
+old=$(cat $HOME_PATH/helm-charts/charts/index.yaml | grep "$url")
+new=${old%/*/*}
+# then replace the url with the correct one, and do not use sed
+sed "s|$old|$new|g" $HOME_PATH/helm-charts/charts/index.yaml >/tmp/index.yaml
+cp /tmp/index.yaml $HOME_PATH/helm-charts/charts/index.yaml
 
 # copy to artifacts
 mkdir -p $HOME_PATH/artifacts
 # helm chart
-mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name}.tgz $HOME_PATH/artifacts/${name}-chart-${version}.tgz
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} $HOME_PATH/artifacts/${chart_name}-chart-${chart_version}.tgz
 # yaml files for operator and crd
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
