@@ -69,7 +69,7 @@ starrocksFESpec:
   image:
     # image sliced by "repository:tag"
     repository: starrocks/fe-ubuntu
-    tag: 2.5.5
+    tag: 3.0-latest
   # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
@@ -182,7 +182,7 @@ starrocksCnSpec:
   image:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
-    tag: 2.5.5
+    tag: 3.0-latest
   # serviceAccount for cn access cloud service.
   serviceAccount: ""
   # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -307,7 +307,7 @@ starrocksBeSpec:
   image:
     # image sliced by "repository:tag"
     repository: starrocks/be-ubuntu
-    tag: 2.5.5
+    tag: 3.0-latest
   # serviceAccount for be access cloud service.
   serviceAccount: ""
   # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
