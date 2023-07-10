@@ -1,4 +1,15 @@
 {{ define "packages" }}
+---
+title: "API reference"
+description: "StarRocks operator generated API reference docs"
+draft: false
+images: []
+menu: "operator"
+weight: 211
+toc: true
+---
+
+> This page is automatically generated with `gen-crd-api-reference-docs`.
 
 {{ with .packages}}
 <p>Packages:</p>
@@ -41,9 +52,5 @@
     <hr/>
 {{ end }}
 
-<p><em>
-    Generated with <code>gen-crd-api-reference-docs</code>
-    {{ with .gitCommit }} on git commit <code>{{ . }}</code>{{end}}.
-</em></p>
-
 {{ end }}
+

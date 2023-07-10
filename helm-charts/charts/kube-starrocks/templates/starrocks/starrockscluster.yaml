@@ -121,8 +121,8 @@ spec:
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
-{{- if .Values.starrocksBeSpec.resource }}
-{{ toYaml .Values.starrocksBeSpec.resource | indent 4 }}
+{{- if .Values.starrocksBeSpec.resources }}
+{{ toYaml .Values.starrocksBeSpec.resources | indent 4 }}
 {{- end }}
 {{- if .Values.starrocksBeSpec.service.type }}
     service:
@@ -272,8 +272,8 @@ spec:
     autoScalingPolicy:
 {{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.resource }}
-{{ toYaml .Values.starrocksCnSpec.resource | indent 4 }}
+{{- if .Values.starrocksCnSpec.resources }}
+{{ toYaml .Values.starrocksCnSpec.resources | indent 4 }}
 {{- end }}
 {{- if .Values.starrocksCnSpec.service.type }}
     service:

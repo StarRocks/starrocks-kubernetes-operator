@@ -1,15 +1,25 @@
+---
+title: "API reference"
+description: "StarRocks operator generated API reference docs"
+draft: false
+images: []
+menu: "operator"
+weight: 211
+toc: true
+---
+> This page is automatically generated with `gen-crd-api-reference-docs`.
 <p>Packages:</p>
 <ul>
 <li>
-<a href="#starrocks.com%2fv1">starrocks.com/v1</a>
+<a href="#starrocks.com%2fv1alpha1">starrocks.com/v1alpha1</a>
 </li>
 </ul>
-<h2 id="starrocks.com/v1">starrocks.com/v1</h2>
+<h2 id="starrocks.com/v1alpha1">starrocks.com/v1alpha1</h2>
 <div>
 </div>
 Resource Types:
 <ul></ul>
-<h3 id="starrocks.com/v1.AnnotationOperationKey">AnnotationOperationKey
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationKey">AnnotationOperationKey
 (<code>string</code> alias)</h3>
 <div>
 <p>Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.</p>
@@ -22,17 +32,17 @@ Resource Types:
 </tr>
 </thead>
 <tbody><tr><td><p>&#34;app.starrocks.be.io/restart&#34;</p></td>
-<td><p>AnnotationBERestartKey the be annotation key for restart be</p>
+<td><p>the be annotation key for restart be</p>
 </td>
 </tr><tr><td><p>&#34;app.starrocks.cn.io/restart&#34;</p></td>
-<td><p>AnnotationCNRestartKey the cn annotation key for restart cn</p>
+<td><p>the cn annotation key for restart cn</p>
 </td>
 </tr><tr><td><p>&#34;app.starrocks.fe.io/restart&#34;</p></td>
-<td><p>AnnotationFERestartKey the fe annotation key for restart</p>
+<td><p>the fe annotation key for restart</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AnnotationOperationValue">AnnotationOperationValue
+<h3 id="starrocks.com/v1alpha1.AnnotationOperationValue">AnnotationOperationValue
 (<code>string</code> alias)</h3>
 <div>
 <p>AnnotationOperationValue present the operation for fe, cn, be.</p>
@@ -45,20 +55,20 @@ Resource Types:
 </tr>
 </thead>
 <tbody><tr><td><p>&#34;restart&#34;</p></td>
-<td><p>AnnotationRestart represent the user want to restart all fe pods.</p>
+<td><p>represent the user want to restart all fe pods.</p>
 </td>
 </tr><tr><td><p>&#34;finished&#34;</p></td>
-<td><p>AnnotationRestartFinished represent all fe pods have restarted.</p>
+<td><p>represent all fe pods have restarted.</p>
 </td>
 </tr><tr><td><p>&#34;restarting&#34;</p></td>
-<td><p>AnnotationRestarting represent at least one pod on restarting</p>
+<td><p>represent at least one pod on restarting</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AutoScalerVersion">AutoScalerVersion
+<h3 id="starrocks.com/v1alpha1.AutoScalerVersion">AutoScalerVersion
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1.HorizontalScaler">HorizontalScaler</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler</a>)
 </p>
 <div>
 </div>
@@ -80,10 +90,10 @@ Resource Types:
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy
+<h3 id="starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>)
 </p>
 <div>
 <p>AutoScalingPolicy defines the auto scale</p>
@@ -100,7 +110,7 @@ Resource Types:
 <td>
 <code>hpaPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAPolicy">
+<a href="#starrocks.com/v1alpha1.HPAPolicy">
 HPAPolicy
 </a>
 </em>
@@ -113,7 +123,7 @@ HPAPolicy
 <td>
 <code>version</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
 AutoScalerVersion
 </a>
 </em>
@@ -147,13 +157,13 @@ int32
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ClusterPhase">ClusterPhase
+<h3 id="starrocks.com/v1alpha1.ClusterPhase">ClusterPhase
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
-<p>ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.</p>
+<p>represent the cluster phase. the possible value for cluster phase are: running, failed, pending.</p>
 </div>
 <table>
 <thead>
@@ -162,10 +172,7 @@ int32
 <th>Description</th>
 </tr>
 </thead>
-<tbody><tr><td><p>&#34;deleting&#34;</p></td>
-<td><p>ClusterDeleting waiting all resource deleted</p>
-</td>
-</tr><tr><td><p>&#34;failed&#34;</p></td>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
 <td><p>ClusterFailed represents starrocks cluster failed.</p>
 </td>
 </tr><tr><td><p>&#34;pending&#34;</p></td>
@@ -176,10 +183,10 @@ int32
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.ConfigMapInfo">ConfigMapInfo
+<h3 id="starrocks.com/v1alpha1.ConfigMapInfo">ConfigMapInfo
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 </div>
@@ -215,50 +222,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ConfigMapReference">ConfigMapReference
+<h3 id="starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a Volume.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.ContainerResourceMetricSource">ContainerResourceMetricSource
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ContainerResourceMetricSource indicates how to scale on a resource metric known to
@@ -294,7 +261,7 @@ Kubernetes core/v1.ResourceName
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -316,10 +283,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.CrossVersionObjectReference">CrossVersionObjectReference
+<h3 id="starrocks.com/v1alpha1.CrossVersionObjectReference">CrossVersionObjectReference
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>)
 </p>
 <div>
 <p>CrossVersionObjectReference contains enough information to let you identify the referred resource.</p>
@@ -368,10 +335,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ExternalMetricSource">ExternalMetricSource
+<h3 id="starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ExternalMetricSource indicates how to scale on a metric not associated with
@@ -390,7 +357,7 @@ messaging service, or QPS from loadbalancer running outside of cluster).</p>
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -403,7 +370,7 @@ MetricIdentifier
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -414,10 +381,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAPolicy">HPAPolicy
+<h3 id="starrocks.com/v1alpha1.HPAPolicy">HPAPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.AutoScalingPolicy">AutoScalingPolicy</a>)
 </p>
 <div>
 </div>
@@ -433,7 +400,7 @@ MetricTarget
 <td>
 <code>metrics</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricSpec">
+<a href="#starrocks.com/v1alpha1.MetricSpec">
 []MetricSpec
 </a>
 </em>
@@ -450,7 +417,7 @@ the splice will have unsafe.Pointer convert, so be careful to edit the struct fi
 <td>
 <code>behavior</code><br/>
 <em>
-<a href="#starrocks.com/v1.HorizontalPodAutoscalerBehavior">
+<a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">
 HorizontalPodAutoscalerBehavior
 </a>
 </em>
@@ -465,10 +432,10 @@ the</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingPolicy">HPAScalingPolicy
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingRules">HPAScalingRules</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
 </p>
 <div>
 <p>HPAScalingPolicy is a single policy which must hold true for a specified past interval.</p>
@@ -485,7 +452,7 @@ the</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingPolicyType">
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicyType">
 HPAScalingPolicyType
 </a>
 </em>
@@ -520,10 +487,10 @@ PeriodSeconds must be greater than zero and less than or equal to 1800 (30 min).
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingPolicyType">HPAScalingPolicyType
+<h3 id="starrocks.com/v1alpha1.HPAScalingPolicyType">HPAScalingPolicyType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingPolicy">HPAScalingPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingPolicy">HPAScalingPolicy</a>)
 </p>
 <div>
 <p>HPAScalingPolicyType is the type of the policy which could be used while making scaling decisions.</p>
@@ -544,10 +511,10 @@ the current number of pods.</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.HPAScalingRules">HPAScalingRules
+<h3 id="starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior</a>)
 </p>
 <div>
 <p>HPAScalingRules configures the scaling behavior for one direction.
@@ -586,7 +553,7 @@ If not set, use the default values:
 <td>
 <code>selectPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.ScalingPolicySelect">
+<a href="#starrocks.com/v1alpha1.ScalingPolicySelect">
 ScalingPolicySelect
 </a>
 </em>
@@ -601,7 +568,7 @@ If not set, the default value MaxPolicySelect is used.</p>
 <td>
 <code>policies</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingPolicy">
+<a href="#starrocks.com/v1alpha1.HPAScalingPolicy">
 []HPAScalingPolicy
 </a>
 </em>
@@ -614,10 +581,10 @@ At least one policy must be specified, otherwise the HPAScalingRules will be dis
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior
+<h3 id="starrocks.com/v1alpha1.HorizontalPodAutoscalerBehavior">HorizontalPodAutoscalerBehavior
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAPolicy">HPAPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
 </p>
 <div>
 <p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target
@@ -635,7 +602,7 @@ in both Up and Down directions (scaleUp and scaleDown fields respectively).</p>
 <td>
 <code>scaleUp</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingRules">
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
 HPAScalingRules
 </a>
 </em>
@@ -653,7 +620,7 @@ No stabilization is used.</p>
 <td>
 <code>scaleDown</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAScalingRules">
+<a href="#starrocks.com/v1alpha1.HPAScalingRules">
 HPAScalingRules
 </a>
 </em>
@@ -668,10 +635,10 @@ the last 300sec is used).</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.HorizontalScaler">HorizontalScaler
+<h3 id="starrocks.com/v1alpha1.HorizontalScaler">HorizontalScaler
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>)
 </p>
 <div>
 </div>
@@ -691,31 +658,31 @@ string
 </em>
 </td>
 <td>
-<p>the horizontal scaler name</p>
+<p>the deploy horizontal scaler name</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>version</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
+<a href="#starrocks.com/v1alpha1.AutoScalerVersion">
 AutoScalerVersion
 </a>
 </em>
 </td>
 <td>
-<p>the horizontal version.</p>
+<p>the deploy horizontal version.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MemberPhase">MemberPhase
+<h3 id="starrocks.com/v1alpha1.MemberPhase">MemberPhase
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeStatus">StarRocksFeStatus</a>)
 </p>
 <div>
-<p>MemberPhase represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.</p>
+<p>represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.</p>
 </div>
 <table>
 <thead>
@@ -735,10 +702,10 @@ AutoScalerVersion
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricIdentifier">MetricIdentifier
+<h3 id="starrocks.com/v1alpha1.MetricIdentifier">MetricIdentifier
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1.PodsMetricSource">PodsMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>)
 </p>
 <div>
 <p>MetricIdentifier defines the name and optionally selector for a metric</p>
@@ -780,10 +747,10 @@ When unset, just the metricName will be used to gather metrics.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricSourceType">MetricSourceType
+<h3 id="starrocks.com/v1alpha1.MetricSourceType">MetricSourceType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>MetricSourceType indicates the type of metric.</p>
@@ -827,10 +794,10 @@ to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricSpec">MetricSpec
+<h3 id="starrocks.com/v1alpha1.MetricSpec">MetricSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAPolicy">HPAPolicy</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAPolicy">HPAPolicy</a>)
 </p>
 <div>
 <p>MetricSpec specifies how to scale based on a single metric
@@ -848,7 +815,7 @@ to normal per-pod metrics (the &ldquo;pods&rdquo; source).</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricSourceType">
+<a href="#starrocks.com/v1alpha1.MetricSourceType">
 MetricSourceType
 </a>
 </em>
@@ -864,7 +831,7 @@ HPAContainerMetrics is enabled</p>
 <td>
 <code>object</code><br/>
 <em>
-<a href="#starrocks.com/v1.ObjectMetricSource">
+<a href="#starrocks.com/v1alpha1.ObjectMetricSource">
 ObjectMetricSource
 </a>
 </em>
@@ -879,7 +846,7 @@ ObjectMetricSource
 <td>
 <code>pods</code><br/>
 <em>
-<a href="#starrocks.com/v1.PodsMetricSource">
+<a href="#starrocks.com/v1alpha1.PodsMetricSource">
 PodsMetricSource
 </a>
 </em>
@@ -895,7 +862,7 @@ averaged together before being compared to the target value.</p>
 <td>
 <code>resource</code><br/>
 <em>
-<a href="#starrocks.com/v1.ResourceMetricSource">
+<a href="#starrocks.com/v1alpha1.ResourceMetricSource">
 ResourceMetricSource
 </a>
 </em>
@@ -913,7 +880,7 @@ to normal per-pod metrics using the &ldquo;pods&rdquo; source.</p>
 <td>
 <code>containerResource</code><br/>
 <em>
-<a href="#starrocks.com/v1.ContainerResourceMetricSource">
+<a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">
 ContainerResourceMetricSource
 </a>
 </em>
@@ -932,7 +899,7 @@ This is an alpha feature and can be enabled by the HPAContainerMetrics feature f
 <td>
 <code>external</code><br/>
 <em>
-<a href="#starrocks.com/v1.ExternalMetricSource">
+<a href="#starrocks.com/v1alpha1.ExternalMetricSource">
 ExternalMetricSource
 </a>
 </em>
@@ -948,10 +915,10 @@ QPS from loadbalancer running outside of cluster).</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricTarget">MetricTarget
+<h3 id="starrocks.com/v1alpha1.MetricTarget">MetricTarget
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.ContainerResourceMetricSource">ContainerResourceMetricSource</a>, <a href="#starrocks.com/v1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1.PodsMetricSource">PodsMetricSource</a>, <a href="#starrocks.com/v1.ResourceMetricSource">ResourceMetricSource</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.ContainerResourceMetricSource">ContainerResourceMetricSource</a>, <a href="#starrocks.com/v1alpha1.ExternalMetricSource">ExternalMetricSource</a>, <a href="#starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource</a>, <a href="#starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource</a>, <a href="#starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource</a>)
 </p>
 <div>
 <p>MetricTarget defines the target value, average value, or average utilization of a specific metric</p>
@@ -968,7 +935,7 @@ QPS from loadbalancer running outside of cluster).</p>
 <td>
 <code>type</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTargetType">
+<a href="#starrocks.com/v1alpha1.MetricTargetType">
 MetricTargetType
 </a>
 </em>
@@ -981,9 +948,7 @@ MetricTargetType
 <td>
 <code>value</code><br/>
 <em>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity">
 k8s.io/apimachinery/pkg/api/resource.Quantity
-</a>
 </em>
 </td>
 <td>
@@ -995,9 +960,7 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 <td>
 <code>averageValue</code><br/>
 <em>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity">
 k8s.io/apimachinery/pkg/api/resource.Quantity
-</a>
 </em>
 </td>
 <td>
@@ -1023,10 +986,10 @@ Currently only valid for Resource metric source type</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MetricTargetType">MetricTargetType
+<h3 id="starrocks.com/v1alpha1.MetricTargetType">MetricTargetType
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricTarget">MetricTarget</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricTarget">MetricTarget</a>)
 </p>
 <div>
 <p>MetricTargetType specifies the type of metric being targeted, and should be either
@@ -1050,47 +1013,10 @@ Currently only valid for Resource metric source type</p>
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.MountInfo">MountInfo
-</h3>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a Volume.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.ObjectMetricSource">ObjectMetricSource
+<h3 id="starrocks.com/v1alpha1.ObjectMetricSource">ObjectMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ObjectMetricSource indicates how to scale on a metric describing a
@@ -1108,7 +1034,7 @@ kubernetes object (for example, hits-per-second on an Ingress object).</p>
 <td>
 <code>describedObject</code><br/>
 <em>
-<a href="#starrocks.com/v1.CrossVersionObjectReference">
+<a href="#starrocks.com/v1alpha1.CrossVersionObjectReference">
 CrossVersionObjectReference
 </a>
 </em>
@@ -1120,7 +1046,7 @@ CrossVersionObjectReference
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1133,7 +1059,7 @@ MetricTarget
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -1144,10 +1070,10 @@ MetricIdentifier
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.PodsMetricSource">PodsMetricSource
+<h3 id="starrocks.com/v1alpha1.PodsMetricSource">PodsMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>PodsMetricSource indicates how to scale on a metric describing each pod in
@@ -1167,7 +1093,7 @@ value.</p>
 <td>
 <code>metric</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricIdentifier">
+<a href="#starrocks.com/v1alpha1.MetricIdentifier">
 MetricIdentifier
 </a>
 </em>
@@ -1180,7 +1106,7 @@ MetricIdentifier
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1191,10 +1117,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ResourceMetricSource">ResourceMetricSource
+<h3 id="starrocks.com/v1alpha1.ResourceMetricSource">ResourceMetricSource
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.MetricSpec">MetricSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.MetricSpec">MetricSpec</a>)
 </p>
 <div>
 <p>ResourceMetricSource indicates how to scale on a resource metric known to
@@ -1230,7 +1156,7 @@ Kubernetes core/v1.ResourceName
 <td>
 <code>target</code><br/>
 <em>
-<a href="#starrocks.com/v1.MetricTarget">
+<a href="#starrocks.com/v1alpha1.MetricTarget">
 MetricTarget
 </a>
 </em>
@@ -1241,10 +1167,10 @@ MetricTarget
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ScalingPolicySelect">ScalingPolicySelect
+<h3 id="starrocks.com/v1alpha1.ScalingPolicySelect">ScalingPolicySelect
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.HPAScalingRules">HPAScalingRules</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.HPAScalingRules">HPAScalingRules</a>)
 </p>
 <div>
 <p>ScalingPolicySelect is used to specify which policy should be used while scaling in a certain direction</p>
@@ -1267,55 +1193,10 @@ MetricTarget
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.SecretReference">SecretReference
+<h3 id="starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a Volume.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.SpecInterface">SpecInterface
-</h3>
-<div>
-<p>SpecInterface is a common interface for all starrocks component spec.</p>
-</div>
-<h3 id="starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
 <p>StarRocksBeSpec defines the desired state of be.</p>
@@ -1330,17 +1211,204 @@ not contain &lsquo;:&rsquo;.</p>
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentSpec</code><br/>
+<code>replicas</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+int32
+</em>
+</td>
+<td>
+<p>Replicas is the number of desired be Pod. the default value=3
+Optional</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Image for a starrocks be deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>annotation for be pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
-<p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
-</p>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for be access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fsGroup</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>name of the starrocks be cluster.
+Deprecated</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.
+the service for user access be.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>limits</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>requests</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for be configMap.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>probe</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
+StarRocksProbe
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for be storage data and log.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicaInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReplicaInstance is the names of replica starrocksbe cluster.
+Deprecated, temp deprecated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
 </td>
 </tr>
 <tr>
@@ -1357,12 +1425,66 @@ StarRocksComponentSpec
 <p>beEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>podLabels for user selector or classify pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hostAliases</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostalias-v1-core">
+[]Kubernetes core/v1.HostAlias
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
+file if specified. This is only valid for non-hostNetwork pods.</p>
+</td>
+</tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksBeStatus">StarRocksBeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
 <p>StarRocksBeStatus represents the status of starrocks be.</p>
@@ -1377,22 +1499,88 @@ StarRocksComponentSpec
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>serviceName</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
+string
+</em>
+</td>
+<td>
+<p>the name of be service for fe find be instance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>FailedInstances deploy failed instance of be.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>creatingInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>CreatingInstances represents status in creating pods of be.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runningInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>RunningInstances represents status in running pods of be.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resourceNames</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>The statefulset names of be.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MemberPhase">
+MemberPhase
 </a>
 </em>
 </td>
 <td>
-<p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
-</p>
+<p>Phase the value from all pods of be status. If be have one failed pod phase=failed,
+also if be have one creating pod phase=creating, also if be all running phase=running, others unknown.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reason for the phase.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCluster">StarRocksCluster
+<h3 id="starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster
 </h3>
 <div>
 <p>StarRocksCluster defines a starrocks cluster deployment.</p>
@@ -1423,7 +1611,7 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">
 StarRocksClusterSpec
 </a>
 </em>
@@ -1450,7 +1638,7 @@ Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 <td>
 <code>starRocksFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksFeSpec">
 StarRocksFeSpec
 </a>
 </em>
@@ -1463,7 +1651,7 @@ StarRocksFeSpec
 <td>
 <code>starRocksBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksBeSpec">
 StarRocksBeSpec
 </a>
 </em>
@@ -1476,7 +1664,7 @@ StarRocksBeSpec
 <td>
 <code>starRocksCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksCnSpec">
 StarRocksCnSpec
 </a>
 </em>
@@ -1492,7 +1680,7 @@ StarRocksCnSpec
 <td>
 <code>status</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">
 StarRocksClusterStatus
 </a>
 </em>
@@ -1503,10 +1691,10 @@ StarRocksClusterStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster</a>)
 </p>
 <div>
 <p>StarRocksClusterSpec defines the desired state of StarRocksCluster</p>
@@ -1536,7 +1724,7 @@ Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 <td>
 <code>starRocksFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksFeSpec">
 StarRocksFeSpec
 </a>
 </em>
@@ -1549,7 +1737,7 @@ StarRocksFeSpec
 <td>
 <code>starRocksBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksBeSpec">
 StarRocksBeSpec
 </a>
 </em>
@@ -1562,7 +1750,7 @@ StarRocksBeSpec
 <td>
 <code>starRocksCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
+<a href="#starrocks.com/v1alpha1.StarRocksCnSpec">
 StarRocksCnSpec
 </a>
 </em>
@@ -1573,10 +1761,10 @@ StarRocksCnSpec
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksCluster">StarRocksCluster</a>)
 </p>
 <div>
 <p>StarRocksClusterStatus defines the observed state of StarRocksCluster.</p>
@@ -1593,7 +1781,7 @@ StarRocksCnSpec
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.ClusterPhase">
+<a href="#starrocks.com/v1alpha1.ClusterPhase">
 ClusterPhase
 </a>
 </em>
@@ -1606,7 +1794,7 @@ ClusterPhase
 <td>
 <code>starRocksFeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksFeStatus">
 StarRocksFeStatus
 </a>
 </em>
@@ -1619,7 +1807,7 @@ StarRocksFeStatus
 <td>
 <code>starRocksBeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksBeStatus">
 StarRocksBeStatus
 </a>
 </em>
@@ -1632,7 +1820,7 @@ StarRocksBeStatus
 <td>
 <code>starRocksCnStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnStatus">
+<a href="#starrocks.com/v1alpha1.StarRocksCnStatus">
 StarRocksCnStatus
 </a>
 </em>
@@ -1643,10 +1831,10 @@ StarRocksCnStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
 <p>StarRocksCnSpec defines the desired state of cn.</p>
@@ -1661,17 +1849,188 @@ StarRocksCnStatus
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentSpec</code><br/>
+<code>name</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>name of the starrocks cn cluster.
+Deprecated: , the statefulset name don&rsquo;t allow set, prevent accidental modification.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>annotation for cn pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for cn access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fsGroup</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>A special supplemental group that applies to all containers in a pod.
+Some volume types allow the Kubelet to change the ownership of that volume
+to be owned by the pod:</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Replicas is the number of desired cn Pod.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Image for a starrocks cn deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
-<p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
-</p>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<p>Service defines the template for the associated Kubernetes Service object.
+the service for user access cn.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for cn configMap.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>limits</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>requests</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>probe</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
+StarRocksProbe
+</a>
+</em>
+</td>
+<td>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>autoScalingPolicy</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.AutoScalingPolicy">
+AutoScalingPolicy
+</a>
+</em>
+</td>
+<td>
+<p>AutoScalingPolicy auto scaling strategy</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
 </td>
 </tr>
 <tr>
@@ -1690,26 +2049,66 @@ StarRocksComponentSpec
 </tr>
 <tr>
 <td>
-<code>autoScalingPolicy</code><br/>
+<code>affinity</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalingPolicy">
-AutoScalingPolicy
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
 </a>
 </em>
 </td>
 <td>
-<p>AutoScalingPolicy auto scaling strategy</p>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>podLabels for user selector or classify pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hostAliases</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostalias-v1-core">
+[]Kubernetes core/v1.HostAlias
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
+file if specified. This is only valid for non-hostNetwork pods.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksCnStatus">StarRocksCnStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
-<p>StarRocksCnStatus represents the status of starrocks cn.</p>
 </div>
 <table>
 <thead>
@@ -1721,17 +2120,57 @@ AutoScalingPolicy
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>serviceName</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
-</a>
+string
 </em>
 </td>
 <td>
-<p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
-</p>
+<p>the name of cn service for fe find cn instance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>FailedInstances deploy failed cn pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>creatingInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>CreatingInstances in creating status cn pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runningInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>RunningInstances in running status be pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resourceNames</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>The statefulset names of be.</p>
 </td>
 </tr>
 <tr>
@@ -1750,7 +2189,7 @@ Deprecated</p>
 <td>
 <code>horizontalScaler</code><br/>
 <em>
-<a href="#starrocks.com/v1.HorizontalScaler">
+<a href="#starrocks.com/v1alpha1.HorizontalScaler">
 HorizontalScaler
 </a>
 </em>
@@ -1759,14 +2198,41 @@ HorizontalScaler
 <p>HorizontalAutoscaler have the autoscaler information.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.MemberPhase">
+MemberPhase
+</a>
+</em>
+</td>
+<td>
+<p>Phase the value from all pods of cn status. If cn have one failed pod phase=failed,
+also if cn have one creating pod phase=creating, also if cn all running phase=running, others unknown.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reason for the phase.</p>
+</td>
+</tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
+<p>StarRocksFeSpec defines the desired state of fe.</p>
 </div>
 <table>
 <thead>
@@ -1797,7 +2263,8 @@ map[string]string
 </em>
 </td>
 <td>
-<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
+<em>(Optional)</em>
+<p>annotation for fe pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
@@ -1808,7 +2275,7 @@ string
 </em>
 </td>
 <td>
-<p>serviceAccount for access cloud service.</p>
+<p>serviceAccount for fe access cloud service.</p>
 </td>
 </tr>
 <tr>
@@ -1832,7 +2299,7 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<p>Replicas is the number of desired fe Pod, the number is 1,3,5</p>
 </td>
 </tr>
 <tr>
@@ -1843,7 +2310,7 @@ string
 </em>
 </td>
 <td>
-<p>Image for a starrocks deployment.</p>
+<p>Image for a starrocks fe deployment..</p>
 </td>
 </tr>
 <tr>
@@ -1866,7 +2333,7 @@ More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specif
 <td>
 <code>service</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksService">
+<a href="#starrocks.com/v1alpha1.StarRocksService">
 StarRocksService
 </a>
 </em>
@@ -1878,68 +2345,55 @@ StarRocksService
 </tr>
 <tr>
 <td>
-<code>ResourceRequirements</code><br/>
+<code>limits</code><br/>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
-Kubernetes core/v1.ResourceRequirements
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
 </a>
 </em>
 </td>
 <td>
-<p>
-(Members of <code>ResourceRequirements</code> are embedded into this type.)
-</p>
 <em>(Optional)</em>
-<p>defines the specification of resource cpu and mem.</p>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>requests</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
 </td>
 </tr>
 <tr>
 <td>
 <code>configMapInfo</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
+<a href="#starrocks.com/v1alpha1.ConfigMapInfo">
 ConfigMapInfo
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>configMaps</code><br/>
-<em>
-<a href="#starrocks.com/v1.ConfigMapReference">
-[]ConfigMapReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>the reference for configMap which allow users to mount any files to container.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>secrets</code><br/>
-<em>
-<a href="#starrocks.com/v1.SecretReference">
-[]SecretReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>the reference for secrets.</p>
+<p>the reference for fe configMap.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>probe</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
+<a href="#starrocks.com/v1alpha1.StarRocksProbe">
 StarRocksProbe
 </a>
 </em>
@@ -1947,6 +2401,20 @@ StarRocksProbe
 <td>
 <em>(Optional)</em>
 <p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1alpha1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for fe meta storage.</p>
 </td>
 </tr>
 <tr>
@@ -1959,6 +2427,20 @@ map[string]string
 <td>
 <em>(Optional)</em>
 <p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>feEnvVars</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
+[]Kubernetes core/v1.EnvVar
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>feEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
 </td>
 </tr>
 <tr>
@@ -2016,41 +2498,15 @@ map[string]string
 file if specified. This is only valid for non-hostNetwork pods.</p>
 </td>
 </tr>
-<tr>
-<td>
-<code>schedulerName</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>storageVolumes</code><br/>
-<em>
-<a href="#starrocks.com/v1.StorageVolume">
-[]StorageVolume
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for meta storage.</p>
-</td>
-</tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
+<h3 id="starrocks.com/v1alpha1.StarRocksFeStatus">StarRocksFeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
-<p>StarRocksComponentStatus represents the status of a starrocks component.</p>
+<p>StarRocksFeStatus represents the status of starrocks fe.</p>
 </div>
 <table>
 <thead>
@@ -2079,7 +2535,7 @@ string
 </em>
 </td>
 <td>
-<p>FailedInstances failed pod names.</p>
+<p>FailedInstances failed fe pod names.</p>
 </td>
 </tr>
 <tr>
@@ -2119,14 +2575,14 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
+<a href="#starrocks.com/v1alpha1.MemberPhase">
 MemberPhase
 </a>
 </em>
 </td>
 <td>
-<p>Phase the value from all pods of component status. If component have one failed pod phase=failed,
-also if fe have one creating pod phase=creating, also if component all running phase=running, others unknown.</p>
+<p>Phase the value from all pods of fe status. If fe have one failed pod phase=failed,
+also if fe have one creating pod phase=creating, also if fe all running phase=running, others unknown.</p>
 </td>
 </tr>
 <tr>
@@ -2143,90 +2599,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec
+<h3 id="starrocks.com/v1alpha1.StarRocksProbe">StarRocksProbe
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
-</p>
-<div>
-<p>StarRocksFeSpec defines the desired state of fe.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>StarRocksComponentSpec</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
-</a>
-</em>
-</td>
-<td>
-<p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
-</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>feEnvVars</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">
-[]Kubernetes core/v1.EnvVar
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>feEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
-</p>
-<div>
-<p>StarRocksFeStatus represents the status of starrocks fe.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>StarRocksComponentStatus</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
-</a>
-</em>
-</td>
-<td>
-<p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 <p>StarRocksProbe defines the mode for probe be alive.</p>
@@ -2278,10 +2654,10 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksService">StarRocksService
+<h3 id="starrocks.com/v1alpha1.StarRocksService">StarRocksService
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 </div>
@@ -2343,7 +2719,7 @@ This field may be removed in a future API version.</p>
 <td>
 <code>ports</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksServicePort">
+<a href="#starrocks.com/v1alpha1.StarRocksServicePort">
 []StarRocksServicePort
 </a>
 </em>
@@ -2353,23 +2729,12 @@ This field may be removed in a future API version.</p>
 <p>Ports the components exposed ports and listen ports in pod.</p>
 </td>
 </tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>Annotations store Kubernetes Service annotations.</p>
-</td>
-</tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksServicePort">StarRocksServicePort
+<h3 id="starrocks.com/v1alpha1.StarRocksServicePort">StarRocksServicePort
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksService">StarRocksService</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksService">StarRocksService</a>)
 </p>
 <div>
 </div>
@@ -2427,10 +2792,10 @@ int32
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StorageVolume">StorageVolume
+<h3 id="starrocks.com/v1alpha1.StorageVolume">StorageVolume
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1alpha1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1alpha1.StarRocksFeSpec">StarRocksFeSpec</a>)
 </p>
 <div>
 <p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC</p>
@@ -2493,7 +2858,3 @@ string
 </tbody>
 </table>
 <hr/>
-<p><em>
-Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>069ec29</code>.
-</em></p>
