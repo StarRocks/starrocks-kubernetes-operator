@@ -17,8 +17,8 @@ Deploy StarRocks cluster using Helm and custom configuration.
 ```yaml
 # To initialize root user password
 initPassword: 
-    enabled: true
-    password: "mysql_password"
+  enabled: true
+  password: "mysql_password"
 ```
 
 Complete other custom configurations for the StarRocks Operator and StarRocks cluster in the YAML file.
