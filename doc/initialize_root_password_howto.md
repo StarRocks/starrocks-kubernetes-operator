@@ -10,7 +10,7 @@ Deploy StarRocks cluster using Helm and custom configuration.
 
 ## Steps to Change the Password For root User
 
-1. Add the Helm Chart Repo for StarRocks. The Helm Chart contains the definitions of the StarRocks Operator and the custom resource StarRocksCluster.Refer to: https://docs.mirrorship.cn/en-us/latest/deployment/helm#procedure
+1. Add the Helm Chart Repo for StarRocks. The Helm Chart contains the definitions of the StarRocks Operator and the custom resource StarRocksCluster. Refer to: [Deploy StarRocks with Helm](https://github.com/StarRocks/starrocks/blob/main/docs/deployment/helm.md)
     
 2. Create a YAML file, for example, my-values.yaml, add the following snippets to my-values.yaml to initialize the password.
 
