@@ -82,13 +82,8 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		srPorts = getCnServicePorts(config)
 	}
 
-	or := metav1.OwnerReference{
-		APIVersion: src.APIVersion,
-		Kind:       src.Kind,
-		Name:       src.Name,
-		UID:        src.UID,
-	}
-	svc.OwnerReferences = []metav1.OwnerReference{or}
+	ref := metav1.NewControllerRef(src, src.GroupVersionKind())
+	svc.OwnerReferences = []metav1.OwnerReference{*ref}
 
 	var ports []corev1.ServicePort
 	for _, sp := range srPorts {
