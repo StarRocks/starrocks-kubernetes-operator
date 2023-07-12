@@ -1,0 +1,71 @@
+initPassword:
+  enabled: true
+  password: "123456"
+
+# set the resources filed for testing on kind on mac
+starrocksOperator:
+  imagePullPolicy: IfNotPresent
+  image:
+    repository: starrocks/operator
+    tag: v1.7.0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 200Mi
+
+starrocksCluster:
+  enabledCn: true
+
+# set the resources filed for testing on kind on mac
+starrocksFESpec:
+  image:
+    repository: starrocks/fe-ubuntu
+    tag: 2.5.4
+  feEnvVars:
+  - name: DEMO_GREETING
+    value: "Hello from the environment"
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+# set the resources filed for testing on kind on mac
+starrocksBeSpec:
+  image:
+    repository: starrocks/be-ubuntu
+    tag: 2.5.4
+  replicas: 1
+  beEnvVars:
+  - name: DEMO_GREETING
+    value: "Hello from the environment"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+# set the resources filed for testing on kind on mac
+starrocksCnSpec:
+  image:
+    repository: starrocks/cn-ubuntu
+    tag: 2.5.4
+  replicas: 1
+  cnEnvVars:
+  - name: DEMO_GREETING
+    value: "Hello from the environment"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi

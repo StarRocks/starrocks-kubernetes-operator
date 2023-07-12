@@ -1,0 +1,51 @@
+configMaps:
+  - name: my-configmap
+    data:
+      key: |
+        this is the content of my configmap
+  - name: your-configmap
+    data:
+      key: |
+        this is the content of your configmap
+
+secrets:
+  - name: my-secret
+    data:
+      key: |
+        this is the content of my secret
+  - name: your-secret
+    data:
+      key: |
+        this is the content of your secret
+
+starrocksFESpec:
+  schedulerName: "scheduler-fe"
+  secrets:
+  - name: my-secret
+    mountPath: /etc/secret-1
+  - name: your-secret
+    mountPath: /etc/secret-2
+  configMaps:
+    - name: my-configmap
+      mountPath: /etc/config-1
+    - name: your-configmap
+      mountPath: /etc/config-2
+  service:
+    annotations:
+      feKey: feValue
+
+starrocksBeSpec:
+  schedulerName: "scheduler-be"
+  secrets:
+    - name: my-secret
+      mountPath: /etc/secret-1
+    - name: your-secret
+      mountPath: /etc/secret-2
+  configMaps:
+  - name: my-configmap
+    mountPath: /etc/config-1
+  - name: your-configmap
+    mountPath: /etc/config-2
+  service:
+    annotations:
+      beKey: beValue

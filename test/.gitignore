@@ -1,0 +1,10 @@
+starrockscluster-sample-be-service.yaml
+starrockscluster-sample-cn-search.yaml
+starrockscluster-sample-fe-search.yaml
+starrockscluster-sample-be.yaml
+starrockscluster-sample-cn-service.yaml
+starrockscluster-sample-fe-service.yaml
+starrockscluster-sample-be-search.yaml
+starrockscluster-sample-cn-autoscaler.yaml
+starrockscluster-sample-cn.yaml
+starrockscluster-sample-fe.yaml

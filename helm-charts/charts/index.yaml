@@ -1,0 +1,33 @@
+apiVersion: v1
+entries:
+  kube-starrocks:
+  - apiVersion: v2
+    appVersion: 3.0-latest
+    created: "2023-07-12T17:12:54.24033+08:00"
+    description: kube-starrocks collects Kubernetes manifests, starrocks combined
+      with documentation and scripts to provide easy to operate end-to-end Kubernetes
+      cluster deploy starrocks using the starrocks operator.
+    digest: d87058d86ce51c8702f909d8ffb81dfdb04c4120a5355d2ce2ff5725137f1a76
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: fushilei@starrocks.com
+      name: ShileiFu
+    name: kube-starrocks
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-chart-1.7.0.tgz
+    version: 1.7.0
+generated: "2023-07-12T17:12:54.238881+08:00"

@@ -1,0 +1,47 @@
+starrocksOperator:
+  imagePullPolicy: IfNotPresent
+  image:
+    repository: starrocks/operator
+    tag: v1.7.0
+
+# set the resources filed for testing on kind on mac
+starrocksFESpec:
+  image:
+    repository: starrocks/fe-ubuntu
+    tag: 2.5.4
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+# set the resources filed for testing on kind on mac
+starrocksBeSpec:
+  image:
+    repository: starrocks/be-ubuntu
+    tag: 2.5.4
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+# set the resources filed for testing on kind on mac
+starrocksCnSpec:
+  image:
+    repository: starrocks/cn-ubuntu
+    tag: 2.5.4
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 4Gi

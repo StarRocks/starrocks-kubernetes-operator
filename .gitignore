@@ -27,3 +27,4 @@ bin
 main
 coverage.data
 artifacts
+.DS_Store
