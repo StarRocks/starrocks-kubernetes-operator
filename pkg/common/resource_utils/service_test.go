@@ -62,6 +62,22 @@ func Test_getServiceAnnotations(t *testing.T) {
 }
 
 func TestBuildExternalService(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					Service: &srapi.StarRocksService{
+						Type:           corev1.ServiceTypeLoadBalancer,
+						LoadBalancerIP: "127.0.0.1",
+					},
+				},
+			},
+		},
+	}
 	type args struct {
 		src         *srapi.StarRocksCluster
 		name        string
@@ -78,22 +94,7 @@ func TestBuildExternalService(t *testing.T) {
 		{
 			name: "test build external service",
 			args: args{
-				src: &srapi.StarRocksCluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test",
-						Namespace: "default",
-					},
-					Spec: srapi.StarRocksClusterSpec{
-						StarRocksFeSpec: &srapi.StarRocksFeSpec{
-							StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-								Service: &srapi.StarRocksService{
-									Type:           corev1.ServiceTypeLoadBalancer,
-									LoadBalancerIP: "127.0.0.1",
-								},
-							},
-						},
-					},
-				},
+				src:         src,
 				name:        "service-name",
 				serviceType: FeService,
 				config:      map[string]interface{}{},
@@ -107,7 +108,10 @@ func TestBuildExternalService(t *testing.T) {
 					Annotations: map[string]string{
 						srapi.ComponentResourceHash: "2565146155",
 					},
-					OwnerReferences: []metav1.OwnerReference{{Name: "test"}},
+					OwnerReferences: func() []metav1.OwnerReference {
+						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
+						return []metav1.OwnerReference{*ref}
+					}(),
 				},
 				Spec: corev1.ServiceSpec{
 					Type:                     corev1.ServiceTypeLoadBalancer,
