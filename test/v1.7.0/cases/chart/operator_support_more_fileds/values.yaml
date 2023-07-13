@@ -1,0 +1,15 @@
+starrocksOperator:
+  enabled: true
+  annotations:
+    annotationKey: value
+  namespaceOverride: ""
+  image:
+    repository: starrocks/operator
+    tag: latest
+  nodeSelector:
+    nodeSelectorKey: value
+  tolerations:
+  - key: "tolerationKey"
+    operator: "Equal"
+    value: "value"
+    effect: "NoSchedule"

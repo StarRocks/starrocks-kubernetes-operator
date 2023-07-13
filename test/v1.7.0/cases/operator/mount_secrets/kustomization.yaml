@@ -1,0 +1,8 @@
+bases:
+- ../../../../cluster
+
+resources:
+- secrets.yaml
+
+patchesStrategicMerge:
+- patch.yaml

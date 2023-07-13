@@ -1,0 +1,29 @@
+# you can execute `kubectl kustomize .` to generate manifests
+# you can execute `kubectl apply -k .` to deploy resources
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    schedulerName: "scheduler-1"
+    annotations:
+      key1: value1
+    service:
+      annotations:
+        key11: value11
+  starRocksBeSpec:
+    schedulerName: "scheduler-2"
+    annotations:
+      key2: value2
+    service:
+      annotations:
+        key22: value22
+  starRocksCnSpec:
+    schedulerName: "scheduler-3"
+    annotations:
+      key3: value3
+    service:
+      annotations:
+        key33: value33

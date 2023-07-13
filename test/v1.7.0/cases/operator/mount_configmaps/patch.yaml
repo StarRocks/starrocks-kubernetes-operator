@@ -1,0 +1,27 @@
+# you can execute `kubectl kustomize .` to generate manifests
+# you can execute `kubectl apply -k .` to deploy resources
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    configMaps:
+    - name: config-1
+      mountPath: /etc/configs/config-1
+    - name: config-2
+      mountPath: /etc/configs/config-2
+
+  starRocksBeSpec:
+    configMaps:
+    - name: config-1
+      mountPath: /etc/configs/config-1
+    - name: config-2
+      mountPath: /etc/configs/config-2
+  starRocksCnSpec:
+    configMaps:
+    - name: config-1
+      mountPath: /etc/configs/config-1
+    - name: config-2
+      mountPath: /etc/configs/config-2

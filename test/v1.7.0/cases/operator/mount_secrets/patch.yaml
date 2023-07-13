@@ -1,0 +1,28 @@
+# you can execute `kubectl kustomize .` to generate manifests
+# you can execute `kubectl apply -k .` to deploy resources
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    secrets:
+    - name: secret-1
+      mountPath: /etc/secrets/secret-1
+    - name: secret-2
+      mountPath: /etc/secrets/secret-2
+
+  starRocksBeSpec:
+    secrets:
+    - name: secret-1
+      mountPath: /etc/secrets/secret-1
+    - name: secret-2
+      mountPath: /etc/secrets/secret-2
+  starRocksCnSpec:
+    secrets:
+    - name: secret-1
+      mountPath: /etc/secrets/secret-1
+    - name: secret-2
+      mountPath: /etc/secrets/secret-2

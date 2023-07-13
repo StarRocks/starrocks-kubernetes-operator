@@ -1,0 +1,43 @@
+global:
+  crdVersion: v1
+
+starrocksOperator:
+  image:
+    # image sliced by "repository:tag"
+    repository: starrocks/operator
+    tag: 2.5.4
+
+starrocksCluster:
+  enabledCn: true
+
+starrocksFESpec:
+  image:
+    repository: starrocks/fe-ubuntu
+    tag: 2.5.4
+  config: |
+    query_port = 9030
+    edit_log_port = 9010
+
+starrocksCnSpec:
+  image:
+    repository: starrocks/cn-ubuntu
+    tag: 2.5.4
+  config: |
+    sys_log_level = INFO
+    # ports for admin, web, heartbeat service
+    thrift_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+
+starrocksBeSpec:
+  image:
+    repository: starrocks/be-ubuntu
+    tag: 2.5.4
+  config: |
+    be_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+    sys_log_level = INFO
+    default_rowset_type = beta
