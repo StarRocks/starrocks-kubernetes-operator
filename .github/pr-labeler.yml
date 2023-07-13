@@ -1,4 +1,4 @@
-enhancement: ['*:feature/*', '*:feat/*', 'feature/*', 'feat/*']
-bugfix: ['*:bugfix/*', '*:fix/*', 'bugfix/*', 'fix/*']
-refactor: ['*:refactor/*', 'refactor/*']
-doc: ['*:doc/*', 'doc/*']
+enhancement: ['feature/*', 'feat/*']
+bugfix: ['bugfix/*', 'fix/*']
+refactor: ['refactor/*']
+doc: ['doc/*']

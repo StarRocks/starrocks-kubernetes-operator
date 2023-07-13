@@ -1,10 +1,9 @@
 name: PR Labeler
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   pr-labeler:

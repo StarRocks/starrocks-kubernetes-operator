@@ -14,6 +14,9 @@ spec:
   starRocksFeSpec:
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}"
     replicas: {{ .Values.starrocksFESpec.replicas }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
     {{- if .Values.starrocksFESpec.resources }}
     {{- toYaml .Values.starrocksFESpec.resources | nindent 4 }}
     {{- else if .Values.starrocksFESpec.resource }}
@@ -123,6 +126,9 @@ spec:
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
     {{- if .Values.starrocksBeSpec.resources }}
     {{- toYaml .Values.starrocksBeSpec.resources | nindent 4 }}
     {{- else if .Values.starrocksBeSpec.resource }}
@@ -276,6 +282,9 @@ spec:
     autoScalingPolicy:
 {{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
 {{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
     {{- if .Values.starrocksCnSpec.resources }}
     {{- toYaml .Values.starrocksCnSpec.resources | nindent 4 }}
     {{- else if .Values.starrocksCnSpec.resource }}
