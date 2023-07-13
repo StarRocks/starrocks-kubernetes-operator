@@ -21,17 +21,6 @@ import (
 
 type Labels map[string]string
 
-func NewLabels(labels ...Labels) Labels {
-	nlabels := Labels{}
-	for _, l := range labels {
-		for k, v := range l {
-			nlabels[k] = v
-		}
-	}
-
-	return nlabels
-}
-
 func (l Labels) Add(key, value string) {
 	l[key] = value
 }
@@ -48,16 +37,6 @@ func (l Labels) AddLabel(label Labels) {
 
 type Annotations map[string]string
 
-func NewAnnotations(annotations ...Annotations) Annotations {
-	anotation := Annotations{}
-	for _, a := range annotations {
-		for k, v := range a {
-			anotation[k] = v
-		}
-	}
-	return anotation
-}
-
 func (a Annotations) Add(key, value string) {
 	a[key] = value
 }
@@ -68,7 +47,7 @@ func (a Annotations) AddAnnotation(annotation Annotations) {
 	}
 }
 
-// mergeMetadata takes labels and annotations from the old resource and merges
+// MergeMetadata takes labels and annotations from the old resource and merges
 // them into the new resource. If a key is present in both resources, the new
 // resource wins. It also copies the ResourceVersion from the old resource to
 // the new resource to prevent update conflicts.
@@ -77,7 +56,7 @@ func MergeMetadata(new *metav1.ObjectMeta, old metav1.ObjectMeta) {
 	new.SetFinalizers(MergeSlices(new.Finalizers, old.Finalizers))
 	new.SetLabels(mergeMaps(new.Labels, old.Labels))
 	new.SetAnnotations(mergeMaps(new.Annotations, old.Annotations))
-	mergeOwnerReferences(new.OwnerReferences, old.OwnerReferences)
+	new.OwnerReferences = mergeOwnerReferences(new.OwnerReferences, old.OwnerReferences)
 }
 
 func MergeSlices(new []string, old []string) []string {
@@ -116,17 +95,19 @@ func mergeMapsByPrefix(from map[string]string, to map[string]string, prefix stri
 	return to
 }
 
-func mergeOwnerReferences(old []metav1.OwnerReference, new []metav1.OwnerReference) []metav1.OwnerReference {
+func mergeOwnerReferences(new []metav1.OwnerReference, old []metav1.OwnerReference) []metav1.OwnerReference {
+	var references []metav1.OwnerReference
 	existing := make(map[metav1.OwnerReference]bool)
-	for _, ownerRef := range old {
-		existing[ownerRef] = true
-	}
 	for _, ownerRef := range new {
+		existing[ownerRef] = true
+		references = append(references, ownerRef)
+	}
+	for _, ownerRef := range old {
 		if _, ok := existing[ownerRef]; !ok {
-			old = append(old, ownerRef)
+			references = append(references, ownerRef)
 		}
 	}
-	return old
+	return references
 }
 
 func GetInt32Pointer(v int32) *int32 {

@@ -274,7 +274,7 @@ starrocksCnSpec:
     #     scaleDown:
     #       selectPolicy: Disabled
   # define resources requests and limits for cn pods.
-  resource:
+  resources:
     limits:
       cpu: 8
       memory: 8Gi
@@ -374,8 +374,8 @@ starrocksBeSpec:
     #   operator: "Equal|Exists"
     #   value: "value"
     #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
-  # resource for be pod.
-  resource:
+  # resources for be pod.
+  resources:
     requests:
       cpu: 4
       memory: 4Gi

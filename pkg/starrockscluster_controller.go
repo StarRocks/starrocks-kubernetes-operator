@@ -327,3 +327,7 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 		os.Exit(1)
 	}
 }
+
+func requeueIfError(err error) (ctrl.Result, error) {
+	return ctrl.Result{}, err
+}

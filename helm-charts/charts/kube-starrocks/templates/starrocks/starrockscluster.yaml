@@ -14,9 +14,14 @@ spec:
   starRocksFeSpec:
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}"
     replicas: {{ .Values.starrocksFESpec.replicas }}
-{{- if .Values.starrocksFESpec.resources }}
-{{ toYaml .Values.starrocksFESpec.resources | indent 4 }}
-{{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.starrocksFESpec.resources }}
+    {{- toYaml .Values.starrocksFESpec.resources | nindent 4 }}
+    {{- else if .Values.starrocksFESpec.resource }}
+    {{- toYaml .Values.starrocksFESpec.resource | nindent 4 }}
+    {{- end }}
 {{- if .Values.starrocksFESpec.service.type }}
     service:
       type: {{ .Values.starrocksFESpec.service.type }}
@@ -121,9 +126,14 @@ spec:
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
-{{- if .Values.starrocksBeSpec.resource }}
-{{ toYaml .Values.starrocksBeSpec.resource | indent 4 }}
-{{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.starrocksBeSpec.resources }}
+    {{- toYaml .Values.starrocksBeSpec.resources | nindent 4 }}
+    {{- else if .Values.starrocksBeSpec.resource }}
+    {{- toYaml .Values.starrocksBeSpec.resource | nindent 4 }}
+    {{- end }}
 {{- if .Values.starrocksBeSpec.service.type }}
     service:
       type: {{ .Values.starrocksBeSpec.service.type }}
@@ -272,9 +282,14 @@ spec:
     autoScalingPolicy:
 {{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.resource }}
-{{ toYaml .Values.starrocksCnSpec.resource | indent 4 }}
-{{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.starrocksCnSpec.resources }}
+    {{- toYaml .Values.starrocksCnSpec.resources | nindent 4 }}
+    {{- else if .Values.starrocksCnSpec.resource }}
+    {{- toYaml .Values.starrocksCnSpec.resource | nindent 4 }}
+    {{- end }}
 {{- if .Values.starrocksCnSpec.service.type }}
     service:
       type: {{ .Values.starrocksCnSpec.service.type }}

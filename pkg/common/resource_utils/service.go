@@ -123,14 +123,14 @@ func getFeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocks
 
 func getBeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
 	bePort := GetPort(config, BE_PORT)
-	webseverPort := GetPort(config, WEBSERVER_PORT)
+	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
 
 	srPorts = append(srPorts, srapi.StarRocksServicePort{
 		Port: bePort, ContainerPort: bePort, Name: "be",
 	}, srapi.StarRocksServicePort{
-		Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
+		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
 	}, srapi.StarRocksServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
 	}, srapi.StarRocksServicePort{
@@ -142,13 +142,13 @@ func getBeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocks
 
 func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
 	thriftPort := GetPort(config, THRIFT_PORT)
-	webseverPort := GetPort(config, WEBSERVER_PORT)
+	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
 	srPorts = append(srPorts, srapi.StarRocksServicePort{
 		Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
 	}, srapi.StarRocksServicePort{
-		Port: webseverPort, ContainerPort: webseverPort, Name: "webserver",
+		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
 	}, srapi.StarRocksServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
 	}, srapi.StarRocksServicePort{
