@@ -26,10 +26,6 @@
         {
             "typeMatchPrefix": "^github\\.com/knative/pkg/apis/duck/",
             "docsURLTemplate": "https://godoc.org/github.com/knative/pkg/apis/duck/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
-        },
-        {
-            "typeMatchPrefix": "^github\\.com/shileifu/starrocks-kubernetes-operator/api/v1alpha1",
-            "docsURLTemplate": "../v1alpha1/api.md#starrocks.com/v1alpha1.{{ .TypeIdentifier}}"
         }
     ],
     "typeDisplayNamePrefixOverrides": {

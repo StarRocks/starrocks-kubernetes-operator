@@ -21,8 +21,8 @@ entries:
       name: Kevin Cai
     - email: shensida@starrocks.com
       name: SidaShen
-    - email: fushilei@starrocks.com
-      name: ShileiFu
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
     name: kube-starrocks
     sources:
     - https://github.com/StarRocks/starrocks
@@ -50,8 +50,8 @@ entries:
       name: Kevin Cai
     - email: shensida@starrocks.com
       name: SidaShen
-    - email: fushilei@starrocks.com
-      name: ShileiFu
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
     name: kube-starrocks
     sources:
     - https://github.com/StarRocks/helm-charts
