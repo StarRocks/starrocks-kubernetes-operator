@@ -18,7 +18,7 @@ echo "HOME_PATH: ${HOME_PATH}"
 # helm package
 cd $HOME_PATH/helm-charts/charts/kube-starrocks/
 # must be executed before helm index operation
-helm package .
+helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
 
 # get the package name from Chart.yaml
 chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
@@ -33,7 +33,7 @@ if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} ]; then
 fi
 
 # helm repo index
-url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${chart_name}-chart-${chart_version}.tgz
+url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${chart_name}-${chart_version}.tgz
 if [ -f $HOME_PATH/index.yaml ]; then
   helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH
 else
@@ -41,7 +41,7 @@ else
 fi
 
 # the generated index.yaml is not correct, so we need to fix it
-# the wrong one, e.g. https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-chart-1.7.0.tgz/artifacts/kube-starrocks-1.7.0.tgz
+# the wrong one, e.g. https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-1.7.0.tgz/artifacts/kube-starrocks-1.7.0.tgz
 # first get the url in index.yaml
 old=$(cat $HOME_PATH/index.yaml | grep "$url")
 new=${old%/*/*}
@@ -52,7 +52,9 @@ cp /tmp/index.yaml $HOME_PATH/index.yaml
 # copy to artifacts
 mkdir -p $HOME_PATH/artifacts
 # helm chart
-mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} $HOME_PATH/artifacts/${chart_name}-chart-${chart_version}.tgz
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} $HOME_PATH/artifacts/${package_name}
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
+
 # yaml files for operator and crd
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
