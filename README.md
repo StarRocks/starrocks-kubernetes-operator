@@ -29,26 +29,26 @@ Get the official operator image from [here](https://hub.docker.com/r/starrocks/c
 
 Follow below instructions if you want to build your own image.
 
-```
+```console
 DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:<tag> .
 ```
 
 E.g.
 
-```bash
+```console
 DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:latest .
 ```
 
 ### Publish starrocks operator docker image
 
-```
+```console
 docker push ghcr.io/OWNER/starrocks-kubernetes-operator/operator:latest
 ```
 
 E.g.
 Publish image to ghcr
 
-```shell
+```console
 docker push ghcr.io/dengliu/starrocks-kubernetes-operator/operator:latest
 ```
 
@@ -56,7 +56,7 @@ docker push ghcr.io/dengliu/starrocks-kubernetes-operator/operator:latest
 
 Apply the custom resource definition (CRD) for the Operator:
 
-```shell
+```console
 kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
 ```
 
@@ -67,7 +67,7 @@ and edit all instances of namespace: starrocks to specify your custom namespace.
 Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the
 command below.
 
-```shell
+```console
 kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
 ```
 
@@ -101,7 +101,7 @@ You can generate the configmap from an StarRocks configuration file.
 Below is an example of creating a Kubernetes configmap `fe-config-map` from the `fe.conf` configuration file. You can do
 the same with BE and CN.
 
-```shell
+```console
 # create fe-config-map from starrocks/fe/conf/fe.conf file
 kubectl create configmap fe-config-map --from-file=starrocks/fe/conf/fe.conf
 ```
@@ -162,7 +162,7 @@ starRocksBeSpec:
 For demonstration purpose, we use the [starrocks-fe-and-be.yaml](./examples/starrocks/starrocks-fe-and-be.yaml) example
 template to start a 3 FE and 3 BE StarRocks cluster.
 
-```bash
+```console
 kubectl apply -f starrocks-fe-and-be.yaml
 ```
 
@@ -171,7 +171,7 @@ kubectl apply -f starrocks-fe-and-be.yaml
 After deploying the StarRocks cluster, you can use `kubectl get svc -n <namespace>` to find the IP to connect to. For
 example if the namespace that starrocks is deployed into is `starrocks`, you can:
 
-```bash
+```console
 kubectl get svc -n starrocks
 ```
 
@@ -181,13 +181,13 @@ kubectl get svc -n starrocks
 
 Delete the custom resource:
 
-```shell
+```console
 kubectl delete -f starrocks-fe-and-be.yaml
 ```
 
 Remove the Operator:
 
-```shell
+```console
 kubectl delete -f  https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
 ```
 
