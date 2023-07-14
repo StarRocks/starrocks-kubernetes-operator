@@ -4,8 +4,7 @@
 
 ## Overview
 
-**(under development)**  
-using [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), a framework that enables the deployment of
+Using [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), a framework that enables the deployment of
 StarRocks Custom Resource Definition (CRD) resources within a Kubernetes environment.
 
 The Kubernetes Operator provided by StarRocks facilitates the deployment of StarRocks' Front End (FE), Back End (BE),
@@ -197,6 +196,6 @@ kubectl delete -f  https://raw.githubusercontent.com/StarRocks/starrocks-kuberne
 ### helm
 
 StarRocks has embraced Helm for its deployment needs. You can find the Helm chart for StarRocks
-at https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks.
-Additionally, the GitHub repository containing the Helm chart can be accessed
-at https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks.
+at [artifacthub](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks).
+Additionally, this GitHub repository also containing the Helm chart can be accessed
+at [kube-starrocks](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks).

@@ -2,8 +2,6 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Release Charts](https://img.shields.io/badge/Release-helmcharts-green.svg)](https://github.com/StarRocks/starrocks-kubernetes-operator/releases)
 
-This functionality is in beta and is subject to change. The code is provided as-is with no warranties.  Beta features are not subject to the support SLA of official GA features.
-
 ## Usage
 
 [Helm](https://helm.sh) must be installed to use the charts.
@@ -19,7 +17,9 @@ You can then run `helm search repo kube-starrocks` to see the charts.
 
 ## Contributing
 
-You can find the source code for all the community Helm charts of StarRocks at the following Github repository: https://github.com/StarRocks/starrocks-kubernetes-operator/. StarRocks itself can be explored at https://www.starrocks.io/.
+You can find the source code for all the community Helm charts of StarRocks at the following Github
+repository: https://github.com/StarRocks/starrocks-kubernetes-operator/. StarRocks itself can be explored
+at https://www.starrocks.io/.
 
 ## License
 

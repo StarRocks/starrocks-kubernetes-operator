@@ -1,6 +1,7 @@
 # kube-starrocks
 
-Install the kube-starrocks, a collectionof Kubernetes manifests to provide easy to operate end-to-end Kubernetes cluster deploy starrocks cluster use [starrocks Operator](https://github.com/StarRocks/starrocks-kubernetes-operator).
+Install the kube-starrocks, a collection of Kubernetes manifests to provide easy to operate end-to-end Kubernetes
+cluster deploy starrocks cluster use [starrocks Operator](https://github.com/StarRocks/starrocks-kubernetes-operator).
 
 ## Prerequisites
 
@@ -13,6 +14,7 @@ Install the kube-starrocks, a collectionof Kubernetes manifests to provide easy 
 helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
 helm repo update
 ```
+
 _See [`helm repo`](https://helm.sh/docs/helm/helm_repo/) for command documentation._
 
 ## Install Helm Chart
@@ -46,7 +48,8 @@ kubectl delete crd starrocksclusters.starrocks.com
 
 ## Configuration
 
-See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing). To see all configurable options with detailed comments:
+See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
+To see all configurable options with detailed comments:
 
 ```console
 helm show values starrocks-community/kube-starrocks
