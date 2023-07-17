@@ -2,6 +2,7 @@ apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
   name: starrockscluster-sample
+  namespace: starrocks
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest

@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cn-test
+  namespace: starrocks
 data:
   cn.conf: "# INFO, WARNING, ERROR, FATAL\nsys_log_level = INFO\n\n# ports for admin,
     web, heartbeat service \nbe_port = 9060\nwebserver_port = 8040\nheartbeat_service_port
