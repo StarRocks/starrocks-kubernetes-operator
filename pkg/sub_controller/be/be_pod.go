@@ -90,6 +90,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/be_prestop.sh"),
+		SecurityContext: pod.ContainerSecurityContext(),
 	}
 	if beSpec.ConfigMapInfo.ConfigMapName != "" && beSpec.ConfigMapInfo.ResolveKey != "" {
 		beContainer.Env = append(beContainer.Env, corev1.EnvVar{
@@ -102,7 +103,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	now := time.Now().Format(time.RFC3339)
 	annotations := pod.Annotations(beSpec, src.Annotations, now)
-	podSpec.SecurityContext = pod.SecurityContext(beSpec)
+	podSpec.SecurityContext = pod.PodSecurityContext(beSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaname,

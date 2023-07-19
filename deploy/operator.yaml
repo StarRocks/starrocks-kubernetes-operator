@@ -233,8 +233,11 @@ spec:
       labels:
         control-plane: starrocks-controller
     spec:
+      automountServiceAccountToken: true
       securityContext:
-        runAsNonRoot: false
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
       - command:
         - /sroperator
@@ -243,7 +246,9 @@ spec:
         image: starrocks/operator:v1.7.0
         name: sroperator
         securityContext:
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
         livenessProbe:
           httpGet:
             path: /healthz

@@ -702,15 +702,15 @@ func TestSecurityContext(t *testing.T) {
 				spec: &v1.StarRocksFeSpec{},
 			},
 			want: &corev1.PodSecurityContext{
-				FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
+				FSGroup:             rutils.GetInt64ptr(1000),
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := SecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SecurityContext() = %v, want %v", got, tt.want)
+			if got := PodSecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PodSecurityContext() = %v, want %v", got, tt.want)
 			}
 		})
 	}

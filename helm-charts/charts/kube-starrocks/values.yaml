@@ -145,9 +145,8 @@ starrocksFESpec:
       memory: 8Gi
   # fe storageSpec for persistent meta data.
   storageSpec:
-    # the name of volume for mount. if not will use emptyDir.
     name: ""
-    # the storageClassName represent the used storageclss name. if not set will use k8s cluster default storageclass.
+    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # you must set name when you set storageClassName
     storageClassName: ""
     #the persistent volume size default 1 Gi.
