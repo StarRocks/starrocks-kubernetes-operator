@@ -1,4 +1,4 @@
-{{- if .Values.initPassword.enabled }}
+{{- if and .Values.initPassword.enabled .Release.IsInstall }}
 apiVersion: v1
 kind: Secret
 metadata:
