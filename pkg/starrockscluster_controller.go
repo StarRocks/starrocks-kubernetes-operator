@@ -18,7 +18,6 @@ package pkg
 
 import (
 	"context"
-	"errors"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -102,28 +101,8 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		klog.Info("StarRocksClusterReconciler reconcile the src delete namespace=" + req.Namespace + " name= " + req.Name)
 		src.Status.Phase = srapi.ClusterDeleting
 		// if the src deleted, clean all resource ownerreference to src.
-		clean := func() (res ctrl.Result, err error) {
-			delres, err := r.CleanSubResources(ctx, src)
-			if err != nil {
-				klog.Errorf("StarRocksClusterReconciler reconcile update faield, message=%s\n", err.Error())
-				return requeueIfError(err)
-			}
-
-			if !delres {
-				// wait for finalizers be cleaned clear.
-				klog.Info("StarRocksClusterReconciler reconcile ", "have sub resosurce to cleaned ", "namespace ", src.Namespace, " starrockscluster ", src.Name)
-				return ctrl.Result{}, nil
-			}
-
-			klog.Infof("StarRocksClusterReconciler reconcile namespace=%s, name=%s, deleted.\n", src.Namespace, src.Name)
-
-			// all resource clear over, clear starrockcluster finalizers.
-			src.Finalizers = nil
-			// delete the src will be hooked by finalizer, we should clear the finalizers.
-			return ctrl.Result{}, r.UpdateStarRocksCluster(ctx, src)
-		}
-
-		return clean()
+		klog.Infof("StarRocksClusterReconciler reconcile namespace=%s, name=%s, deleted.\n", src.Namespace, src.Name)
+		return ctrl.Result{}, nil
 	}
 
 	// subControllers reconcile for create or update sub resource.
@@ -219,22 +198,6 @@ func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCl
 	}
 
 	return hash.HashObject(ho)
-}
-
-// CleanSubResources clean all sub resources ownerreference to src.
-func (r *StarRocksClusterReconciler) CleanSubResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
-	var cleanErr error
-	res := true
-	for _, c := range r.Scs {
-		subres, err := c.ClearResources(ctx, src)
-		if err != nil {
-			cleanErr = errors.New(c.GetControllerName() + "err=" + err.Error())
-		}
-
-		res = res && subres
-	}
-
-	return res, cleanErr
 }
 
 func (r *StarRocksClusterReconciler) updateOperationStatus(src *srapi.StarRocksCluster) {
