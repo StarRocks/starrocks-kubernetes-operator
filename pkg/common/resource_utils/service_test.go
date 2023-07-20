@@ -106,7 +106,7 @@ func TestBuildExternalService(t *testing.T) {
 					Name:      "service-name",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2565146155",
+						srapi.ComponentResourceHash: "2728763357",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
