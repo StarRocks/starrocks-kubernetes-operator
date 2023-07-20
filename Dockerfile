@@ -16,19 +16,6 @@ RUN if [ -d vendor ]; then \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go; \
     fi
 
-FROM ubuntu:22.04
-
+FROM starrocks/static-debian11:nonroot
 COPY --from=build /app/sroperator /sroperator
-
-ARG USER=starrocks
-ARG GROUP=starrocks
-
-RUN groupadd --gid 1000 $GROUP && useradd --home-dir /nonexistent --uid 1000 --gid 1000 \
-             --shell /usr/sbin/nologin $USER  \
-        && chown $USER:$GROUP /sroperator
-
-
-USER $USER
-ENV USER $USER
-
 CMD ["/sroperator"]
