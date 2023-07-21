@@ -33,11 +33,12 @@ const (
 
 // HashService service hash components
 type hashService struct {
-	name       string
-	namespace  string
-	finalizers []string
-	ports      []corev1.ServicePort
-	selector   map[string]string
+	name        string
+	namespace   string
+	finalizers  []string
+	ports       []corev1.ServicePort
+	selector    map[string]string
+	serviceType corev1.ServiceType
 	// deal with external access load balancer.
 	// serviceType corev1.ServiceType
 	labels map[string]string
@@ -202,12 +203,13 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 
 func serviceHashObject(svc *corev1.Service) hashService {
 	return hashService{
-		name:       svc.Name,
-		namespace:  svc.Namespace,
-		finalizers: svc.Finalizers,
-		ports:      svc.Spec.Ports,
-		selector:   svc.Spec.Selector,
-		labels:     svc.Labels,
+		name:        svc.Name,
+		namespace:   svc.Namespace,
+		finalizers:  svc.Finalizers,
+		ports:       svc.Spec.Ports,
+		selector:    svc.Spec.Selector,
+		labels:      svc.Labels,
+		serviceType: svc.Spec.Type,
 	}
 }
 
