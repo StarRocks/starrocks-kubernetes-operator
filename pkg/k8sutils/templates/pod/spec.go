@@ -374,29 +374,12 @@ func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.
 		NodeSelector:                  spec.GetNodeSelector(),
 		HostAliases:                   spec.GetHostAliases(),
 		SchedulerName:                 spec.GetSchedulerName(),
+		AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
 	}
 	if podSpec.ServiceAccountName == "" {
 		podSpec.ServiceAccountName = defaultServiceAccount
 	}
 	return podSpec
-}
-
-func SecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
-	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if spec.GetFsGroup() == nil {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		return sc
-	} else if *(spec.GetFsGroup()) != 0 {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             spec.GetFsGroup(),
-			FSGroupChangePolicy: &onrootMismatch,
-		}
-		return sc
-	}
-	return nil
 }
 
 func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, now string) map[string]string {
@@ -422,4 +405,39 @@ func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, no
 		annotations[k] = v
 	}
 	return annotations
+}
+
+func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
+	userId := int64(1000)
+	groupId := int64(1000)
+	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
+	if spec.GetFsGroup() == nil {
+		sc := &corev1.PodSecurityContext{
+			FSGroup:             rutils.GetInt64ptr(1000), // the starrocks user id is 1000
+			RunAsUser:           &userId,
+			RunAsGroup:          &groupId,
+			FSGroupChangePolicy: &onRootMismatch,
+		}
+		return sc
+	} else if *(spec.GetFsGroup()) != 0 {
+		sc := &corev1.PodSecurityContext{
+			FSGroupChangePolicy: &onRootMismatch,
+			RunAsUser:           func() *int64 { v := int64(1000); return &v }(),
+			RunAsGroup:          func() *int64 { v := int64(1000); return &v }(),
+			FSGroup:             spec.GetFsGroup(),
+		}
+		return sc
+	}
+	return nil
+}
+
+func ContainerSecurityContext() *corev1.SecurityContext {
+	return &corev1.SecurityContext{
+		AllowPrivilegeEscalation: func() *bool { b := false; return &b }(),
+		// starrocks will create pid file, eg.g /opt/starrocks/fe/bin/fe.pid, so set it to false
+		ReadOnlyRootFilesystem: func() *bool { b := false; return &b }(),
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: corev1.SeccompProfileTypeUnconfined,
+		},
+	}
 }

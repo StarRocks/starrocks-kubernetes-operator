@@ -27,8 +27,11 @@ spec:
         app: {{ template "kube-starrocks.name" . }}-operator
         version: {{ $.Chart.Version }}
     spec:
+      automountServiceAccountToken: true
       securityContext:
-        runAsNonRoot: false
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
       - command:
         - /sroperator
@@ -38,7 +41,9 @@ spec:
         imagePullPolicy: {{ .Values.starrocksOperator.imagePullPolicy }}
         name: manager
         securityContext:
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
         livenessProbe:
           httpGet:
             path: /healthz

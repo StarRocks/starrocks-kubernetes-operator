@@ -644,6 +644,7 @@ func TestSpec(t *testing.T) {
 				Containers:                    []corev1.Container{{}},
 				ServiceAccountName:            "test",
 				TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+				AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
 			},
 		},
 		{
@@ -658,13 +659,14 @@ func TestSpec(t *testing.T) {
 				Containers:                    []corev1.Container{{}},
 				ServiceAccountName:            "default",
 				TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+				AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Spec(tt.args.spec, tt.args.defaultServiceAccount, tt.args.container, tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Spec() = %v, want %v", got, tt.want)
+				t.Errorf("Spec() = %#v, want %#v", got, tt.want)
 			}
 		})
 	}
@@ -672,6 +674,8 @@ func TestSpec(t *testing.T) {
 
 func TestSecurityContext(t *testing.T) {
 	v := int64(10)
+	userId := int64(1000)
+	groupId := int64(1000)
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 
 	type args struct {
@@ -693,6 +697,8 @@ func TestSecurityContext(t *testing.T) {
 			},
 			want: &corev1.PodSecurityContext{
 				FSGroup:             &v,
+				RunAsUser:           &userId,
+				RunAsGroup:          &groupId,
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},
@@ -702,15 +708,17 @@ func TestSecurityContext(t *testing.T) {
 				spec: &v1.StarRocksFeSpec{},
 			},
 			want: &corev1.PodSecurityContext{
-				FSGroup:             rutils.GetInt64ptr(common.DefaultFsGroup),
+				FSGroup:             rutils.GetInt64ptr(1000),
+				RunAsUser:           &userId,
+				RunAsGroup:          &groupId,
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := SecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SecurityContext() = %v, want %v", got, tt.want)
+			if got := PodSecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PodSecurityContext() = %v, want %v", got, tt.want)
 			}
 		})
 	}

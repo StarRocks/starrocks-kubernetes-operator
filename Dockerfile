@@ -16,7 +16,6 @@ RUN if [ -d vendor ]; then \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="${LDFLAGS:-}" -o /app/sroperator cmd/main.go; \
     fi
 
-FROM starrocks/static-debian11
-
+FROM starrocks/static-debian11:nonroot
 COPY --from=build /app/sroperator /sroperator
 CMD ["/sroperator"]

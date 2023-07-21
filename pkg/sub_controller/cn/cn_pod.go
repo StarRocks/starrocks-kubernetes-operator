@@ -73,6 +73,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/cn_prestop.sh"),
+		SecurityContext: pod.ContainerSecurityContext(),
 	}
 
 	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {
@@ -85,7 +86,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	podSpec := pod.Spec(cnSpec, src.Spec.ServiceAccount, cnContainer, vols)
 	now := time.Now().Format(time.RFC3339)
 	annotations := pod.Annotations(cnSpec, src.Annotations, now)
-	podSpec.SecurityContext = pod.SecurityContext(cnSpec)
+	podSpec.SecurityContext = pod.PodSecurityContext(cnSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaname,
