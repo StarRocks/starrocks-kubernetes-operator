@@ -1,5 +1,8 @@
 #! /bin/sh
 
+set -e
+set -x
+
 # check parameter
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <release_tag>"
@@ -35,10 +38,11 @@ fi
 # helm repo index
 url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${chart_name}-${chart_version}.tgz
 if [ -f $HOME_PATH/index.yaml ]; then
-  helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH
+  helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH/helm-charts/charts/kube-starrocks
 else
-  helm repo index --url $url $HOME_PATH
+  helm repo index --url $url $HOME_PATH/helm-charts/charts/kube-starrocks
 fi
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/index.yaml $HOME_PATH/index.yaml
 
 # the generated index.yaml is not correct, so we need to fix it
 # the wrong one, e.g. https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-1.7.0.tgz/artifacts/kube-starrocks-1.7.0.tgz

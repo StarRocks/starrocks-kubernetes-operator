@@ -28,10 +28,6 @@ spec:
         version: {{ $.Chart.Version }}
     spec:
       automountServiceAccountToken: true
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
       containers:
       - command:
         - /sroperator
