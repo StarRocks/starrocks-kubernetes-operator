@@ -19,6 +19,8 @@ nameOverride: ""
 initPassword:
   enabled: false
   password: ""
+# TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
+timeZone: Asia/Shanghai
 
 starrocksOperator:
   enabled: true

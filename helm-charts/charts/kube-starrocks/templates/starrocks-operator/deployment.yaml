@@ -32,6 +32,11 @@ spec:
         - /sroperator
         args:
         - --leader-elect
+        {{- if .Values.timeZone }}
+        env:
+        - name: TZ
+          value: {{ .Values.timeZone }}
+        {{- end }}
         image: "{{ .Values.starrocksOperator.image.repository }}:{{ .Values.starrocksOperator.image.tag }}"
         imagePullPolicy: {{ .Values.starrocksOperator.imagePullPolicy }}
         name: manager

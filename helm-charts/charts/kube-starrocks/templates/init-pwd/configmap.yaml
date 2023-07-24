@@ -1,4 +1,12 @@
-{{- if and .Values.initPassword.enabled .Release.IsInstall }}
+{{- if .Values.initPassword.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-credential
+  namespace: {{ .Release.Namespace }}
+data:
+  password: {{ .Values.initPassword.password | b64enc }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -31,5 +39,4 @@ data:
 
     echo "Successfully modified password"
     exit 0
-
 {{- end }}
