@@ -408,22 +408,16 @@ func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, no
 }
 
 func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
-	userId := int64(1000)
-	groupId := int64(1000)
 	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
 	if spec.GetFsGroup() == nil {
 		sc := &corev1.PodSecurityContext{
 			FSGroup:             rutils.GetInt64ptr(1000), // the starrocks user id is 1000
-			RunAsUser:           &userId,
-			RunAsGroup:          &groupId,
 			FSGroupChangePolicy: &onRootMismatch,
 		}
 		return sc
 	} else if *(spec.GetFsGroup()) != 0 {
 		sc := &corev1.PodSecurityContext{
 			FSGroupChangePolicy: &onRootMismatch,
-			RunAsUser:           func() *int64 { v := int64(1000); return &v }(),
-			RunAsGroup:          func() *int64 { v := int64(1000); return &v }(),
 			FSGroup:             spec.GetFsGroup(),
 		}
 		return sc

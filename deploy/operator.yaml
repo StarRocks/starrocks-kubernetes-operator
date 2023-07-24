@@ -234,16 +234,12 @@ spec:
         control-plane: starrocks-controller
     spec:
       automountServiceAccountToken: true
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
       containers:
       - command:
         - /sroperator
         args:
         - --leader-elect
-        image: starrocks/operator:v1.7.0
+        image: starrocks/operator:v1.7.1
         name: sroperator
         securityContext:
           runAsNonRoot: true
