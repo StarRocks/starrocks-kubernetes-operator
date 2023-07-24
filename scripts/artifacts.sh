@@ -1,7 +1,6 @@
 #! /bin/sh
 
-set -e
-set -x
+set -ex
 
 # check parameter
 if [ $# -ne 1 ]; then
