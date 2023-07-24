@@ -14,7 +14,6 @@ spec:
   selector:
     matchLabels:
       app: {{ template "kube-starrocks.name" . }}-operator
-      version: {{ $.Chart.Version }}
   replicas: {{ .Values.starrocksOperator.replicaCount }}
   template:
     metadata:
