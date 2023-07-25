@@ -31,6 +31,7 @@ type SpecInterface interface {
 	GetTolerations() []corev1.Toleration
 	GetNodeSelector() map[string]string
 	GetImagePullSecrets() []corev1.LocalObjectReference
+	GetInitContainers() []corev1.Container
 	GetHostAliases() []corev1.HostAlias
 	GetSchedulerName() string
 	GetFsGroup() *int64
@@ -123,6 +124,10 @@ type StarRocksComponentSpec struct {
 	// the reference for secrets.
 	// +optional
 	Secrets []SecretReference `json:"secrets,omitempty"`
+
+	// the reference for initContainers.
+	// +optional
+	InitContainers []corev1.Container `json:"initContainers,omitempty"`
 
 	// Probe defines the mode probe service in container is alive.
 	// +optional
@@ -356,6 +361,10 @@ func (spec *StarRocksCnSpec) GetServiceName() string {
 
 func (spec *StarRocksComponentSpec) GetStorageVolumes() []StorageVolume {
 	return spec.StorageVolumes
+}
+
+func (spec *StarRocksComponentSpec) GetInitContainers() []corev1.Container {
+	return spec.InitContainers
 }
 
 func (spec *StarRocksComponentSpec) GetAffinity() *corev1.Affinity {

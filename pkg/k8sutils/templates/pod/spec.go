@@ -365,6 +365,7 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.Container, volumes []corev1.Volume) corev1.PodSpec {
 	podSpec := corev1.PodSpec{
 		Containers:                    []corev1.Container{container},
+		InitContainers:                spec.GetInitContainers(),
 		Volumes:                       volumes,
 		ServiceAccountName:            spec.GetServiceAccount(),
 		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),

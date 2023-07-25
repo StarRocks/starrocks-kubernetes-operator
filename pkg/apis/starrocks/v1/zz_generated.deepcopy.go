@@ -658,6 +658,13 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 		*out = make([]SecretReference, len(*in))
 		copy(*out, *in)
 	}
+	if in.InitContainers != nil {
+		in, out := &in.InitContainers, &out.InitContainers
+		*out = make([]corev1.Container, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.Probe != nil {
 		in, out := &in.Probe, &out.Probe
 		*out = new(StarRocksProbe)
