@@ -15,10 +15,13 @@ global:
 # the starrockscluster crd' name.
 nameOverride: ""
 # This configuration is used to modify the root password during initial deployment.
-# After deployment is completed, modify the password here and upgrade, does not modify the running root password
+# After deployment is completed, modify the password here and upgrade, does not modify the running root password.
+# It also supports providing secret names that contain passwords, using the password in the secret instead of the plaintext in the value.xml.
+# When both password and passwordSecret are set, only passwordSecret takes effect.
 initPassword:
   enabled: false
   password: ""
+  passwordSecret: ""
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 

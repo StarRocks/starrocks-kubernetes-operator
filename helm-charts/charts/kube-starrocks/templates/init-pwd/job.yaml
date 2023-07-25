@@ -22,7 +22,7 @@ spec:
           valueFrom:
             secretKeyRef:
               key: password
-              name: {{ template "kube-starrocks.name" . }}-credential
+              name: {{ template "kube-starrocks.initpassword.secret.name" . }}
         volumeMounts:
         - mountPath: /opt/starrocks/fe_initpwd.sh
           name: fe-initpwd-shell

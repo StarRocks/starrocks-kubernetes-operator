@@ -71,7 +71,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksFESpec.feEnvVars }}
@@ -187,7 +187,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksBeSpec.beEnvVars }}
@@ -275,7 +275,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksCnSpec.cnEnvVars }}
