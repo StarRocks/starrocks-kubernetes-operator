@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: starrocks-initpwd
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "starrockscluster.namespace" . }}
 spec:
   template:
     spec:
