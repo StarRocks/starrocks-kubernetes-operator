@@ -1,0 +1,11 @@
+{{- if .Values.starrocksCluster.namespace.name }}
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ template "starrockscluster.namespace" . }}
+  annotations:
+    {{- range $key, $value := .Values.starrocksCluster.namespace.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}

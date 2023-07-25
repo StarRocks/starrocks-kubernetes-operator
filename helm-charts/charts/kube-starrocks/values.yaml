@@ -51,8 +51,21 @@ starrocksOperator:
 starrocksCluster:
   # the name of starrockscluster cluster, if not set, the chart name will be used.
   name: ""
-  # the namespace of starrockscluster cluster, if not set, the release namespace will be used.
-  namespace: ""
+  # By default, starrockscluster will be deployed in the same namespace as the
+  # operator, and normally you can use helm --namespace to specify the namespace.
+  # This is used to create a different namespace for starrockscluster cluster with specified annotations.
+  namespace:
+    # if not set, the release namespace will be used.
+    # if set, the namespace will be created, and starrocks cluster and operator
+    # will be deployed in different namespaces.
+    name: ""
+    # annotations for starrockscluster namespace.
+    annotations: {}
+      # to run openshift, you need to add the following annotations:
+      # openshift.io/sa.scc.mcs: s0:c25,c5
+      # openshift.io/sa.scc.supplemental-groups: 1000/1000
+      # openshift.io/sa.scc.uid-range: 1000/1000
+
   # annotations for starrocks cluster.
   # there are few special annotations:
   #   1. when key is "app.starrocks.fe.io/restart", and value is "restart", the fe component will be restarted.

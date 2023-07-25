@@ -40,7 +40,7 @@ starrockscluster
 {{- end }}
 
 {{- define "starrockscluster.namespace" -}}
-{{ default .Release.Namespace .Values.starrocksCluster.namespace }}
+{{ default .Release.Namespace .Values.starrocksCluster.namespace.name }}
 {{- end }}
 
 
