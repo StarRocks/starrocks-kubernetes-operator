@@ -15,8 +15,8 @@ global:
 # the starrockscluster crd' name.
 nameOverride: ""
 # This configuration is used to modify the root password during initial deployment.
-# After deployment is completed, modify the password here and upgrade, does not modify the running root password.
-# It also supports providing secret names that contain passwords, using the password in the secret instead of the plaintext in the value.xml.
+# After deployment is completed, it won't take effect to modify the password here and an do a `helm upgrade`.
+# It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
 # When both password and passwordSecret are set, only passwordSecret takes effect.
 initPassword:
   enabled: false
