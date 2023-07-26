@@ -29,7 +29,6 @@ datadog:
   site: <DATADOG_SITE>   # Replace <DATADOG_SITE> with your Datadog site.
   logs:
     enabled: true
-    containerCollectAll: true
   prometheusScrape:
     enabled: true
     serviceEndpoints: true
@@ -49,16 +48,19 @@ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernet
 helm repo update
 ```
 
-prepare the `sr-values.yaml` file for starrocks cluster:
+Prepare the `sr-values.yaml` file for starrocks cluster:
+
 ```bash
 # sr-values.yaml
 starrocksFESpec:
   annotations:
     # change the value of ad.datadoghq.com/fe.logs to your own value
     ad.datadoghq.com/fe.logs: '[{"source": "fe","service": "starrocks","tags": ["env:test"]}]'
-    prometheus.io/path: "/metrics"
-    prometheus.io/port: "8030"
-    prometheus.io/scrape: "true"
+  service:
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "8030"
+      prometheus.io/scrape: "true"
   feEnvVars:
     - name: LOG_CONSOLE
       value: "1"
@@ -66,16 +68,20 @@ starrocksBeSpec:
   annotations:
     # change the value of ad.datadoghq.com/be.logs to your own value
     ad.datadoghq.com/be.logs: '[{"source": "be","service": "starrocks","tags": ["env:test"]}]'
-    prometheus.io/path: "/metrics"
-    prometheus.io/port: "8040"
-    prometheus.io/scrape: "true"
+  service:
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "8040"
+      prometheus.io/scrape: "true"
   beEnvVars:
     - name: LOG_CONSOLE
       value: "1"
 ```
 
+> the `prometheus.io/port` in `starrocksFESpec` need to be the same value of `http_port` in `starrocksFESpec.confg`.
+> the `prometheus.io/port` in `starrocksBESpec` need to be the same value of `webserver_port` in `starrocksBESpec.confg`.
+
 Install the starrocks cluster:
 ```bash
 helm install -n starrocks starrocks -f sr-values.yaml starrocks-community/kube-starrocks
-
 ```

@@ -28,9 +28,16 @@ spec:
 {{- if and (eq "LoadBalancer" .Values.starrocksFESpec.service.type) .Values.starrocksFESpec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.starrocksFESpec.service.loadbalancerIP }}
 {{- end }}
-{{- if .Values.starrocksFESpec.service.annotations }}
+{{- if or .Values.starrocksFESpec.service.annotations .Values.datadog.metrics.enabled }}
       annotations:
-{{ toYaml .Values.starrocksFESpec.service.annotations | indent 8 }}
+      {{- if .Values.datadog.metrics.enabled }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{.Values.starrocksFESpec.httpPort}}"
+        prometheus.io/scrape: "true"
+      {{- end }}
+      {{- if .Values.starrocksFESpec.service.annotations}}
+        {{- toYaml .Values.starrocksFESpec.service.annotations | nindent 8 }}
+      {{- end }}
 {{- end }}
 {{- end }}
     annotations:
@@ -61,8 +68,12 @@ spec:
 {{- if .Values.starrocksFESpec.schedulerName }}
     schedulerName: {{ .Values.starrocksFESpec.schedulerName }}
 {{- end }}
-{{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled }}
+{{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     feEnvVars:
+    {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+    {{- end }}
     {{- if .Values.timeZone }}
       - name: TZ
         value: {{ .Values.timeZone }}
@@ -177,8 +188,12 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled }}
+{{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     beEnvVars:
+    {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+    {{- end }}
     {{- if .Values.timeZone }}
       - name: TZ
         value: {{ .Values.timeZone }}
@@ -265,8 +280,12 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksCnSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled }}
+{{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     cnEnvVars:
+    {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+    {{- end }}
     {{- if .Values.timeZone }}
       - name: TZ
         value: {{ .Values.timeZone }}

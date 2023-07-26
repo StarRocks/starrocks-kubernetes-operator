@@ -25,6 +25,13 @@ initPassword:
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 
+datadog:
+  log:
+    enabled: false
+    tags: ''  # e.g. '["env:test"]'
+  metrics:
+    enabled: false
+
 starrocksOperator:
   enabled: true
   # annotations for starrocks operator.
@@ -159,12 +166,13 @@ starrocksFESpec:
     # Setting this parameter can persist log storage
     logStorageSize: 1Gi
   # the config for start fe. the base information as follows.
+  httpPort: 8030
   config: |
     LOG_DIR = ${STARROCKS_HOME}/log
     DATE = "$(date +%Y%m%d-%H%M%S)"
     JAVA_OPTS="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseMembar -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xloggc:${LOG_DIR}/fe.gc.log.$DATE"
     JAVA_OPTS_FOR_JDK_9="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
-    http_port = 8030
+    http_port = {{ .Values.fe.httpPort }}
     rpc_port = 9020
     query_port = 9030
     edit_log_port = 9010
