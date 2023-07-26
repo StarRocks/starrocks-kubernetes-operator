@@ -1380,8 +1380,8 @@ bool
 </em>
 </td>
 <td>
-<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
-If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
 </td>
 </tr>
@@ -2056,8 +2056,8 @@ bool
 </em>
 </td>
 <td>
-<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
-If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
 </td>
 </tr>
@@ -2518,8 +2518,8 @@ bool
 </em>
 </td>
 <td>
-<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
-If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
 </td>
 </tr>
@@ -2929,8 +2929,8 @@ bool
 </em>
 </td>
 <td>
-<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
-If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
 </td>
 </tr>
