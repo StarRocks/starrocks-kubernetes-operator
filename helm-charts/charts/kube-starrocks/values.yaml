@@ -14,6 +14,7 @@ global:
 
 # the starrockscluster crd' name.
 nameOverride: ""
+
 # This configuration is used to modify the root password during initial deployment.
 # After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
 # It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
@@ -24,6 +25,16 @@ initPassword:
   passwordSecret: ""
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
+
+# This configuration is used to integrate with external system DataDog.
+# You can enable the integration by setting the enabled to true, e.g. datalog.log.enabled=true will enable datadog agent
+# to collect the log.
+datadog:
+  log:
+    enabled: false
+    tags: ''  # e.g. '["env:test"]'
+  metrics:
+    enabled: false
 
 starrocksOperator:
   enabled: true

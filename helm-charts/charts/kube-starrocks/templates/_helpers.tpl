@@ -167,3 +167,39 @@ the first 8 digits are taken, which will be used as the annotations for pods.
     {{- printf "no-config" }}
   {{- end }}
 {{- end }}
+
+{{- define "starrockscluster.fe.http.port" -}}
+{{- $config := index .Values.starrocksFESpec.config  -}}
+{{- $configMap := dict -}}
+{{- range $line := splitList "\n" $config -}}
+{{- $pair := splitList "=" $line -}}
+{{- if eq (len $pair) 2 -}}
+{{- $_ := set $configMap (trim (index $pair 0)) (trim (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- if (index $configMap "http_port") -}}
+{{- print (index $configMap "http_port") }}
+{{- end }}
+{{- end }}
+
+{{- define "starrockscluster.be.webserver.port" -}}
+{{- include "starrockscluster.webserver.port" .Values.starrocksBeSpec }}
+{{- end }}
+
+{{- define "starrockscluster.cn.webserver.port" -}}
+{{- include "starrockscluster.webserver.port" .Values.starrocksCnSpec }}
+{{- end }}
+
+{{- define "starrockscluster.webserver.port" -}}
+{{- $config := index .config  -}}
+{{- $configMap := dict -}}
+{{- range $line := splitList "\n" $config -}}
+{{- $pair := splitList "=" $line -}}
+{{- if eq (len $pair) 2 -}}
+{{- $_ := set $configMap (trim (index $pair 0)) (trim (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- if (index $configMap "webserver_port") -}}
+{{- print (index $configMap "webserver_port") }}
+{{- end }}
+{{- end }}
