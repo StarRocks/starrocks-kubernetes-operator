@@ -80,10 +80,6 @@ starrocksFESpec:
   # If runAsNonRoot is true, the container is run as non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
   runAsNonRoot: false
-  # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
-  # the ownership of that volume to be owned by the pod.
-  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
-  fsGroup: 0
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
@@ -197,10 +193,6 @@ starrocksCnSpec:
   # If runAsNonRoot is true, the container is run as non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
   runAsNonRoot: false
-  # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
-  # the ownership of that volume to be owned by the pod.
-  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
-  fsGroup: 0
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
@@ -328,10 +320,6 @@ starrocksBeSpec:
   # If runAsNonRoot is true, the container is run as non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
   runAsNonRoot: false
-  # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
-  # the ownership of that volume to be owned by the pod.
-  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
-  fsGroup: 0
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:

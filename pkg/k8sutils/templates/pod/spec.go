@@ -409,20 +409,10 @@ func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, no
 
 func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
 	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if spec.GetFsGroup() == nil {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(1000), // the starrocks user id is 1000
-			FSGroupChangePolicy: &onRootMismatch,
-		}
-		return sc
-	} else if *(spec.GetFsGroup()) != 0 {
-		sc := &corev1.PodSecurityContext{
-			FSGroupChangePolicy: &onRootMismatch,
-			FSGroup:             spec.GetFsGroup(),
-		}
-		return sc
+	sc := &corev1.PodSecurityContext{
+		FSGroupChangePolicy: &onRootMismatch,
 	}
-	return nil
+	return sc
 }
 
 func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {

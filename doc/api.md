@@ -1387,19 +1387,6 @@ default: nil</p>
 </tr>
 <tr>
 <td>
-<code>fsGroup</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>A special supplemental group that applies to all containers in a pod.
-Some volume types allow the Kubelet to change the ownership of that volume
-to be owned by the pod:</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>replicas</code><br/>
 <em>
 int32
@@ -2063,19 +2050,6 @@ default: nil</p>
 </tr>
 <tr>
 <td>
-<code>fsGroup</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>A special supplemental group that applies to all containers in a pod.
-Some volume types allow the Kubelet to change the ownership of that volume
-to be owned by the pod:</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>replicas</code><br/>
 <em>
 int32
@@ -2525,19 +2499,6 @@ default: nil</p>
 </tr>
 <tr>
 <td>
-<code>fsGroup</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>A special supplemental group that applies to all containers in a pod.
-Some volume types allow the Kubelet to change the ownership of that volume
-to be owned by the pod:</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>replicas</code><br/>
 <em>
 int32
@@ -2932,19 +2893,6 @@ bool
 <p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
 If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>fsGroup</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>A special supplemental group that applies to all containers in a pod.
-Some volume types allow the Kubelet to change the ownership of that volume
-to be owned by the pod:</p>
 </td>
 </tr>
 <tr>

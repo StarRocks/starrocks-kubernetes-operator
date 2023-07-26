@@ -477,9 +477,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -1397,9 +1394,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -1990,9 +1984,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -2701,9 +2692,6 @@ spec:
                       resolveKey:
                         type: string
                     type: object
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -3598,9 +3586,6 @@ spec:
                       resolveKey:
                         type: string
                     type: object
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -4147,9 +4132,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:

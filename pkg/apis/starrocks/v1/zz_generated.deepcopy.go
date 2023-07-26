@@ -631,11 +631,6 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.FsGroup != nil {
-		in, out := &in.FsGroup, &out.FsGroup
-		*out = new(int64)
-		**out = **in
-	}
 	if in.Replicas != nil {
 		in, out := &in.Replicas, &out.Replicas
 		*out = new(int32)

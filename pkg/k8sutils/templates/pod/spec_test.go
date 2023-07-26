@@ -673,7 +673,6 @@ func TestSpec(t *testing.T) {
 }
 
 func TestSecurityContext(t *testing.T) {
-	v := int64(10)
 	onrootMismatch := corev1.FSGroupChangeOnRootMismatch
 
 	type args struct {
@@ -688,13 +687,10 @@ func TestSecurityContext(t *testing.T) {
 			name: "test security context",
 			args: args{
 				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						FsGroup: &v,
-					},
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{},
 				},
 			},
 			want: &corev1.PodSecurityContext{
-				FSGroup:             &v,
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},
@@ -704,7 +700,6 @@ func TestSecurityContext(t *testing.T) {
 				spec: &v1.StarRocksFeSpec{},
 			},
 			want: &corev1.PodSecurityContext{
-				FSGroup:             rutils.GetInt64ptr(1000),
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},

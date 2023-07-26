@@ -1056,12 +1056,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -3006,12 +3000,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -4282,12 +4270,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -5724,12 +5706,6 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -7632,12 +7608,6 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -8832,12 +8802,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
