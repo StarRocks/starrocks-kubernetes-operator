@@ -1374,6 +1374,19 @@ string
 </tr>
 <tr>
 <td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
+If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>fsGroup</code><br/>
 <em>
 int64
@@ -2037,6 +2050,19 @@ string
 </tr>
 <tr>
 <td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
+If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>fsGroup</code><br/>
 <em>
 int64
@@ -2486,6 +2512,19 @@ string
 </tr>
 <tr>
 <td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
+If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>fsGroup</code><br/>
 <em>
 int64
@@ -2880,6 +2919,19 @@ string
 </td>
 <td>
 <p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsGroup is used to determine whether to run starrocks as a normal user.
+If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+default: nil</p>
 </td>
 </tr>
 <tr>

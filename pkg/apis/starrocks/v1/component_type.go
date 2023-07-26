@@ -34,6 +34,7 @@ type SpecInterface interface {
 	GetHostAliases() []corev1.HostAlias
 	GetSchedulerName() string
 	GetFsGroup() *int64
+	GetRunAsNonRoot() (*int64, *int64)
 	GetAnnotations() map[string]string
 }
 
@@ -83,6 +84,11 @@ type StarRocksComponentSpec struct {
 
 	// serviceAccount for access cloud service.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	// RunAsGroup is used to determine whether to run starrocks as a normal user.
+	// If RunAsGroup is true, operator will set RunAsGroup and RunAsGroup to 1000 in securityContext.
+	// default: nil
+	RunAsNonRoot *bool `json:"runAsNonRoot,omitempty"`
 
 	// A special supplemental group that applies to all containers in a pod.
 	// Some volume types allow the Kubelet to change the ownership of that volume
@@ -384,4 +390,15 @@ func (spec *StarRocksComponentSpec) GetSchedulerName() string {
 
 func (spec *StarRocksComponentSpec) GetFsGroup() *int64 {
 	return spec.FsGroup
+}
+
+func (spec *StarRocksComponentSpec) GetRunAsNonRoot() (*int64, *int64) {
+	runAsNonRoot := spec.RunAsNonRoot
+	if runAsNonRoot == nil || *runAsNonRoot == false {
+		return nil, nil
+	}
+
+	userId := int64(1000)
+	groupId := int64(1000)
+	return &userId, &groupId
 }

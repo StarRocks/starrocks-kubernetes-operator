@@ -46,6 +46,7 @@ spec:
     serviceAccount: {{ .Values.starrocksFESpec.serviceAccount }}
 {{- end }}
     fsGroup: {{ .Values.starrocksFESpec.fsGroup }}
+    runAsNonRoot: {{ .Values.starrocksFESpec.runAsNonRoot }}
 {{- if .Values.starrocksFESpec.nodeSelector }}
     nodeSelector:
 {{ toYaml .Values.starrocksFESpec.nodeSelector | indent 6 }}
@@ -162,6 +163,7 @@ spec:
     serviceAccount: {{ .Values.starrocksBeSpec.serviceAccount }}
 {{- end }}
     fsGroup: {{ .Values.starrocksBeSpec.fsGroup }}
+    runAsNonRoot: {{ .Values.starrocksBeSpec.runAsNonRoot }}
 {{- if .Values.starrocksBeSpec.podLabels }}
     podLabels:
 {{toYaml .Values.starrocksBeSpec.podLabels | indent 6 }}
@@ -250,6 +252,7 @@ spec:
     serviceAccount: {{ .Values.starrocksCnSpec.serviceAccount }}
 {{- end }}
     fsGroup: {{ .Values.starrocksCnSpec.fsGroup }}
+    runAsNonRoot: {{ .Values.starrocksCnSpec.runAsNonRoot }}
 {{- if .Values.starrocksCnSpec.podLabels }}
     podLabels:
 {{toYaml .Values.starrocksCnSpec.podLabels | indent 6 }}

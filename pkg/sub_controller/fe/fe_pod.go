@@ -89,7 +89,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/fe_prestop.sh"),
-		SecurityContext: pod.ContainerSecurityContext(),
+		SecurityContext: pod.ContainerSecurityContext(feSpec),
 	}
 
 	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {

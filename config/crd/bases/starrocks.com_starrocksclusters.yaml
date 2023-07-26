@@ -1168,6 +1168,11 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsGroup is used to determine whether to run starrocks
+                      as a normal user. If RunAsGroup is true, operator will set RunAsGroup
+                      and RunAsGroup to 1000 in securityContext. default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.
@@ -3112,6 +3117,11 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsGroup is used to determine whether to run starrocks
+                      as a normal user. If RunAsGroup is true, operator will set RunAsGroup
+                      and RunAsGroup to 1000 in securityContext. default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.
@@ -4382,6 +4392,11 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsGroup is used to determine whether to run starrocks
+                      as a normal user. If RunAsGroup is true, operator will set RunAsGroup
+                      and RunAsGroup to 1000 in securityContext. default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.

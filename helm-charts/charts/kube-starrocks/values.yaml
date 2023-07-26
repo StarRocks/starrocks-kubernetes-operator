@@ -77,6 +77,9 @@ starrocksFESpec:
     tag: 3.0-latest
   # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
+  # If runAsNonRoot is true, the container is run as non-root user.
+  # The userId will be set to 1000, and the groupID will be set to 1000.
+  runAsNonRoot: false
   # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
   # the ownership of that volume to be owned by the pod.
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
@@ -191,6 +194,9 @@ starrocksCnSpec:
   serviceAccount: ""
   # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
+  # If runAsNonRoot is true, the container is run as non-root user.
+  # The userId will be set to 1000, and the groupID will be set to 1000.
+  runAsNonRoot: false
   # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
   # the ownership of that volume to be owned by the pod.
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
@@ -319,6 +325,9 @@ starrocksBeSpec:
   serviceAccount: ""
   # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
+  # If runAsNonRoot is true, the container is run as non-root user.
+  # The userId will be set to 1000, and the groupID will be set to 1000.
+  runAsNonRoot: false
   # A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change
   # the ownership of that volume to be owned by the pod.
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods

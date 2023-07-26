@@ -626,6 +626,11 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.RunAsNonRoot != nil {
+		in, out := &in.RunAsNonRoot, &out.RunAsNonRoot
+		*out = new(bool)
+		**out = **in
+	}
 	if in.FsGroup != nil {
 		in, out := &in.FsGroup, &out.FsGroup
 		*out = new(int64)
