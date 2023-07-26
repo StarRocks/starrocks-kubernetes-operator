@@ -63,11 +63,15 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled }}
     feEnvVars:
+    {{- if .Values.timeZone }}
+      - name: TZ
+        value: {{ .Values.timeZone }}
+    {{- end }}
     {{- if and .Values.initPassword.enabled (.Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksFESpec.feEnvVars }}
@@ -175,11 +179,15 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled }}
     beEnvVars:
+    {{- if .Values.timeZone }}
+      - name: TZ
+        value: {{ .Values.timeZone }}
+    {{- end }}
     {{- if and .Values.initPassword.enabled (.Values.starrocksBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksBeSpec.beEnvVars }}
@@ -259,11 +267,15 @@ spec:
 {{- end }}
 {{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled }}
     cnEnvVars:
+    {{- if .Values.timeZone }}
+      - name: TZ
+        value: {{ .Values.timeZone }}
+    {{- end }}
     {{- if and .Values.initPassword.enabled (.Values.starrocksCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.name" . }}-credential
+            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
     {{- end }}
     {{- if .Values.starrocksCnSpec.cnEnvVars }}

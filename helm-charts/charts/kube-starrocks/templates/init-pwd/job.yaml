@@ -1,17 +1,9 @@
 {{- if and .Values.initPassword.enabled .Release.IsInstall }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ template "kube-starrocks.name" . }}-credential
-  namespace: {{ .Release.Namespace }}
-data:
-  password: {{ .Values.initPassword.password | b64enc }}
----
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: starrocks-initpwd
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "starrockscluster.namespace" . }}
 spec:
   template:
     spec:
@@ -30,7 +22,7 @@ spec:
           valueFrom:
             secretKeyRef:
               key: password
-              name: {{ template "kube-starrocks.name" . }}-credential
+              name: {{ template "kube-starrocks.initpassword.secret.name" . }}
         volumeMounts:
         - mountPath: /opt/starrocks/fe_initpwd.sh
           name: fe-initpwd-shell

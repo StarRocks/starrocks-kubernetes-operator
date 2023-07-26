@@ -30,6 +30,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- print "starrocks" }}
 {{- end }}
 
+{{/*
+initpassword secret name
+*/}}
+
+{{- define "kube-starrocks.initpassword.secret.name" -}}
+{{ default (print (include "kube-starrocks.name" .) "-credential") .Values.initPassword.passwordSecret }}
+{{- end }}
 
 {{/*
 starrockscluster

@@ -1,9 +1,19 @@
-{{- if and .Values.initPassword.enabled .Release.IsInstall }}
+{{- if .Values.initPassword.enabled }}
+{{- if not .Values.initPassword.passwordSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "kube-starrocks.initpassword.secret.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+data:
+  password: {{ .Values.initPassword.password | b64enc }}
+---
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: init-pwd-shell
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "starrockscluster.namespace" . }}
 data:
   fe_initpwd.sh: |-
     #!/bin/bash
@@ -31,5 +41,4 @@ data:
 
     echo "Successfully modified password"
     exit 0
-
 {{- end }}
