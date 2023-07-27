@@ -21,6 +21,12 @@ package sub_controller
 import (
 	"context"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type SubController interface {
@@ -38,4 +44,47 @@ type SubController interface {
 
 	// SyncRestartStatus sync the status of restart.
 	SyncRestartStatus(src *srapi.StarRocksCluster) error
+}
+
+func UpdateStatefulSetStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient client.Client,
+	namespace string, name string, podLabels map[string]string) error {
+	ctx := context.TODO()
+
+	var podList corev1.PodList
+	if err := k8sClient.List(ctx, &podList, client.InNamespace(namespace), client.MatchingLabels(podLabels)); err != nil {
+		return err
+	}
+
+	creating, ready, failed := pod.Count(podList)
+	podsStatus := pod.Status(podList)
+	componentStatus.RunningInstances = ready
+	componentStatus.FailedInstances = failed
+	componentStatus.CreatingInstances = creating
+
+	if len(failed) != 0 {
+		componentStatus.Phase = srapi.ComponentFailed
+		componentStatus.Reason = podsStatus[failed[0]].Reason
+	} else if len(creating) != 0 {
+		componentStatus.Phase = srapi.ComponentReconciling
+		componentStatus.Reason = podsStatus[failed[0]].Reason
+	} else {
+		// even all pods is ready, that does not mean the fe is ready, maybe fe is upgrading
+		componentStatus.Phase = srapi.ComponentReconciling
+		var sts appsv1.StatefulSet
+		err := k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
+		if err != nil {
+			return err
+		}
+		reason, done, err := statefulset.Status(&sts)
+		if err != nil {
+			return err
+		}
+		if done {
+			componentStatus.Phase = srapi.ComponentRunning
+		} else {
+			componentStatus.Phase = srapi.ComponentReconciling
+			componentStatus.Reason = reason
+		}
+	}
+	return nil
 }
