@@ -1056,12 +1056,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -1168,6 +1162,12 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsNonRoot is used to determine whether to run
+                      starrocks as a normal user. If RunAsNonRoot is true, operator
+                      will set RunAsUser and RunAsGroup to 1000 in securityContext.
+                      default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.
@@ -3000,12 +3000,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -3112,6 +3106,12 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsNonRoot is used to determine whether to run
+                      starrocks as a normal user. If RunAsNonRoot is true, operator
+                      will set RunAsUser and RunAsGroup to 1000 in securityContext.
+                      default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.
@@ -4270,12 +4270,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -4382,6 +4376,12 @@ spec:
                       it defaults to Limits if that is explicitly specified, otherwise
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
+                  runAsNonRoot:
+                    description: 'RunAsNonRoot is used to determine whether to run
+                      starrocks as a normal user. If RunAsNonRoot is true, operator
+                      will set RunAsUser and RunAsGroup to 1000 in securityContext.
+                      default: nil'
+                    type: boolean
                   schedulerName:
                     description: SchedulerName is the name of the kubernetes scheduler
                       that will be used to schedule the pods.
@@ -5706,12 +5706,6 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -7614,12 +7608,6 @@ spec:
                         description: the config response key in configmap.
                         type: string
                     type: object
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.
@@ -8814,12 +8802,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    description: 'A special supplemental group that applies to all
-                      containers in a pod. Some volume types allow the Kubelet to
-                      change the ownership of that volume to be owned by the pod:'
-                    format: int64
-                    type: integer
                   hostAliases:
                     description: HostAliases is an optional list of hosts and IPs
                       that will be injected into the pod's hosts file if specified.

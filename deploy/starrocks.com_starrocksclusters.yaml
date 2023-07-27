@@ -477,9 +477,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -549,6 +546,8 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  runAsNonRoot:
+                    type: boolean
                   schedulerName:
                     type: string
                   secrets:
@@ -1395,9 +1394,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -1467,6 +1463,8 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  runAsNonRoot:
+                    type: boolean
                   schedulerName:
                     type: string
                   secrets:
@@ -1986,9 +1984,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -2058,6 +2053,8 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  runAsNonRoot:
+                    type: boolean
                   schedulerName:
                     type: string
                   secrets:
@@ -2695,9 +2692,6 @@ spec:
                       resolveKey:
                         type: string
                     type: object
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -3592,9 +3586,6 @@ spec:
                       resolveKey:
                         type: string
                     type: object
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:
@@ -4141,9 +4132,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  fsGroup:
-                    format: int64
-                    type: integer
                   hostAliases:
                     items:
                       properties:

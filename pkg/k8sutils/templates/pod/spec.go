@@ -408,30 +408,33 @@ func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, no
 }
 
 func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
-	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
-	if spec.GetFsGroup() == nil {
-		sc := &corev1.PodSecurityContext{
-			FSGroup:             rutils.GetInt64ptr(1000), // the starrocks user id is 1000
-			FSGroupChangePolicy: &onRootMismatch,
-		}
-		return sc
-	} else if *(spec.GetFsGroup()) != 0 {
-		sc := &corev1.PodSecurityContext{
-			FSGroupChangePolicy: &onRootMismatch,
-			FSGroup:             spec.GetFsGroup(),
-		}
-		return sc
+	_, groupId := spec.GetRunAsNonRoot()
+	fsGroup := (*int64)(nil)
+	if groupId != nil {
+		fsGroup = groupId
 	}
-	return nil
+	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
+	sc := &corev1.PodSecurityContext{
+		FSGroupChangePolicy: &onRootMismatch,
+		FSGroup:             fsGroup,
+	}
+	return sc
 }
 
-func ContainerSecurityContext() *corev1.SecurityContext {
+func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
+	userId, groupId := spec.GetRunAsNonRoot()
+
+	var runAsNonRoot *bool
+	if userId != nil && *userId != 0 {
+		b := true
+		runAsNonRoot = &b
+	}
 	return &corev1.SecurityContext{
+		RunAsUser:                userId,
+		RunAsGroup:               groupId,
+		RunAsNonRoot:             runAsNonRoot,
 		AllowPrivilegeEscalation: func() *bool { b := false; return &b }(),
 		// starrocks will create pid file, eg.g /opt/starrocks/fe/bin/fe.pid, so set it to false
 		ReadOnlyRootFilesystem: func() *bool { b := false; return &b }(),
-		SeccompProfile: &corev1.SeccompProfile{
-			Type: corev1.SeccompProfileTypeUnconfined,
-		},
 	}
 }
