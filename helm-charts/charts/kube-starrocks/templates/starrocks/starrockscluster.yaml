@@ -71,15 +71,12 @@ spec:
 {{- if .Values.starrocksFESpec.schedulerName }}
     schedulerName: {{ .Values.starrocksFESpec.schedulerName }}
 {{- end }}
-    {{- if or .Values.starrocksFESpec.feEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     feEnvVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
       {{- if .Values.datadog.log.enabled }}
       - name: LOG_CONSOLE
         value: "1"
-      {{- end }}
-      {{- if .Values.timeZone }}
-      - name: TZ
-        value: {{ .Values.timeZone }}
       {{- end }}
       {{- if and .Values.initPassword.enabled (.Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
@@ -88,10 +85,9 @@ spec:
             name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
       {{- end }}
-    {{- if .Values.starrocksFESpec.feEnvVars }}
+      {{- if .Values.starrocksFESpec.feEnvVars }}
       {{- toYaml .Values.starrocksFESpec.feEnvVars | nindent 6 }}
-    {{- end }}
-  {{- end }}
+      {{- end }}
 
 {{- if .Values.starrocksFESpec.affinity }}
     affinity:
@@ -201,27 +197,23 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if or .Values.starrocksBeSpec.beEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     beEnvVars:
-    {{- if .Values.datadog.log.enabled }}
-      - name: LOG_CONSOLE
-        value: "1"
-    {{- end }}
-    {{- if .Values.timeZone }}
       - name: TZ
         value: {{ .Values.timeZone }}
-    {{- end }}
-    {{- if and .Values.initPassword.enabled (.Values.starrocksBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if and .Values.initPassword.enabled (.Values.starrocksBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
             name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
-    {{- end }}
-    {{- if .Values.starrocksBeSpec.beEnvVars }}
+      {{- end }}
+      {{- if .Values.starrocksBeSpec.beEnvVars }}
       {{- toYaml .Values.starrocksBeSpec.beEnvVars | nindent 6 }}
-    {{- end }}
-{{- end }}
+      {{- end }}
 
 {{- if .Values.starrocksBeSpec.affinity }}
     affinity:
@@ -293,27 +285,23 @@ spec:
     nodeSelector:
 {{ toYaml .Values.starrocksCnSpec.nodeSelector | indent 6 }}
 {{- end }}
-{{- if or .Values.starrocksCnSpec.cnEnvVars .Values.initPassword.enabled .Values.datadog.log.enabled }}
     cnEnvVars:
-    {{- if .Values.datadog.log.enabled }}
-      - name: LOG_CONSOLE
-        value: "1"
-    {{- end }}
-    {{- if .Values.timeZone }}
       - name: TZ
         value: {{ .Values.timeZone }}
-    {{- end }}
-    {{- if and .Values.initPassword.enabled (.Values.starrocksCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if and .Values.initPassword.enabled (.Values.starrocksCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not) }}
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
             name: {{ template "kube-starrocks.initpassword.secret.name" . }}
             key: password
-    {{- end }}
-    {{- if .Values.starrocksCnSpec.cnEnvVars }}
+      {{- end }}
+      {{- if .Values.starrocksCnSpec.cnEnvVars }}
       {{- toYaml .Values.starrocksCnSpec.cnEnvVars | nindent 6 }}
-    {{- end }}
-{{- end }}
+      {{- end }}
 {{- if .Values.starrocksCnSpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksCnSpec.affinity | indent 6 }}
