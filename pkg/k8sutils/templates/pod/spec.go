@@ -408,9 +408,9 @@ func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, no
 }
 
 func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
-	userId, groupId := spec.GetRunAsNonRoot()
+	_, groupId := spec.GetRunAsNonRoot()
 	fsGroup := (*int64)(nil)
-	if userId != nil {
+	if groupId != nil {
 		fsGroup = groupId
 	}
 	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
