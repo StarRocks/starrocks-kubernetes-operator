@@ -32,9 +32,9 @@ timeZone: Asia/Shanghai
 datadog:
   log:
     enabled: false
-    tags: ''  # e.g. '["env:test"]'
+    tags: '[]'  # e.g. '["env:test"]'
   metrics:
-    enabled: false
+    enabled: true
 
 starrocksOperator:
   enabled: true
