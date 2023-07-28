@@ -5,36 +5,19 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride -}}
 {{- end }}
 
-
-{{- define "kube-starrocks.operator.namespace" -}}
-{{- default .Release.Namespace .Values.starrocksOperator.namespaceOverride }}
-{{- end }}
-
-
-{{/*
-Create chart name and version as used by the chart label.
-*/}}
-{{- define "kube-starrocks.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
 {{/*
 Common labels
 */}}
-{{- define "kube-starrocks.labels" -}}
+{{- define "starrockscluster.labels" -}}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{- define "kube-starrocks.operator.serviceAccountName" -}}
-{{- print "starrocks" }}
 {{- end }}
 
 {{/*
 initpassword secret name
 */}}
 
-{{- define "kube-starrocks.initpassword.secret.name" -}}
+{{- define "starrockscluster.initpassword.secret.name" -}}
 {{ default (print (include "kube-starrocks.name" .) "-credential") .Values.initPassword.passwordSecret }}
 {{- end }}
 
@@ -49,7 +32,6 @@ starrockscluster
 {{- define "starrockscluster.namespace" -}}
 {{ default .Release.Namespace .Values.starrocksCluster.namespace }}
 {{- end }}
-
 
 {{- define "starrockscluster.fe.name" -}}
 {{- print (include "kube-starrocks.name" .) "-fe" }}

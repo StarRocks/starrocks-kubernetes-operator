@@ -9,6 +9,6 @@ roleRef:
   name: {{ template "kube-starrocks.name" . }}-operator
 subjects:
 - kind: ServiceAccount
-  name: {{ template  "kube-starrocks.operator.serviceAccountName" . }}
-  namespace: {{ template  "kube-starrocks.operator.namespace" . }}
+  name: {{ template  "operator.serviceAccountName" . }}
+  namespace: {{ template  "operator.namespace" . }}
 {{- end }}

@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ template "kube-starrocks.initpassword.secret.name" . }}
+  name: {{ template "starrockscluster.initpassword.secret.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
 data:
   password: {{ .Values.initPassword.password | b64enc }}

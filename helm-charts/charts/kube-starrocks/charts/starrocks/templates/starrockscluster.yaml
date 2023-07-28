@@ -1,11 +1,11 @@
-apiVersion: starrocks.com/{{ .Values.global.crdVersion }}
+apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
   name: {{ template "starrockscluster.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
-{{- include "kube-starrocks.labels" . | nindent 4 }}
+{{- include "starrockscluster.labels" . | nindent 4 }}
 {{- if .Values.starrocksCluster.annotations }}
   annotations:
     {{ toYaml .Values.starrocksCluster.annotations | nindent 4 }}
@@ -82,7 +82,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
+            name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
       {{- end }}
       {{- if .Values.starrocksFESpec.feEnvVars }}
@@ -208,7 +208,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
+            name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
       {{- end }}
       {{- if .Values.starrocksBeSpec.beEnvVars }}
@@ -296,7 +296,7 @@ spec:
       - name: "MYSQL_PWD"
         valueFrom:
           secretKeyRef:
-            name: {{ template "kube-starrocks.initpassword.secret.name" . }}
+            name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
       {{- end }}
       {{- if .Values.starrocksCnSpec.cnEnvVars }}

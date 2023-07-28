@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cn-leader-election-role
-  namespace: {{ template  "kube-starrocks.operator.namespace" . }}
+  namespace: {{ template  "operator.namespace" . }}
 rules:
 - apiGroups:
   - ""

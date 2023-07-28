@@ -1,0 +1,46 @@
+# Default values for operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  rbac:
+    # if set true, the clusterrole, clusterrolebinding, role, rolebinding, serviceaccount resources will be created for
+    # operator.
+    create: true
+  # set the starrockscluster CRD version. From operator v1.6 we have supported v1 CRD and as default CRD version, but
+  # the v1alpha1 version is also supported.
+  # supported value: v1, v1alpha1.
+  crdVersion: v1
+
+# TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
+timeZone: Asia/Shanghai
+
+# set the nameOverride values for creating the same resources with parent chart.
+nameOverride: "kube-starrocks"
+
+starrocksOperator:
+  enabled: true
+  # annotations for starrocks operator.
+  annotations: {}
+  namespaceOverride: ""
+  image:
+    # image sliced by "repository:tag"
+    repository: starrocks/operator
+    tag: v1.7.1
+  imagePullPolicy: Always
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 200Mi
+    requests:
+      cpu: 500m
+      memory: 200Mi
+  # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+  tolerations: []
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+  #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
