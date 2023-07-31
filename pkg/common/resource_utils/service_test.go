@@ -16,12 +16,13 @@ package resource_utils
 
 import (
 	"encoding/json"
+	"reflect"
+	"testing"
+
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"reflect"
-	"testing"
 )
 
 func Test_getServiceAnnotations(t *testing.T) {

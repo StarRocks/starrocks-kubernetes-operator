@@ -18,9 +18,10 @@ package resource_utils
 
 import (
 	"bytes"
+	"strconv"
+
 	"github.com/spf13/viper"
 	corev1 "k8s.io/api/core/v1"
-	"strconv"
 )
 
 // the fe ports key

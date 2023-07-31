@@ -17,9 +17,10 @@ limitations under the License.
 package resource_utils
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	"testing"
 )
 
 func TestResolveConfigMap(t *testing.T) {
