@@ -1,9 +1,8 @@
 package hash
 
 import (
-	"testing"
-
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"testing"
 )
 
 func TestHashObject(t *testing.T) {

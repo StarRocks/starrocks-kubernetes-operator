@@ -1,10 +1,9 @@
 package resource_utils
 
 import (
-	"testing"
-
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
 )
 
 func TestStatefulSetDeepEqual(t *testing.T) {
