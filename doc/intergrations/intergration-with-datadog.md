@@ -57,7 +57,7 @@ datadog:
     enabled: true   # enable the log collection
     tags: '["env:test"]'
   metrics:
-    enabled: false  # enable the metrics collection
+    enabled: true  # enable the metrics collection
 ```
 
 Install or upgrade your starrocks cluster:

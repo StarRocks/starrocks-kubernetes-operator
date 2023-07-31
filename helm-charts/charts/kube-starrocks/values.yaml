@@ -32,9 +32,10 @@ timeZone: Asia/Shanghai
 datadog:
   log:
     enabled: false
+    # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
     tags: '[]'  # e.g. '["env:test"]'
   metrics:
-    enabled: true
+    enabled: false
 
 starrocksOperator:
   enabled: true
