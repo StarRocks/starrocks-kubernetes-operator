@@ -16,6 +16,8 @@ package k8sutils
 
 import (
 	"context"
+	"testing"
+
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/autoscaling/v1"
@@ -28,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
-	"testing"
 )
 
 var (

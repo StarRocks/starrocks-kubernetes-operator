@@ -15,10 +15,11 @@
 package statefulset
 
 import (
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"reflect"
 	"testing"
+
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
 func TestMakeName(t *testing.T) {
