@@ -27,6 +27,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -212,11 +213,11 @@ func (cc *CnController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 
 func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
-	if src.Spec.StarRocksCnSpec == nil {
+	cnSpec := src.Spec.StarRocksCnSpec
+	if cnSpec == nil {
 		src.Status.StarRocksCnStatus = nil
 		return nil
 	}
-	cnSpec := src.Spec.StarRocksCnSpec
 	cs := &srapi.StarRocksCnStatus{}
 	if src.Status.StarRocksCnStatus != nil {
 		cs = src.Status.StarRocksCnStatus.DeepCopy()
@@ -241,7 +242,8 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	cs.ServiceName = srapi.GetExternalServiceName(src.Name, cnSpec)
 	cs.ResourceNames = rutils.MergeSlices(cs.ResourceNames, []string{statefulSetName})
 
-	if err := cc.updateCnStatus(cs, pod.Labels(src.Name, src.Spec.StarRocksCnSpec), src.Namespace, *st.Spec.Replicas); err != nil {
+	if err := sub_controller.UpdateStatefulSetStatus(&cs.StarRocksComponentStatus, cc.k8sclient,
+		src.Namespace, statefulset.Name(src.Name, cnSpec), pod.Labels(src.Name, cnSpec)); err != nil {
 		return err
 	}
 
@@ -262,44 +264,6 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 			return err
 		}
 	}
-
-	return nil
-}
-
-// updateCnStatus update the src status about cn status.
-func (cc *CnController) updateCnStatus(cs *srapi.StarRocksCnStatus, labels map[string]string, namespace string, replicas int32) error {
-	var podList corev1.PodList
-	if err := cc.k8sclient.List(context.Background(), &podList, client.InNamespace(namespace), client.MatchingLabels(labels)); err != nil {
-		return err
-	}
-
-	var creatings, readys, faileds []string
-	podmap := make(map[string]corev1.Pod)
-	// get all pod status that controlled by st.
-	for _, pod := range podList.Items {
-		podmap[pod.Name] = pod
-		if ready := k8sutils.PodIsReady(&pod.Status); ready {
-			readys = append(readys, pod.Name)
-		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
-			creatings = append(creatings, pod.Name)
-		} else {
-			faileds = append(faileds, pod.Name)
-		}
-	}
-
-	cs.Phase = srapi.ComponentReconciling
-	if len(readys) == int(replicas) {
-		cs.Phase = srapi.ComponentRunning
-	} else if len(faileds) != 0 {
-		cs.Phase = srapi.ComponentFailed
-		cs.Reason = podmap[faileds[0]].Status.Reason
-	} else if len(creatings) != 0 {
-		cs.Reason = podmap[creatings[0]].Status.Reason
-	}
-
-	cs.RunningInstances = readys
-	cs.CreatingInstances = creatings
-	cs.FailedInstances = faileds
 
 	return nil
 }

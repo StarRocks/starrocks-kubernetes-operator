@@ -27,6 +27,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -139,12 +140,12 @@ func (be *BeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]
 // UpdateStatus update the all resource status about be.
 func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
-	if src.Spec.StarRocksBeSpec == nil {
+	beSpec := src.Spec.StarRocksBeSpec
+	if beSpec == nil {
 		src.Status.StarRocksBeStatus = nil
 		return nil
 	}
 
-	beSpec := src.Spec.StarRocksBeSpec
 	bs := &srapi.StarRocksBeStatus{
 		StarRocksComponentStatus: srapi.StarRocksComponentStatus{
 			Phase: srapi.ComponentReconciling,
@@ -169,7 +170,8 @@ func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	bs.ServiceName = srapi.GetExternalServiceName(src.Name, beSpec)
 	bs.ResourceNames = rutils.MergeSlices(bs.ResourceNames, []string{statefulSetName})
 
-	if err := be.updateBeStatus(bs, pod.Labels(src.Name, beSpec), src.Namespace, *beSpec.Replicas); err != nil {
+	if err := sub_controller.UpdateStatefulSetStatus(&bs.StarRocksComponentStatus, be.k8sclient,
+		src.Namespace, statefulset.Name(src.Name, beSpec), pod.Labels(src.Name, beSpec)); err != nil {
 		return err
 	}
 
@@ -277,43 +279,6 @@ func (be *BeController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 	}
 	res, err := rutils.ResolveConfigMap(feconfigMap, feconfigMapInfo.ResolveKey)
 	return res, err
-}
-
-// updateCnStatus update the src status about cn status.
-func (be *BeController) updateBeStatus(bs *srapi.StarRocksBeStatus, labels map[string]string, namespace string, replicas int32) error {
-	var podList corev1.PodList
-	if err := be.k8sclient.List(context.Background(), &podList, client.InNamespace(namespace), client.MatchingLabels(labels)); err != nil {
-		return err
-	}
-
-	var creatings, readys, faileds []string
-	podmap := make(map[string]corev1.Pod)
-	// get all pod status that controlled by st.
-	for _, pod := range podList.Items {
-		podmap[pod.Name] = pod
-		if ready := k8sutils.PodIsReady(&pod.Status); ready {
-			readys = append(readys, pod.Name)
-		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
-			creatings = append(creatings, pod.Name)
-		} else {
-			faileds = append(faileds, pod.Name)
-		}
-	}
-
-	bs.Phase = srapi.ComponentReconciling
-	if len(readys) == int(replicas) {
-		bs.Phase = srapi.ComponentRunning
-	} else if len(faileds) != 0 {
-		bs.Phase = srapi.ComponentFailed
-		bs.Reason = podmap[faileds[0]].Status.Reason
-	} else if len(creatings) != 0 {
-		bs.Reason = podmap[creatings[0]].Status.Reason
-	}
-
-	bs.RunningInstances = readys
-	bs.CreatingInstances = creatings
-	bs.FailedInstances = faileds
-	return nil
 }
 
 func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
