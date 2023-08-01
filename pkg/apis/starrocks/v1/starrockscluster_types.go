@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,6 +39,9 @@ type StarRocksClusterSpec struct {
 
 	// StarRocksCnSpec define cn configuration for start cn service.
 	StarRocksCnSpec *StarRocksCnSpec `json:"starRocksCnSpec,omitempty"`
+
+	// StarRocksLoadSpec define a proxy for loading data to starrocks.
+	StarRocksFeProxy *StarRocksLoadSpec `json:"starRocksFeProxy,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
@@ -53,6 +57,117 @@ type StarRocksClusterStatus struct {
 
 	// Represents the status of cn. the status have running, failed and creating pods.
 	StarRocksCnStatus *StarRocksCnStatus `json:"starRocksCnStatus,omitempty"`
+
+	// Represents the status of fe proxy. the status have running, failed and creating pods.
+	StarRocksFeProxyStatus *StarRocksComponentStatus `json:"starRocksFeProxyStatus,omitempty"`
+}
+
+// SpecInterface is a common interface for all starrocks component spec.
+// +kubebuilder:object:generate=false
+type SpecInterface interface {
+	LoadInterface
+	GetHostAliases() []corev1.HostAlias
+	GetRunAsNonRoot() (*int64, *int64)
+}
+
+var _ SpecInterface = &StarRocksFeSpec{}
+var _ SpecInterface = &StarRocksBeSpec{}
+var _ SpecInterface = &StarRocksCnSpec{}
+
+// StarRocksFeSpec defines the desired state of fe.
+type StarRocksFeSpec struct {
+	StarRocksComponentSpec `json:",inline"`
+
+	// +optional
+	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
+}
+
+// StarRocksBeSpec defines the desired state of be.
+type StarRocksBeSpec struct {
+	StarRocksComponentSpec `json:",inline"`
+
+	// +optional
+	// beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	BeEnvVars []corev1.EnvVar `json:"beEnvVars,omitempty"`
+}
+
+// StarRocksCnSpec defines the desired state of cn.
+type StarRocksCnSpec struct {
+	StarRocksComponentSpec `json:",inline"`
+
+	// +optional
+	// cnEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	CnEnvVars []corev1.EnvVar `json:"cnEnvVars,omitempty"`
+
+	// AutoScalingPolicy auto scaling strategy
+	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
+}
+
+// StarRocksFeStatus represents the status of starrocks fe.
+type StarRocksFeStatus struct {
+	StarRocksComponentStatus `json:",inline"`
+}
+
+// StarRocksBeStatus represents the status of starrocks be.
+type StarRocksBeStatus struct {
+	StarRocksComponentStatus `json:",inline"`
+}
+
+// StarRocksCnStatus represents the status of starrocks cn.
+type StarRocksCnStatus struct {
+	StarRocksComponentStatus `json:",inline"`
+
+	// The policy name of autoScale.
+	// Deprecated
+	HpaName string `json:"hpaName,omitempty"`
+
+	// HorizontalAutoscaler have the autoscaler information.
+	HorizontalScaler HorizontalScaler `json:"horizontalScaler,omitempty"`
+}
+
+func (spec *StarRocksFeSpec) GetReplicas() *int32 {
+	if spec == nil {
+		return nil
+	}
+	return spec.StarRocksComponentSpec.GetReplicas()
+}
+
+func (spec *StarRocksBeSpec) GetReplicas() *int32 {
+	if spec == nil {
+		return nil
+	}
+	return spec.StarRocksComponentSpec.GetReplicas()
+}
+
+func (spec *StarRocksCnSpec) GetReplicas() *int32 {
+	if spec == nil {
+		return nil
+	}
+	return spec.StarRocksComponentSpec.GetReplicas()
+}
+
+// GetServiceName returns the service name of starrocks fe.
+// If the spec is nil, return empty string.
+func (spec *StarRocksFeSpec) GetServiceName() string {
+	if spec == nil {
+		return ""
+	}
+	return spec.StarRocksComponentSpec.GetServiceName()
+}
+
+func (spec *StarRocksBeSpec) GetServiceName() string {
+	if spec == nil {
+		return ""
+	}
+	return spec.StarRocksComponentSpec.GetServiceName()
+}
+
+func (spec *StarRocksCnSpec) GetServiceName() string {
+	if spec == nil {
+		return ""
+	}
+	return spec.StarRocksComponentSpec.GetServiceName()
 }
 
 // ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.

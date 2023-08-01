@@ -185,3 +185,8 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- print (index $configMap "webserver_port") }}
 {{- end }}
 {{- end }}
+
+{{- define "feproxy.labels" -}}
+app.kubernetes.io/instance: {{ template "kube-starrocks.name" . }}-fe-proxy
+app.kubernetes.io/component: fe-proxy
+{{- end }}

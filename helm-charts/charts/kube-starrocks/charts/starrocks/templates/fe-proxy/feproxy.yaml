@@ -1,0 +1,146 @@
+{{- if .Values.feProxy.enabled }}
+
+# create fe proxy deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-fe-proxy
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    {{- include "feproxy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.feProxy.replicas }}
+  selector:
+    matchLabels:
+      {{- include "feproxy.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "feproxy.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+      {{- if .Values.feProxy.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.feProxy.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: nginx
+          image: {{ .Values.feProxy.image }}
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /etc/nginx
+              name: nginx-conf
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ template "kube-starrocks.name" . }}-fe-proxy
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+---
+
+# create fe proxy configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-fe-proxy
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    {{- include "feproxy.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    pid   /tmp/nginx.pid;
+    worker_processes 4;
+    include /usr/share/nginx/modules/*.conf;
+    events {
+      worker_connections 256;
+    }
+
+    http {
+      sendfile            on;
+      tcp_nopush          on;
+      tcp_nodelay         on;
+      keepalive_timeout   65;
+      types_hash_max_size 2048;
+      client_max_body_size 0;
+      ignore_invalid_headers off;
+      underscores_in_headers on;
+
+      client_body_temp_path /tmp/client_temp;
+      proxy_temp_path       /tmp/proxy_temp_path;
+      fastcgi_temp_path     /tmp/fastcgi_temp;
+      uwsgi_temp_path       /tmp/uwsgi_temp;
+      scgi_temp_path        /tmp/scgi_temp;
+
+      default_type        application/octet-stream;
+      server {
+        listen 8080;
+        resolver {{ .Values.feProxy.resolver }};
+        location / {
+          proxy_pass http://{{ template "starrockscluster.name" . }}-fe-service:{{- default 8030 (include "starrockscluster.fe.http.port" .) }};
+          proxy_set_header Expect $http_expect;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_intercept_errors on;
+          error_page 307 = @handle_redirect;
+        }
+
+        location /api/transaction/load {
+          proxy_pass http://{{ template "starrockscluster.name" . }}-fe-service:{{- default 8030 (include "starrockscluster.fe.http.port" .) }};
+          proxy_pass_request_body off;
+          proxy_set_header Expect $http_expect;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_intercept_errors on;
+          error_page 307 = @handle_redirect;
+        }
+
+        location ~ ^/api/.*/.*/_stream_load$ {
+          proxy_pass http://{{ template "starrockscluster.name" . }}-fe-service:{{- default 8030 (include "starrockscluster.fe.http.port" .) }};
+          proxy_pass_request_body off;
+          proxy_set_header Expect $http_expect;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_intercept_errors on;
+          error_page 307 = @handle_redirect;
+        }
+
+        location @handle_redirect {
+          set $redirect_uri '$upstream_http_location';
+          proxy_pass $redirect_uri;
+          proxy_set_header Expect $http_expect;
+          proxy_pass_request_body on;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+      }
+    }
+
+---
+
+# create fe proxy service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kube-starrocks.name" . }}-fe-proxy
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    {{- include "feproxy.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.feProxy.service.port }}
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    {{- include "feproxy.labels" . | nindent 4 }}
+  type: {{ .Values.feProxy.service.type }}
+
+{{- end }}

@@ -1,0 +1,188 @@
+package v1
+
+import corev1 "k8s.io/api/core/v1"
+
+// +kubebuilder:object:generate=false
+type LoadInterface interface {
+	GetAnnotations() map[string]string
+
+	GetReplicas() *int32
+	GetImagePullSecrets() []corev1.LocalObjectReference
+	GetSchedulerName() string
+	GetNodeSelector() map[string]string
+	GetAffinity() *corev1.Affinity
+	GetTolerations() []corev1.Toleration
+
+	GetServiceName() string
+	GetStorageVolumes() []StorageVolume
+	GetServiceAccount() string
+}
+
+var _ LoadInterface = &StarRocksLoadSpec{}
+
+type StarRocksLoadSpec struct {
+	// defines the specification of resource cpu and mem.
+	// +optional
+	corev1.ResourceRequirements `json:",inline"`
+
+	// annotation for pods. user can config monitor annotation for collect to monitor system.
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// +optional
+	// the pod labels for user select or classify pods.
+	PodLabels map[string]string `json:"podLabels,omitempty"`
+
+	// Replicas is the number of desired Pod
+	// +kubebuilder:validation:Minimum=0
+	// +optional: Defaults to 3
+	Replicas *int32 `json:"replicas,omitempty"`
+
+	// Image for a starrocks deployment.
+	Image string `json:"image"`
+
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+	// If specified, these secrets will be passed to individual puller implementations for them to use.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
+
+	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
+	// +optional
+	SchedulerName string `json:"schedulerName,omitempty"`
+
+	// (Optional) If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// +optional
+	// If specified, the pod's scheduling constraints.
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// Probe defines the mode probe service in container is alive.
+	// +optional
+	Probe *StarRocksProbe `json:"probe,omitempty"`
+
+	// Service defines the template for the associated Kubernetes Service object.
+	// +optional
+	Service *StarRocksService `json:"service,omitempty"`
+
+	// StorageVolumes defines the additional storage for meta storage.
+	// +optional
+	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
+
+	// serviceAccount for access cloud service.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+}
+
+type StarRocksService struct {
+	// Name assigned to service.
+	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
+	// +optional
+	Name string `json:"name,omitempty"`
+
+	// Annotations store Kubernetes Service annotations.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
+	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+	// +optional
+	Type corev1.ServiceType `json:"type,omitempty"`
+
+	// Only applies to Service Type: LoadBalancer.
+	// This feature depends on whether the underlying cloud-provider supports specifying
+	// the loadBalancerIP when a load balancer is created.
+	// This field will be ignored if the cloud-provider does not support the feature.
+	// This field was under-specified and its meaning varies across implementations,
+	// and it cannot support dual-stack.
+	// As of Kubernetes v1.24, users are encouraged to use implementation-specific annotations when available.
+	// This field may be removed in a future API version.
+	// +optional
+	LoadBalancerIP string `json:"loadBalancerIP,omitempty"`
+
+	// Ports the components exposed ports and listen ports in pod.
+	// +optional
+	Ports []StarRocksServicePort `json:"ports"`
+}
+
+type StarRocksServicePort struct {
+	// Name of the map about coming port and target port
+	Name string `json:"name,omitempty"`
+
+	// Port the pod is exposed on service.
+	Port int32 `json:"port"`
+
+	// ContainerPort the service listen in pod.
+	ContainerPort int32 `json:"containerPort"`
+
+	// The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
+	NodePort int32 `json:"nodePort,omitempty"`
+}
+
+// StarRocksProbe defines the mode for probe be alive.
+type StarRocksProbe struct {
+	// Type identifies the mode of probe main container
+	// +kubebuilder:validation:Enum=tcp;command
+	Type string `json:"type"`
+
+	// Number of seconds after the container has started before liveness probes are initiated.
+	// Default to 10 seconds.
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
+
+	// How often (in seconds) to perform the probe.
+	// Default to Kubernetes default (10 seconds). Minimum value is 1.
+	// +kubebuilder:validation:Minimum=1
+	// +optional
+	PeriodSeconds *int32 `json:"periodSeconds,omitempty"`
+}
+
+func (spec *StarRocksLoadSpec) GetReplicas() *int32 {
+	return spec.Replicas
+}
+
+func (spec *StarRocksLoadSpec) GetServiceName() string {
+	if spec == nil || spec.Service == nil {
+		return ""
+	}
+	return spec.Service.Name
+}
+
+func (spec *StarRocksLoadSpec) GetStorageVolumes() []StorageVolume {
+	return spec.StorageVolumes
+}
+
+func (spec *StarRocksLoadSpec) GetServiceAccount() string {
+	return spec.ServiceAccount
+}
+
+func (spec *StarRocksLoadSpec) GetAffinity() *corev1.Affinity {
+	return spec.Affinity
+}
+
+func (spec *StarRocksLoadSpec) GetTolerations() []corev1.Toleration {
+	return spec.Tolerations
+}
+
+func (spec *StarRocksLoadSpec) GetNodeSelector() map[string]string {
+	return spec.NodeSelector
+}
+
+func (spec *StarRocksLoadSpec) GetImagePullSecrets() []corev1.LocalObjectReference {
+	return spec.ImagePullSecrets
+}
+
+func (spec *StarRocksLoadSpec) GetAnnotations() map[string]string {
+	return spec.Annotations
+}
+
+func (spec *StarRocksLoadSpec) GetSchedulerName() string {
+	return spec.SchedulerName
+}

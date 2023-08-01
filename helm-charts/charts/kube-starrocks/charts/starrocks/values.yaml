@@ -43,6 +43,23 @@ starrocksCluster:
   # specify the cn deploy or not.
   enabledCn: false
 
+# specify the fe proxy deploy or not.
+feProxy:
+  # specify the fe proxy deploy or not.
+  enabled: false
+  replicas: 1
+  image: nginx:1.24.0
+  resolver: kube-dns.kube-system.svc.cluster.local
+  service:
+    # the type for fe proxy service, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    type: LoadBalancer
+    port: 80
+  # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+  # kubernetes.io/arch: amd64
+  # kubernetes.io/os: linux
+
 # spec to deploy fe.
 starrocksFESpec:
   # number of replicas to deploy for a fe statefulset.
