@@ -80,6 +80,7 @@ Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packa
 
 Following is an example of the content of the `sr-values.yaml`.
 
+* For chart v1.7.1 and below,
 ```yaml
 starrocksFESpec:
   service:
@@ -107,6 +108,36 @@ starrocksBESpec:
     limits:
       cpu: 4
       memory: 4Gi
+```
+* For chart v1.8.0 and above,
+```yaml
+starrocks:
+  starrocksFESpec:
+    service:
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8030"
+        prometheus.io/scrape: "true"
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        cpu: 4
+        memory: 4Gi
+  starrocksBESpec:
+    service:
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8040"
+        prometheus.io/scrape: "true"
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        cpu: 4
+        memory: 4Gi
 ```
 
 Note that `"prometheus.io/*` annotations are the must items to be added, this will allow prometheus to auto discover StarRocks PODs and to collect the metrics.
