@@ -25,8 +25,8 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -142,13 +142,16 @@ func Test_SyncDeploy(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas:       rutils.GetInt32Pointer(3),
-					Image:          "test.image",
-					ServiceAccount: "test-sa",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: requests,
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/cn:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
+						},
 					},
-					PodLabels: labels,
 				},
 			},
 		},
@@ -161,17 +164,17 @@ func Test_SyncDeploy(t *testing.T) {
 	festatus := src.Status.StarRocksFeStatus
 	require.Equal(t, nil, err)
 	require.Equal(t, festatus.Phase, srapi.ComponentReconciling)
-	require.Equal(t, festatus.ServiceName, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec))
+	require.Equal(t, festatus.ServiceName, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec))
 
 	var st appv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksFeSpec
-	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
-	require.Equal(t, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
+	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
+	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
 	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
-	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, spec), Namespace: "default"}, &st))
+	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
 	// validate service selector matches statefulset selector
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

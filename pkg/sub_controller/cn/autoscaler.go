@@ -19,12 +19,12 @@ package cn
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	appv1 "k8s.io/api/apps/v1"
 )
 
 func (cc *CnController) generateAutoScalerName(src *srapi.StarRocksCluster) string {
-	return statefulset.Name(src.Name, src.Spec.StarRocksCnSpec) + "-autoscaler"
+	return load.Name(src.Name, src.Spec.StarRocksCnSpec) + "-autoscaler"
 }
 
 func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPolicy, target *appv1.StatefulSet, src *srapi.StarRocksCluster) *rutils.PodAutoscalerParams {

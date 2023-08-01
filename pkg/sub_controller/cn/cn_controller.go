@@ -24,10 +24,12 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -63,7 +65,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
-	if !cc.checkFEOk(ctx, src) {
+	if !fe.CheckFEOk(ctx, cc.k8sClient, src) {
 		return nil
 	}
 
@@ -82,8 +84,8 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
 
 	// generate new cn internal service.
-	externalsvc := rutils.BuildExternalService(src, srapi.GetExternalServiceName(src.Name, cnSpec), rutils.CnService, config,
-		statefulset.Selector(src.Name, cnSpec), statefulset.Labels(src.Name, cnSpec))
+	externalsvc := rutils.BuildExternalService(src, service.ExternalServiceName(src.Name, cnSpec), rutils.CnService, config,
+		load.Selector(src.Name, cnSpec), load.Labels(src.Name, cnSpec))
 	// create or update fe service, update the status of cn on src.
 	// publish the service.
 	// patch the internal service for fe and cn connection.
@@ -98,7 +100,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	// create cn statefulset.
 	podTemplateSpec := cc.buildPodTemplate(src, config)
-	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, cnSpec, podTemplateSpec))
+	st := statefulset.MakeStatefulset(src, cnSpec, podTemplateSpec)
 	if err = cc.applyStatefulset(ctx, src, &st); err != nil {
 		klog.Errorf("CnController Sync applyStatefulset name=%s, namespace=%s, failed. err=%s\n", st.Name, st.Namespace, err.Error())
 		return err
@@ -191,7 +193,7 @@ func (cc *CnController) statefulsetNeedRolloutRestart(srcAnnotations map[string]
 func (cc *CnController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	// update statefulset, if restart operation finished, we should update the annotation value as finished.
 	var st appv1.StatefulSet
-	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksCnSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.StarRocksCnSpec)
 	if err := cc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		klog.Infof("CnController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.", statefulSetName, src.Namespace, err.Error())
 		return err
@@ -222,7 +224,7 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	src.Status.StarRocksCnStatus = cs
 
 	var st appv1.StatefulSet
-	statefulSetName := statefulset.Name(src.Name, cnSpec)
+	statefulSetName := load.Name(src.Name, cnSpec)
 	if err := cc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); apierrors.IsNotFound(err) {
 		klog.Infof("CnController UpdateStatus  the statefulset name=%s is not found.\n", statefulSetName)
 		return nil
@@ -235,11 +237,11 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 		cs.HorizontalScaler = srapi.HorizontalScaler{}
 	}
 
-	cs.ServiceName = srapi.GetExternalServiceName(src.Name, cnSpec)
+	cs.ServiceName = service.ExternalServiceName(src.Name, cnSpec)
 	cs.ResourceNames = rutils.MergeSlices(cs.ResourceNames, []string{statefulSetName})
 
-	if err := sub_controller.UpdateStatefulSetStatus(&cs.StarRocksComponentStatus, cc.k8sClient,
-		src.Namespace, statefulset.Name(src.Name, cnSpec), pod.Labels(src.Name, cnSpec)); err != nil {
+	if err := sub_controller.UpdateStatus(&cs.StarRocksComponentStatus, cc.k8sClient,
+		src.Namespace, load.Name(src.Name, cnSpec), pod.Labels(src.Name, cnSpec), sub_controller.StatefulSetLoadType); err != nil {
 		return err
 	}
 
@@ -298,24 +300,6 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRoc
 	return nil
 }
 
-// check the fe cluster is ok for add cn node.
-func (cc *CnController) checkFEOk(ctx context.Context, src *srapi.StarRocksCluster) bool {
-	endpoints := corev1.Endpoints{}
-	// 1. wait for fe ok.
-	if err := cc.k8sClient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
-		klog.Errorf("CnController wait fe available fe service name %s, occur failed %s", srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
-		return false
-	}
-
-	for _, sub := range endpoints.Subsets {
-		if len(sub.Addresses) > 0 {
-			return true
-		}
-	}
-
-	return false
-}
-
 // ClearResources clear the deployed resource about cn. statefulset, services, hpa.
 func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	// if the starrocks is not have cn.
@@ -330,18 +314,18 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	cnSpec := src.Spec.StarRocksCnSpec
-	statefulSetName := statefulset.Name(src.Name, cnSpec)
+	statefulSetName := load.Name(src.Name, cnSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, cc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("cnController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.", src.Namespace, statefulSetName, err.Error())
 		return false, err
 	}
 
-	if err := k8sutils.DeleteService(ctx, cc.k8sClient, src.Namespace, cc.getCnSearchServiceName(src)); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteService(ctx, cc.k8sClient, src.Namespace, service.SearchServiceName(src.Name, cnSpec)); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("cnController ClearResources delete search service, namespace=%s,name=%s,error=%s.", src.Namespace, cc.getCnSearchServiceName(src), err.Error())
 		return false, err
 	}
-	if err := k8sutils.DeleteService(ctx, cc.k8sClient, src.Namespace, srapi.GetExternalServiceName(src.Name, cnSpec)); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("cnController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, srapi.GetExternalServiceName(src.Name, cnSpec), err.Error())
+	if err := k8sutils.DeleteService(ctx, cc.k8sClient, src.Namespace, service.ExternalServiceName(src.Name, cnSpec)); err != nil && !apierrors.IsNotFound(err) {
+		klog.Errorf("cnController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, service.ExternalServiceName(src.Name, cnSpec), err.Error())
 		return false, err
 	}
 

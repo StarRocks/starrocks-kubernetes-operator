@@ -26,9 +26,10 @@ import (
 type StarRocksServiceType string
 
 const (
-	FeService StarRocksServiceType = "fe"
-	BeService StarRocksServiceType = "be"
-	CnService StarRocksServiceType = "cn"
+	FeService      StarRocksServiceType = "fe"
+	BeService      StarRocksServiceType = "be"
+	CnService      StarRocksServiceType = "cn"
+	FeProxyService StarRocksServiceType = "fe-proxy"
 )
 
 // HashService service hash components
@@ -45,7 +46,8 @@ type hashService struct {
 }
 
 // BuildExternalService build the external service. not have selector
-func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType, config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
+func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType,
+	config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
 	// the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
@@ -81,6 +83,19 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
 		anno = getServiceAnnotations(src.Spec.StarRocksCnSpec.Service)
 		srPorts = getCnServicePorts(config)
+	} else if serviceType == FeProxyService {
+		if svc.Name == "" {
+			svc.Name = src.Name + "-" + srapi.DEFAULT_FE_PROXY
+		}
+		setServiceType(src.Spec.StarRocksFeProxySpec.Service, &svc)
+		anno = getServiceAnnotations(src.Spec.StarRocksFeProxySpec.Service)
+		srPorts = []srapi.StarRocksServicePort{
+			{
+				Name:          FE_PORXY_HTTP_PORT_NAME,
+				Port:          FE_PROXY_HTTP_PORT,
+				ContainerPort: FE_PROXY_HTTP_PORT,
+			},
+		}
 	}
 
 	ref := metav1.NewControllerRef(src, src.GroupVersionKind())

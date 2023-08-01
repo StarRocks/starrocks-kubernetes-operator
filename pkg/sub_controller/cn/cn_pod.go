@@ -22,6 +22,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -58,7 +59,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, cnSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
 
-	feExternalServiceName := srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	feExternalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
 	Envs := pod.Envs(src.Spec.StarRocksCnSpec, config, feExternalServiceName, src.Namespace, cnSpec.CnEnvVars)
 	cnContainer := corev1.Container{
 		Name:            srapi.DEFAULT_CN,

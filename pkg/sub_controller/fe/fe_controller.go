@@ -23,6 +23,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
@@ -60,7 +61,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	feSpec := src.Spec.StarRocksFeSpec
 	// get the fe configMap for resolve ports.
-	config, err := fc.GetFeConfig(ctx, &feSpec.ConfigMapInfo, src.Namespace)
+	config, err := GetFeConfig(ctx, fc.k8sClient, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		klog.Errorf("FeController Sync: get fe configmap failed, "+
 			"namespace = %v, configmapName = %v, configmapKey = %v, error = %v",
@@ -69,8 +70,8 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	// generate new fe service.
-	svc := rutils.BuildExternalService(src, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), rutils.FeService, config,
-		statefulset.Selector(src.Name, feSpec), statefulset.Labels(src.Name, feSpec))
+	svc := rutils.BuildExternalService(src, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), rutils.FeService, config,
+		load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
 	// create or update fe external and domain search service, update the status of fe on src.
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
@@ -83,7 +84,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
-	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, feSpec, podTemplateSpec))
+	st := statefulset.MakeStatefulset(src, feSpec, podTemplateSpec)
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		// exclude the restart annotation interference,
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
@@ -148,12 +149,12 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	}
 
 	src.Status.StarRocksFeStatus = fs
-	fs.ServiceName = srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
-	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)
+	fs.ServiceName = service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := sub_controller.UpdateStatefulSetStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
-		src.Namespace, statefulset.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec)); err != nil {
+	if err := sub_controller.UpdateStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
+		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), sub_controller.StatefulSetLoadType); err != nil {
 		return err
 	}
 
@@ -186,7 +187,7 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 func (fc *FeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	// update statefulset, if restart operation finished, we should update the annotation value as finished.
 	var st appv1.StatefulSet
-	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)}, &st); err != nil {
+	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: load.Name(src.Name, src.Spec.StarRocksFeSpec)}, &st); err != nil {
 		klog.Infof("FeController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.")
 		return err
 	}
@@ -202,11 +203,11 @@ func (fc *FeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 }
 
 // GetFeConfig get the fe start config.
-func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func GetFeConfig(ctx context.Context, k8sClient client.Client, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
 		return make(map[string]interface{}), nil
 	}
-	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sClient, namespace, configMapInfo.ConfigMapName)
+	configMap, err := k8sutils.GetConfigMap(ctx, k8sClient, namespace, configMapInfo.ConfigMapName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			klog.Infof("the FeController get fe config is not exist, namespace = %s configmapName = %s", namespace, configMapInfo.ConfigMapName)
@@ -231,7 +232,7 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return true, nil
 	}
 
-	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.", src.Namespace, statefulSetName, err.Error())
 		return false, err
@@ -243,10 +244,28 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		klog.Errorf("feController ClearResources delete search service, namespace=%s,name=%s,error=%s.", src.Namespace, searchServiceName, err.Error())
 		return false, err
 	}
-	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
+	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
+		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
 		return false, err
 	}
 
 	return true, nil
+}
+
+// CheckFEOk check the fe cluster is ok for add cn node.
+func CheckFEOk(ctx context.Context, k8sClient client.Client, src *srapi.StarRocksCluster) bool {
+	endpoints := corev1.Endpoints{}
+	// 1. wait for fe ok.
+	if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
+		klog.Errorf("CnController wait fe available fe service name %s, occur failed %s", service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
+		return false
+	}
+
+	for _, sub := range endpoints.Subsets {
+		if len(sub.Addresses) > 0 {
+			return true
+		}
+	}
+
+	return false
 }

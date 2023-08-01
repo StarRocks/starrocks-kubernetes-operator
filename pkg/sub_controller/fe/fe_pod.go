@@ -22,6 +22,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -74,7 +75,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volMounts = pod.MountConfigMaps(vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
-	feExternalServiceName := srapi.GetExternalServiceName(src.Name, feSpec)
+	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
 	Envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,

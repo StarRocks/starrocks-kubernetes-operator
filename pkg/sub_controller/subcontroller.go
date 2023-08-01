@@ -22,6 +22,7 @@ import (
 	"context"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/deployment"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	appsv1 "k8s.io/api/apps/v1"
@@ -47,8 +48,15 @@ type SubController interface {
 	SyncRestartStatus(src *srapi.StarRocksCluster) error
 }
 
-func UpdateStatefulSetStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient client.Client,
-	namespace string, name string, podLabels map[string]string) error {
+type LoadType string
+
+const (
+	DeploymentLoadType  = "Deployment"
+	StatefulSetLoadType = "StatefulSet"
+)
+
+func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient client.Client,
+	namespace string, name string, podLabels map[string]string, loadType LoadType) error {
 	ctx := context.TODO()
 
 	var podList corev1.PodList
@@ -67,21 +75,38 @@ func UpdateStatefulSetStatus(componentStatus *srapi.StarRocksComponentStatus, k8
 		componentStatus.Reason = podsStatus[failed[0]].Reason
 	} else if len(creating) != 0 {
 		componentStatus.Phase = srapi.ComponentReconciling
-		componentStatus.Reason = podsStatus[failed[0]].Reason
+		componentStatus.Reason = podsStatus[creating[0]].Reason
 	} else {
 		// even all pods is ready, that does not mean the fe is ready, maybe fe is upgrading
-		componentStatus.Phase = srapi.ComponentReconciling
-		var sts appsv1.StatefulSet
-		err := k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
-		if err != nil {
-			return err
-		}
-		reason, done, err := statefulset.Status(&sts)
-		if err != nil {
-			return err
+		var reason string
+		var done bool
+		var err error
+		if loadType == DeploymentLoadType {
+			var load appsv1.Deployment
+			componentStatus.Phase = srapi.ComponentReconciling
+			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &load)
+			if err != nil {
+				return err
+			}
+			reason, done, err = deployment.Status(&load)
+			if err != nil {
+				return err
+			}
+		} else if loadType == StatefulSetLoadType {
+			var sts appsv1.StatefulSet
+			componentStatus.Phase = srapi.ComponentReconciling
+			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
+			if err != nil {
+				return err
+			}
+			reason, done, err = statefulset.Status(&sts)
+			if err != nil {
+				return err
+			}
 		}
 		if done {
 			componentStatus.Phase = srapi.ComponentRunning
+			componentStatus.Reason = ""
 		} else {
 			componentStatus.Phase = srapi.ComponentReconciling
 			componentStatus.Reason = reason

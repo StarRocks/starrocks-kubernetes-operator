@@ -75,10 +75,16 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 		newHashv = hash.HashObject(newHso)
 	}
 
-	// calculate the old hash value from the old statefulset, not from annotation.
-	oldHso := statefulSetHashObject(old, excludeReplicas)
-	klog.V(4).Infof("old statefulset hash object: %+v", oldHso)
-	oldHashv = hash.HashObject(oldHso)
+	// the hash value calculated from statefulset instance in k8s may will never equal to the hash value from
+	// starrocks cluster. Because statefulset may be updated by k8s controller manager.
+	// Every time you update the statefulset, a new reconcile will be triggered.
+	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
+		oldHashv = old.Annotations[srapi.ComponentResourceHash]
+	} else {
+		oldHso := statefulSetHashObject(old, excludeReplicas)
+		klog.V(4).Infof("old statefulset hash object: %+v", oldHso)
+		oldHashv = hash.HashObject(oldHso)
+	}
 
 	anno := Annotations{}
 	anno.AddAnnotation(new.Annotations)

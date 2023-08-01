@@ -382,3 +382,34 @@ spec:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
 {{- end }}
+{{- if .Values.feProxy.enabled }}
+  starRocksFeProxySpec:
+    image: "{{ .Values.feProxy.image.repository }}:{{ .Values.feProxy.image.tag }}"
+    replicas: {{ .Values.feProxy.replicas }}
+    resolver: {{ .Values.feProxy.resolver }}
+    {{- if .Values.feProxy.resources }}
+      {{- toYaml .Values.feProxy.resources | nindent 4 }}
+    {{- end }}
+    {{- if .Values.feProxy.service.type }}
+    service:
+      type: {{ .Values.feProxy.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.feProxy.service.type) .Values.feProxy.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.feProxy.service.loadbalancerIP }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.feProxy.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.feProxy.nodeSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.feProxy.affinity }}
+    affinity:
+      {{- toYaml .Values.feProxy.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.feProxy.tolerations }}
+    tolerations:
+      {{- toYaml .Values.feProxy.tolerations | nindent 6 }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{ .Values.feProxy.configMapInfo.configMapName }}
+      resolveKey: nginx.conf
+{{- end }}
