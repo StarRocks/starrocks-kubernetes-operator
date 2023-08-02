@@ -13,15 +13,15 @@ operator:
       # if set true, the clusterrole, clusterrolebinding, role, rolebinding, serviceaccount resources will be created for
       # operator.
       create: true
-    # set the starrockscluster CRD version. From operator v1.6 we have supported v1 CRD and as default CRD version, but
-    # the v1alpha1 version is also supported.
-    # supported value: v1, v1alpha1.
-    crdVersion: v1
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
   
   # set the nameOverride values for creating the same resources with parent chart.
+  # In version v1.7.1 or before, there is only one chart called kube-starrocks, and the chart name is the prefix
+  # of some resources created by the chart.
+  # In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
+  # nameOverride is used to set the prefix of the resources created by operator chart.
   nameOverride: "kube-starrocks"
   
   starrocksOperator:
@@ -53,6 +53,10 @@ operator:
 
 starrocks:
   # set the nameOverride values for creating the same resources with parent chart.
+  # In version v1.7.1 or before, there is only one chart called kube-starrocks, and the chart name is the prefix
+  # of some resources created by the chart.
+  # In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
+  # nameOverride is used to set the prefix of the resources created by starrocks chart.
   nameOverride: "kube-starrocks"
   
   # This configuration is used to modify the root password during initial deployment.
@@ -73,9 +77,10 @@ starrocks:
   datadog:
     log:
       enabled: false
+      # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
       tags: '[]'  # e.g. '["env:test"]'
     metrics:
-      enabled: true
+      enabled: false
   
   # deploy a starrocks cluster
   starrocksCluster:

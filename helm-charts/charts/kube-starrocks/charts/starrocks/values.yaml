@@ -1,4 +1,8 @@
 # set the nameOverride values for creating the same resources with parent chart.
+# In version v1.7.1 or before, there is only one chart called kube-starrocks, and the chart name is the prefix
+# of some resources created by the chart.
+# In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
+# nameOverride is used to set the prefix of the resources created by starrocks chart.
 nameOverride: "kube-starrocks"
 
 # This configuration is used to modify the root password during initial deployment.
