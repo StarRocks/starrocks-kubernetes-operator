@@ -27,26 +27,26 @@ import (
 )
 
 const (
-	log_path           = "/opt/starrocks/cn/log"
-	log_name           = "cn-log"
-	cn_config_path     = "/etc/starrocks/cn/conf"
-	env_cn_config_path = "CONFIGMAP_MOUNT_PATH"
+	_logPath         = "/opt/starrocks/cn/log"
+	_logName         = "cn-log"
+	_cnConfigPath    = "/etc/starrocks/cn/conf"
+	_envCnConfigPath = "CONFIGMAP_MOUNT_PATH"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
 func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_CN
+	metaName := src.Name + "-" + srapi.DEFAULT_CN
 	cnSpec := src.Spec.StarRocksCnSpec
 
 	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
 	// add default volume about log
-	if _, ok := vexist[log_path]; !ok {
+	if _, ok := vexist[_logPath]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      log_name,
-			MountPath: log_path,
+			Name:      _logName,
+			MountPath: _logPath,
 		})
 		vols = append(vols, corev1.Volume{
-			Name: log_name,
+			Name: _logName,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
@@ -54,7 +54,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, cnSpec.ConfigMapInfo, cn_config_path)
+	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, cnSpec.ConfigMapInfo, _cnConfigPath)
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, cnSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
 
@@ -79,8 +79,8 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {
 		cnContainer.Env = append(cnContainer.Env, corev1.EnvVar{
-			Name:  env_cn_config_path,
-			Value: cn_config_path,
+			Name:  _envCnConfigPath,
+			Value: _cnConfigPath,
 		})
 	}
 
@@ -90,7 +90,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	podSpec.SecurityContext = pod.PodSecurityContext(cnSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
+			Name:        metaName,
 			Annotations: annotations,
 			Namespace:   src.Namespace,
 			Labels:      pod.Labels(src.Name, cnSpec),

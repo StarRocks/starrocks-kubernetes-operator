@@ -275,11 +275,11 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // Init initial the StarRocksClusterReconciler for reconcile.
 func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	subcs := make(map[string]sub_controller.SubController)
-	fc := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor(feControllerName))
+	fc := fe.New(mgr.GetClient())
 	subcs[feControllerName] = fc
-	cc := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor(cnControllerName))
+	cc := cn.New(mgr.GetClient())
 	subcs[cnControllerName] = cc
-	be := be.New(mgr.GetClient(), mgr.GetEventRecorderFor(beControllerName))
+	be := be.New(mgr.GetClient())
 	subcs[beControllerName] = be
 
 	if err := (&StarRocksClusterReconciler{
