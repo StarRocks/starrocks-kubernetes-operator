@@ -1,6 +1,6 @@
 apiVersion: v2
-name: kube-starrocks
-description: kube-starrocks includes two subcharts, starrocks-operator and starrocks
+name: starrocks
+description: A Helm chart for StarRocks cluster
 
 icon: https://avatars.githubusercontent.com/u/88238841
 

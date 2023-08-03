@@ -1,0 +1,5 @@
+Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }}
+
+Please refer to the following document to create a StarRocks cluster.
+
+https://docs.starrocks.io/en-us/latest/deployment/helm

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "kube-starrocks.name" . }}-operator
-  namespace: {{ template "kube-starrocks.operator.namespace" . }}
+  namespace: {{ template "operator.namespace" . }}
   labels:
     app: {{ template "kube-starrocks.name" . }}-operator
   {{- if .Values.starrocksOperator.annotations }}
@@ -60,7 +60,7 @@ spec:
         # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         resources:
           {{- toYaml .Values.starrocksOperator.resources | nindent 10 }}
-      serviceAccountName: {{ template "kube-starrocks.operator.serviceAccountName" . }}
+      serviceAccountName: {{ template "operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
       {{- if .Values.starrocksOperator.nodeSelector }}
       nodeSelector:

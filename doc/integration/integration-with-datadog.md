@@ -100,6 +100,3 @@ starrocksBeSpec:
     - name: LOG_CONSOLE
       value: "1"
 ```
-
-So, if you want to get more control of the log and metric configuration, you can modify configuration on starrocks
-cluster directly.
