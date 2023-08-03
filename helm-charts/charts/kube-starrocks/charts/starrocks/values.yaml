@@ -23,8 +23,10 @@ timeZone: Asia/Shanghai
 datadog:
   log:
     enabled: false
+    # besides the attributes you added, chart will append "source" and "service" attributes to the log attributes.
+    # please do not include the curly brackets in the value, like '"app": "starrocks", "tags": ["aa", "bb"]'.
     # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
-    tags: '[]'  # e.g. '["env:test"]'
+    logAttributes: ''
   metrics:
     enabled: false
 
