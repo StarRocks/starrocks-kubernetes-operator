@@ -59,7 +59,7 @@ starrocksFESpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the fe service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    # the fe service type, only supported ClusterIP, NodePort, LoadBalancer
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
@@ -172,7 +172,7 @@ starrocksCnSpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the cn service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    # the cn service type, only supported ClusterIP, NodePort, LoadBalancer
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
@@ -299,7 +299,7 @@ starrocksBeSpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the be service type, only supported ClusterIP, NodePort, LoadBalancer, ExternalName
+    # the be service type, only supported ClusterIP, NodePort, LoadBalancer
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
