@@ -16,8 +16,6 @@ manifests=$(helm template -f ../../../../../helm-charts/charts/kube-starrocks/va
 #apiVersion: v1
 #kind: Namespace
 #metadata:
-#  labels:
-#    control-plane: cn-controller-manager
 #  name: starrocks
 #---
 ## Source: kube-starrocks/templates/starrocks-operator/service_account.yaml
