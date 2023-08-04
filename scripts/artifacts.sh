@@ -77,5 +77,10 @@ mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name}.prov $HOME_PATH/
 # yaml files for operator and crd
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
+# build migrate-chart-value tool
+cd $HOME_PATH/scripts/migrate-chart-value
+CGO_ENABLED=0 GOOS=linux go build -o migrate-chart-value main.go
+cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value $HOME_PATH/artifacts/
+
 # gh release upload
 # gh release upload $1 $HOME_PATH/artifacts/*.tgz $HOME_PATH/artifacts/*.yaml
