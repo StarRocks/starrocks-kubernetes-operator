@@ -43,10 +43,10 @@ starrocks:
   xxx: yyy
 
 If you want to upgrade the version of values.yaml, you can run the following command:
-./migrate-chart-value --input values.yaml --version v1.8.0 --output values_v1.8.0.yaml
+./migrate-chart-value --input values.yaml --target-version v1.8.0 --output values_v1.8.0.yaml
 
 If you want to downgrade the version of values.yaml, you can run the following command:
-./migrate-chart-value --input values.yaml --version v1.7.1 --output values_v1.7.1.yaml
+./migrate-chart-value --input values.yaml --target-version v1.7.1 --output values_v1.7.1.yaml
 
 [Options]
 `)
