@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	inputFilePath  string
-	chartVersion   string
-	outputFilePath string
+	inputFilePath      string
+	targetChartVersion string
+	outputFilePath     string
 )
 
 const (
@@ -43,43 +43,55 @@ starrocks:
   xxx: yyy
 
 If you want to upgrade the version of values.yaml, you can run the following command:
-./format-values --input values.yaml --version v1.8.0 --outputFilePath values_v1.8.0.yaml
+./migrate-chart-value --input values.yaml --version v1.8.0 --output values_v1.8.0.yaml
 
 If you want to downgrade the version of values.yaml, you can run the following command:
-./format-values --input values.yaml --version v1.7.1 --outputFilePath values_v1.7.1.yaml
+./migrate-chart-value --input values.yaml --version v1.7.1 --output values_v1.7.1.yaml
 
 [Options]
 `)
 		flag.PrintDefaults()
 	}
-	flag.StringVar(&inputFilePath, "input", "", "the input path of values.yaml for kube-starrocks chart")
-	flag.StringVar(&chartVersion, "version", "", "the chart version, which this tool will change the values.yaml to")
-	flag.StringVar(&outputFilePath, "output", "", "the output path of values.yaml for kube-starrocks chart")
+	flag.StringVar(&inputFilePath, "input", "", "the input path of values.yaml for kube-starrocks chart, if not specified, it will read from stdin")
+	flag.StringVar(&targetChartVersion, "target-version", "", "the chart version, which this tool will change the values.yaml to")
+	flag.StringVar(&outputFilePath, "output", "", "the output path of values.yaml for kube-starrocks chart, if not specified, it will write to stdout")
 	flag.Parse()
 
-	if inputFilePath == "" || chartVersion == "" || outputFilePath == "" {
-		log.Println("input, version and outputFilePath are required")
+	log.SetOutput(os.Stderr)
+
+	if targetChartVersion == "" {
+		log.Println("target-version option is required")
 		flag.Usage()
 		return
-	} else if chartVersion[0] != 'v' {
+	} else if targetChartVersion[0] != 'v' {
 		log.Println("version must start with v")
 		flag.Usage()
 		return
 	}
-
-	input, err := os.Open(inputFilePath)
-	if err != nil {
-		panic(err)
+	var reader io.ReadCloser
+	var writer io.WriteCloser
+	var err error
+	if inputFilePath == "" {
+		reader = os.Stdin
+	} else {
+		reader, err = os.Open(inputFilePath)
+		if err != nil {
+			panic(err)
+		}
+		defer func() { _ = reader.Close() }()
 	}
-	defer func() { _ = input.Close() }()
 
-	output, err := os.Create(outputFilePath)
-	if err != nil {
-		panic(err)
+	if outputFilePath == "" {
+		writer = os.Stdout
+	} else {
+		writer, err = os.Create(outputFilePath)
+		if err != nil {
+			panic(err)
+		}
+		defer func() { _ = writer.Close() }()
 	}
-	defer func() { _ = output.Close() }()
 
-	err = Do(input, chartVersion, output)
+	err = Do(reader, targetChartVersion, writer)
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +99,7 @@ If you want to downgrade the version of values.yaml, you can run the following c
 }
 
 // Do is the main function of this tool. It will read the values.yaml from the reader, and write the new values.yaml to the writer.
-func Do(reader io.Reader, chartVersion string, writer io.Writer) error {
+func Do(reader io.Reader, targetChartVersion string, writer io.Writer) error {
 	input, err := io.ReadAll(reader)
 	if err != nil {
 		return err
@@ -103,8 +115,8 @@ func Do(reader io.Reader, chartVersion string, writer io.Writer) error {
 	if operator != nil || starrocks != nil {
 		log.Printf("this values.yaml is from new chart version >= %v\n", NEW_VERSION)
 		// values.yaml is from new chart version
-		if chartVersion >= NEW_VERSION {
-			log.Printf("no need to change to upgrade to %v\n", chartVersion)
+		if targetChartVersion >= NEW_VERSION {
+			log.Printf("no need to change to upgrade to %v\n", targetChartVersion)
 			return nil
 		}
 		// change the new version to old version
@@ -127,8 +139,8 @@ func Do(reader io.Reader, chartVersion string, writer io.Writer) error {
 	} else {
 		log.Printf("this values.yaml is from old chart version < %v,\n", NEW_VERSION)
 		// values.yaml is from old chart version
-		if chartVersion < NEW_VERSION {
-			log.Printf("no need to change to downgrade to %v\n", chartVersion)
+		if targetChartVersion < NEW_VERSION {
+			log.Printf("no need to change to downgrade to %v\n", targetChartVersion)
 			return nil
 		}
 
@@ -146,13 +158,29 @@ func Do(reader io.Reader, chartVersion string, writer io.Writer) error {
 }
 
 func Write(w io.Writer, originalFields map[string]interface{}, keys []string, header string) error {
+	getValue := func(key string) interface{} {
+		if key == "timeZone" {
+			return "Asia/Shanghai"
+		} else if key == "nameOverride" {
+			return "kube-starrocks"
+		}
+		return nil
+	}
+
 	fields := map[string]interface{}{}
 	for _, key := range keys {
 		value := originalFields[key]
 		if value == nil {
-			continue
+			value = getValue(key)
+		} else {
+			realValue, ok := value.(string)
+			if ok && realValue == "" {
+				value = getValue(key)
+			}
 		}
-		fields[key] = value
+		if value != nil {
+			fields[key] = value
+		}
 	}
 	if len(fields) == 0 {
 		if header != "" {

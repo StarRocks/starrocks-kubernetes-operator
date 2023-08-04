@@ -374,7 +374,6 @@ func TestDo(t *testing.T) {
 		wantW1  string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			name: "equalValues-v1.7.1",
 			args: args{
@@ -456,7 +455,7 @@ func TestWrite(t *testing.T) {
 			name: "do not have keys",
 			args: args{
 				s: map[string]interface{}{
-					"chartVersion": "v1.7.1",
+					"targetChartVersion": "v1.7.1",
 				},
 				keys:   []string{""},
 				header: "operator",
@@ -468,7 +467,7 @@ func TestWrite(t *testing.T) {
 			name: "do not have keys or header",
 			args: args{
 				s: map[string]interface{}{
-					"chartVersion": "v1.7.1",
+					"targetChartVersion": "v1.7.1",
 				},
 				keys:   []string{""},
 				header: "",
@@ -480,31 +479,31 @@ func TestWrite(t *testing.T) {
 			name: "has keys and header",
 			args: args{
 				s: map[string]interface{}{
-					"chartVersion": "v1.7.1",
+					"targetChartVersion": "v1.7.1",
 				},
-				keys:   []string{"chartVersion"},
+				keys:   []string{"targetChartVersion"},
 				header: "operator",
 			},
-			wantW:   "operator:\n  chartVersion: v1.7.1",
+			wantW:   "operator:\n  targetChartVersion: v1.7.1",
 			wantErr: false,
 		},
 		{
 			name: "has keys but does not have header",
 			args: args{
 				s: map[string]interface{}{
-					"chartVersion": "v1.7.1",
+					"targetChartVersion": "v1.7.1",
 				},
-				keys:   []string{"chartVersion"},
+				keys:   []string{"targetChartVersion"},
 				header: "",
 			},
-			wantW:   "chartVersion: v1.7.1",
+			wantW:   "targetChartVersion: v1.7.1",
 			wantErr: false,
 		},
 		{
 			name: "do not match keys",
 			args: args{
 				s: map[string]interface{}{
-					"chartVersion": "v1.7.1",
+					"targetChartVersion": "v1.7.1",
 				},
 				keys:   []string{"version"},
 				header: "operator",

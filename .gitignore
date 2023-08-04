@@ -28,3 +28,5 @@ main
 coverage.data
 artifacts
 .DS_Store
+
+migrate-chart-value
