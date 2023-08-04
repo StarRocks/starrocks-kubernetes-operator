@@ -46,7 +46,7 @@ If you want to upgrade the version of values.yaml, you can run the following com
 ./format-values --input values.yaml --version v1.8.0 --outputFilePath values_v1.8.0.yaml
 
 If you want to downgrade the version of values.yaml, you can run the following command:
-./format-values --input values.yaml -version v1.7.1 --outputFilePath values_v1.7.1.yaml
+./format-values --input values.yaml --version v1.7.1 --outputFilePath values_v1.7.1.yaml
 
 [Options]
 `)
