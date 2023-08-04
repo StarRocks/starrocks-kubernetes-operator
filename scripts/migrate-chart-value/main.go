@@ -38,9 +38,9 @@ key2: value2
 
 If the chart version is greater than or equal to v1.8.0, the values.yaml will be changed to the following format:
 operator:
-  aaa: bbb
+  key1: value1
 starrocks:
-  xxx: yyy
+  key2: value2
 
 If you want to upgrade the version of values.yaml, you can run the following command:
 ./migrate-chart-value --input values.yaml --target-version v1.8.0 --output values_v1.8.0.yaml
