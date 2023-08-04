@@ -27,43 +27,43 @@ import (
 )
 
 const (
-	log_path           = "/opt/starrocks/be/log"
-	log_name           = "be-log"
-	be_config_path     = "/etc/starrocks/be/conf"
-	storage_name       = "be-storage"
-	storage_path       = "/opt/starrocks/be/storage"
-	env_be_config_path = "CONFIGMAP_MOUNT_PATH"
+	_logPath         = "/opt/starrocks/be/log"
+	_logName         = "be-log"
+	_beConfigPath    = "/etc/starrocks/be/conf"
+	_storageName     = "be-storage"
+	_storagePath     = "/opt/starrocks/be/storage"
+	_envBeConfigPath = "CONFIGMAP_MOUNT_PATH"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
 func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_BE
+	metaName := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
 	vols, volumeMounts, vexist := pod.MountStorageVolumes(beSpec)
 	// add default volume about log, if meta not configure.
-	if _, ok := vexist[log_path]; !ok {
+	if _, ok := vexist[_logPath]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			// use storage volume.
-			Name:      log_name,
-			MountPath: log_path,
+			Name:      _logName,
+			MountPath: _logPath,
 		})
 		vols = append(vols, corev1.Volume{
-			Name: log_name,
+			Name: _logName,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		})
 	}
-	if _, ok := vexist[storage_path]; !ok {
+	if _, ok := vexist[_storagePath]; !ok {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			// use storage volume.
-			Name:      storage_name,
-			MountPath: storage_path,
+			Name:      _storageName,
+			MountPath: _storagePath,
 		})
 
 		vols = append(vols, corev1.Volume{
-			Name: storage_name,
+			Name: _storageName,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
@@ -71,7 +71,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, beSpec.ConfigMapInfo, be_config_path)
+	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, beSpec.ConfigMapInfo, _beConfigPath)
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, beSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, beSpec.Secrets)
 
@@ -95,8 +95,8 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 	if beSpec.ConfigMapInfo.ConfigMapName != "" && beSpec.ConfigMapInfo.ResolveKey != "" {
 		beContainer.Env = append(beContainer.Env, corev1.EnvVar{
-			Name:  env_be_config_path,
-			Value: be_config_path,
+			Name:  _envBeConfigPath,
+			Value: _beConfigPath,
 		})
 	}
 
@@ -107,7 +107,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	podSpec.SecurityContext = pod.PodSecurityContext(beSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
+			Name:        metaName,
 			Annotations: annotations,
 			Namespace:   src.Namespace,
 			Labels:      pod.Labels(src.Name, beSpec),

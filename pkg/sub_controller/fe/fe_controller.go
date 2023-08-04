@@ -32,22 +32,18 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type FeController struct {
-	k8sclient   client.Client
-	k8srecorder record.EventRecorder
-	feConfig    map[string]interface{}
+	k8sClient client.Client
 }
 
 // New construct a FeController.
-func New(k8sclient client.Client, k8sRecorder record.EventRecorder) *FeController {
+func New(k8sClient client.Client) *FeController {
 	return &FeController{
-		k8sclient:   k8sclient,
-		k8srecorder: k8sRecorder,
+		k8sClient: k8sClient,
 	}
 }
 
@@ -88,7 +84,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, feSpec, podTemplateSpec))
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sclient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		// exclude the restart annotation interference,
 		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
 		if !fc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
@@ -104,7 +100,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.k8sclient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
+	if err = k8sutils.ApplyService(ctx, fc.k8sClient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
 		// for compatible v1.5, we use `fe-domain-search` for internal communicating.
 		internalService.Name = st.Spec.ServiceName
 
@@ -114,7 +110,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.k8sclient, &svc, rutils.ServiceDeepEqual); err != nil {
+	if err = k8sutils.ApplyService(ctx, fc.k8sClient, &svc, rutils.ServiceDeepEqual); err != nil {
 		klog.Error("FeController Sync ", "create or patch external service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
 		return err
 	}
@@ -156,13 +152,13 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := sub_controller.UpdateStatefulSetStatus(&fs.StarRocksComponentStatus, fc.k8sclient,
+	if err := sub_controller.UpdateStatefulSetStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
 		src.Namespace, statefulset.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec)); err != nil {
 		return err
 	}
 
 	var st appv1.StatefulSet
-	if err := fc.k8sclient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
+	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
 	}
 
@@ -171,7 +167,7 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 		operationValue := st.Annotations[string(srapi.AnnotationFERestartKey)]
 		if string(srapi.AnnotationRestart) == operationValue {
 			st.Annotations[string(srapi.AnnotationFERestartKey)] = string(srapi.AnnotationRestarting)
-			return k8sutils.UpdateClientObject(context.Background(), fc.k8sclient, &st)
+			return k8sutils.UpdateClientObject(context.Background(), fc.k8sClient, &st)
 		}
 
 		return nil
@@ -179,7 +175,7 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 
 	if value := st.Annotations[string(srapi.AnnotationFERestartKey)]; value == string(srapi.AnnotationRestarting) {
 		st.Annotations[string(srapi.AnnotationFERestartKey)] = string(srapi.AnnotationRestartFinished)
-		if err := k8sutils.UpdateClientObject(context.Background(), fc.k8sclient, &st); err != nil && !apierrors.IsNotFound(err) {
+		if err := k8sutils.UpdateClientObject(context.Background(), fc.k8sClient, &st); err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 	}
@@ -190,7 +186,7 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 func (fc *FeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	// update statefulset, if restart operation finished, we should update the annotation value as finished.
 	var st appv1.StatefulSet
-	if err := fc.k8sclient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)}, &st); err != nil {
+	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)}, &st); err != nil {
 		klog.Infof("FeController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.")
 		return err
 	}
@@ -210,7 +206,7 @@ func (fc *FeController) GetFeConfig(ctx context.Context, configMapInfo *srapi.Co
 	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
 		return make(map[string]interface{}), nil
 	}
-	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sclient, namespace, configMapInfo.ConfigMapName)
+	configMap, err := k8sutils.GetConfigMap(ctx, fc.k8sClient, namespace, configMapInfo.ConfigMapName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			klog.Infof("the FeController get fe config is not exist, namespace = %s configmapName = %s", namespace, configMapInfo.ConfigMapName)
@@ -236,18 +232,18 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksFeSpec)
-	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sclient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.", src.Namespace, statefulSetName, err.Error())
 		return false, err
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
-	if err := k8sutils.DeleteService(ctx, fc.k8sclient, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete search service, namespace=%s,name=%s,error=%s.", src.Namespace, searchServiceName, err.Error())
 		return false, err
 	}
-	if err := k8sutils.DeleteService(ctx, fc.k8sclient, src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
 		return false, err
 	}

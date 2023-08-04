@@ -27,42 +27,42 @@ import (
 )
 
 const (
-	meta_path          = "/opt/starrocks/fe/meta"
-	meta_name          = "fe-meta"
-	log_path           = "/opt/starrocks/fe/log"
-	log_name           = "fe-log"
-	fe_config_path     = "/etc/starrocks/fe/conf"
-	env_fe_config_path = "CONFIGMAP_MOUNT_PATH"
+	_metaPath        = "/opt/starrocks/fe/meta"
+	_metaName        = "fe-meta"
+	_logPath         = "/opt/starrocks/fe/log"
+	_logName         = "fe-log"
+	_feConfigPath    = "/etc/starrocks/fe/conf"
+	_envFeConfigPath = "CONFIGMAP_MOUNT_PATH"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
 func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
-	metaname := src.Name + "-" + srapi.DEFAULT_FE
+	metaName := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
 	vols, volMounts, vexist := pod.MountStorageVolumes(feSpec)
 	// add default volume about log ,meta if not configure.
-	if _, ok := vexist[meta_path]; !ok {
+	if _, ok := vexist[_metaPath]; !ok {
 		volMounts = append(
 			volMounts, corev1.VolumeMount{
-				Name:      meta_name,
-				MountPath: meta_path,
+				Name:      _metaName,
+				MountPath: _metaPath,
 			})
 		vols = append(vols, corev1.Volume{
-			Name: meta_name,
+			Name: _metaName,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		})
 	}
 
-	if _, ok := vexist[log_path]; !ok {
+	if _, ok := vexist[_logPath]; !ok {
 		volMounts = append(volMounts, corev1.VolumeMount{
-			Name:      log_name,
-			MountPath: log_path,
+			Name:      _logName,
+			MountPath: _logPath,
 		})
 		vols = append(vols, corev1.Volume{
-			Name: log_name,
+			Name: _logName,
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
@@ -70,7 +70,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, fe_config_path)
+	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, _feConfigPath)
 	vols, volMounts = pod.MountConfigMaps(vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
@@ -95,8 +95,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
 		feContainer.Env = append(feContainer.Env, corev1.EnvVar{
-			Name:  env_fe_config_path,
-			Value: fe_config_path,
+			Name:  _envFeConfigPath,
+			Value: _feConfigPath,
 		})
 	}
 
@@ -106,7 +106,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	podSpec.SecurityContext = pod.PodSecurityContext(feSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        metaname,
+			Name:        metaName,
 			Namespace:   src.Namespace,
 			Annotations: annotations,
 			Labels:      pod.Labels(src.Name, src.Spec.StarRocksFeSpec),

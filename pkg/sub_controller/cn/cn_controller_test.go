@@ -31,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
@@ -93,21 +92,21 @@ func Test_ClearResources(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	cc := New(k8sutils.NewFakeClient(sch, &src, &st, &svc, &ssvc), record.NewFakeRecorder(10))
+	cc := New(k8sutils.NewFakeClient(sch, &src, &st, &svc, &ssvc))
 	cleared, err := cc.ClearResources(context.Background(), &src)
 	require.Equal(t, true, cleared)
 	require.Equal(t, nil, err)
 
 	var est appv1.StatefulSet
-	err = cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: "test-cn", Namespace: "default"}, &est)
+	err = cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-cn", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 
 	var aesvc corev1.Service
-	err = cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: "test-cn-service", Namespace: "default"}, &aesvc)
+	err = cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-cn-service", Namespace: "default"}, &aesvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 
 	var resvc corev1.Service
-	err = cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: "test-cn-search", Namespace: "default"}, &resvc)
+	err = cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-cn-search", Namespace: "default"}, &resvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 }
 
@@ -141,7 +140,7 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	cc := New(k8sutils.NewFakeClient(sch, src, &ep), record.NewFakeRecorder(10))
+	cc := New(k8sutils.NewFakeClient(sch, src, &ep))
 	err := cc.Sync(context.Background(), src)
 	cc.UpdateStatus(src)
 	require.Equal(t, nil, err)
@@ -152,10 +151,10 @@ func Test_Sync(t *testing.T) {
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	cnSpec := src.Spec.StarRocksCnSpec
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
+	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
 	require.Equal(t, srapi.GetExternalServiceName(src.Name, cnSpec), asvc.Name)
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
+	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
-	require.NoError(t, cc.k8sclient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, cnSpec), Namespace: "default"}, &st))
+	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
