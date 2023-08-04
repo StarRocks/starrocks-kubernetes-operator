@@ -33,8 +33,8 @@ func main() {
 This tool is used to upgrade or downgrade the version of values.yaml for kube-starrocks chart.
 
 If the chart version is less than v1.8.0, the values.yaml is in the following format:
-aaa: bbb
-xxx: yyy
+key1: value1
+key2: value2
 
 If the chart version is greater than or equal to v1.8.0, the values.yaml will be changed to the following format:
 operator:
