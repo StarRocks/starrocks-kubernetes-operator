@@ -43,10 +43,10 @@ spec:
     annotations:
       app.starrocks.io/fe-config-hash: {{template "starrockscluster.fe.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      {{- if .Values.datadog.log.logAttributes }}
-      ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" .Values.datadog.log.logAttributes | fromJson |toJson) | squote }}
-      {{- else }}
+      {{- if eq .Values.datadog.log.logConfig "{}" }}
       ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{\"source\": \"fe\", \"service\": \"starrocks\"}" | fromJson | toJson) | squote }}
+      {{- else }}
+      ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" (trimAll "' {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
 {{- if .Values.starrocksFESpec.annotations }}
@@ -173,10 +173,10 @@ spec:
     annotations:
       app.starrocks.io/be-config-hash: {{template "starrockscluster.be.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      {{- if .Values.datadog.log.logAttributes }}
-      ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"starrocks\"}" .Values.datadog.log.logAttributes | fromJson |toJson) | squote }}
-      {{- else }}
+      {{- if eq .Values.datadog.log.logConfig "{}" }}
       ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{\"source\": \"be\", \"service\": \"starrocks\"}" | fromJson | toJson) | squote }}
+      {{- else }}
+      ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"starrocks\"}" (trimAll "' {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
 {{- if .Values.starrocksBeSpec.annotations }}
@@ -351,10 +351,10 @@ spec:
     annotations:
       app.starrocks.io/cn-config-hash: {{template "starrockscluster.cn.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      {{- if .Values.datadog.log.logAttributes }}
-      ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"starrocks\"}" .Values.datadog.log.logAttributes | fromJson |toJson) | squote }}
-      {{- else }}
+      {{- if eq .Values.datadog.log.logConfig "{}" }}
       ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{\"source\": \"cn\", \"service\": \"starrocks\"}" | fromJson | toJson) | squote }}
+      {{- else }}
+      ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"starrocks\"}" (trimAll "' {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
 {{- if .Values.starrocksCnSpec.annotations }}
