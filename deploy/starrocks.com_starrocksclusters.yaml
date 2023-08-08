@@ -627,8 +627,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksCnSpec:
                 properties:
@@ -1543,8 +1541,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksFeProxySpec:
                 properties:
@@ -2041,8 +2037,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksFeSpec:
                 properties:
@@ -2630,8 +2624,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
             type: object
           status:

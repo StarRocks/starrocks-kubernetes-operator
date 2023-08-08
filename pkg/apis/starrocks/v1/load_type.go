@@ -35,6 +35,7 @@ type StarRocksLoadSpec struct {
 	Replicas *int32 `json:"replicas,omitempty"`
 
 	// Image for a starrocks deployment.
+	// +optional
 	Image string `json:"image"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.

@@ -1317,8 +1317,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksCnSpec:
                 description: StarRocksCnSpec define cn configuration for start cn
@@ -3260,8 +3258,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksFeProxySpec:
                 description: StarRocksLoadSpec define a proxy for fe.
@@ -4360,8 +4356,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
               starRocksFeSpec:
                 description: StarRocksFeSpec define fe configuration for start fe
@@ -5629,8 +5623,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - image
                 type: object
             type: object
           status:

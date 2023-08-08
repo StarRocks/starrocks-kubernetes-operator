@@ -384,7 +384,9 @@ spec:
 {{- end }}
 {{- if .Values.feProxy.enabled }}
   starRocksFeProxySpec:
+    {{- if .Values.feProxy.image.repository }}
     image: "{{ .Values.feProxy.image.repository }}:{{ .Values.feProxy.image.tag }}"
+    {{- end }}
     replicas: {{ .Values.feProxy.replicas }}
     resolver: {{ .Values.feProxy.resolver }}
     {{- if .Values.feProxy.resources }}

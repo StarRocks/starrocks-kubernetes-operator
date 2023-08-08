@@ -416,9 +416,10 @@ feProxy:
   # specify the fe proxy deploy or not.
   enabled: true
   replicas: 1
+  # default nginx:1.24.0
   image:
-    repository: nginx
-    tag: 1.24.0
+    repository: ""
+    tag: ""
   resources:
     limits:
       cpu: 1
@@ -426,10 +427,11 @@ feProxy:
     requests:
       cpu: 1
       memory: 2Gi
-  # set the resolver for nginx server
-  resolver: kube-dns.kube-system.svc.cluster.local
+  # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
+  resolver: ""
   service:
     # the fe proxy service type, only supported ClusterIP, NodePort, LoadBalancer
+    # default ClusterIP
     type: LoadBalancer
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""

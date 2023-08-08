@@ -18,6 +18,7 @@ package feproxy
 
 import (
 	"context"
+	"strings"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -188,9 +189,13 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 	}
 	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, configMapInfo, "/etc/nginx")
 	port := int32(8080)
+	image := "nginx:1.24.0"
+	if feProxySpec.Image != "" && !strings.HasPrefix(feProxySpec.Image, ":") {
+		image = feProxySpec.Image
+	}
 	container := corev1.Container{
 		Name:            "nginx",
-		Image:           feProxySpec.Image,
+		Image:           image,
 		Ports:           pod.Ports(feProxySpec, nil),
 		Resources:       feProxySpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
