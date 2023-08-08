@@ -43,7 +43,11 @@ spec:
     annotations:
       app.starrocks.io/fe-config-hash: {{template "starrockscluster.fe.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      ad.datadoghq.com/fe.logs: '[{"source": "fe","service": "starrocks","tags": {{.Values.datadog.log.tags}}]'
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/fe.logs: '[{"service":"starrocks","source":"fe"}]'
+      {{- else }}
+      ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
       {{- end }}
 {{- if .Values.starrocksFESpec.annotations }}
 {{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
@@ -169,7 +173,11 @@ spec:
     annotations:
       app.starrocks.io/be-config-hash: {{template "starrockscluster.be.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      ad.datadoghq.com/be.logs: '[{"source": "be","service": "starrocks","tags": {{.Values.datadog.log.tags}}]'
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/be.logs: '[{"service":"starrocks","source":"be"}]'
+      {{- else }}
+      ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
       {{- end }}
 {{- if .Values.starrocksBeSpec.annotations }}
 {{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
@@ -343,7 +351,11 @@ spec:
     annotations:
       app.starrocks.io/cn-config-hash: {{template "starrockscluster.cn.config.hash" . }}
       {{- if .Values.datadog.log.enabled }}
-      ad.datadoghq.com/cn.logs: '[{"source": "cn","service": "starrocks","tags": {{.Values.datadog.log.tags}}]'
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/cn.logs: '[{"service":"starrocks","source":"cn"}]'
+      {{- else }}
+      ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
       {{- end }}
 {{- if .Values.starrocksCnSpec.annotations }}
 {{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}

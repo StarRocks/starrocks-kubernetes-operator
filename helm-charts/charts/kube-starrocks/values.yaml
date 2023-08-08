@@ -77,8 +77,9 @@ starrocks:
   datadog:
     log:
       enabled: false
+      # besides the attributes you added, chart will append "source" and "service" attributes to the log config.
       # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
-      tags: '[]'  # e.g. '["env:test"]'
+      logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
     metrics:
       enabled: false
   
