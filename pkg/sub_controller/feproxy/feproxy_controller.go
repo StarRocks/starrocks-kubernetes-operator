@@ -180,14 +180,14 @@ func (controller *FeProxyController) ClearResources(ctx context.Context, src *sr
 func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	vols, volumeMounts, _ := pod.MountStorageVolumes(feProxySpec)
-	configMapInfo := feProxySpec.ConfigMapInfo
-	if configMapInfo.ConfigMapName == "" {
-		configMapInfo.ConfigMapName = load.Name(src.Name, feProxySpec)
-	}
-	if configMapInfo.ResolveKey == "" {
-		configMapInfo.ResolveKey = "nginx.conf"
-	}
-	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, configMapInfo, "/etc/nginx")
+
+	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, []srapi.ConfigMapReference{
+		{
+			Name:      load.Name(src.Name, feProxySpec),
+			MountPath: "/etc/nginx",
+		},
+	})
+
 	port := int32(8080)
 	image := "nginx:1.24.0"
 	if feProxySpec.Image != "" && !strings.HasPrefix(feProxySpec.Image, ":") {

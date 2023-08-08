@@ -411,7 +411,4 @@ spec:
     tolerations:
       {{- toYaml .Values.feProxy.tolerations | nindent 6 }}
     {{- end }}
-    configMapInfo:
-      configMapName: {{ .Values.feProxy.configMapInfo.configMapName }}
-      resolveKey: nginx.conf
 {{- end }}

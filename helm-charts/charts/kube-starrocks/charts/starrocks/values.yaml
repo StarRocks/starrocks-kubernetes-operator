@@ -457,9 +457,3 @@ feProxy:
     #   operator: "Equal|Exists"
     #   value: "value"
     #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
-  # This ConfigMap store the nginx.conf for fe proxy.
-  # If configMapName is empty, operator will use its default nginx.conf.
-  # You can create a ConfigMap with the key nginx.conf to override the default nginx.conf, and please
-  # make sure nginx server is listening on port 8080
-  configMapInfo:
-    configMapName: ""
