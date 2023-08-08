@@ -20,8 +20,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"k8s.io/klog/v2"
 	"os"
+	"time"
+
+	"k8s.io/klog/v2"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -85,10 +87,13 @@ func main() {
 		Print(os.Stdout)
 		return
 	}
+
+	duration := 2 * time.Minute
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 pkg.Scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
+		SyncPeriod:             &duration,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "c6c79638.starrocks.com",
