@@ -184,7 +184,7 @@ starrocks:
       # you must set name when you set storageClassName
       storageClassName: ""
       # the persistent volume size default 10Gi.
-      # fe container will stop to run if storage size is less than 5Gi.
+      # fe container will stop to run if the left free storage space is less than 5Gi.
       storageSize: 10Gi
       # Setting this parameter can persist log storage
       logStorageSize: 5Gi
