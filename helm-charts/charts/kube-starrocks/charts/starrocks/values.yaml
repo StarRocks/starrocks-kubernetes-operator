@@ -129,10 +129,11 @@ starrocksFESpec:
     # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # you must set name when you set storageClassName
     storageClassName: ""
-    #the persistent volume size default 1 Gi.
-    storageSize: 1Gi
+    # the persistent volume size default 10Gi.
+    # fe container will stop to run if storage size is less than 5Gi.
+    storageSize: 10Gi
     # Setting this parameter can persist log storage
-    logStorageSize: 1Gi
+    logStorageSize: 5Gi
   # the config for start fe. the base information as follows.
   config: |
     LOG_DIR = ${STARROCKS_HOME}/log
