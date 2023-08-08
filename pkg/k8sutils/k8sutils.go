@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
@@ -52,7 +53,7 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ", svc.Namespace, " name ", svc.Name)
 		return nil
 	}
-
+	svc.ResourceVersion = esvc.ResourceVersion
 	return UpdateClientObject(ctx, k8sclient, svc)
 }
 
