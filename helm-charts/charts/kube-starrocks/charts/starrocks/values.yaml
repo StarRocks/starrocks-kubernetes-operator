@@ -12,6 +12,7 @@ nameOverride: "kube-starrocks"
 initPassword:
   enabled: false
   password: ""
+  # The secret name that contains password, the key of the secret is "password", and you should create it first.
   passwordSecret: ""
 
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
@@ -414,7 +415,7 @@ configMaps: []
 # specify the fe proxy deploy or not.
 feProxy:
   # specify the fe proxy deploy or not.
-  enabled: true
+  enabled: false
   replicas: 1
   # default nginx:1.24.0
   image:
@@ -432,7 +433,7 @@ feProxy:
   service:
     # the fe proxy service type, only supported ClusterIP, NodePort, LoadBalancer
     # default ClusterIP
-    type: LoadBalancer
+    type: ClusterIP
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
