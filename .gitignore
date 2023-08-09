@@ -30,3 +30,4 @@ artifacts
 .DS_Store
 
 migrate-chart-value
+*.tgz
