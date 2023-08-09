@@ -1,5 +1,4 @@
 {{- if .Values.initPassword.enabled }}
-{{- if not .Values.initPassword.passwordSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -8,7 +7,6 @@ metadata:
 data:
   password: {{ .Values.initPassword.password | b64enc }}
 ---
-{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
