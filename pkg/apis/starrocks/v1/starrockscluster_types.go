@@ -159,6 +159,9 @@ type StorageVolume struct {
 
 	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath,omitempty"`
+
+	// SubPath within the volume from which the container's volume should be mounted.
+	SubPath string `json:"subPath,omitempty"`
 }
 
 // StarRocksClusterList contains a list of StarRocksCluster

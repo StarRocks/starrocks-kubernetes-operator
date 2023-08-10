@@ -140,6 +140,7 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      sv.Name,
 			MountPath: sv.MountPath,
+			SubPath:   sv.SubPath,
 		})
 
 		volumes = append(volumes, corev1.Volume{

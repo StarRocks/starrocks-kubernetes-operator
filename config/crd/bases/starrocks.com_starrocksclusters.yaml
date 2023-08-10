@@ -1271,6 +1271,10 @@ spec:
                             Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.'
                           pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted.
+                          type: string
                       required:
                       - name
                       - storageSize
@@ -3215,6 +3219,10 @@ spec:
                             Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.'
                           pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted.
+                          type: string
                       required:
                       - name
                       - storageSize
@@ -4484,6 +4492,10 @@ spec:
                             on powers-of-2, so 1Mi is 1024Ki. Supported units:Mi,
                             Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.'
                           pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
+                          type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted.
                           type: string
                       required:
                       - name
