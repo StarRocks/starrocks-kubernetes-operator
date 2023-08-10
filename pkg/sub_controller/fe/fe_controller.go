@@ -257,7 +257,7 @@ func CheckFEOk(ctx context.Context, k8sClient client.Client, src *srapi.StarRock
 	endpoints := corev1.Endpoints{}
 	// 1. wait for fe ok.
 	if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
-		klog.Errorf("CnController wait fe available fe service name %s, occur failed %s", service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
+		klog.Errorf("waiting fe available, fe service name %s, occur failed %s", service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
 		return false
 	}
 

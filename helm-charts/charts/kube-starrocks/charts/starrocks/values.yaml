@@ -413,7 +413,7 @@ configMaps: []
   #       when mounted, key will be the name of the file
 
 # specify the fe proxy deploy or not.
-feProxy:
+starrocksFeProxySpec:
   # specify the fe proxy deploy or not.
   enabled: false
   replicas: 1
