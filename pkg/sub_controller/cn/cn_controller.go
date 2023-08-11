@@ -166,12 +166,11 @@ func (cc *CnController) applyStatefulset(ctx context.Context, src *srapi.StarRoc
 		// if the replicas not zero, represent user have cancel autoscaler.
 		if st.Spec.Replicas != nil {
 			if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; ok {
-				rutils.MergeStatefulSets(st, est)
+				rutils.MergeStatefulSets(st, est) // ResourceVersion will be set
 				delete(st.Annotations, srapi.ComponentReplicasEmpty)
 				return k8sutils.UpdateClientObject(ctx, cc.k8sClient, st)
 			}
 		}
-
 		st.ResourceVersion = est.ResourceVersion
 		return k8sutils.UpdateClientObject(ctx, cc.k8sClient, st)
 	}
