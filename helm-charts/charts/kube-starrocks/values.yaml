@@ -466,7 +466,7 @@ starrocks:
     #       when mounted, key will be the name of the file
   
   # specify the fe proxy deploy or not.
-  starRocksFeProxySpec:
+  starrocksFeProxySpec:
     # specify the fe proxy deploy or not.
     enabled: false
     replicas: 1
