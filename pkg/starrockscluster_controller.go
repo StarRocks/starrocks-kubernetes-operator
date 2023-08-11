@@ -182,7 +182,6 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context,
 		}
 
 		src.ResourceVersion = esrc.ResourceVersion
-
 		return k8sutils.UpdateClientObject(ctx, r.Client, src)
 	})
 }

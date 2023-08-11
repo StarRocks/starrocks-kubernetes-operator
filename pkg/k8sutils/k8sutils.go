@@ -54,6 +54,7 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 		return nil
 	}
 
+	svc.ResourceVersion = esvc.ResourceVersion
 	return UpdateClientObject(ctx, k8sclient, svc)
 }
 
