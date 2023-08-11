@@ -66,7 +66,6 @@ starrocks:
   initPassword:
     enabled: false
     password: ""
-    # The secret name that contains password, the key of the secret is "password", and you should create it first.
     passwordSecret: ""
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
