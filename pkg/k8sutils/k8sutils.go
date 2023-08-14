@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
@@ -56,6 +57,69 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 
 	svc.ResourceVersion = esvc.ResourceVersion
 	return UpdateClientObject(ctx, k8sclient, svc)
+}
+
+func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1.Deployment) error {
+	var actual appv1.Deployment
+	err := k8sClient.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, &actual)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return CreateClientObject(ctx, k8sClient, deploy)
+		}
+		return err
+	}
+
+	// the hash value calculated from Deployment instance in k8s may will never equal to the hash value from
+	// starrocks cluster. Because Deployment instance may be updated by k8s controller manager.
+	// Every time you update the Deployment instance, a new reconcile will be triggered.
+	var expectHash, actualHash string
+	expectHash = hash.HashObject(deploy)
+	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
+		actualHash = actual.Annotations[srapi.ComponentResourceHash]
+	} else {
+		actualHash = hash.HashObject(actual)
+	}
+
+	if expectHash == actualHash {
+		return nil
+	}
+
+	deploy.ResourceVersion = actual.ResourceVersion
+	if deploy.Annotations == nil {
+		deploy.Annotations = map[string]string{}
+	}
+	deploy.Annotations[srapi.ComponentResourceHash] = expectHash
+	return UpdateClientObject(ctx, k8sClient, deploy)
+}
+
+func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *corev1.ConfigMap) error {
+	var actual corev1.ConfigMap
+	err := k8sClient.Get(ctx, types.NamespacedName{Name: configmap.Name, Namespace: configmap.Namespace}, &actual)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return CreateClientObject(ctx, k8sClient, configmap)
+		}
+		return err
+	}
+
+	equal := func(configmap, actual *corev1.ConfigMap) bool {
+		if len(configmap.Data) != len(actual.Data) {
+			return false
+		}
+		for k, v := range configmap.Data {
+			if actual.Data[k] != v {
+				return false
+			}
+		}
+		return true
+	}
+
+	// the hash value calculated from ConfigMap instance in k8s may will never equal to the hash value from
+	// starrocks cluster. Because ConfigMap instance may be updated by k8s controller manager.
+	if !equal(configmap, &actual) {
+		return UpdateClientObject(ctx, k8sClient, configmap)
+	}
+	return nil
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
@@ -151,6 +215,30 @@ func DeleteService(ctx context.Context, k8sclient client.Client, namespace, name
 	}
 
 	return k8sclient.Delete(ctx, &svc)
+}
+
+// DeleteDeployment delete deployment.
+func DeleteDeployment(ctx context.Context, k8sclient client.Client, namespace, name string) error {
+	var deploy appv1.Deployment
+	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &deploy); apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return k8sclient.Delete(ctx, &deploy)
+}
+
+// DeleteConfigMap delete configmap.
+func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	var cm corev1.ConfigMap
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &cm); apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return k8sClient.Delete(ctx, &cm)
 }
 
 // DeleteAutoscaler as version type delete response autoscaler.

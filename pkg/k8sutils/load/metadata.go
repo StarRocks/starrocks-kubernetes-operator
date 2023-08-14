@@ -12,12 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package statefulset
+package load
 
 import (
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
+
+func Name(clusterName string, spec v1.SpecInterface) string {
+	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return clusterName + "-" + v1.DEFAULT_FE
+	case *v1.StarRocksBeSpec:
+		return clusterName + "-" + v1.DEFAULT_BE
+	case *v1.StarRocksCnSpec:
+		return clusterName + "-" + v1.DEFAULT_CN
+	case *v1.StarRocksFeProxySpec:
+		return clusterName + "-" + v1.DEFAULT_FE_PROXY
+	}
+	return ""
+}
 
 func Labels(ownerReference string, spec v1.SpecInterface) rutils.Labels {
 	labels := rutils.Labels{}
@@ -29,20 +43,10 @@ func Labels(ownerReference string, spec v1.SpecInterface) rutils.Labels {
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_BE
 	case *v1.StarRocksCnSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_CN
+	case *v1.StarRocksFeProxySpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE_PROXY
 	}
 	return labels
-}
-
-func Name(clusterName string, spec v1.SpecInterface) string {
-	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
-		return clusterName + "-" + v1.DEFAULT_FE
-	case *v1.StarRocksBeSpec:
-		return clusterName + "-" + v1.DEFAULT_BE
-	case *v1.StarRocksCnSpec:
-		return clusterName + "-" + v1.DEFAULT_CN
-	}
-	return ""
 }
 
 func Annotations(clusterAnnotations map[string]string, spec v1.SpecInterface) map[string]string {

@@ -41,6 +41,12 @@ const (
 	BRPC_PORT              = "brpc_port"
 )
 
+// the fe proxy ports key
+const (
+	FE_PROXY_HTTP_PORT      = 8080
+	FE_PORXY_HTTP_PORT_NAME = "http-port"
+)
+
 // DefMap the default port about abilities.
 var DefMap = map[string]int32{
 	HTTP_PORT:              8030,

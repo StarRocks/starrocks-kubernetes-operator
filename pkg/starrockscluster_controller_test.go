@@ -59,34 +59,40 @@ func TestReconcileConstructFeResource(t *testing.T) {
 			ServiceAccount: "starrocksAccount",
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/fe:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/fe:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
-					},
-					StorageVolumes: []srapi.StorageVolume{
-						{
-							Name:             "fe-storage",
-							StorageClassName: rutils.GetStringPointer("shard-data"),
-							MountPath:        "/data/fe/meta",
-							StorageSize:      "10Gi",
+						StorageVolumes: []srapi.StorageVolume{
+							{
+								Name:             "fe-storage",
+								StorageClassName: rutils.GetStringPointer("shard-data"),
+								MountPath:        "/data/fe/meta",
+								StorageSize:      "10Gi",
+							},
 						},
 					},
 				},
 			},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(1),
-					Image:    "test",
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+						Image:    "test",
+					},
 				},
 			},
 			StarRocksBeSpec: &srapi.StarRocksBeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(1),
-					Image:    "test",
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+						Image:    "test",
+					},
 				},
 			},
 		},
@@ -108,34 +114,40 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 			ServiceAccount: "starrocksAccount",
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/fe:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/fe:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
-					},
-					StorageVolumes: []srapi.StorageVolume{
-						{
-							Name:             "fe-storage",
-							StorageClassName: rutils.GetStringPointer("shard-data"),
-							StorageSize:      "10Gi",
-							MountPath:        "/data/fe/meta",
+						StorageVolumes: []srapi.StorageVolume{
+							{
+								Name:             "fe-storage",
+								StorageClassName: rutils.GetStringPointer("shard-data"),
+								StorageSize:      "10Gi",
+								MountPath:        "/data/fe/meta",
+							},
 						},
 					},
 				},
 			},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(1),
-					Image:    "test",
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+						Image:    "test",
+					},
 				},
 			},
 			StarRocksBeSpec: &srapi.StarRocksBeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(1),
-					Image:    "test",
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+						Image:    "test",
+					},
 				},
 			},
 		},
@@ -217,24 +229,28 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 			ServiceAccount: "starrocksAccount",
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/fe:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/fe:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
 					},
 				},
 			},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/cn:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/cn:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
 					},
 				},
@@ -269,24 +285,28 @@ func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
 			ServiceAccount: "starrocksAccount",
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/fe:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/fe:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
 					},
 				},
 			},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Replicas: rutils.GetInt32Pointer(3),
-					Image:    "starrocks.com/cn:2.40",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
-							corev1.ResourceMemory: resource.MustParse("16G"),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/cn:2.40",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
+								corev1.ResourceMemory: resource.MustParse("16G"),
+							},
 						},
 					},
 				},

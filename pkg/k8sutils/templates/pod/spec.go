@@ -21,7 +21,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -178,7 +178,7 @@ func MountConfigMapInfo(volumes []corev1.Volume, volumeMounts []corev1.VolumeMou
 }
 
 func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
-	labels := statefulset.Selector(clusterName, spec)
+	labels := load.Selector(clusterName, spec)
 	switch v := spec.(type) {
 	case *v1.StarRocksBeSpec:
 		if v != nil {
@@ -240,10 +240,6 @@ func Envs(spec v1.SpecInterface, config map[string]interface{}, feExternalServic
 		{
 			Name:  "HOST_TYPE",
 			Value: "FQDN",
-		},
-		{
-			Name:  "USER",
-			Value: "root",
 		},
 	} {
 		addEnv(envVar)
@@ -357,6 +353,14 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 			}, {
 				Name:          "brpc-port",
 				ContainerPort: rutils.GetPort(config, rutils.BRPC_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			},
+		}...)
+	case *v1.StarRocksFeProxySpec:
+		ports = append(ports, []corev1.ContainerPort{
+			{
+				Name:          rutils.FE_PORXY_HTTP_PORT_NAME,
+				ContainerPort: rutils.FE_PROXY_HTTP_PORT,
 				Protocol:      corev1.ProtocolTCP,
 			},
 		}...)

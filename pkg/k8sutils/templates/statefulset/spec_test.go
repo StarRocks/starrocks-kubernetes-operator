@@ -20,6 +20,7 @@ import (
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -97,7 +98,7 @@ func TestMakeSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Selector(tt.args.clusterName, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+			if got := load.Selector(tt.args.clusterName, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Selector() = %v, want %v", got, tt.want)
 			}
 		})
@@ -106,8 +107,18 @@ func TestMakeSelector(t *testing.T) {
 
 func TestMakeStatefulset(t *testing.T) {
 	replicas := int32(1)
+	cluster := v1.StarRocksCluster{
+		TypeMeta: metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "namespace",
+		},
+	}
+
 	type args struct {
-		params Params
+		cluster         v1.StarRocksCluster
+		spec            v1.SpecInterface
+		podTemplateSpec corev1.PodTemplateSpec
 	}
 	tests := []struct {
 		name string
@@ -117,39 +128,35 @@ func TestMakeStatefulset(t *testing.T) {
 		{
 			name: "test Statefulset",
 			args: args{
-				params: Params{
-					Name:                 "test",
-					Namespace:            "namespace",
-					Annotations:          map[string]string{"key": "annotation"},
-					Labels:               map[string]string{"key": "label"},
-					OwnerReferences:      []metav1.OwnerReference{{Name: "cluster"}},
-					Finalizers:           nil,
-					Replicas:             &replicas,
-					Selector:             map[string]string{"key": "selector"},
-					PodTemplateSpec:      corev1.PodTemplateSpec{},
-					ServiceName:          "serviceName",
-					VolumeClaimTemplates: nil,
+				cluster: cluster,
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							Replicas: &replicas,
+						},
+					},
 				},
 			},
 			want: appsv1.StatefulSet{
-				TypeMeta: metav1.TypeMeta{
-					// APIVersion: "apps/v1",
-					// Kind:       "StatefulSet",
-				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:            "test",
-					Namespace:       "namespace",
-					Annotations:     map[string]string{"key": "annotation"},
-					Labels:          map[string]string{"key": "label"},
-					OwnerReferences: []metav1.OwnerReference{{Name: "cluster"}},
+					Name:      "test-fe",
+					Namespace: "namespace",
+					Labels: map[string]string{
+						"app.starrocks.ownerreference/name": "test",
+						"app.kubernetes.io/component":       "fe",
+					},
+					Annotations: map[string]string{},
 				},
 				Spec: appsv1.StatefulSetSpec{
 					Replicas: &replicas,
 					Template: corev1.PodTemplateSpec{},
 					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{"key": "selector"},
+						MatchLabels: map[string]string{
+							"app.kubernetes.io/component":       "fe",
+							"app.starrocks.ownerreference/name": "test-fe",
+						},
 					},
-					ServiceName:         "serviceName",
+					ServiceName:         "test-fe-search",
 					PodManagementPolicy: appsv1.ParallelPodManagement,
 					UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 						Type: appsv1.RollingUpdateStatefulSetStrategyType,
@@ -158,15 +165,20 @@ func TestMakeStatefulset(t *testing.T) {
 						},
 					},
 				},
-				Status: appsv1.StatefulSetStatus{},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeStatefulset(tt.args.params); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MakeStatefulset() = %v, want %v", got, tt.want)
+			got := MakeStatefulset(&tt.args.cluster, tt.args.spec, corev1.PodTemplateSpec{})
+			got.OwnerReferences = nil
+			if !reflect.DeepEqual(got.ObjectMeta, tt.want.ObjectMeta) {
+				t.Errorf("MakeStatefulset ObjectMeta = %v, want %v", got.ObjectMeta, tt.want.ObjectMeta)
 			}
+			if !reflect.DeepEqual(got.Spec, tt.want.Spec) {
+				t.Errorf("MakeStatefulset Spec = %v, want %v", got.Spec, tt.want.Spec)
+			}
+
 		})
 	}
 }

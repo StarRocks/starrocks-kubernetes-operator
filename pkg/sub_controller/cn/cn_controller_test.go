@@ -21,7 +21,8 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -120,8 +121,10 @@ func Test_Sync(t *testing.T) {
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{},
 			StarRocksCnSpec: &srapi.StarRocksCnSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Image:    "test.image",
-					Replicas: rutils.GetInt32Pointer(3),
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image:    "test.image",
+						Replicas: rutils.GetInt32Pointer(3),
+					},
 				},
 			},
 		},
@@ -151,10 +154,10 @@ func Test_Sync(t *testing.T) {
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	cnSpec := src.Spec.StarRocksCnSpec
-	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: srapi.GetExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
-	require.Equal(t, srapi.GetExternalServiceName(src.Name, cnSpec), asvc.Name)
+	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.ExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
+	require.Equal(t, service.ExternalServiceName(src.Name, cnSpec), asvc.Name)
 	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
 	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
-	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: statefulset.Name(src.Name, cnSpec), Namespace: "default"}, &st))
+	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: load.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

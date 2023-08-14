@@ -27,6 +27,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -44,10 +45,11 @@ func init() {
 }
 
 var (
-	name             = "starrockscluster-controller"
-	feControllerName = "fe-controller"
-	cnControllerName = "cn-controller"
-	beControllerName = "be-controller"
+	name                  = "starrockscluster-controller"
+	feControllerName      = "fe-controller"
+	cnControllerName      = "cn-controller"
+	beControllerName      = "be-controller"
+	feProxyControllerName = "fe-proxy-controller"
 )
 
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
@@ -267,6 +269,8 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appv1.StatefulSet{}).
+		Owns(&appv1.Deployment{}).
+		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
 }
@@ -280,6 +284,8 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	subcs[cnControllerName] = cc
 	be := be.New(mgr.GetClient())
 	subcs[beControllerName] = be
+	feproxy := feproxy.New(mgr.GetClient())
+	subcs[feProxyControllerName] = feproxy
 
 	if err := (&StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),

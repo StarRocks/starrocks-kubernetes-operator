@@ -24,10 +24,12 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -61,7 +63,7 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
-	if !be.checkFEOK(ctx, src) {
+	if !fe.CheckFEOk(ctx, be.k8sClient, src) {
 		return nil
 	}
 
@@ -78,15 +80,15 @@ func (be *BeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	feconfig, _ := be.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
 	// annotation: add query port in cnconfig.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
-	// generate new cn external service.
-	externalsvc := rutils.BuildExternalService(src, srapi.GetExternalServiceName(src.Name, beSpec), rutils.BeService, config,
-		statefulset.Selector(src.Name, beSpec), statefulset.Labels(src.Name, beSpec))
+	// generate new be external service.
+	externalsvc := rutils.BuildExternalService(src, service.ExternalServiceName(src.Name, beSpec), rutils.BeService, config,
+		load.Selector(src.Name, beSpec), load.Labels(src.Name, beSpec))
 	// generate internal fe service, update the status of cn on src.
 	internalService := be.generateInternalService(ctx, src, &externalsvc, config)
 
-	// create cn statefulset.
+	// create be statefulset.
 	podTemplateSpec := be.buildPodTemplate(src, config)
-	st := statefulset.MakeStatefulset(statefulset.MakeParams(src, beSpec, podTemplateSpec))
+	st := statefulset.MakeStatefulset(src, beSpec, podTemplateSpec)
 
 	// update the statefulset if feSpec be updated.
 	if err = k8sutils.ApplyStatefulSet(ctx, be.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
@@ -155,7 +157,7 @@ func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 
 	// update statefulset, if restart operation finished, we should update the annotation value as finished.
 	var st appv1.StatefulSet
-	statefulSetName := statefulset.Name(src.Name, beSpec)
+	statefulSetName := load.Name(src.Name, beSpec)
 	if err := be.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); apierrors.IsNotFound(err) {
 		klog.Infof("BeController UpdateStatus the statefulset name=%s is not found.\n", statefulSetName)
 		return nil
@@ -164,11 +166,11 @@ func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 
 	}
 
-	bs.ServiceName = srapi.GetExternalServiceName(src.Name, beSpec)
+	bs.ServiceName = service.ExternalServiceName(src.Name, beSpec)
 	bs.ResourceNames = rutils.MergeSlices(bs.ResourceNames, []string{statefulSetName})
 
-	if err := sub_controller.UpdateStatefulSetStatus(&bs.StarRocksComponentStatus, be.k8sClient,
-		src.Namespace, statefulset.Name(src.Name, beSpec), pod.Labels(src.Name, beSpec)); err != nil {
+	if err := sub_controller.UpdateStatus(&bs.StarRocksComponentStatus, be.k8sClient,
+		src.Namespace, load.Name(src.Name, beSpec), pod.Labels(src.Name, beSpec), sub_controller.StatefulSetLoadType); err != nil {
 		return err
 	}
 
@@ -196,7 +198,7 @@ func (be *BeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 func (be *BeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	// update statefulset, if restart operation finished, we should update the annotation value as finished.
 	var st appv1.StatefulSet
-	statefulSetName := statefulset.Name(src.Name, src.Spec.StarRocksBeSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.StarRocksBeSpec)
 	if err := be.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		klog.Infof("BeController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.")
 		return err
@@ -210,22 +212,6 @@ func (be *BeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
 	}
 
 	return nil
-}
-
-func (be *BeController) checkFEOK(ctx context.Context, src *srapi.StarRocksCluster) bool {
-	// 1. wait for fe ok.
-	endpoints := corev1.Endpoints{}
-	if err := be.k8sClient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
-		klog.Infof("BeController Sync wait fe service name %s available occur failed %s\n", srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
-		return false
-	}
-
-	for _, sub := range endpoints.Subsets {
-		if len(sub.Addresses) > 0 {
-			return true
-		}
-	}
-	return false
 }
 
 func (be *BeController) generateInternalService(ctx context.Context, src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
@@ -290,7 +276,7 @@ func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	spec := src.Spec.StarRocksBeSpec
-	statefulSetName := statefulset.Name(src.Name, spec)
+	statefulSetName := load.Name(src.Name, spec)
 	if err := k8sutils.DeleteStatefulset(ctx, be.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("beController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.\n", src.Namespace, statefulSetName, err.Error())
 		return false, err
@@ -301,8 +287,8 @@ func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		klog.Errorf("beController ClearResources delete search service, namespace=%s,name=%s,error=%s.\n", src.Namespace, searchServiceName, err.Error())
 		return false, err
 	}
-	if err := k8sutils.DeleteService(ctx, be.k8sClient, src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksBeSpec)); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("beController ClearResources delete external service, namespace=%s, name=%s,error=%s.\n", src.Namespace, srapi.GetExternalServiceName(src.Name, src.Spec.StarRocksBeSpec), err.Error())
+	if err := k8sutils.DeleteService(ctx, be.k8sClient, src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksBeSpec)); err != nil && !apierrors.IsNotFound(err) {
+		klog.Errorf("beController ClearResources delete external service, namespace=%s, name=%s,error=%s.\n", src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksBeSpec), err.Error())
 		return false, err
 	}
 

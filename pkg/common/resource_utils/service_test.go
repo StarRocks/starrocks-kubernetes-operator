@@ -71,9 +71,11 @@ func TestBuildExternalService(t *testing.T) {
 		Spec: srapi.StarRocksClusterSpec{
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					Service: &srapi.StarRocksService{
-						Type:           corev1.ServiceTypeLoadBalancer,
-						LoadBalancerIP: "127.0.0.1",
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Service: &srapi.StarRocksService{
+							Type:           corev1.ServiceTypeLoadBalancer,
+							LoadBalancerIP: "127.0.0.1",
+						},
 					},
 				},
 			},

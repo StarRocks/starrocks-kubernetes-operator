@@ -464,3 +464,50 @@ starrocks:
     #     key: |
     #       this is the content of the configmap
     #       when mounted, key will be the name of the file
+  
+  # specify the fe proxy deploy or not.
+  starrocksFeProxySpec:
+    # specify the fe proxy deploy or not.
+    enabled: false
+    replicas: 1
+    # default nginx:1.24.0
+    image:
+      repository: ""
+      tag: ""
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
+    resolver: ""
+    service:
+      # the fe proxy service type, only supported ClusterIP, NodePort, LoadBalancer
+      # default ClusterIP
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
+      loadbalancerIP: ""
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # affinity for fe proxy pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for fe proxy pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"

@@ -17,16 +17,13 @@ package statefulset
 import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-func Selector(clusterName string, spec v1.SpecInterface) rutils.Labels {
-	return Labels(Name(clusterName, spec), spec)
-}
 
 func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
@@ -50,21 +47,22 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 }
 
 // MakeStatefulset  statefulset
-func MakeStatefulset(params Params) appv1.StatefulSet {
+func MakeStatefulset(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) appv1.StatefulSet {
 	const defaultRollingUpdateStartPod int32 = 0
 	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
+	or := metav1.NewControllerRef(cluster, cluster.GroupVersionKind())
 	st := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            params.Name,
-			Namespace:       params.Namespace,
-			Labels:          params.Labels,
-			Annotations:     params.Annotations,
-			OwnerReferences: params.OwnerReferences,
+			Name:            load.Name(cluster.Name, spec),
+			Namespace:       cluster.Namespace,
+			Annotations:     load.Annotations(cluster.Annotations, spec),
+			Labels:          load.Labels(cluster.Name, spec),
+			OwnerReferences: []metav1.OwnerReference{*or},
 		},
 		Spec: appv1.StatefulSetSpec{
-			Replicas: params.Replicas,
+			Replicas: spec.GetReplicas(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: params.Selector,
+				MatchLabels: load.Selector(cluster.Name, spec),
 			},
 			UpdateStrategy: appv1.StatefulSetUpdateStrategy{
 				Type: appv1.RollingUpdateStatefulSetStrategyType,
@@ -72,45 +70,12 @@ func MakeStatefulset(params Params) appv1.StatefulSet {
 					Partition: rutils.GetInt32Pointer(defaultRollingUpdateStartPod),
 				},
 			},
-			Template:             params.PodTemplateSpec,
-			ServiceName:          params.ServiceName,
-			VolumeClaimTemplates: params.VolumeClaimTemplates,
+			Template:             podTemplateSpec,
+			ServiceName:          service.SearchServiceName(cluster.Name, spec),
+			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
 			PodManagementPolicy:  appv1.ParallelPodManagement,
 		},
 	}
 
 	return st
-}
-
-// Params has two parts: metadata and spec
-type Params struct {
-	Name            string
-	Namespace       string
-	Annotations     map[string]string
-	Labels          map[string]string
-	OwnerReferences []metav1.OwnerReference
-	Finalizers      []string
-
-	Replicas             *int32
-	Selector             map[string]string
-	PodTemplateSpec      corev1.PodTemplateSpec
-	ServiceName          string
-	VolumeClaimTemplates []corev1.PersistentVolumeClaim
-}
-
-func MakeParams(cluster *v1.StarRocksCluster, spec v1.SpecInterface,
-	podTemplateSpec corev1.PodTemplateSpec) Params {
-	or := metav1.NewControllerRef(cluster, cluster.GroupVersionKind())
-	return Params{
-		Name:                 Name(cluster.Name, spec),
-		Namespace:            cluster.Namespace,
-		Annotations:          Annotations(cluster.Annotations, spec),
-		Labels:               Labels(cluster.Name, spec),
-		OwnerReferences:      []metav1.OwnerReference{*or},
-		Replicas:             spec.GetReplicas(),
-		Selector:             Selector(cluster.Name, spec),
-		PodTemplateSpec:      podTemplateSpec,
-		ServiceName:          service.SearchServiceName(cluster.Name, spec),
-		VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
-	}
 }

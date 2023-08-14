@@ -22,6 +22,7 @@ import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -401,12 +402,14 @@ func TestMountStorageVolumes(t *testing.T) {
 			args: args{
 				spec: &v1.StarRocksFeSpec{
 					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StorageVolumes: []v1.StorageVolume{
-							{
-								Name:             "s1",
-								MountPath:        "/pkg/mounts/volumes1",
-								StorageClassName: func() *string { s := "sc1"; return &s }(),
-								StorageSize:      "1GB",
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							StorageVolumes: []v1.StorageVolume{
+								{
+									Name:             "s1",
+									MountPath:        "/pkg/mounts/volumes1",
+									StorageClassName: func() *string { s := "sc1"; return &s }(),
+									StorageSize:      "1GB",
+								},
 							},
 						},
 					},
@@ -465,8 +468,10 @@ func TestLabels(t *testing.T) {
 				clusterName: "test",
 				spec: &v1.StarRocksFeSpec{
 					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						PodLabels: map[string]string{
-							"l1": "v1",
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							PodLabels: map[string]string{
+								"l1": "v1",
+							},
 						},
 					},
 				},
@@ -517,10 +522,6 @@ func TestEnvs(t *testing.T) {
 			Name:  "HOST_TYPE",
 			Value: "FQDN",
 		},
-		{
-			Name:  "USER",
-			Value: "root",
-		},
 	}
 
 	type args struct {
@@ -548,7 +549,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: v1.GetExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
 				},
 			}...),
 		},
@@ -566,7 +567,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: v1.GetExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -588,7 +589,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: v1.GetExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -598,7 +599,7 @@ func TestEnvs(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		feExternalServiceName := v1.GetExternalServiceName("test", &v1.StarRocksFeSpec{})
+		feExternalServiceName := service.ExternalServiceName("test", &v1.StarRocksFeSpec{})
 		t.Run(tt.name, func(t *testing.T) {
 			got := Envs(tt.args.spec, tt.args.config, feExternalServiceName, tt.args.namespace, nil)
 			if len(got) != len(tt.want) {
@@ -634,7 +635,9 @@ func TestSpec(t *testing.T) {
 			args: args{
 				spec: &v1.StarRocksFeSpec{
 					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						ServiceAccount: "test",
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							ServiceAccount: "test",
+						},
 					},
 				},
 				defaultServiceAccount: "default",
@@ -730,7 +733,9 @@ func TestAnnotations(t *testing.T) {
 			args: args{
 				spec: &v1.StarRocksFeSpec{
 					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						Annotations: map[string]string{"v1": "v1"},
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							Annotations: map[string]string{"v1": "v1"},
+						},
 					},
 				},
 				clusterAnnotations: map[string]string{

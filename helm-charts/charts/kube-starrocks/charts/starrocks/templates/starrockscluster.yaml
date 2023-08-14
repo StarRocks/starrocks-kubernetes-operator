@@ -382,3 +382,33 @@ spec:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
 {{- end }}
+{{- if .Values.starrocksFeProxySpec.enabled }}
+  starRocksFeProxySpec:
+    {{- if .Values.starrocksFeProxySpec.image.repository }}
+    image: "{{ .Values.starrocksFeProxySpec.image.repository }}:{{ .Values.starrocksFeProxySpec.image.tag }}"
+    {{- end }}
+    replicas: {{ .Values.starrocksFeProxySpec.replicas }}
+    resolver: {{ .Values.starrocksFeProxySpec.resolver }}
+    {{- if .Values.starrocksFeProxySpec.resources }}
+      {{- toYaml .Values.starrocksFeProxySpec.resources | nindent 4 }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.service.type }}
+    service:
+      type: {{ .Values.starrocksFeProxySpec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksFeProxySpec.service.loadbalancerIP }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.starrocksFeProxySpec.nodeSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.affinity }}
+    affinity:
+      {{- toYaml .Values.starrocksFeProxySpec.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.tolerations }}
+    tolerations:
+      {{- toYaml .Values.starrocksFeProxySpec.tolerations | nindent 6 }}
+    {{- end }}
+{{- end }}

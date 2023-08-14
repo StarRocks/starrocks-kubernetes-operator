@@ -168,3 +168,41 @@ func TestSearchServiceName_WithNil(t *testing.T) {
 		})
 	}
 }
+
+func TestGetFeExternalServiceName(t *testing.T) {
+	type args struct {
+		clusterName string
+		spec        v1.SpecInterface
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		// NOTE: we must not input a nil value for spec, otherwise the following error will occur:
+		// panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+		// {
+		//	name: "test1",
+		//	args: args{
+		//		clusterName: "test",
+		//		spec:        (*StarRocksFeSpec)(nil),
+		//	},
+		//	want: "test-fe-service",
+		// },
+		{
+			name: "test2",
+			args: args{
+				clusterName: "test",
+				spec:        &v1.StarRocksFeSpec{},
+			},
+			want: "test-fe-service",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ExternalServiceName(tt.args.clusterName, tt.args.spec); got != tt.want {
+				t.Errorf("GetExternalServiceName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

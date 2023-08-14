@@ -37,28 +37,14 @@ const (
 
 // the labels value. default statefulset name
 const (
-	DEFAULT_FE = "fe"
-	DEFAULT_BE = "be"
-	DEFAULT_CN = "cn"
-)
-
-// config value
-const (
-	DEFAULT_FE_CONFIG_NAME = "fe-config"
-
-	DEFAULT_EMPTDIR_NAME = "emptydir-data"
-
-	INITIAL_VOLUME_PATH = "/pod-data"
-
-	DEFAULT_START_SCRIPT_NAME = "fe-start-scripts"
-
-	// TODO: when scripts need set.
-	DEFAULT_START_SCRIPT_PATH = ""
+	DEFAULT_FE       = "fe"
+	DEFAULT_BE       = "be"
+	DEFAULT_CN       = "cn"
+	DEFAULT_FE_PROXY = "fe-proxy"
 )
 
 // the env of container
 const (
-	COMPONENT_NAME      = "COMPONENT_NAME"
-	FE_SERVICE_NAME     = "FE_SERVICE_NAME"
-	SEARCH_SERVICE_NAME = "SEARCH_SERVICE_NAME"
+	COMPONENT_NAME  = "COMPONENT_NAME"
+	FE_SERVICE_NAME = "FE_SERVICE_NAME"
 )
