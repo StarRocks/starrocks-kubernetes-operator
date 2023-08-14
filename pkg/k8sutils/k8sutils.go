@@ -231,6 +231,18 @@ func DeleteDeployment(ctx context.Context, k8sclient client.Client, namespace, n
 	return k8sclient.Delete(ctx, &deploy)
 }
 
+// DeleteConfigMap delete configmap.
+func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	var cm corev1.ConfigMap
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &cm); apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return k8sClient.Delete(ctx, &cm)
+}
+
 // DeleteAutoscaler as version type delete response autoscaler.
 func DeleteAutoscaler(ctx context.Context, k8sclient client.Client, namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
 	var autoscaler client.Object

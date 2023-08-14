@@ -76,6 +76,7 @@ http {
     resolver %v;
 
     location /nginx/health {
+      access_log off;
       return 200;
     }
 

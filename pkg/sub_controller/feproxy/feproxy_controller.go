@@ -174,6 +174,13 @@ func (controller *FeProxyController) ClearResources(ctx context.Context, src *sr
 		return false, err
 	}
 
+	configMapName := load.Name(src.Name, feProxySpec)
+	if err := k8sutils.DeleteConfigMap(ctx, controller.k8sClient, src.Namespace, configMapName); err != nil {
+		klog.Errorf("feProxyController ClearResources delete ConfigMap, namespace=%s, name=%s, error=%s.",
+			src.Namespace, externalServiceName, err.Error())
+		return false, err
+	}
+
 	return true, nil
 }
 
