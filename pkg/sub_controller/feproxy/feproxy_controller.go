@@ -73,21 +73,17 @@ func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRo
 	}
 
 	// sync fe proxy configmap
-	if feProxySpec.ConfigMapInfo.ConfigMapName != "" {
-		klog.Infof("FeProxyController Sync: the fe proxy configmap is created by user, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
-	} else {
-		err := controller.SyncConfigMap(ctx, src)
-		if err != nil {
-			klog.Errorf("FeProxyController Sync: sync fe proxy configmap failed, "+
-				"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
-			return err
-		}
+	err := controller.SyncConfigMap(ctx, src)
+	if err != nil {
+		klog.Errorf("FeProxyController Sync: sync fe proxy configmap failed, "+
+			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
+		return err
 	}
 
 	// sync fe proxy deployment
 	podTemplate := controller.buildPodTemplate(src)
 	expectDeployment := deployment.MakeDeployment(src, feProxySpec, podTemplate)
-	err := k8sutils.ApplyDeployment(ctx, controller.k8sClient, expectDeployment)
+	err = k8sutils.ApplyDeployment(ctx, controller.k8sClient, expectDeployment)
 	if err != nil {
 		klog.Errorf("FeProxyController Sync: apply fe proxy deployment failed, "+
 			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)

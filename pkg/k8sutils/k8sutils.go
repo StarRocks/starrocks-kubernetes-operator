@@ -102,26 +102,24 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 		return err
 	}
 
-	// the hash value calculated from ConfigMap instance in k8s may will never equal to the hash value from
-	// starrocks cluster. Because ConfigMap instance may be updated by k8s controller manager.
-	// Every time you update the ConfigMap instance, a new reconcile will be triggered.
-	var expectHash, actualHash string
-	expectHash = hash.HashObject(configmap)
-	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
-		actualHash = actual.Annotations[srapi.ComponentResourceHash]
-	} else {
-		actualHash = hash.HashObject(actual)
-	}
-	if expectHash == actualHash {
-		return nil
+	equal := func(configmap, actual *corev1.ConfigMap) bool {
+		if len(configmap.Data) != len(actual.Data) {
+			return false
+		}
+		for k, v := range configmap.Data {
+			if actual.Data[k] != v {
+				return false
+			}
+		}
+		return true
 	}
 
-	configmap.ResourceVersion = actual.ResourceVersion
-	if configmap.Annotations == nil {
-		configmap.Annotations = map[string]string{}
+	// the hash value calculated from ConfigMap instance in k8s may will never equal to the hash value from
+	// starrocks cluster. Because ConfigMap instance may be updated by k8s controller manager.
+	if !equal(configmap, &actual) {
+		return UpdateClientObject(ctx, k8sClient, configmap)
 	}
-	configmap.Annotations[srapi.ComponentResourceHash] = expectHash
-	return UpdateClientObject(ctx, k8sClient, configmap)
+	return nil
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
