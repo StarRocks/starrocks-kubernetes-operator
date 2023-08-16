@@ -155,7 +155,7 @@ spec:
       configMapName: kube-starrocks-be-cm
       resolveKey: be.conf
     fsGroup: 0
-    image: starrocks/be-ubuntu:3.0-latest
+    image: starrocks/be-ubuntu:3.1-latest
     limits:
       cpu: 4
       memory: 4Gi
@@ -173,7 +173,7 @@ spec:
       configMapName: kube-starrocks-fe-cm
       resolveKey: fe.conf
     fsGroup: 0
-    image: starrocks/fe-ubuntu:3.0-latest
+    image: starrocks/fe-ubuntu:3.1-latest
     limits:
       cpu: 4
       memory: 4Gi

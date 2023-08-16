@@ -56,7 +56,7 @@ starrocksFESpec:
   replicas: 1
   image:
     repository: starrocks/fe-ubuntu
-    tag: 3.0-latest
+    tag: 2.0-latest
   annotations: {}
   runAsNonRoot: false
   service:
@@ -100,7 +100,7 @@ starrocksFESpec:
 starrocksCnSpec:
   image:
     repository: starrocks/cn-ubuntu
-    tag: 3.0-latest
+    tag: 2.0-latest
   serviceAccount: ""
   annotations: {}
   runAsNonRoot: false
@@ -136,7 +136,7 @@ starrocksBeSpec:
   replicas: 1
   image:
     repository: starrocks/be-ubuntu
-    tag: 3.0-latest
+    tag: 2.0-latest
   serviceAccount: ""
   annotations: {}
   runAsNonRoot: false
@@ -220,7 +220,7 @@ starrocks:
     replicas: 1
     image:
       repository: starrocks/fe-ubuntu
-      tag: 3.0-latest
+      tag: 2.0-latest
     annotations: {}
     runAsNonRoot: false
     service:
@@ -264,7 +264,7 @@ starrocks:
   starrocksCnSpec:
     image:
       repository: starrocks/cn-ubuntu
-      tag: 3.0-latest
+      tag: 2.0-latest
     serviceAccount: ""
     annotations: {}
     runAsNonRoot: false
@@ -300,7 +300,7 @@ starrocks:
     replicas: 1
     image:
       repository: starrocks/be-ubuntu
-      tag: 3.0-latest
+      tag: 2.0-latest
     serviceAccount: ""
     annotations: {}
     runAsNonRoot: false

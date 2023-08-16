@@ -18,12 +18,99 @@
 
 set -ex
 
+function helm_package() {
+  chart_name=$1
+  if [[ $chart_name = "kube-starrocks" ]]; then
+    cd $HOME_PATH/helm-charts/charts/kube-starrocks/
+    # must be executed before helm index operation
+    helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
+  elif [[ $chart_name = "operator" ]]; then
+    cd $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator
+    # must be executed before helm index operation
+    helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
+  elif [[ $chart_name = "starrocks" ]]; then
+    # helm package for starrocks
+    cd $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks
+    # must be executed before helm index operation
+    helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
+  fi
+}
+
+function get_package_name() {
+  chart_name=$1
+  if [[ $chart_name = "kube-starrocks" ]]; then
+    # get the package name for kube-starrocks from Chart.yaml
+    chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
+    # get the chart version from Chart.yaml
+    chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
+    # make the package name
+    package_name=${chart_name}-${chart_version}.tgz
+    # make sure the package exists
+    if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} ]; then
+      echo "package ${package_name} not found"
+      exit 1
+    fi
+    echo $package_name
+  elif [[ $chart_name = "operator" ]]; then
+    # get the package name for kube-starrocks from Chart.yaml
+    chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
+    # get the chart version from Chart.yaml
+    chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
+    # make the package name
+    package_name=${chart_name}-${chart_version}.tgz
+    # make sure the package exists
+    if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/${package_name} ]; then
+      echo "package ${package_name} not found"
+      exit 1
+    fi
+    echo $package_name
+  elif [[ $chart_name = "starrocks" ]]; then
+    # get the package name for kube-starrocks from Chart.yaml
+    chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
+    # get the chart version from Chart.yaml
+    chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
+    # make the package name
+    package_name=${chart_name}-${chart_version}.tgz
+    # make sure the package exists
+    if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name} ]; then
+      echo "package ${package_name} not found"
+      exit 1
+    fi
+    echo $package_name
+  else
+    echo "no such ${chart_name} chart"
+    exit 1
+  fi
+}
+
+function helm_repo_index() {
+  chart_name=$1
+  release_tag=$RELEASE_TAG
+  url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}
+  if [[ $chart_name = "kube-starrocks" ]]; then
+    if [ -f $HOME_PATH/index.yaml ]; then
+      helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH/helm-charts/charts/$chart_name
+    else
+      helm repo index --url $url $HOME_PATH/helm-charts/charts/$chart_name
+    fi
+    mv $HOME_PATH/helm-charts/charts/kube-starrocks/index.yaml $HOME_PATH/index.yaml
+  else
+    # for starrocks and operator
+    if [ -f $HOME_PATH/index.yaml ]; then
+      helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH/helm-charts/charts/kube-starrocks/charts/$chart_name
+    else
+      helm repo index --url $url $HOME_PATH/helm-charts/charts/kube-starrocks/charts/$chart_name
+    fi
+    mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/$chart_name/index.yaml $HOME_PATH/index.yaml
+  fi
+}
+
 # check parameter
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <release_tag>"
   exit 1
 fi
-release_tag=$1
+export RELEASE_TAG=$1
 
 # set the home path
 HOME_PATH=$(
@@ -32,55 +119,51 @@ HOME_PATH=$(
   pwd
 )
 echo "HOME_PATH: ${HOME_PATH}"
+export HOME_PATH=$HOME_PATH
 
-# helm package
-cd $HOME_PATH/helm-charts/charts/kube-starrocks/
-# must be executed before helm index operation
-helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
+# use the latest chart values.yaml
+bash create-parent-chart-values.sh
+# use the latest operator.yaml
+bash operator.sh
 
-# get the package name from Chart.yaml
-chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
-# get the chart version from Chart.yaml
-chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
-# make the package name
-package_name=${chart_name}-${chart_version}.tgz
-# make sure the package exists
-if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} ]; then
-  echo "package ${package_name} not found"
-  exit 1
-fi
-
-# helm repo index
-url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/${chart_name}-${chart_version}.tgz
-if [ -f $HOME_PATH/index.yaml ]; then
-  helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH/helm-charts/charts/kube-starrocks
-else
-  helm repo index --url $url $HOME_PATH/helm-charts/charts/kube-starrocks
-fi
-mv $HOME_PATH/helm-charts/charts/kube-starrocks/index.yaml $HOME_PATH/index.yaml
-
-# the generated index.yaml is not correct, so we need to fix it
-# the wrong one, e.g. https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.7.0/kube-starrocks-1.7.0.tgz/artifacts/kube-starrocks-1.7.0.tgz
-# first get the url in index.yaml
-old=$(cat $HOME_PATH/index.yaml | grep "$url")
-new=${old%/*/*}
-# then replace the url with the correct one, and do not use sed
-sed "s|$old|$new|g" $HOME_PATH/index.yaml >/tmp/index.yaml
-cp /tmp/index.yaml $HOME_PATH/index.yaml
-
-# copy to artifacts
+# artifacts are stored in $HOME_PATH/artifacts
 mkdir -p $HOME_PATH/artifacts
-# helm chart
+
+echo "mkdir artifacts for kube-starrocks chart"
+helm_package kube-starrocks
+package_name=$(get_package_name kube-starrocks)
+helm_repo_index kube-starrocks
+# move the package to artifacts
 mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name} $HOME_PATH/artifacts/${package_name}
 mv $HOME_PATH/helm-charts/charts/kube-starrocks/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
 
-# yaml files for operator and crd
+echo "mkdir artifacts for operator chart"
+helm_package operator
+package_name=$(get_package_name operator)
+helm_repo_index operator
+# move the package to artifacts
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/${package_name} $HOME_PATH/artifacts/${package_name}
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
+
+echo "mkdir artifacts for starrocks chart"
+helm_package starrocks
+package_name=$(get_package_name starrocks)
+helm_repo_index starrocks
+# move the package to artifacts
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name} $HOME_PATH/artifacts/${package_name}
+mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
+
+echo "copy yaml files for operator and crd"
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
-# build migrate-chart-value tool
+echo "build migrate-chart-value tool"
 cd $HOME_PATH/scripts/migrate-chart-value
-CGO_ENABLED=0 GOOS=linux go build -o migrate-chart-value main.go
-cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value $HOME_PATH/artifacts/
+GOARCH=amd64 GOOS=linux go build -o migrate-chart-value-amd64-linux main.go
+GOARCH=amd64 GOOS=darwin go build -o migrate-chart-value-amd64-darwin main.go
+GOARCH=arm64 GOOS=darwin go build -o migrate-chart-value-arm64-darwin main.go
+cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-linux $HOME_PATH/artifacts/
+cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-darwin $HOME_PATH/artifacts/
+cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-arm64-darwin $HOME_PATH/artifacts/
 
 # gh release upload
 # gh release upload $1 $HOME_PATH/artifacts/*.tgz $HOME_PATH/artifacts/*.yaml

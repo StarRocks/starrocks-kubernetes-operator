@@ -32,7 +32,7 @@ operator:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/operator
-      tag: v1.7.1
+      tag: v1.8.0
     imagePullPolicy: Always
     replicaCount: 1
     resources:
@@ -66,6 +66,7 @@ starrocks:
   initPassword:
     enabled: false
     password: ""
+    # The secret name that contains password, the key of the secret is "password", and you should create it first.
     passwordSecret: ""
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
@@ -105,7 +106,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/fe-ubuntu
-      tag: 3.0-latest
+      tag: 3.1-latest
     # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
     annotations: {}
     # If runAsNonRoot is true, the container is run as non-root user.
@@ -217,7 +218,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/cn-ubuntu
-      tag: 3.0-latest
+      tag: 3.1-latest
     # serviceAccount for cn access cloud service.
     serviceAccount: ""
     # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -344,7 +345,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/be-ubuntu
-      tag: 3.0-latest
+      tag: 3.1-latest
     # serviceAccount for be access cloud service.
     serviceAccount: ""
     # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
