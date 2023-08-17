@@ -1,5 +1,5 @@
 Datadog provides easy integration of log and metrics collection in the kubernetes environment.
-This document describes how to integrate the Datadog with Starrocks.
+This document describes how to integrate the Datadog with StarRocks.
 
 > see https://docs.datadoghq.com/containers/kubernetes/installation/?tab=helm for more details.
 
@@ -42,7 +42,7 @@ helm install datadog-agent  -f datadog-values.yaml datadog/datadog
 
 ## 2. Install or upgrade the starrocks cluster
 
-If this is a fresh install, add the Helm Starrocks Operator repo
+If this is a fresh install, add the Helm StarRocks Operator repo
 
 ```bash
 helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
