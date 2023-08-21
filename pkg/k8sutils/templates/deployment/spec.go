@@ -30,7 +30,7 @@ func MakeDeployment(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemp
 			Name:            load.Name(cluster.Name, spec),
 			Namespace:       cluster.Namespace,
 			Labels:          load.Labels(cluster.Name, spec),
-			Annotations:     load.Annotations(cluster.Annotations, spec),
+			Annotations:     load.Annotations(),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},
 		Spec: appv1.DeploymentSpec{

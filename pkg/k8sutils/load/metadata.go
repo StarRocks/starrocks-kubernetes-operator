@@ -49,21 +49,7 @@ func Labels(ownerReference string, spec v1.SpecInterface) rutils.Labels {
 	return labels
 }
 
-func Annotations(clusterAnnotations map[string]string, spec v1.SpecInterface) map[string]string {
+func Annotations() map[string]string {
 	annotations := map[string]string{}
-	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationFERestartKey)]; ok {
-			annotations[string(v1.AnnotationFERestartKey)] = string(v1.AnnotationRestart)
-		}
-	case *v1.StarRocksBeSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationBERestartKey)]; ok {
-			annotations[string(v1.AnnotationBERestartKey)] = string(v1.AnnotationRestart)
-		}
-	case *v1.StarRocksCnSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationCNRestartKey)]; ok {
-			annotations[string(v1.AnnotationCNRestartKey)] = string(v1.AnnotationRestart)
-		}
-	}
 	return annotations
 }

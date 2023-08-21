@@ -18,7 +18,6 @@ import (
 	"strconv"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
@@ -388,25 +387,8 @@ func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.
 	return podSpec
 }
 
-func Annotations(spec v1.SpecInterface, clusterAnnotations map[string]string, now string) map[string]string {
+func Annotations(spec v1.SpecInterface) map[string]string {
 	annotations := make(map[string]string)
-
-	// add restart annotation in podTemplate.
-	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationFERestartKey)]; ok {
-			annotations[common.KubectlRestartAnnotationKey] = now
-		}
-	case *v1.StarRocksBeSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationBERestartKey)]; ok {
-			annotations[common.KubectlRestartAnnotationKey] = now
-		}
-	case *v1.StarRocksCnSpec:
-		if _, ok := clusterAnnotations[string(v1.AnnotationCNRestartKey)]; ok {
-			annotations[common.KubectlRestartAnnotationKey] = now
-		}
-	}
-
 	for k, v := range spec.GetAnnotations() {
 		annotations[k] = v
 	}

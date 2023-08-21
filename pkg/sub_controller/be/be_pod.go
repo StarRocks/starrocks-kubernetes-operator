@@ -17,8 +17,6 @@ limitations under the License.
 package be
 
 import (
-	"time"
-
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
@@ -103,8 +101,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	podSpec := pod.Spec(beSpec, src.Spec.ServiceAccount, beContainer, vols)
 
-	now := time.Now().Format(time.RFC3339)
-	annotations := pod.Annotations(beSpec, src.Annotations, now)
+	annotations := pod.Annotations(beSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(beSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{

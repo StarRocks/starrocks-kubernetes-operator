@@ -243,29 +243,6 @@ const (
 // AnnotationOperationValue present the operation for fe, cn, be.
 type AnnotationOperationValue string
 
-const (
-	// AnnotationRestart represent the user want to restart all fe pods.
-	AnnotationRestart AnnotationOperationValue = "restart"
-	// AnnotationRestartFinished represent all fe pods have restarted.
-	AnnotationRestartFinished AnnotationOperationValue = "finished"
-	// AnnotationRestarting represent at least one pod on restarting
-	AnnotationRestarting AnnotationOperationValue = "restarting"
-)
-
-// Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.
-type AnnotationOperationKey string
-
-const (
-	// AnnotationFERestartKey the fe annotation key for restart
-	AnnotationFERestartKey AnnotationOperationKey = "app.starrocks.fe.io/restart"
-
-	// AnnotationBERestartKey the be annotation key for restart be
-	AnnotationBERestartKey AnnotationOperationKey = "app.starrocks.be.io/restart"
-
-	// AnnotationCNRestartKey the cn annotation key for restart cn
-	AnnotationCNRestartKey AnnotationOperationKey = "app.starrocks.cn.io/restart"
-)
-
 type HorizontalScaler struct {
 	// the horizontal scaler name
 	Name string `json:"name,omitempty"`

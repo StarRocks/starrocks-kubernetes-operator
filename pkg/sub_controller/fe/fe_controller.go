@@ -20,7 +20,6 @@ import (
 	"context"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
@@ -86,15 +85,6 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(src, feSpec, podTemplateSpec)
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
-		// exclude the restart annotation interference,
-		_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
-		if !fc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
-			// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
-			anno := rutils.Annotations{}
-			anno.Add(common.KubectlRestartAnnotationKey, est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey])
-			new.Spec.Template.Annotations = anno
-		}
-
 		// if have restart annotation, we should exclude the interference for comparison.
 		return rutils.StatefulSetDeepEqual(new, est, false)
 	}); err != nil {
@@ -117,16 +107,6 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	return nil
-}
-
-func (fc *FeController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
-	srcRestartValue := srcAnnotations[string(srapi.AnnotationFERestartKey)]
-	statefulsetRestartValue := existStatefulsetAnnotations[string(srapi.AnnotationFERestartKey)]
-	if srcRestartValue == string(srapi.AnnotationRestart) && (statefulsetRestartValue == "" || statefulsetRestartValue == string(srapi.AnnotationRestartFinished)) {
-		return true
-	}
-
-	return false
 }
 
 // UpdateStatus update the all resource status about fe.
@@ -161,42 +141,6 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	var st appv1.StatefulSet
 	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
-	}
-
-	// if have pod not running that the operation is not finished, we don't need update statefulset annotation.
-	if fs.Phase != srapi.ComponentRunning {
-		operationValue := st.Annotations[string(srapi.AnnotationFERestartKey)]
-		if string(srapi.AnnotationRestart) == operationValue {
-			st.Annotations[string(srapi.AnnotationFERestartKey)] = string(srapi.AnnotationRestarting)
-			return k8sutils.UpdateClientObject(context.Background(), fc.k8sClient, &st)
-		}
-
-		return nil
-	}
-
-	if value := st.Annotations[string(srapi.AnnotationFERestartKey)]; value == string(srapi.AnnotationRestarting) {
-		st.Annotations[string(srapi.AnnotationFERestartKey)] = string(srapi.AnnotationRestartFinished)
-		if err := k8sutils.UpdateClientObject(context.Background(), fc.k8sClient, &st); err != nil && !apierrors.IsNotFound(err) {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (fc *FeController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
-	// update statefulset, if restart operation finished, we should update the annotation value as finished.
-	var st appv1.StatefulSet
-	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: load.Name(src.Name, src.Spec.StarRocksFeSpec)}, &st); err != nil {
-		klog.Infof("FeController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.")
-		return err
-	}
-
-	stValue := st.Annotations[string(srapi.AnnotationFERestartKey)]
-	srcValue := src.Annotations[string(srapi.AnnotationFERestartKey)]
-	if (srcValue == string(srapi.AnnotationRestart) && stValue == string(srapi.AnnotationRestarting)) ||
-		(srcValue == string(srapi.AnnotationRestarting) && stValue == string(srapi.AnnotationRestartFinished)) {
-		src.Annotations[string(srapi.AnnotationFERestartKey)] = stValue
 	}
 
 	return nil

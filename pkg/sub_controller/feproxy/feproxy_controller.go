@@ -145,10 +145,6 @@ func (controller *FeProxyController) UpdateStatus(src *srapi.StarRocksCluster) e
 	return nil
 }
 
-func (controller *FeProxyController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
-	return nil
-}
-
 // ClearResources clear resource about fe.
 func (controller *FeProxyController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	if src.Spec.StarRocksFeProxySpec != nil {

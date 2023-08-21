@@ -43,9 +43,6 @@ type SubController interface {
 
 	// UpdateStatus update the component status on src.
 	UpdateStatus(src *srapi.StarRocksCluster) error
-
-	// SyncRestartStatus sync the status of restart.
-	SyncRestartStatus(src *srapi.StarRocksCluster) error
 }
 
 type LoadType string

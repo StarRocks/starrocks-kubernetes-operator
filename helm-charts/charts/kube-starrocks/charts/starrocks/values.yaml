@@ -37,10 +37,6 @@ starrocksCluster:
   # the namespace of starrockscluster cluster, if not set, the release namespace will be used.
   namespace: ""
   # annotations for starrocks cluster.
-  # there are few special annotations:
-  #   1. when key is "app.starrocks.fe.io/restart", and value is "restart", the fe component will be restarted.
-  #   2. when key is "app.starrocks.be.io/restart", and value is "restart", the be component will be restarted.
-  #   3. when key is "app.starrocks.cn.io/restart", and value is "restart", the cn component will be restarted.
   annotations: {}
   # specify the cn deploy or not.
   enabledCn: false

@@ -120,55 +120,18 @@ func TestMakeLabels(t *testing.T) {
 }
 
 func TestAnnotations(t *testing.T) {
-	type args struct {
-		spec               v1.SpecInterface
-		clusterAnnotations map[string]string
-	}
 	tests := []struct {
 		name string
-		args args
 		want map[string]string
 	}{
 		{
-			name: "test Annotations for fe",
-			args: args{
-				spec: &v1.StarRocksFeSpec{},
-				clusterAnnotations: map[string]string{
-					string(v1.AnnotationFERestartKey): "true",
-				},
-			},
-			want: map[string]string{
-				string(v1.AnnotationFERestartKey): string(v1.AnnotationRestart),
-			},
-		},
-		{
-			name: "test Annotations for be",
-			args: args{
-				spec: &v1.StarRocksBeSpec{},
-				clusterAnnotations: map[string]string{
-					string(v1.AnnotationBERestartKey): "true",
-				},
-			},
-			want: map[string]string{
-				string(v1.AnnotationBERestartKey): string(v1.AnnotationRestart),
-			},
-		},
-		{
-			name: "test Annotations for cn",
-			args: args{
-				spec: &v1.StarRocksCnSpec{},
-				clusterAnnotations: map[string]string{
-					string(v1.AnnotationCNRestartKey): "true",
-				},
-			},
-			want: map[string]string{
-				string(v1.AnnotationCNRestartKey): string(v1.AnnotationRestart),
-			},
+			name: "test Annotations",
+			want: map[string]string{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Annotations(tt.args.clusterAnnotations, tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+			if got := Annotations(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Annotations() = %v, want %v", got, tt.want)
 			}
 		})

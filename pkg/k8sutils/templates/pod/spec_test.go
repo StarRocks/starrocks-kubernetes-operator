@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	corev1 "k8s.io/api/core/v1"
@@ -719,9 +718,7 @@ func TestSecurityContext(t *testing.T) {
 
 func TestAnnotations(t *testing.T) {
 	type args struct {
-		spec               v1.SpecInterface
-		clusterAnnotations map[string]string
-		now                string
+		spec v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -738,20 +735,15 @@ func TestAnnotations(t *testing.T) {
 						},
 					},
 				},
-				clusterAnnotations: map[string]string{
-					string(v1.AnnotationFERestartKey): "true",
-				},
-				now: "100",
 			},
 			want: map[string]string{
-				common.KubectlRestartAnnotationKey: "100",
-				"v1":                               "v1",
+				"v1": "v1",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Annotations(tt.args.spec, tt.args.clusterAnnotations, tt.args.now); !reflect.DeepEqual(got, tt.want) {
+			if got := Annotations(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Annotations() = %v, want %v", got, tt.want)
 			}
 		})
