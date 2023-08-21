@@ -3,7 +3,7 @@
 StarRocks Kubernetes Operator supports mounting persistent volumes to StarRocks FE and BE pods. If not specified, the
 operator will use emptyDir mode to store FE meta and BE data. **When container restarts, the data will be lost.**
 
-This document describes how to mount persistent volumes to StarRocks FE and BE pods. And There are two ways to mount
+This document describes how to mount persistent volumes to StarRocks FE and BE pods. There are two ways to mount
 persistent volumes to StarRocks FE and BE pods:
 
 1. Mounting persistent volumes to StarRocks FE and BE pods by the StarRocks CRD YAML file.
@@ -33,11 +33,12 @@ spec:
     storageVolumes:
     - name: fe-storage-meta
       storageClassName: data-storage
+      # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta
     - name: fe-storage-log
       storageClassName: data-storage
-      storageSize: 1Gi
+      storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
   starRocksBeSpec:
     image: "starrocks/be-ubuntu:3.1-latest"
@@ -45,7 +46,7 @@ spec:
     storageVolumes:
     - name: be-storage-data
       storageClassName: data-storage
-      storageSize: 10Gi
+      storageSize: 1Ti
       mountPath: /opt/starrocks/be/storage
     - name: be-storage-log
       storageClassName: data-storage

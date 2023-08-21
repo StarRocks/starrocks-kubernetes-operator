@@ -1,6 +1,6 @@
 # Deploy StarRocks With Helm
 
-We have split the kube-starrocks chart into two subcharts: operator and starrocks.
+We have split the kube-starrocks chart into two subcharts: operator and starrocks since v1.8.0.
 
 Installing kube-starrocks is equivalent to installing both operator and starrocks subcharts, and uninstalling
 kube-starrocks is equivalent to uninstalling both operator and starrocks subcharts.

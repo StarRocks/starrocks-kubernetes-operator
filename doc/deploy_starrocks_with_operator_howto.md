@@ -83,7 +83,7 @@ You can choose to deploy the StarRocks Operator by using a default configuration
 You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN components. You can directly use
 the [sample configuration files](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/examples/starrocks)
 provided by StarRocks to deploy a StarRocks cluster (an object instantiated by using the custom resource StarRocks
-Cluster). For example, you can use **starrocks-fe-and-be.yaml** to deploy a StarRocks cluster that contains three FE
+Cluster). For example, you can use **starrocks-fe-and-be.yaml** to deploy a StarRocks cluster that consists of three FE
 nodes and three BE nodes.
 
 ```bash
@@ -124,8 +124,8 @@ starrockscluster-sample-fe-2          1/1     Running   0          22h
 
 > **Note**
 >
-> If some pods cannot start after a long period of time, you can use `kubectl logs -n starrocks <pod_name>` to view the
-> log information or use `kubectl -n starrocks describe pod <pod_name>` to view the event information to locate the
+> If some pods cannot be up after a long period of time, you can use `kubectl logs -n starrocks <pod_name>` to view the
+> log information or use `kubectl -n starrocks describe pod <pod_name>` to view the event information to address the
 > problem.
 
 ## 3. Manage StarRocks Cluster
@@ -136,6 +136,10 @@ The components of the StarRocks cluster can be accessed through their associated
 detailed descriptions of Services and their access addresses,
 see [api.md](https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/doc/api.md)
 and [Services](https://kubernetes.io/docs/concepts/services-networking/service/).
+
+The following table describes the FE Services of the StarRocks cluster. `starrockscluster-sample-fe-service` is the
+Service that user can configure it from StarRocksCluster CR, and user should only use it to access the StarRocks.
+`starrockscluster-sample-fe-search` is the internal Service that is used by StarRocks Cluster to discover the FE nodes.
 
 ```bash
 $ kubectl get svc
@@ -166,9 +170,8 @@ From within the Kubernetes cluster, the StarRocks cluster can be accessed throug
    ```
 
    Upon deploying a fresh StarRocks cluster, the `root` user's password remains unset, potentially posing a security
-   risk.
-   See [Init Root Password When First Deploy HOWTO](./initialize_root_password_howto.md) for details on how to set the
-   `root` user's password by using helm chart.
+   risk. See [Change root user password HOWTO](./change_root_password_howto.md) for details on how to set
+   the `root` user's password.
 
 #### 3.1.2. Access StarRocks Cluster from outside Kubernetes Cluster
 
@@ -245,6 +248,15 @@ kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merg
 
 The scaling process lasts for a while. You can use the command `kubectl -n starrocks get pods` to view the scaling
 progress.
+
+**Add cautions on scale-in FE nodes**:
+
+FE nodes can be scaled-in, but there are some limitations:
+
+1. FE nodes can only be scaled-in step by step. If the last scale-in operation is not completed, the next scale-in
+   operation cannot be performed.
+2. Each time less than half of the nodes can be scaled-in.
+3. You can't do 3->1 scale in.
 
 ### 3.4. Using ConfigMap to configure your StarRocks cluster
 

@@ -7,24 +7,23 @@ Get the official operator image from [here](https://hub.docker.com/r/starrocks/o
 Follow below instructions if you want to build your own image.
 
 ```console
-DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:<tag> .
+DOCKER_BUILDKIT=1 docker build -t starrocks/operator:<tag> .
 ```
 
 E.g.
 
 ```console
-DOCKER_BUILDKIT=1 docker build -t starrocks-kubernetes-operator/operator:latest .
+DOCKER_BUILDKIT=1 docker build -t starrocks/operator:latest .
 ```
 
 ### Publish starrocks operator docker image
 
 ```console
-docker push ghcr.io/OWNER/starrocks-kubernetes-operator/operator:latest
+docker push starrocksr/operator:latest
 ```
 
-E.g.
-Publish image to ghcr
+E.g. Publish image to dockerhub
 
 ```console
-docker push ghcr.io/dengliu/starrocks-kubernetes-operator/operator:latest
+docker push starrocks/operator:latest
 ```
