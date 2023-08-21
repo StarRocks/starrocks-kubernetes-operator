@@ -130,15 +130,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
-	// update restart status.
-	if r.haveRestartOperation(src.Annotations) {
-		r.updateOperationStatus(src)
-		newHashValue = r.hashStarRocksCluster(src)
-		if oldHashValue != newHashValue {
-			return ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src)
-		}
-	}
-
 	// generate the src status.
 	r.reconcileStatus(ctx, src)
 	return ctrl.Result{}, r.UpdateStarRocksClusterStatus(ctx, src)
@@ -200,34 +191,6 @@ func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCl
 	}
 
 	return hash.HashObject(ho)
-}
-
-func (r *StarRocksClusterReconciler) updateOperationStatus(src *srapi.StarRocksCluster) {
-	for _, rc := range r.Scs {
-		rc.SyncRestartStatus(src)
-	}
-}
-
-// checks if user have restart service need.
-func (r *StarRocksClusterReconciler) haveRestartOperation(annos map[string]string) bool {
-
-	if v, ok := annos[string(srapi.AnnotationBERestartKey)]; ok {
-		if v != string(srapi.AnnotationRestartFinished) {
-			return true
-		}
-	}
-	if v, ok := annos[string(srapi.AnnotationFERestartKey)]; ok {
-		if v != string(srapi.AnnotationRestartFinished) {
-			return true
-		}
-	}
-	if v, ok := annos[string(srapi.AnnotationCNRestartKey)]; ok {
-		if v != string(srapi.AnnotationRestartFinished) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {

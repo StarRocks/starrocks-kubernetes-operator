@@ -55,7 +55,7 @@ func MakeStatefulset(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTem
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            load.Name(cluster.Name, spec),
 			Namespace:       cluster.Namespace,
-			Annotations:     load.Annotations(cluster.Annotations, spec),
+			Annotations:     load.Annotations(),
 			Labels:          load.Labels(cluster.Name, spec),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},

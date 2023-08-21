@@ -17,8 +17,6 @@ limitations under the License.
 package cn
 
 import (
-	"time"
-
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
@@ -86,8 +84,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	podSpec := pod.Spec(cnSpec, src.Spec.ServiceAccount, cnContainer, vols)
-	now := time.Now().Format(time.RFC3339)
-	annotations := pod.Annotations(cnSpec, src.Annotations, now)
+	annotations := pod.Annotations(cnSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(cnSpec)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{

@@ -21,7 +21,6 @@ import (
 	"strconv"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
@@ -152,15 +151,6 @@ func (cc *CnController) applyStatefulset(ctx context.Context, src *srapi.StarRoc
 		}
 	}
 
-	// exclude the restart annotation interference,
-	_, ok := est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey]
-	if !cc.statefulsetNeedRolloutRestart(src.Annotations, est.Annotations) && ok {
-		// when restart we add `AnnotationRestart` to annotation. so we should add again when we equal the exsit statefulset and new statefulset.
-		anno := rutils.Annotations{}
-		anno.Add(common.KubectlRestartAnnotationKey, est.Spec.Template.Annotations[common.KubectlRestartAnnotationKey])
-		st.Spec.Template.Annotations = anno
-	}
-
 	// for compatible version <= v1.5, use `cn-domain-search` for internal service. we should exclude the interference.
 	st.Spec.ServiceName = est.Spec.ServiceName
 
@@ -175,35 +165,6 @@ func (cc *CnController) applyStatefulset(ctx context.Context, src *srapi.StarRoc
 		}
 		st.ResourceVersion = est.ResourceVersion
 		return k8sutils.UpdateClientObject(ctx, cc.k8sClient, st)
-	}
-
-	return nil
-}
-
-func (cc *CnController) statefulsetNeedRolloutRestart(srcAnnotations map[string]string, existStatefulsetAnnotations map[string]string) bool {
-	srcRestartValue := srcAnnotations[string(srapi.AnnotationCNRestartKey)]
-	statefulsetRestartValue := existStatefulsetAnnotations[string(srapi.AnnotationCNRestartKey)]
-	if srcRestartValue == string(srapi.AnnotationRestart) && (statefulsetRestartValue == "" || statefulsetRestartValue == string(srapi.AnnotationRestartFinished)) {
-		return true
-	}
-
-	return false
-}
-
-func (cc *CnController) SyncRestartStatus(src *srapi.StarRocksCluster) error {
-	// update statefulset, if restart operation finished, we should update the annotation value as finished.
-	var st appv1.StatefulSet
-	statefulSetName := load.Name(src.Name, src.Spec.StarRocksCnSpec)
-	if err := cc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
-		klog.Infof("CnController SyncRestartStatus the statefulset name=%s, namespace=%s get error=%s\n.", statefulSetName, src.Namespace, err.Error())
-		return err
-	}
-
-	stValue := st.Annotations[string(srapi.AnnotationCNRestartKey)]
-	srcValue := src.Annotations[string(srapi.AnnotationCNRestartKey)]
-	if (srcValue == string(srapi.AnnotationRestart) && stValue == string(srapi.AnnotationRestarting)) ||
-		(srcValue == string(srapi.AnnotationRestarting) && stValue == string(srapi.AnnotationRestartFinished)) {
-		src.Annotations[string(srapi.AnnotationCNRestartKey)] = stValue
 	}
 
 	return nil
@@ -243,24 +204,6 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 	if err := sub_controller.UpdateStatus(&cs.StarRocksComponentStatus, cc.k8sClient,
 		src.Namespace, load.Name(src.Name, cnSpec), pod.Labels(src.Name, cnSpec), sub_controller.StatefulSetLoadType); err != nil {
 		return err
-	}
-
-	// if have pod not running that the operation is not finished, we don't need update statefulset annotation.
-	if cs.Phase != srapi.ComponentRunning {
-		operationValue := st.Annotations[string(srapi.AnnotationCNRestartKey)]
-		if string(srapi.AnnotationRestart) == operationValue {
-			st.Annotations[string(srapi.AnnotationCNRestartKey)] = string(srapi.AnnotationRestarting)
-			return k8sutils.UpdateClientObject(context.Background(), cc.k8sClient, &st)
-		}
-
-		return nil
-	}
-
-	if value := st.Annotations[string(srapi.AnnotationCNRestartKey)]; value == string(srapi.AnnotationRestarting) {
-		st.Annotations[string(srapi.AnnotationCNRestartKey)] = string(srapi.AnnotationRestartFinished)
-		if err := k8sutils.UpdateClientObject(context.Background(), cc.k8sClient, &st); err != nil && !apierrors.IsNotFound(err) {
-			return err
-		}
 	}
 
 	return nil
