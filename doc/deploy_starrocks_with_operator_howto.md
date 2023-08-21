@@ -20,7 +20,7 @@ It includes the following parts:
 
 ## 1. Deploy StarRocks Operator
 
-It Includes the following main steps:
+It includes the following main steps:
 
 1. Apply StarRockCluster CRD.
 2. Deploy StarRocks Operator.
@@ -58,7 +58,7 @@ You can choose to deploy the StarRocks Operator by using a default configuration
     ```
 2. **Deploy the StarRocks Operator by using a custom configuration file.** By default, the Operator is configured to
    install in the starrocks namespace. To use the Operator in a custom namespace, download the Operator manifest and
-   edit all instances of namespace to specify your custom namespace.
+   substitute all instances of namespace to your custom namespace.
     1. Download the configuration file **operator.yaml**, which is used to deploy the StarRocks Operator.
        ```bash
        curl -O https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml

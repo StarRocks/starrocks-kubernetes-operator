@@ -13,7 +13,7 @@
 
 ## 支持的功能
 
-* FE与CN和BE解耦。FE是必须的组件，BE和CN可以选择性部署。
+* FE与CN和BE解耦。FE是必须的组件，BE和CN可选部署。
 * CN集群支持v2版本的HPA。
 
 ## 安装operator

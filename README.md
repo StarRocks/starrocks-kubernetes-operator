@@ -13,9 +13,6 @@ The Kubernetes Operator provided by StarRocks facilitates the deployment of Star
 and Compute Node (CN) components within your Kubernetes environment. By default, these components operate in FQDN (fully
 qualified domain name) mode.
 
-This document describes how to use the StarRocks Operator to deploy StarRocks in your Kubernetes environment.
-There are more documents in the [doc](./doc/README.md)  directory.
-
 ## Requirements
 
 * kubernetes 1.18+
@@ -93,3 +90,4 @@ at [artifacthub](https://artifacthub.io/packages/helm/kube-starrocks/kube-starro
 
 See [deploy_starrocks_with_helm.md](./doc/deploy_starrocks_with_helm_howto.md) for more details.
 
+There are more documents in the [doc](./doc/README.md) directory.
