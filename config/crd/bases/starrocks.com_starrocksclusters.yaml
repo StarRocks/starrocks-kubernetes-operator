@@ -1225,7 +1225,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -3169,7 +3170,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -4274,7 +4276,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -5544,7 +5547,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
