@@ -19,52 +19,11 @@ toc: true
 </div>
 Resource Types:
 <ul></ul>
-<h3 id="starrocks.com/v1.AnnotationOperationKey">AnnotationOperationKey
-(<code>string</code> alias)</h3>
-<div>
-<p>Operation response key in annnotation, the annotation key be associated with annotation value represent the process status of sr operation.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;app.starrocks.be.io/restart&#34;</p></td>
-<td><p>AnnotationBERestartKey the be annotation key for restart be</p>
-</td>
-</tr><tr><td><p>&#34;app.starrocks.cn.io/restart&#34;</p></td>
-<td><p>AnnotationCNRestartKey the cn annotation key for restart cn</p>
-</td>
-</tr><tr><td><p>&#34;app.starrocks.fe.io/restart&#34;</p></td>
-<td><p>AnnotationFERestartKey the fe annotation key for restart</p>
-</td>
-</tr></tbody>
-</table>
 <h3 id="starrocks.com/v1.AnnotationOperationValue">AnnotationOperationValue
 (<code>string</code> alias)</h3>
 <div>
 <p>AnnotationOperationValue present the operation for fe, cn, be.</p>
 </div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;restart&#34;</p></td>
-<td><p>AnnotationRestart represent the user want to restart all fe pods.</p>
-</td>
-</tr><tr><td><p>&#34;finished&#34;</p></td>
-<td><p>AnnotationRestartFinished represent all fe pods have restarted.</p>
-</td>
-</tr><tr><td><p>&#34;restarting&#34;</p></td>
-<td><p>AnnotationRestarting represent at least one pod on restarting</p>
-</td>
-</tr></tbody>
-</table>
 <h3 id="starrocks.com/v1.AutoScalerVersion">AutoScalerVersion
 (<code>string</code> alias)</h3>
 <p>
@@ -189,7 +148,7 @@ int32
 <h3 id="starrocks.com/v1.ConfigMapInfo">ConfigMapInfo
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
 </div>
@@ -1339,106 +1298,6 @@ not contain &lsquo;:&rsquo;.</p>
 <tbody>
 <tr>
 <td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>name of the starrocks be cluster.
-Deprecated, not allow set statefulset name.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>serviceAccount</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>serviceAccount for access cloud service.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>runAsNonRoot</code><br/>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
-If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
-default: nil</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>replicas</code><br/>
-<em>
-int32
-</em>
-</td>
-<td>
-<p>Replicas is the number of desired Pod</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>image</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Image for a starrocks deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>imagePullSecrets</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
-[]Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-If specified, these secrets will be passed to individual puller implementations for them to use.
-More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
-</td>
-</tr>
-<tr>
-<td>
-<code>service</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksService">
-StarRocksService
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Service defines the template for the associated Kubernetes Service object.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>limits</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
@@ -1471,58 +1330,76 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 </tr>
 <tr>
 <td>
-<code>configMapInfo</code><br/>
+<code>annotations</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
-ConfigMapInfo
-</a>
+map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>configMaps</code><br/>
+<code>podLabels</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapReference">
-[]ConfigMapReference
-</a>
+map[string]string
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which allow users to mount any files to container.</p>
+<p>the pod labels for user select or classify pods.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>secrets</code><br/>
+<code>replicas</code><br/>
 <em>
-<a href="#starrocks.com/v1.SecretReference">
-[]SecretReference
-</a>
+int32
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for secrets.</p>
+<p>Replicas is the number of desired Pod</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>probe</code><br/>
+<code>image</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
-StarRocksProbe
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Probe defines the mode probe service in container is alive.</p>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedulerName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
 </td>
 </tr>
 <tr>
@@ -1567,14 +1444,110 @@ Kubernetes core/v1.Affinity
 </tr>
 <tr>
 <td>
-<code>podLabels</code><br/>
+<code>probe</code><br/>
 <em>
-map[string]string
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the pod labels for user select or classify pods.</p>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMaps</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapReference">
+[]ConfigMapReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which allow users to mount any files to container.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secrets</code><br/>
+<em>
+<a href="#starrocks.com/v1.SecretReference">
+[]SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for secrets.</p>
 </td>
 </tr>
 <tr>
@@ -1590,32 +1563,6 @@ map[string]string
 <em>(Optional)</em>
 <p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
 file if specified. This is only valid for non-hostNetwork pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>schedulerName</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>storageVolumes</code><br/>
-<em>
-<a href="#starrocks.com/v1.StorageVolume">
-[]StorageVolume
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for meta storage.</p>
 </td>
 </tr>
 <tr>
@@ -1826,6 +1773,19 @@ StarRocksCnSpec
 <p>StarRocksCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>starRocksFeProxySpec</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksFeProxySpec">
+StarRocksFeProxySpec
+</a>
+</em>
+</td>
+<td>
+<p>StarRocksLoadSpec define a proxy for fe.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -1912,6 +1872,19 @@ StarRocksCnSpec
 <p>StarRocksCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>starRocksFeProxySpec</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksFeProxySpec">
+StarRocksFeProxySpec
+</a>
+</em>
+</td>
+<td>
+<p>StarRocksLoadSpec define a proxy for fe.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus
@@ -1982,6 +1955,19 @@ StarRocksCnStatus
 <p>Represents the status of cn. the status have running, failed and creating pods.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>starRocksFeProxyStatus</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksFeProxyStatus">
+StarRocksFeProxyStatus
+</a>
+</em>
+</td>
+<td>
+<p>Represents the status of fe proxy. the status have running, failed and creating pods.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec
@@ -2000,106 +1986,6 @@ StarRocksCnStatus
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>name of the starrocks be cluster.
-Deprecated, not allow set statefulset name.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>serviceAccount</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>serviceAccount for access cloud service.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>runAsNonRoot</code><br/>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
-If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
-default: nil</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>replicas</code><br/>
-<em>
-int32
-</em>
-</td>
-<td>
-<p>Replicas is the number of desired Pod</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>image</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Image for a starrocks deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>imagePullSecrets</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
-[]Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-If specified, these secrets will be passed to individual puller implementations for them to use.
-More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
-</td>
-</tr>
-<tr>
-<td>
-<code>service</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksService">
-StarRocksService
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Service defines the template for the associated Kubernetes Service object.</p>
-</td>
-</tr>
 <tr>
 <td>
 <code>limits</code><br/>
@@ -2134,58 +2020,76 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 </tr>
 <tr>
 <td>
-<code>configMapInfo</code><br/>
+<code>annotations</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
-ConfigMapInfo
-</a>
+map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>configMaps</code><br/>
+<code>podLabels</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapReference">
-[]ConfigMapReference
-</a>
+map[string]string
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which allow users to mount any files to container.</p>
+<p>the pod labels for user select or classify pods.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>secrets</code><br/>
+<code>replicas</code><br/>
 <em>
-<a href="#starrocks.com/v1.SecretReference">
-[]SecretReference
-</a>
+int32
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for secrets.</p>
+<p>Replicas is the number of desired Pod</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>probe</code><br/>
+<code>image</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
-StarRocksProbe
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Probe defines the mode probe service in container is alive.</p>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedulerName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
 </td>
 </tr>
 <tr>
@@ -2230,14 +2134,110 @@ Kubernetes core/v1.Affinity
 </tr>
 <tr>
 <td>
-<code>podLabels</code><br/>
+<code>probe</code><br/>
 <em>
-map[string]string
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the pod labels for user select or classify pods.</p>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMaps</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapReference">
+[]ConfigMapReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which allow users to mount any files to container.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secrets</code><br/>
+<em>
+<a href="#starrocks.com/v1.SecretReference">
+[]SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for secrets.</p>
 </td>
 </tr>
 <tr>
@@ -2253,32 +2253,6 @@ map[string]string
 <em>(Optional)</em>
 <p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
 file if specified. This is only valid for non-hostNetwork pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>schedulerName</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>storageVolumes</code><br/>
-<em>
-<a href="#starrocks.com/v1.StorageVolume">
-[]StorageVolume
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for meta storage.</p>
 </td>
 </tr>
 <tr>
@@ -2451,106 +2425,6 @@ HorizontalScaler
 <tbody>
 <tr>
 <td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>name of the starrocks be cluster.
-Deprecated, not allow set statefulset name.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>serviceAccount</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>serviceAccount for access cloud service.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>runAsNonRoot</code><br/>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
-If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
-default: nil</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>replicas</code><br/>
-<em>
-int32
-</em>
-</td>
-<td>
-<p>Replicas is the number of desired Pod</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>image</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Image for a starrocks deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>imagePullSecrets</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
-[]Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-If specified, these secrets will be passed to individual puller implementations for them to use.
-More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
-</td>
-</tr>
-<tr>
-<td>
-<code>service</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksService">
-StarRocksService
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Service defines the template for the associated Kubernetes Service object.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>limits</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
@@ -2583,58 +2457,76 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 </tr>
 <tr>
 <td>
-<code>configMapInfo</code><br/>
+<code>annotations</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
-ConfigMapInfo
-</a>
+map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>configMaps</code><br/>
+<code>podLabels</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapReference">
-[]ConfigMapReference
-</a>
+map[string]string
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which allow users to mount any files to container.</p>
+<p>the pod labels for user select or classify pods.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>secrets</code><br/>
+<code>replicas</code><br/>
 <em>
-<a href="#starrocks.com/v1.SecretReference">
-[]SecretReference
-</a>
+int32
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for secrets.</p>
+<p>Replicas is the number of desired Pod</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>probe</code><br/>
+<code>image</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
-StarRocksProbe
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Probe defines the mode probe service in container is alive.</p>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedulerName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
 </td>
 </tr>
 <tr>
@@ -2679,14 +2571,110 @@ Kubernetes core/v1.Affinity
 </tr>
 <tr>
 <td>
-<code>podLabels</code><br/>
+<code>probe</code><br/>
 <em>
-map[string]string
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the pod labels for user select or classify pods.</p>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMaps</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapReference">
+[]ConfigMapReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which allow users to mount any files to container.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secrets</code><br/>
+<em>
+<a href="#starrocks.com/v1.SecretReference">
+[]SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for secrets.</p>
 </td>
 </tr>
 <tr>
@@ -2704,6 +2692,216 @@ map[string]string
 file if specified. This is only valid for non-hostNetwork pods.</p>
 </td>
 </tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1.StarRocksFeProxyStatus">StarRocksFeProxyStatus</a>, <a href="#starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus</a>)
+</p>
+<div>
+<p>StarRocksComponentStatus represents the status of a starrocks component.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>serviceName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the name of fe service exposed for user.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>FailedInstances failed pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>creatingInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>CreatingInstances in creating pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runningInstances</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>RunningInstances in running status pod names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resourceNames</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>ResourceNames the statefulset names of fe in v1alpha1 version.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#starrocks.com/v1.MemberPhase">
+MemberPhase
+</a>
+</em>
+</td>
+<td>
+<p>Phase the value from all pods of component status. If component have one failed pod phase=failed,
+also if fe have one creating pod phase=creating, also if component all running phase=running, others unknown.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Reason represents the reason of not running.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.StarRocksFeProxySpec">StarRocksFeProxySpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>limits</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>requests</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the pod labels for user select or classify pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>Replicas is the number of desired Pod</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
 <tr>
 <td>
 <code>schedulerName</code><br/>
@@ -2714,6 +2912,74 @@ string
 <td>
 <em>(Optional)</em>
 <p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>probe</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
 </td>
 </tr>
 <tr>
@@ -2730,15 +2996,49 @@ string
 <p>StorageVolumes defines the additional storage for meta storage.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resolver</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
+<h3 id="starrocks.com/v1.StarRocksFeProxyStatus">StarRocksFeProxyStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
 </p>
 <div>
-<p>StarRocksComponentStatus represents the status of a starrocks component.</p>
 </div>
 <table>
 <thead>
@@ -2849,106 +3149,6 @@ string
 <tbody>
 <tr>
 <td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>name of the starrocks be cluster.
-Deprecated, not allow set statefulset name.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>serviceAccount</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>serviceAccount for access cloud service.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>runAsNonRoot</code><br/>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
-If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
-default: nil</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>replicas</code><br/>
-<em>
-int32
-</em>
-</td>
-<td>
-<p>Replicas is the number of desired Pod</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>image</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Image for a starrocks deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>imagePullSecrets</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
-[]Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-If specified, these secrets will be passed to individual puller implementations for them to use.
-More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
-</td>
-</tr>
-<tr>
-<td>
-<code>service</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksService">
-StarRocksService
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Service defines the template for the associated Kubernetes Service object.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>limits</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
@@ -2981,58 +3181,76 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 </tr>
 <tr>
 <td>
-<code>configMapInfo</code><br/>
+<code>annotations</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
-ConfigMapInfo
-</a>
+map[string]string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>configMaps</code><br/>
+<code>podLabels</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapReference">
-[]ConfigMapReference
-</a>
+map[string]string
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which allow users to mount any files to container.</p>
+<p>the pod labels for user select or classify pods.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>secrets</code><br/>
+<code>replicas</code><br/>
 <em>
-<a href="#starrocks.com/v1.SecretReference">
-[]SecretReference
-</a>
+int32
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the reference for secrets.</p>
+<p>Replicas is the number of desired Pod</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>probe</code><br/>
+<code>image</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksProbe">
-StarRocksProbe
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Probe defines the mode probe service in container is alive.</p>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedulerName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
 </td>
 </tr>
 <tr>
@@ -3077,14 +3295,110 @@ Kubernetes core/v1.Affinity
 </tr>
 <tr>
 <td>
-<code>podLabels</code><br/>
+<code>probe</code><br/>
 <em>
-map[string]string
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the pod labels for user select or classify pods.</p>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runAsNonRoot</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
+default: nil</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMaps</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapReference">
+[]ConfigMapReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which allow users to mount any files to container.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secrets</code><br/>
+<em>
+<a href="#starrocks.com/v1.SecretReference">
+[]SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for secrets.</p>
 </td>
 </tr>
 <tr>
@@ -3100,32 +3414,6 @@ map[string]string
 <em>(Optional)</em>
 <p>HostAliases is an optional list of hosts and IPs that will be injected into the pod&rsquo;s hosts
 file if specified. This is only valid for non-hostNetwork pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>schedulerName</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>storageVolumes</code><br/>
-<em>
-<a href="#starrocks.com/v1.StorageVolume">
-[]StorageVolume
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for meta storage.</p>
 </td>
 </tr>
 <tr>
@@ -3243,10 +3531,240 @@ string
 </tr>
 </tbody>
 </table>
+<h3 id="starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>, <a href="#starrocks.com/v1.StarRocksFeProxySpec">StarRocksFeProxySpec</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>limits</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>requests</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcelist-v1-core">
+Kubernetes core/v1.ResourceList
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>annotation for pods. user can config monitor annotation for collect to monitor system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podLabels</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the pod labels for user select or classify pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>Replicas is the number of desired Pod</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+If specified, these secrets will be passed to individual puller implementations for them to use.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod">https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedulerName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeSelector</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) If specified, the pod&rsquo;s nodeSelector，displayName=&ldquo;Map of nodeSelectors to match when scheduling pods on nodes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>affinity</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+Kubernetes core/v1.Affinity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified, the pod&rsquo;s scheduling constraints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tolerations</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+[]Kubernetes core/v1.Toleration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) Tolerations for scheduling pods onto some dedicated nodes</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>probe</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksProbe">
+StarRocksProbe
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Probe defines the mode probe service in container is alive.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksService">
+StarRocksService
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service defines the template for the associated Kubernetes Service object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageVolumes</code><br/>
+<em>
+<a href="#starrocks.com/v1.StorageVolume">
+[]StorageVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageVolumes defines the additional storage for meta storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceAccount</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>serviceAccount for access cloud service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>configMapInfo</code><br/>
+<em>
+<a href="#starrocks.com/v1.ConfigMapInfo">
+ConfigMapInfo
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
 <p>StarRocksProbe defines the mode for probe be alive.</p>
@@ -3301,7 +3819,7 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 <h3 id="starrocks.com/v1.StarRocksService">StarRocksService
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
 </div>
@@ -3315,14 +3833,14 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 <tbody>
 <tr>
 <td>
-<code>name</code><br/>
+<code>annotations</code><br/>
 <em>
-string
+map[string]string
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Name assigned to service.</p>
+<p>Annotations store Kubernetes Service annotations.</p>
 </td>
 </tr>
 <tr>
@@ -3371,17 +3889,6 @@ This field may be removed in a future API version.</p>
 <td>
 <em>(Optional)</em>
 <p>Ports the components exposed ports and listen ports in pod.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>annotations</code><br/>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<p>Annotations store Kubernetes Service annotations.</p>
 </td>
 </tr>
 </tbody>
@@ -3450,7 +3957,7 @@ int32
 <h3 id="starrocks.com/v1.StorageVolume">StorageVolume
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
 <p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC</p>
@@ -3508,6 +4015,17 @@ string
 </td>
 <td>
 <p>MountPath specify the path of volume mount.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.</p>
 </td>
 </tr>
 </tbody>

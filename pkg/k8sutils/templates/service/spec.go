@@ -51,10 +51,6 @@ func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
 
 // ExternalServiceName generate the name of external service.
 func ExternalServiceName(clusterName string, spec v1.SpecInterface) string {
-	if spec != nil && spec.GetServiceName() != "" {
-		return spec.GetServiceName()
-	}
-	// for compatible version <=1.3
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		return clusterName + "-" + v1.DEFAULT_FE + "-service"

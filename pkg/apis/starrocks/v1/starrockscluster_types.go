@@ -165,36 +165,6 @@ func (spec *StarRocksFeProxySpec) GetReplicas() *int32 {
 	return spec.StarRocksLoadSpec.GetReplicas()
 }
 
-// GetServiceName returns the service name of starrocks fe.
-// If the spec is nil, return empty string.
-func (spec *StarRocksFeSpec) GetServiceName() string {
-	if spec == nil {
-		return ""
-	}
-	return spec.StarRocksComponentSpec.GetServiceName()
-}
-
-func (spec *StarRocksBeSpec) GetServiceName() string {
-	if spec == nil {
-		return ""
-	}
-	return spec.StarRocksComponentSpec.GetServiceName()
-}
-
-func (spec *StarRocksCnSpec) GetServiceName() string {
-	if spec == nil {
-		return ""
-	}
-	return spec.StarRocksComponentSpec.GetServiceName()
-}
-
-func (spec *StarRocksFeProxySpec) GetServiceName() string {
-	if spec == nil {
-		return ""
-	}
-	return spec.StarRocksLoadSpec.GetServiceName()
-}
-
 // GetHostAliases
 // fe proxy does not have field HostAliases, the reason why implementing this method is
 // that StarRocksFeProxySpec needs to implement SpecInterface interface
