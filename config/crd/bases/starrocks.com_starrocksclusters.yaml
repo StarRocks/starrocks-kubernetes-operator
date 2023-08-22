@@ -1202,10 +1202,6 @@ spec:
                           to use implementation-specific annotations when available.
                           This field may be removed in a future API version.'
                         type: string
-                      name:
-                        description: Name assigned to service.
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-                        type: string
                       ports:
                         description: Ports the components exposed ports and listen
                           ports in pod.
@@ -3143,10 +3139,6 @@ spec:
                           to use implementation-specific annotations when available.
                           This field may be removed in a future API version.'
                         type: string
-                      name:
-                        description: Name assigned to service.
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-                        type: string
                       ports:
                         description: Ports the components exposed ports and listen
                           ports in pod.
@@ -4244,10 +4236,6 @@ spec:
                           support dual-stack. As of Kubernetes v1.24, users are encouraged
                           to use implementation-specific annotations when available.
                           This field may be removed in a future API version.'
-                        type: string
-                      name:
-                        description: Name assigned to service.
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
                         description: Ports the components exposed ports and listen
@@ -5511,10 +5499,6 @@ spec:
                           support dual-stack. As of Kubernetes v1.24, users are encouraged
                           to use implementation-specific annotations when available.
                           This field may be removed in a future API version.'
-                        type: string
-                      name:
-                        description: Name assigned to service.
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
                         description: Ports the components exposed ports and listen

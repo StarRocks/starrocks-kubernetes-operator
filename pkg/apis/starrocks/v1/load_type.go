@@ -12,7 +12,6 @@ type loadInterface interface {
 	GetAffinity() *corev1.Affinity
 	GetTolerations() []corev1.Toleration
 
-	GetServiceName() string
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
 }
@@ -83,11 +82,6 @@ type StarRocksLoadSpec struct {
 }
 
 type StarRocksService struct {
-	// Name assigned to service.
-	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-	// +optional
-	Name string `json:"name,omitempty"`
-
 	// Annotations store Kubernetes Service annotations.
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
@@ -148,13 +142,6 @@ type StarRocksProbe struct {
 
 func (spec *StarRocksLoadSpec) GetReplicas() *int32 {
 	return spec.Replicas
-}
-
-func (spec *StarRocksLoadSpec) GetServiceName() string {
-	if spec == nil || spec.Service == nil {
-		return ""
-	}
-	return spec.Service.Name
 }
 
 func (spec *StarRocksLoadSpec) GetStorageVolumes() []StorageVolume {

@@ -564,9 +564,6 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
-                      name:
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-                        type: string
                       ports:
                         items:
                           properties:
@@ -1478,9 +1475,6 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
-                      name:
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-                        type: string
                       ports:
                         items:
                           properties:
@@ -1975,9 +1969,6 @@ spec:
                           type: string
                         type: object
                       loadBalancerIP:
-                        type: string
-                      name:
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
                         items:
@@ -2562,9 +2553,6 @@ spec:
                           type: string
                         type: object
                       loadBalancerIP:
-                        type: string
-                      name:
-                        pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                         type: string
                       ports:
                         items:
