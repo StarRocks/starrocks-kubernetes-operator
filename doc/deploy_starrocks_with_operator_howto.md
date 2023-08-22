@@ -173,7 +173,7 @@ From within the Kubernetes cluster, the StarRocks cluster can be accessed throug
    risk. See [Change root user password HOWTO](./change_root_password_howto.md) for details on how to set
    the `root` user's password.
 
-#### 3.1.2. Access StarRocks Cluster from outside Kubernetes Cluster
+#### 3.1.2. Access StarRocks Cluster from outside Kubernetes Cluster by using LoadBalancer or NodePort
 
 From outside the Kubernetes cluster, you can access the StarRocks cluster through the FE Service's LoadBalancer or
 NodePort. This topic uses LoadBalancer as an example:
@@ -203,6 +203,18 @@ NodePort. This topic uses LoadBalancer as an example:
 
     ```Bash
     mysql -h a7509284bf3784983a596c6eec7fc212-618xxxxxx.us-west-2.elb.amazonaws.com -P9030 -uroot
+    ```
+
+#### 3.1.3. Access StarRocks Cluster from outside Kubernetes Cluster by port forwarding
+
+From outside the Kubernetes cluster, you can access the StarRocks cluster through the FE Service's port forwarding.
+
+1. Make sure that you have installed the `kubectl` command-line tool and configured access to the Kubernetes cluster.
+2. Run the command `kubectl -n starrocks port-forward service/starrockscluster-sample-fe-service 9030:9030` to forward
+   local port `9030` to FE Service's port `9030`.
+3. Access the StarRocks cluster by using the MySQL client.
+    ```Bash
+    mysql -h 127.0.0.1 -P9030 -uroot
     ```
 
 ### 3.2. Upgrade StarRocks Cluster
