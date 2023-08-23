@@ -17,6 +17,8 @@ spec:
       memory: 4Gi
       #when you use autoscalingPolicy, it is recommended that replicas removed from manifests.
     autoScalingPolicy:
+      # by default, starrocks autoscaler will create a HPA with v2beta2 version. you can specify the version here.
+      version: v2beta2
       maxReplicas: 10
       minReplicas: 1
       hpaPolicy:
