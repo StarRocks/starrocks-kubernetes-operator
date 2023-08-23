@@ -36,7 +36,7 @@ type SubController interface {
 	Sync(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// ClearResources clear all resource about sub-component.
-	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error)
+	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string

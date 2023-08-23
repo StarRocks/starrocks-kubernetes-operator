@@ -166,34 +166,34 @@ func GetFeConfig(ctx context.Context, k8sClient client.Client, configMapInfo *sr
 }
 
 // ClearResources clear resource about fe.
-func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
 	// if the starrocks is not have fe.
 	if src.Status.StarRocksFeStatus == nil {
-		return true, nil
+		return nil
 	}
 
 	if src.DeletionTimestamp.IsZero() {
-		return true, nil
+		return nil
 	}
 
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.", src.Namespace, statefulSetName, err.Error())
-		return false, err
+		return err
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete search service, namespace=%s,name=%s,error=%s.", src.Namespace, searchServiceName, err.Error())
-		return false, err
+		return err
 	}
 	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
 		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
 // CheckFEOk check the fe cluster is ok for add cn node.

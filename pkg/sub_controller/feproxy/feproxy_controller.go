@@ -60,7 +60,7 @@ func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRo
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	if feProxySpec == nil {
 		klog.Infof("FeProxyController Sync: the fe proxy component is not needed, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
-		if _, err := controller.ClearResources(ctx, src); err != nil {
+		if err := controller.ClearResources(ctx, src); err != nil {
 			klog.Errorf("FeProxyController Sync: clear fe proxy resource failed, "+
 				"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
 			return err
@@ -146,9 +146,9 @@ func (controller *FeProxyController) UpdateStatus(src *srapi.StarRocksCluster) e
 }
 
 // ClearResources clear resource about fe.
-func (controller *FeProxyController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
+func (controller *FeProxyController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksFeProxySpec != nil {
-		return false, nil
+		return nil
 	}
 
 	feProxySpec := src.Spec.StarRocksFeProxySpec
@@ -156,24 +156,24 @@ func (controller *FeProxyController) ClearResources(ctx context.Context, src *sr
 	if err := k8sutils.DeleteDeployment(ctx, controller.k8sClient, src.Namespace, loadName); err != nil {
 		klog.Errorf("feProxyController ClearResources delete deployment failed, namespace=%s,name=%s, error=%s.",
 			src.Namespace, loadName, err.Error())
-		return false, err
+		return err
 	}
 
 	externalServiceName := service.ExternalServiceName(src.Name, feProxySpec)
 	if err := k8sutils.DeleteService(ctx, controller.k8sClient, src.Namespace, externalServiceName); err != nil {
 		klog.Errorf("feProxyController ClearResources delete external service, namespace=%s, name=%s, error=%s.",
 			src.Namespace, externalServiceName, err.Error())
-		return false, err
+		return err
 	}
 
 	configMapName := load.Name(src.Name, feProxySpec)
 	if err := k8sutils.DeleteConfigMap(ctx, controller.k8sClient, src.Namespace, configMapName); err != nil {
 		klog.Errorf("feProxyController ClearResources delete ConfigMap, namespace=%s, name=%s, error=%s.",
 			src.Namespace, externalServiceName, err.Error())
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
 func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {

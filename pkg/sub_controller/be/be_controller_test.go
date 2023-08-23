@@ -104,8 +104,7 @@ func Test_ClearResources(t *testing.T) {
 	}
 
 	bc := New(k8sutils.NewFakeClient(sch, src, &st, &svc, &ssvc))
-	cleared, err := bc.ClearResources(context.Background(), src)
-	require.Equal(t, true, cleared)
+	err := bc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
 	var est appv1.StatefulSet
