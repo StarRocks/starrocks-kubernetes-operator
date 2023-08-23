@@ -117,6 +117,15 @@ starrocks:
       loadbalancerIP: ""
       # add annotations for fe service.
       annotations: {}
+      # config the service port for fe service.
+      # if you want to use a dedicated port for fe service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+        # e.g. use a dedicated node port for fe service. The containerPort and port field can be commented out.
+        # - name: http
+        #   nodePort: 30030 # The range of valid ports is 30000-32767
+        #   containerPort: 8030 # The port on the container to expose
+        #   port: 8030 # The port to expose on the service
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
       # - name: "image-pull-secret"
@@ -231,6 +240,15 @@ starrocks:
       loadbalancerIP: ""
       # add annotations for cn service.
       annotations: {}
+      # config the service port for cn service.
+      # if you want to use a dedicated port for cn service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+        # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
+        # - name: webserver
+        #   nodePort: 30040 # The range of valid ports is 30000-32767
+        #   containerPort: 8040 # The port on the container to expose
+        #   port: 8040 # The port to expose on the service
     # imagePullSecrets allows you to use secrets for pulling images for your pods.
     imagePullSecrets: []
       # - name: "image-pull-secret"
@@ -358,6 +376,15 @@ starrocks:
       loadbalancerIP: ""
       # add annotations for be service.
       annotations: {}
+      # config the service port for be service.
+      # if you want to use a dedicated port for be service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+        # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
+        # - name: webserver
+        #   nodePort: 30040 # The range of valid ports is 30000-32767
+        #   containerPort: 8040 # The port on the container to expose
+        #   port: 8040 # The port to expose on the service
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
       # - name: "image-pull-secret"

@@ -106,7 +106,6 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 
 	var ports []corev1.ServicePort
 	for _, sp := range srPorts {
-
 		ports = append(ports, corev1.ServicePort{
 			Name:       sp.Name,
 			Port:       sp.Port,
