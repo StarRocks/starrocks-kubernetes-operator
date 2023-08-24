@@ -121,7 +121,7 @@ func TestBuildExternalService(t *testing.T) {
 					PublishNotReadyAddresses: false,
 					LoadBalancerIP:           "127.0.0.1",
 					Ports: func() []corev1.ServicePort {
-						srPorts := getFeServicePorts(map[string]interface{}{})
+						srPorts := getFeServicePorts(map[string]interface{}{}, nil)
 						var ports []corev1.ServicePort
 						for _, sp := range srPorts {
 							ports = append(ports, corev1.ServicePort{
@@ -230,7 +230,7 @@ func Test_getFeServicePorts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotSrPorts := getFeServicePorts(tt.args.config); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
+			if gotSrPorts := getFeServicePorts(tt.args.config, nil); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
 				t.Errorf("getFeServicePorts() = %v, want %v", gotSrPorts, tt.wantSrPorts)
 			}
 		})
@@ -310,7 +310,7 @@ func Test_getBeServicePorts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotSrPorts := getBeServicePorts(tt.args.config); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
+			if gotSrPorts := getBeServicePorts(tt.args.config, nil); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
 				t.Errorf("getBeServicePorts() = %v, want %v", gotSrPorts, tt.wantSrPorts)
 			}
 		})
@@ -390,7 +390,7 @@ func Test_getCnServicePorts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotSrPorts := getCnServicePorts(tt.args.config); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
+			if gotSrPorts := getCnServicePorts(tt.args.config, nil); !reflect.DeepEqual(gotSrPorts, tt.wantSrPorts) {
 				t.Errorf("getCnServicePorts() = %v, want %v", gotSrPorts, tt.wantSrPorts)
 			}
 		})

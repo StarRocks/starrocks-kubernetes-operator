@@ -81,6 +81,7 @@ type StarRocksLoadSpec struct {
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 }
 
+// StarRocksService defines external service for starrocks component.
 type StarRocksService struct {
 	// Annotations store Kubernetes Service annotations.
 	// +optional
@@ -102,22 +103,29 @@ type StarRocksService struct {
 	// +optional
 	LoadBalancerIP string `json:"loadBalancerIP,omitempty"`
 
-	// Ports the components exposed ports and listen ports in pod.
+	// Ports are the ports that are exposed by this service.
+	// You can override the default port information by specifying the same StarRocksServicePort.Name in the ports list.
+	// e.g. if you want to use a dedicated node port, you can just specify the StarRocksServicePort.Name and
+	// StarRocksServicePort.NodePort field.
 	// +optional
-	Ports []StarRocksServicePort `json:"ports"`
+	Ports []StarRocksServicePort `json:"ports,omitempty"`
 }
 
 type StarRocksServicePort struct {
 	// Name of the map about coming port and target port
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 
 	// Port the pod is exposed on service.
-	Port int32 `json:"port"`
+	// +optional
+	Port int32 `json:"port,omitempty"`
 
 	// ContainerPort the service listen in pod.
-	ContainerPort int32 `json:"containerPort"`
+	// +optional
+	ContainerPort int32 `json:"containerPort,omitempty"`
 
 	// The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
+	// The range of valid ports is 30000-32767
+	// +optional
 	NodePort int32 `json:"nodePort,omitempty"`
 }
 

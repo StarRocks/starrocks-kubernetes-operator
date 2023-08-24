@@ -1203,8 +1203,12 @@ spec:
                           This field may be removed in a future API version.'
                         type: string
                       ports:
-                        description: Ports the components exposed ports and listen
-                          ports in pod.
+                        description: Ports are the ports that are exposed by this
+                          service. You can override the default port information by
+                          specifying the same StarRocksServicePort.Name in the ports
+                          list. e.g. if you want to use a dedicated node port, you
+                          can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
+                          field.
                         items:
                           properties:
                             containerPort:
@@ -1217,7 +1221,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -1225,8 +1230,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -3140,8 +3144,12 @@ spec:
                           This field may be removed in a future API version.'
                         type: string
                       ports:
-                        description: Ports the components exposed ports and listen
-                          ports in pod.
+                        description: Ports are the ports that are exposed by this
+                          service. You can override the default port information by
+                          specifying the same StarRocksServicePort.Name in the ports
+                          list. e.g. if you want to use a dedicated node port, you
+                          can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
+                          field.
                         items:
                           properties:
                             containerPort:
@@ -3154,7 +3162,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -3162,8 +3171,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -4238,8 +4246,12 @@ spec:
                           This field may be removed in a future API version.'
                         type: string
                       ports:
-                        description: Ports the components exposed ports and listen
-                          ports in pod.
+                        description: Ports are the ports that are exposed by this
+                          service. You can override the default port information by
+                          specifying the same StarRocksServicePort.Name in the ports
+                          list. e.g. if you want to use a dedicated node port, you
+                          can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
+                          field.
                         items:
                           properties:
                             containerPort:
@@ -4252,7 +4264,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -4260,8 +4273,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -5501,8 +5513,12 @@ spec:
                           This field may be removed in a future API version.'
                         type: string
                       ports:
-                        description: Ports the components exposed ports and listen
-                          ports in pod.
+                        description: Ports are the ports that are exposed by this
+                          service. You can override the default port information by
+                          specifying the same StarRocksServicePort.Name in the ports
+                          list. e.g. if you want to use a dedicated node port, you
+                          can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
+                          field.
                         items:
                           properties:
                             containerPort:
@@ -5515,7 +5531,8 @@ spec:
                               type: string
                             nodePort:
                               description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`.
+                                is to use a Service of type `NodePort`. The range
+                                of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
@@ -5523,8 +5540,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:

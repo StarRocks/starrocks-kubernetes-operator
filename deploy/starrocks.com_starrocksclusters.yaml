@@ -579,8 +579,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -1490,8 +1489,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -1985,8 +1983,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:
@@ -2569,8 +2566,7 @@ spec:
                               format: int32
                               type: integer
                           required:
-                          - containerPort
-                          - port
+                          - name
                           type: object
                         type: array
                       type:

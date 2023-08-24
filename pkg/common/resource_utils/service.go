@@ -63,26 +63,29 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 
 	anno := map[string]string{}
 	if serviceType == FeService {
+		spec := src.Spec.StarRocksFeSpec
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_FE
 		}
-		setServiceType(src.Spec.StarRocksFeSpec.Service, &svc)
-		anno = getServiceAnnotations(src.Spec.StarRocksFeSpec.Service)
-		srPorts = getFeServicePorts(config)
+		setServiceType(spec.Service, &svc)
+		anno = getServiceAnnotations(spec.Service)
+		srPorts = getFeServicePorts(config, spec.Service)
 	} else if serviceType == BeService {
+		spec := src.Spec.StarRocksBeSpec
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_BE
 		}
-		setServiceType(src.Spec.StarRocksBeSpec.Service, &svc)
-		anno = getServiceAnnotations(src.Spec.StarRocksBeSpec.Service)
-		srPorts = getBeServicePorts(config)
+		setServiceType(spec.Service, &svc)
+		anno = getServiceAnnotations(spec.Service)
+		srPorts = getBeServicePorts(config, spec.Service)
 	} else if serviceType == CnService {
+		spec := src.Spec.StarRocksCnSpec
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_CN
 		}
-		setServiceType(src.Spec.StarRocksCnSpec.Service, &svc)
-		anno = getServiceAnnotations(src.Spec.StarRocksCnSpec.Service)
-		srPorts = getCnServicePorts(config)
+		setServiceType(spec.Service, &svc)
+		anno = getServiceAnnotations(spec.Service)
+		srPorts = getCnServicePorts(config, spec.Service)
 	} else if serviceType == FeProxyService {
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_FE_PROXY
@@ -120,56 +123,57 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 	return svc
 }
 
-func getFeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
 	httpPort := GetPort(config, HTTP_PORT)
 	rpcPort := GetPort(config, RPC_PORT)
 	queryPort := GetPort(config, QUERY_PORT)
 	editPort := GetPort(config, EDIT_LOG_PORT)
-	srPorts = append(srPorts, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
 		Port: httpPort, ContainerPort: httpPort, Name: "http",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: queryPort, ContainerPort: queryPort, Name: "query",
-	}, srapi.StarRocksServicePort{
-		Port: editPort, ContainerPort: editPort, Name: "edit-log"})
+	}), mergePort(service, srapi.StarRocksServicePort{
+		Port: editPort, ContainerPort: editPort, Name: "edit-log",
+	}))
 
 	return srPorts
 }
 
-func getBeServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+func getBeServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
 	bePort := GetPort(config, BE_PORT)
 	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
 
-	srPorts = append(srPorts, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
 		Port: bePort, ContainerPort: bePort, Name: "be",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-	})
+	}))
 
 	return srPorts
 }
 
-func getCnServicePorts(config map[string]interface{}) (srPorts []srapi.StarRocksServicePort) {
+func getCnServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
 	thriftPort := GetPort(config, THRIFT_PORT)
 	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
-	srPorts = append(srPorts, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
 		Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
-	}, srapi.StarRocksServicePort{
+	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
-	})
+	}))
 
 	return srPorts
 }
@@ -183,6 +187,28 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
 		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
 	}
+}
+
+func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServicePort) srapi.StarRocksServicePort {
+	if service == nil || service.Ports == nil {
+		return defaultPort
+	}
+	port := defaultPort
+	for _, sp := range service.Ports {
+		if sp.Name == defaultPort.Name {
+			if sp.Port != 0 {
+				port.Port = sp.Port
+			}
+			if sp.ContainerPort != 0 {
+				port.ContainerPort = sp.ContainerPort
+			}
+			if sp.NodePort != 0 {
+				port.NodePort = sp.NodePort
+			}
+			break
+		}
+	}
+	return port
 }
 
 func getServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
