@@ -197,7 +197,10 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 	// calculate the status of starrocks cluster by subresource's status.
 	// clear resources when sub resource deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
 	for _, rc := range r.Scs {
-		rc.ClearResources(ctx, src)
+		if err := rc.ClearResources(ctx, src); err != nil {
+			klog.Errorf("StarRocksClusterReconciler reconcile clear resource failed, "+
+				"namespace=%v, name=%v, controller=%v, error=%v", src.Namespace, src.Name, rc.GetControllerName(), err)
+		}
 	}
 
 	smap := make(map[srapi.ClusterPhase]bool)
