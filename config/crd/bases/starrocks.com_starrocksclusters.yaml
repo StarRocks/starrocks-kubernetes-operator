@@ -1054,6 +1054,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   hostAliases:
@@ -1180,6 +1184,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   service:
@@ -1268,7 +1276,7 @@ spec:
                           type: string
                         subPath:
                           description: SubPath within the volume from which the container's
-                            volume should be mounted.
+                            volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
                       - name
@@ -2995,6 +3003,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   hostAliases:
@@ -3121,6 +3133,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   service:
@@ -3209,7 +3225,7 @@ spec:
                           type: string
                         subPath:
                           description: SubPath within the volume from which the container's
-                            volume should be mounted.
+                            volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
                       - name
@@ -4311,7 +4327,7 @@ spec:
                           type: string
                         subPath:
                           description: SubPath within the volume from which the container's
-                            volume should be mounted.
+                            volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
                       - name
@@ -5253,6 +5269,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   feEnvVars:
@@ -5490,6 +5510,10 @@ spec:
                             Secret in the same namespace, and the length of name must
                             not more than 50 characters.
                           type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
                       type: object
                     type: array
                   service:
@@ -5578,7 +5602,7 @@ spec:
                           type: string
                         subPath:
                           description: SubPath within the volume from which the container's
-                            volume should be mounted.
+                            volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
                       - name
