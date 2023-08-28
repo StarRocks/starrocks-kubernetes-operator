@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"strconv"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +30,7 @@ type AutoScalingPolicy struct {
 	HPAPolicy *HPAPolicy `json:"hpaPolicy,omitempty"`
 
 	// version represents the autoscaler version for cn service. only support v1,v2beta2,v2
-	// +kubebuilder:default:="v2beta2"
+	// +optional
 	Version AutoScalerVersion `json:"version,omitempty"`
 
 	// MinReplicas is the lower limit for the number of replicas to which the autoscaler
@@ -53,6 +55,28 @@ const (
 	// AutoScalerV2 the cn service use v2. Reference to  https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 	AutoScalerV2 AutoScalerVersion = "v2"
 )
+
+// Complete completes the default value of AutoScalerVersion
+func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion {
+	if version != "" {
+		return version
+	}
+	// operator choose a proper default hpa version by checking ths kubernetes version
+	// if kubernetes version > 1.25, use v2 version
+	if major == "1" {
+		minorNumber, err := strconv.Atoi(minor)
+		if err != nil {
+			// keep backward compatibility
+			return AutoScalerV2Beta2
+		}
+		if minorNumber > 25 {
+			return AutoScalerV2
+		} else {
+			return AutoScalerV2Beta2
+		}
+	}
+	return AutoScalerV2
+}
 
 type HPAPolicy struct {
 	// +optional

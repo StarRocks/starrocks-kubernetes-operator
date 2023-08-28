@@ -30,6 +30,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -286,4 +289,37 @@ func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name s
 	}
 
 	return &configMap, nil
+}
+
+var (
+	KUBE_MAJOR_VERSION string
+	KUBE_MINOR_VERSION string
+)
+
+// GetKubernetesVersion get kubernetes version. It should not be executed concurrently.
+// The global variable KUBE_MAJOR_VERSION and KUBE_MINOR_VERSION will be set.
+func GetKubernetesVersion() error {
+	config, err := clientcmd.BuildConfigFromFlags("", "~/.kube/config")
+	if err != nil {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return err
+		}
+	}
+
+	// 创建一个 discovery.Client 对象，用于查询 API 服务器的元数据
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	// 查询 API 服务器的版本信息
+	version, err := discoveryClient.ServerVersion()
+	if err != nil {
+		return err
+	}
+
+	KUBE_MAJOR_VERSION = version.Major
+	KUBE_MINOR_VERSION = version.Minor
+	return nil
 }

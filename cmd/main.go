@@ -23,6 +23,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"k8s.io/klog/v2"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -117,6 +118,10 @@ func main() {
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
+	}
+
+	if err := k8sutils.GetKubernetesVersion(); err != nil {
+		setupLog.Error(err, "unable to get kubernetes version, continue to start manager")
 	}
 
 	setupLog.Info("starting manager")

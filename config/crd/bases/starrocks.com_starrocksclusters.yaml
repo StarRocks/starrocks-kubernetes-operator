@@ -2872,7 +2872,6 @@ spec:
                         format: int32
                         type: integer
                       version:
-                        default: v2beta2
                         description: version represents the autoscaler version for
                           cn service. only support v1,v2beta2,v2
                         type: string
