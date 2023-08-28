@@ -48,7 +48,7 @@ func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) client.Object {
 	switch pap.AutoscalerType {
 	case srapi.AutoScalerV1:
 		return buildAutoscalerV1(pap)
-	case srapi.AutoSclaerV2:
+	case srapi.AutoScalerV2:
 		return buildAutoscalerV2(pap)
 	default:
 		return buildAutoscalerV2beta2(pap)

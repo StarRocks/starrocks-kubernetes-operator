@@ -247,7 +247,7 @@ type StarRocksFeSpec struct {
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// Replicas is the number of desired fe Pod, the number is 1,3,5
-	// +optional: Defaults to 3
+	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
 	// Image for a starrocks fe deployment..
