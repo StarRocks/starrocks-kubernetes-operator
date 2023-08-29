@@ -166,6 +166,8 @@ starrocksFESpec:
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
+  # number of replicas to deploy for cn component.
+  replicas: 1
   image:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
