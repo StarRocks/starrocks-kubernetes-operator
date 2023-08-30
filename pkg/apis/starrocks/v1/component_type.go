@@ -86,6 +86,10 @@ type MountInfo struct {
 	// Path within the container at which the volume should be mounted.  Must
 	// not contain ':'.
 	MountPath string `json:"mountPath,omitempty"`
+
+	// SubPath within the volume from which the container's volume should be mounted.
+	// Defaults to "" (volume's root).
+	SubPath string `json:"subPath,omitempty"`
 }
 
 func (spec *StarRocksComponentSpec) GetHostAliases() []corev1.HostAlias {

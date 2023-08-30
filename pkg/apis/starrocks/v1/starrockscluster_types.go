@@ -264,6 +264,7 @@ type StorageVolume struct {
 	MountPath string `json:"mountPath,omitempty"`
 
 	// SubPath within the volume from which the container's volume should be mounted.
+	// Defaults to "" (volume's root).
 	SubPath string `json:"subPath,omitempty"`
 }
 

@@ -110,6 +110,7 @@ spec:
     {{- range .Values.starrocksFESpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
 {{- if .Values.starrocksFESpec.configMaps }}
@@ -117,6 +118,7 @@ spec:
     {{- range .Values.starrocksFESpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
     configMapInfo:
@@ -244,6 +246,7 @@ spec:
     {{- range .Values.starrocksBeSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
 {{- if .Values.starrocksBeSpec.configMaps }}
@@ -251,6 +254,7 @@ spec:
     {{- range .Values.starrocksBeSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
     configMapInfo:
@@ -381,6 +385,7 @@ spec:
     {{- range .Values.starrocksCnSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
 {{- if .Values.starrocksCnSpec.configMaps }}
@@ -388,6 +393,7 @@ spec:
     {{- range .Values.starrocksCnSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
     configMapInfo:

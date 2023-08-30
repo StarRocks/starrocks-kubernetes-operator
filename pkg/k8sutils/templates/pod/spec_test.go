@@ -271,7 +271,7 @@ func TestMountSecrets(t *testing.T) {
 			},
 			want: []corev1.Volume{
 				{
-					Name: "s1-4145",
+					Name: "s1-1614",
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName: "s1",
@@ -279,7 +279,7 @@ func TestMountSecrets(t *testing.T) {
 					},
 				},
 				{
-					Name: "s2-1955",
+					Name: "s2-1229",
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName: "s2",
@@ -289,11 +289,11 @@ func TestMountSecrets(t *testing.T) {
 			},
 			want1: []corev1.VolumeMount{
 				{
-					Name:      "s1-4145",
+					Name:      "s1-1614",
 					MountPath: "/pkg/mounts/volumes1",
 				},
 				{
-					Name:      "s2-1955",
+					Name:      "s2-1229",
 					MountPath: "/pkg/mounts/volumes2",
 				},
 			},
@@ -340,7 +340,7 @@ func TestMountConfigMaps(t *testing.T) {
 			},
 			want: []corev1.Volume{
 				{
-					Name: "s1-4145",
+					Name: "s1-1614",
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
@@ -350,7 +350,7 @@ func TestMountConfigMaps(t *testing.T) {
 					},
 				},
 				{
-					Name: "s2-1955",
+					Name: "s2-1229",
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
@@ -362,11 +362,11 @@ func TestMountConfigMaps(t *testing.T) {
 			},
 			want1: []corev1.VolumeMount{
 				{
-					Name:      "s1-4145",
+					Name:      "s1-1614",
 					MountPath: "/pkg/mounts/volumes1",
 				},
 				{
-					Name:      "s2-1955",
+					Name:      "s2-1229",
 					MountPath: "/pkg/mounts/volumes2",
 				},
 			},
@@ -767,7 +767,7 @@ func Test_getVolumeName(t *testing.T) {
 					MountPath: "/my/path",
 				},
 			},
-			want: "test-3195",
+			want: "test-1417",
 		},
 	}
 	for _, tt := range tests {

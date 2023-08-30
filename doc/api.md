@@ -223,6 +223,18 @@ string
 not contain &lsquo;:&rsquo;.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.ContainerResourceMetricSource">ContainerResourceMetricSource
@@ -1052,6 +1064,18 @@ string
 not contain &lsquo;:&rsquo;.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.ObjectMetricSource">ObjectMetricSource
@@ -1271,6 +1295,18 @@ string
 <td>
 <p>Path within the container at which the volume should be mounted.  Must
 not contain &lsquo;:&rsquo;.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </td>
 </tr>
 </tbody>
@@ -3822,6 +3858,7 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 (<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
+<p>StarRocksService defines external service for starrocks component.</p>
 </div>
 <table>
 <thead>
@@ -3888,7 +3925,10 @@ This field may be removed in a future API version.</p>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Ports the components exposed ports and listen ports in pod.</p>
+<p>Ports are the ports that are exposed by this service.
+You can override the default port information by specifying the same StarRocksServicePort.Name in the ports list.
+e.g. if you want to use a dedicated node port, you can just specify the StarRocksServicePort.Name and
+StarRocksServicePort.NodePort field.</p>
 </td>
 </tr>
 </tbody>
@@ -3927,6 +3967,7 @@ int32
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Port the pod is exposed on service.</p>
 </td>
 </tr>
@@ -3938,6 +3979,7 @@ int32
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>ContainerPort the service listen in pod.</p>
 </td>
 </tr>
@@ -3949,7 +3991,9 @@ int32
 </em>
 </td>
 <td>
-<p>The easiest way to expose fe, cn or be is to use a Service of type <code>NodePort</code>.</p>
+<em>(Optional)</em>
+<p>The easiest way to expose fe, cn or be is to use a Service of type <code>NodePort</code>.
+The range of valid ports is 30000-32767</p>
 </td>
 </tr>
 </tbody>
@@ -4025,7 +4069,8 @@ string
 </em>
 </td>
 <td>
-<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.</p>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </td>
 </tr>
 </tbody>

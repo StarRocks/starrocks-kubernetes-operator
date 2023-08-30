@@ -208,15 +208,19 @@ starrocks:
       mysql_service_nio_enabled = true
       sys_log_level = INFO
     # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
       # e.g. mount my-secret to /etc/my-secret
       # - name: my-secret
       #   mountPath: /etc/my-secret
+      #   subPath: ""
     # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     configMaps: []
       # e.g. mount my-configmap to /etc/my-configmap
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
+      #   subPath: ""
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
@@ -341,16 +345,20 @@ starrocks:
       webserver_port = 8040
       heartbeat_service_port = 9050
       brpc_port = 8060
-    # you can mount secrets if necessary.
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
       # e.g. mount my-secret to /etc/my-secret
       # - name: my-secret
       #   mountPath: /etc/my-secret
+      #   subPath: ""
     # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     configMaps: []
       # e.g. mount my-configmap to /etc/my-configmap
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
+      #   subPath: ""
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -461,15 +469,19 @@ starrocks:
       sys_log_level = INFO
       default_rowset_type = beta
     # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
       # e.g. mount my-secret to /etc/my-secret
       # - name: my-secret
       #   mountPath: /etc/my-secret
+      #   subPath: ""
     # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     configMaps: []
       # e.g. mount my-configmap to /etc/my-configmap
       # - name: my-configmap
-      #  mountPath: /etc/my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
   
   # create secrets if necessary.
   secrets: []

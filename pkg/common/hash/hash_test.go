@@ -23,7 +23,7 @@ func TestHashObject(t *testing.T) {
 					MountPath: "/my/path",
 				},
 			},
-			want: "3195412022",
+			want: "1417214019",
 		},
 		{
 			name: "test hash object 2",
@@ -33,7 +33,7 @@ func TestHashObject(t *testing.T) {
 					MountPath: "/pkg/mounts/volumes1",
 				},
 			},
-			want: "4145994286",
+			want: "1614698443",
 		},
 		{
 			name: "test hash object 3",
@@ -43,7 +43,7 @@ func TestHashObject(t *testing.T) {
 					MountPath: "/pkg/mounts/volumes2",
 				},
 			},
-			want: "1955561708",
+			want: "122981513",
 		},
 	}
 	for _, tt := range tests {

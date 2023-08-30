@@ -104,6 +104,7 @@ func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      volumeName,
 			MountPath: reference.MountPath,
+			SubPath:   reference.SubPath,
 		})
 	}
 	return volumes, volumeMounts
@@ -124,6 +125,7 @@ func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      volumeName,
 			MountPath: reference.MountPath,
+			SubPath:   reference.SubPath,
 		})
 	}
 	return volumes, volumeMounts
