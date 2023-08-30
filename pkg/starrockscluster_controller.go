@@ -29,6 +29,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
 	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -238,6 +239,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		Owns(&v2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
 
