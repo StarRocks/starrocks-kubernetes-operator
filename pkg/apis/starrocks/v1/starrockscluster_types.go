@@ -47,7 +47,7 @@ type StarRocksClusterSpec struct {
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
 type StarRocksClusterStatus struct {
 	// Represents the state of cluster. the possible value are: running, failed, pending
-	Phase ClusterPhase `json:"phase"`
+	Phase Phase `json:"phase"`
 
 	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
@@ -189,34 +189,33 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 	return nil
 }
 
-// ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
-type ClusterPhase string
+// Phase represent the cluster phase. the possible value for cluster phase are: running, failed, pending, deleting.
+type Phase string
 
-// MemberPhase represent the component phase about be, cn, be. the possible value for component phase are:
-// reconciling, failed, running.
-type MemberPhase string
+// ComponentPhase represent the component phase about be, cn, be. The possible value for component phase are: reconciling, failed, running.
+type ComponentPhase string
 
 const (
 	// ClusterRunning represents starrocks cluster is running.
-	ClusterRunning ClusterPhase = "running"
+	ClusterRunning Phase = "running"
 
 	// ClusterFailed represents starrocks cluster failed.
-	ClusterFailed ClusterPhase = "failed"
+	ClusterFailed Phase = "failed"
 
 	// ClusterPending represents the starrocks cluster is creating
-	ClusterPending ClusterPhase = "pending"
+	ClusterPending Phase = "pending"
 
 	// ClusterDeleting waiting all resource deleted
-	ClusterDeleting ClusterPhase = "deleting"
+	ClusterDeleting Phase = "deleting"
 )
 
 const (
 	// ComponentReconciling the starrocks have component in starting.
-	ComponentReconciling MemberPhase = "reconciling"
+	ComponentReconciling ComponentPhase = "reconciling"
 	// ComponentFailed have at least one service failed.
-	ComponentFailed MemberPhase = "failed"
+	ComponentFailed ComponentPhase = "failed"
 	// ComponentRunning all components runs available.
-	ComponentRunning MemberPhase = "running"
+	ComponentRunning ComponentPhase = "running"
 )
 
 // AnnotationOperationValue present the operation for fe, cn, be.

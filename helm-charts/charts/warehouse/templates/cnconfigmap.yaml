@@ -1,0 +1,13 @@
+{{- if and .Values.spec .Values.spec.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockswarehouse.configmap.name" . }}
+  namespace: {{ template "starrockswarehouse.namespace" . }}
+  labels:
+    warehouse: {{ template "starrockswarehouse.name" . }}
+    app: "cn"
+data:
+{{ include "starrockswarehouse.config" . | indent 2 }}
+
+{{- end }}

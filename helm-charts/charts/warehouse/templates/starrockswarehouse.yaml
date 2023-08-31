@@ -1,0 +1,137 @@
+apiVersion: starrocks.com/v1
+kind: StarRocksWarehouse
+metadata:
+  name: {{ template "starrockswarehouse.name" . }}
+  namespace: {{ template "starrockswarehouse.namespace" . }}
+  labels:
+    warehouse: {{ template "starrockswarehouse.name" . }}
+    {{- include "starrockswarehouse.labels" . | nindent 4 }}
+spec:
+  starRocksCluster: {{ .Values.spec.starRocksClusterName }}
+  template:
+    image: "{{ .Values.spec.image.repository }}:{{ .Values.spec.image.tag }}"
+    {{- if .Values.spec.replicas }}
+    replicas: {{ .Values.spec.replicas }}
+    {{- end }}
+    {{- if .Values.spec.serviceAccount }}
+    serviceAccount: {{ .Values.spec.serviceAccount }}
+    {{- end }}
+    runAsNonRoot: {{ .Values.spec.runAsNonRoot }}
+    {{- if .Values.spec.podLabels }}
+    podLabels:
+      {{- toYaml .Values.spec.podLabels | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.hostAliases }}
+    hostAliases:
+      {{- toYaml .Values.spec.hostAliases | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.schedulerName }}
+    schedulerName: {{ .Values.spec.schedulerName }}
+    {{- end }}
+    {{- if .Values.spec.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.spec.nodeSelector | nindent 6 }}
+    {{- end }}
+    envVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if .Values.spec.envVars }}
+      {{- toYaml .Values.spec.envVars | nindent 6 }}
+      {{- end }}
+    {{- if .Values.spec.affinity }}
+    affinity:
+      {{- toYaml .Values.spec.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.tolerations }}
+    tolerations:
+      {{- toYaml .Values.spec.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.autoScalingPolicy }}
+    autoScalingPolicy:
+      {{- toYaml .Values.spec.autoScalingPolicy | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.resources }}
+    {{- toYaml .Values.spec.resources | nindent 4 }}
+    {{- end }}
+    {{- if .Values.spec.service.type }}
+    service:
+      type: {{ .Values.spec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.spec.service.type) .Values.spec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.spec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if .Values.spec.service.ports }}
+      ports:
+        {{- toYaml .Values.spec.service.ports | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.spec.service.annotations .Values.datadog.metrics.enabled }}
+      annotations:
+        {{- if .Values.datadog.metrics.enabled }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{- default 8040 (include "starrockswarehouse.webserver.port" .) }}"
+        prometheus.io/scrape: "true"
+        {{- end }}
+        {{- if .Values.spec.service.annotations }}
+        {{- toYaml .Values.spec.service.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    annotations:
+      app.starrocks.io/cn-config-hash: {{template "starrockswarehouse.config.hash" . }}
+      {{- if .Values.datadog.log.enabled }}
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/warehouse.logs: '[{"service":"warehouse"}]'
+      {{- else }}
+      ad.datadoghq.com/warehouse.logs: {{ printf "[%s]" (printf "{%s, \"service\": \"warehouse\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.spec.annotations }}
+      {{ toYaml .Values.spec.annotations | indent 6 }}
+      {{- end }}
+    {{- if .Values.spec.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml .Values.spec.imagePullSecrets | nindent 6 }}
+    {{- end }}
+    {{- if .Values.spec.secrets }}
+    secrets:
+    {{- range .Values.spec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.spec.configMaps }}
+    configMaps:
+    {{- range .Values.spec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{template  "starrockswarehouse.configmap.name" . }}
+      resolveKey: cn.conf
+    {{- if .Values.spec.storageSpec.name }}
+    storageVolumes:
+    - name: {{ .Values.spec.storageSpec.name }}{{template "starrockscluster.cn.data.suffix" . }}
+      {{- if .Values.spec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.spec.storageSpec.storageClassName }}
+      {{- end }}
+      {{- if .Values.spec.storageSpec.storageSize }}
+      storageSize: {{ .Values.spec.storageSpec.storageSize }}
+      {{- end }}
+      mountPath: {{template "starrockscluster.cn.data.path" . }}
+    {{- if .Values.spec.storageSpec.logStorageSize }}
+    - name: {{ .Values.spec.storageSpec.name }}{{template "starrockscluster.cn.log.suffix" . }}
+      {{- if .Values.spec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.spec.storageSpec.storageClassName }}
+      {{- end }}
+      {{- if .Values.spec.storageSpec.logStorageSize }}
+      storageSize: {{ .Values.spec.storageSpec.logStorageSize }}
+      {{- end }}
+      mountPath: {{template "starrockscluster.cn.log.path" . }}
+    {{- end }}
+    {{- end }}

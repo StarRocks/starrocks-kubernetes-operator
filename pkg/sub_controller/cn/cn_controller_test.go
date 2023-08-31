@@ -22,7 +22,9 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
@@ -40,8 +43,7 @@ var (
 )
 
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
-
+	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
 	_ = clientgoscheme.AddToScheme(sch)
@@ -143,9 +145,9 @@ func Test_Sync(t *testing.T) {
 	}
 
 	cc := New(k8sutils.NewFakeClient(sch, src, &ep))
-	err := cc.Sync(context.Background(), src)
+	err := cc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
-	err = cc.UpdateStatus(src)
+	err = cc.UpdateClusterStatus(src)
 	require.Equal(t, nil, err)
 	ccStatus := src.Status.StarRocksCnStatus
 	require.Equal(t, srapi.ComponentReconciling, ccStatus.Phase)
@@ -163,4 +165,114 @@ func Test_Sync(t *testing.T) {
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
+}
+
+func TestCnController_UpdateStatus(t *testing.T) {
+	type fields struct {
+		k8sClient client.Client
+	}
+	type args struct {
+		object   object.StarRocksObject
+		cnSpec   *srapi.StarRocksCnSpec
+		cnStatus *srapi.StarRocksCnStatus
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "update the status of cluster",
+			fields: fields{
+				k8sClient: k8sutils.NewFakeClient(sch,
+					&appv1.StatefulSet{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "test-cn",
+							Namespace: "default",
+						},
+						Spec: appv1.StatefulSetSpec{
+							UpdateStrategy: appv1.StatefulSetUpdateStrategy{
+								Type: appv1.RollingUpdateStatefulSetStrategyType,
+							},
+						},
+						Status: appv1.StatefulSetStatus{
+							ObservedGeneration: 1,
+						},
+					},
+					&srapi.StarRocksCluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "test",
+							Namespace: "default",
+						},
+						Spec:   srapi.StarRocksClusterSpec{},
+						Status: srapi.StarRocksClusterStatus{},
+					},
+				),
+			},
+			args: args{
+				object: object.StarRocksObject{
+					ObjectMeta: &metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: "default",
+					},
+					ClusterName: "test",
+					Kind:        object.StarRocksClusterKind,
+					AliasName:   "test",
+				},
+				cnSpec:   &srapi.StarRocksCnSpec{},
+				cnStatus: &srapi.StarRocksCnStatus{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc := &CnController{
+				k8sClient: tt.fields.k8sClient,
+			}
+			if err := cc.UpdateStatus(tt.args.object, tt.args.cnSpec, tt.args.cnStatus); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateStatus() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			spew.Dump(tt.args.cnStatus)
+		})
+	}
+}
+
+func TestCnController_generateAutoScalerName(t *testing.T) {
+	type fields struct {
+		k8sClient client.Client
+	}
+	type args struct {
+		srcName string
+		cnSpec  srapi.SpecInterface
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "test1",
+			fields: fields{
+				k8sClient: nil,
+			},
+			args: args{
+				srcName: "test",
+				cnSpec:  (*srapi.StarRocksCnSpec)(nil),
+			},
+			want: "test-cn-autoscaler",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc := &CnController{
+				k8sClient: tt.fields.k8sClient,
+			}
+			if got := cc.generateAutoScalerName(tt.args.srcName, tt.args.cnSpec); got != tt.want {
+				t.Errorf("generateAutoScalerName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

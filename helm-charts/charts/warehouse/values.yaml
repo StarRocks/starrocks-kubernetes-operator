@@ -1,0 +1,198 @@
+# Ensure that the warehouse instance name differs from the starrocks instance name to avoid conflicts. For example, both
+# will generate configmaps using the 'nameOverride' as a prefix to the configmap name, followed by a specific suffix.
+nameOverride: "kube-starrocks"
+
+# TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
+timeZone: Asia/Shanghai
+
+# This configuration is used to integrate with external system DataDog.
+# You can enable the integration by setting the enabled to true, e.g. datalog.log.enabled=true will enable datadog agent
+# to collect the log.
+datadog:
+  log:
+    enabled: false
+    # besides the attributes you added, chart will append "source" and "service" attributes to the log config.
+    # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
+    logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
+  metrics:
+    enabled: false
+
+spec:
+  # The name of starrocks cluster, a must-have field.
+  # Note: the starrocks cluster must be created before the warehouse by operator.
+  starRocksClusterName:
+
+  # number of replicas to deploy.
+  # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the spec
+  # field, the replicas field of the statefulset created by the operator will be set to null. This ensures that the replicas
+  # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to the statefulset,
+  # then the pods will not be recreated.
+  # Why should the replicas field in this values.yaml be set to null? This is the default replicas. When the user removes
+  # the autoScalingPolicy fields from the spec, the corresponding HPA object will be deleted. And when the replicas
+  # field is set, the number of pods will immediately revert to the replicas count, even though the user did not specify
+  # the replicas count in their own values.yaml.
+  # replicas: 1
+  image:
+    # image sliced by "repository:tag"
+    repository: starrocks/cn-ubuntu
+    tag: 3.1-latest
+  # serviceAccount for pod access cloud service.
+  serviceAccount: ""
+  # add annotations for pods. example, if you want to config monitor for datadog, you can config the annotations.
+  annotations: {}
+  # If runAsNonRoot is true, the container is run as non-root user.
+  # The userId will be set to 1000, and the groupID will be set to 1000.
+  runAsNonRoot: false
+  # specify the service name and port config and serviceType
+  # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  service:
+    # the service type, only supported ClusterIP, NodePort, LoadBalancer
+    type: "ClusterIP"
+    # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
+    loadbalancerIP: ""
+    # add annotations for service.
+    annotations: {}
+    # config the service port for service.
+    # if you want to use a dedicated port for service, you can config the port.
+    # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+    ports: []
+      # e.g. use a dedicated node port for service. The containerPort and port field can be commented out.
+      # - name: webserver
+      #   nodePort: 30040 # The range of valid ports is 30000-32767
+      #   containerPort: 8040 # The port on the container to expose
+      #   port: 8040 # The port to expose on the service
+  # imagePullSecrets allows you to use secrets for pulling images for your pods.
+  imagePullSecrets: []
+    # - name: "image-pull-secret"
+  # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+    # kubernetes.io/arch: amd64
+    # kubernetes.io/os: linux
+  # the pod labels for user select or classify pods.
+  podLabels: {}
+  ## hostAliases allows adding entries to /etc/hosts inside the containers
+  hostAliases: []
+    # - ip: "127.0.0.1"
+    #   hostnames:
+    #   - "example.com"
+  # schedulerName allows you to specify which scheduler will be used for the pod
+  schedulerName: ""
+  # Additional container environment variables
+  # You specify this manually like you would a raw deployment manifest.
+  # This means you can bind in environment variables from secrets.
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  envVars: []
+    # e.g. static environment variable:
+    # - name: DEMO_GREETING
+    #   value: "Hello from the environment"
+    # e.g. secret environment variable:
+    # - name: USERNAME
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: mysecret
+    #       key: username
+  # affinity for pod scheduling.
+  affinity: {}
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #       - matchFields:
+    #           - key: metadata.name
+    #             operator: In
+    #             values:
+    #               - target-host-name
+  # Node tolerations for pod scheduling to nodes with taints
+  # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  tolerations: []
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  autoScalingPolicy: {}
+    # you can select different versions of HPA (Horizontal Pod Autoscaler) based on the Kubernetes version you are
+    # using to ensure compatibility and adaptability. the default version is v2beta2.
+    # version: v2beta2
+    # maxReplicas: 10
+    # minReplicas: 1
+    # hpaPolicy:
+    #   metrics:
+    #   - type: Resource
+    #     resource:
+    #       name: memory
+    #       target:
+    #         averageUtilization: 30
+    #         type: Utilization
+    #   - type: Resource
+    #     resource:
+    #       name: cpu
+    #       target:
+    #         averageUtilization: 30
+    #         type: Utilization
+    #   behavior:
+    #     scaleUp:
+    #       policies:
+    #       - type: Pods
+    #         value: 1
+    #         periodSeconds: 10
+    #     scaleDown:
+    #       selectPolicy: Disabled
+  # define resources requests and limits for pods.
+  resources:
+    limits:
+      cpu: 8
+      memory: 8Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+  # the config start for cn, the base information as follows.
+  config: |
+    sys_log_level = INFO
+    # ports for admin, web, heartbeat service
+    thrift_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+  # mount secrets if necessary.
+  # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+  secrets: []
+    # e.g. mount my-secret to /etc/my-secret
+    # - name: my-secret
+    #   mountPath: /etc/my-secret
+    #   subPath: ""
+  # mount configmaps if necessary.
+  # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+  configMaps: []
+    # e.g. mount my-configmap to /etc/my-configmap
+    # - name: my-configmap
+    #   mountPath: /etc/my-configmap
+    #   subPath: ""
+  # n storageSpec for persistent data.
+  storageSpec:
+    # the name of volume for mount. if not will use emptyDir.
+    name: ""
+    # the storageClassName represent the used storageclass name. If not set will use k8s cluster default storageclass.
+    # you must set name when you set storageClassName
+    storageClassName: ""
+    storageSize: 100Gi
+    # Setting this parameter can persist log storage
+    logStorageSize: 1Gi
+
+
+# create secrets if necessary.
+secrets: []
+  # e.g. create my-secret
+  # - name: my-secret
+  #   data:
+  #     key: |
+  #       this is the content of the secret
+  #       when mounted, key will be the name of the file
+
+# create configmaps if necessary.
+configMaps: []
+  # e.g. create my-configmap
+  # - name: my-configmap
+  #   data:
+  #     key: |
+  #       this is the content of the configmap
+  #       when mounted, key will be the name of the file

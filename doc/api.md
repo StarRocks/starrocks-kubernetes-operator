@@ -119,13 +119,13 @@ cannot be smaller than MinReplicas.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ClusterPhase">ClusterPhase
+<h3 id="starrocks.com/v1.ComponentPhase">ComponentPhase
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus</a>)
 </p>
 <div>
-<p>ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.</p>
+<p>ComponentPhase represent the component phase about be, cn, be. The possible value for component phase are: reconciling, failed, running.</p>
 </div>
 <table>
 <thead>
@@ -134,17 +134,14 @@ cannot be smaller than MinReplicas.</p>
 <th>Description</th>
 </tr>
 </thead>
-<tbody><tr><td><p>&#34;deleting&#34;</p></td>
-<td><p>ClusterDeleting waiting all resource deleted</p>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ComponentFailed have at least one service failed.</p>
 </td>
-</tr><tr><td><p>&#34;failed&#34;</p></td>
-<td><p>ClusterFailed represents starrocks cluster failed.</p>
-</td>
-</tr><tr><td><p>&#34;pending&#34;</p></td>
-<td><p>ClusterPending represents the starrocks cluster is creating</p>
+</tr><tr><td><p>&#34;reconciling&#34;</p></td>
+<td><p>ComponentReconciling the starrocks have component in starting.</p>
 </td>
 </tr><tr><td><p>&#34;running&#34;</p></td>
-<td><p>ClusterRunning represents starrocks cluster is running.</p>
+<td><p>ComponentRunning all components runs available.</p>
 </td>
 </tr></tbody>
 </table>
@@ -694,32 +691,6 @@ AutoScalerVersion
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.MemberPhase">MemberPhase
-(<code>string</code> alias)</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus</a>)
-</p>
-<div>
-<p>MemberPhase represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;failed&#34;</p></td>
-<td><p>ComponentFailed have at least one service failed.</p>
-</td>
-</tr><tr><td><p>&#34;reconciling&#34;</p></td>
-<td><p>ComponentReconciling the starrocks have component in starting.</p>
-</td>
-</tr><tr><td><p>&#34;running&#34;</p></td>
-<td><p>ComponentRunning all components runs available.</p>
-</td>
-</tr></tbody>
-</table>
 <h3 id="starrocks.com/v1.MetricIdentifier">MetricIdentifier
 </h3>
 <p>
@@ -1137,6 +1108,35 @@ MetricIdentifier
 </td>
 </tr>
 </tbody>
+</table>
+<h3 id="starrocks.com/v1.Phase">Phase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>, <a href="#starrocks.com/v1.StarRocksWarehouseStatus">StarRocksWarehouseStatus</a>)
+</p>
+<div>
+<p>Phase represent the cluster phase. the possible value for cluster phase are: running, failed, pending, deleting.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;deleting&#34;</p></td>
+<td><p>ClusterDeleting waiting all resource deleted</p>
+</td>
+</tr><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ClusterFailed represents starrocks cluster failed.</p>
+</td>
+</tr><tr><td><p>&#34;pending&#34;</p></td>
+<td><p>ClusterPending represents the starrocks cluster is creating</p>
+</td>
+</tr><tr><td><p>&#34;running&#34;</p></td>
+<td><p>ClusterRunning represents starrocks cluster is running.</p>
+</td>
+</tr></tbody>
 </table>
 <h3 id="starrocks.com/v1.PodsMetricSource">PodsMetricSource
 </h3>
@@ -1714,8 +1714,8 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
-MemberPhase
+<a href="#starrocks.com/v1.ComponentPhase">
+ComponentPhase
 </a>
 </em>
 </td>
@@ -1965,8 +1965,8 @@ StarRocksFeProxySpec
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.ClusterPhase">
-ClusterPhase
+<a href="#starrocks.com/v1.Phase">
+Phase
 </a>
 </em>
 </td>
@@ -2031,7 +2031,7 @@ StarRocksFeProxyStatus
 <h3 id="starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>, <a href="#starrocks.com/v1.StarRocksWarehouseSpec">StarRocksWarehouseSpec</a>)
 </p>
 <div>
 <p>StarRocksCnSpec defines the desired state of cn.</p>
@@ -2364,7 +2364,7 @@ AutoScalingPolicy
 <h3 id="starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>, <a href="#starrocks.com/v1.StarRocksWarehouseStatus">StarRocksWarehouseStatus</a>)
 </p>
 <div>
 <p>StarRocksCnStatus represents the status of starrocks cn.</p>
@@ -2436,8 +2436,8 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
-MemberPhase
+<a href="#starrocks.com/v1.ComponentPhase">
+ComponentPhase
 </a>
 </em>
 </td>
@@ -2865,8 +2865,8 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
-MemberPhase
+<a href="#starrocks.com/v1.ComponentPhase">
+ComponentPhase
 </a>
 </em>
 </td>
@@ -3222,8 +3222,8 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
-MemberPhase
+<a href="#starrocks.com/v1.ComponentPhase">
+ComponentPhase
 </a>
 </em>
 </td>
@@ -3641,8 +3641,8 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.MemberPhase">
-MemberPhase
+<a href="#starrocks.com/v1.ComponentPhase">
+ComponentPhase
 </a>
 </em>
 </td>
@@ -4111,6 +4111,175 @@ int32
 <em>(Optional)</em>
 <p>The easiest way to expose fe, cn or be is to use a Service of type <code>NodePort</code>.
 The range of valid ports is 30000-32767</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse
+</h3>
+<div>
+<p>StarRocksWarehouse defines a starrocks warehouse.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksWarehouseSpec">
+StarRocksWarehouseSpec
+</a>
+</em>
+</td>
+<td>
+<p>Spec represents the specification of desired state of a starrocks warehouse.</p>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>starRocksCluster</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>StarRocksCluster is the name of a StarRocksCluster which the warehouse belongs to.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>starRocksCnSpec</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksCnSpec">
+StarRocksCnSpec
+</a>
+</em>
+</td>
+<td>
+<p>StarRocksCnSpec define cn component configuration for start cn service.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksWarehouseStatus">
+StarRocksWarehouseStatus
+</a>
+</em>
+</td>
+<td>
+<p>Status represents the recent observed status of the starrocks warehouse.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.StarRocksWarehouseSpec">StarRocksWarehouseSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse</a>)
+</p>
+<div>
+<p>StarRocksWarehouseSpec defines the desired state of StarRocksWarehouse</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>starRocksCluster</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>StarRocksCluster is the name of a StarRocksCluster which the warehouse belongs to.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>starRocksCnSpec</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksCnSpec">
+StarRocksCnSpec
+</a>
+</em>
+</td>
+<td>
+<p>StarRocksCnSpec define cn component configuration for start cn service.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.StarRocksWarehouseStatus">StarRocksWarehouseStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse</a>)
+</p>
+<div>
+<p>StarRocksWarehouseStatus defines the observed state of StarRocksWarehouse.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#starrocks.com/v1.Phase">
+Phase
+</a>
+</em>
+</td>
+<td>
+<p>Phase represents the state of a warehouse. The possible value are: running, failed, pending and deleting.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>starRocksCnStatus</code><br/>
+<em>
+<a href="#starrocks.com/v1.StarRocksCnStatus">
+StarRocksCnStatus
+</a>
+</em>
+</td>
+<td>
+<p>StarRocksCnStatus represents the status of cn service. The status has reconciling, failed and running.</p>
 </td>
 </tr>
 </tbody>
