@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -82,12 +83,10 @@ func TestBuildExternalService(t *testing.T) {
 		},
 	}
 	type args struct {
-		src         *srapi.StarRocksCluster
-		name        string
-		serviceType StarRocksServiceType
-		config      map[string]interface{}
-		selector    map[string]string
-		labels      map[string]string
+		src      *srapi.StarRocksCluster
+		config   map[string]interface{}
+		selector map[string]string
+		labels   map[string]string
 	}
 	tests := []struct {
 		name string
@@ -97,19 +96,17 @@ func TestBuildExternalService(t *testing.T) {
 		{
 			name: "test build external service",
 			args: args{
-				src:         src,
-				name:        "service-name",
-				serviceType: FeService,
-				config:      map[string]interface{}{},
-				selector:    map[string]string{},
-				labels:      map[string]string{},
+				src:      src,
+				config:   map[string]interface{}{},
+				selector: map[string]string{},
+				labels:   map[string]string{},
 			},
 			want: corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "service-name",
+					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "1503664666",
+						srapi.ComponentResourceHash: "2802874283",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -144,7 +141,8 @@ func TestBuildExternalService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildExternalService(tt.args.src, tt.args.name, tt.args.serviceType, tt.args.config, tt.args.selector, tt.args.labels)
+			object := object.NewFromCluster(src)
+			got := BuildExternalService(object, src.Spec.StarRocksFeSpec, tt.args.config, tt.args.selector, tt.args.labels)
 			gotData, _ := json.Marshal(got)
 			wantData, _ := json.Marshal(tt.want)
 			if len(gotData) != len(wantData) {
