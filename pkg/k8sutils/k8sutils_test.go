@@ -37,7 +37,7 @@ var (
 )
 
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
+	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
