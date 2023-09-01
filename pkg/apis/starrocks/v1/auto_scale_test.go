@@ -36,7 +36,7 @@ func TestAutoScalerVersion_Complete(t *testing.T) {
 			version: "",
 			args: args{
 				major: "1",
-				minor: "27",
+				minor: "26",
 			},
 			want: AutoScalerV2,
 		},

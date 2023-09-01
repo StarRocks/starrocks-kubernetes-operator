@@ -62,14 +62,14 @@ func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion
 		return version
 	}
 	// operator choose a proper default hpa version by checking ths kubernetes version
-	// if kubernetes version > 1.25, use v2 version
+	// if the minor version of kubernetes version >= 26, use v2 version
 	if major == "1" {
 		minorNumber, err := strconv.Atoi(minor)
 		if err != nil {
 			// keep backward compatibility
 			return AutoScalerV2Beta2
 		}
-		if minorNumber > 25 {
+		if minorNumber >= 26 {
 			return AutoScalerV2
 		} else {
 			return AutoScalerV2Beta2
