@@ -307,13 +307,13 @@ func GetKubernetesVersion() error {
 		}
 	}
 
-	// 创建一个 discovery.Client 对象，用于查询 API 服务器的元数据
+	// create a discovery.DiscoveryClient object to query the metadata of the API server
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		return err
 	}
 
-	// 查询 API 服务器的版本信息
+	// query the version information of the API server
 	version, err := discoveryClient.ServerVersion()
 	if err != nil {
 		return err
