@@ -206,7 +206,8 @@ func (cc *CnController) UpdateStatus(src *srapi.StarRocksCluster) error {
 
 	if cnSpec.AutoScalingPolicy != nil {
 		cs.HorizontalScaler.Name = cc.generateAutoScalerName(src)
-		cs.HorizontalScaler.Version = cnSpec.AutoScalingPolicy.Version
+		cs.HorizontalScaler.Version = cnSpec.AutoScalingPolicy.Version.Complete(k8sutils.KUBE_MAJOR_VERSION,
+			k8sutils.KUBE_MINOR_VERSION)
 	} else {
 		cs.HorizontalScaler = srapi.HorizontalScaler{}
 	}

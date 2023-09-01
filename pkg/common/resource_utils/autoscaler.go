@@ -20,6 +20,7 @@ import (
 	"unsafe"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
@@ -45,14 +46,17 @@ type PodAutoscalerParams struct {
 }
 
 func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams) client.Object {
-	switch pap.AutoscalerType {
+	t := pap.AutoscalerType.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
+	switch t {
 	case srapi.AutoScalerV1:
 		return buildAutoscalerV1(pap)
 	case srapi.AutoScalerV2:
 		return buildAutoscalerV2(pap)
-	default:
+	case srapi.AutoScalerV2Beta2:
 		return buildAutoscalerV2beta2(pap)
 	}
+	// can not reach here
+	return buildAutoscalerV2beta2(pap)
 }
 
 // build v1 autoscaler

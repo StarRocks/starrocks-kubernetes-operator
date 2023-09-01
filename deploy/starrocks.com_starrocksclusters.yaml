@@ -1312,7 +1312,6 @@ spec:
                         format: int32
                         type: integer
                       version:
-                        default: v2beta2
                         type: string
                     required:
                     - maxReplicas
