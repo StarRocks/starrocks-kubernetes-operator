@@ -84,7 +84,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 	cerr = k8sclient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv2autoscaler)
 	require.Equal(t, nil, cerr)
 	require.Equal(t, "test", v2autoscaler.Name)
-	delerr = DeleteAutoscaler(context.Background(), k8sclient, "default", "test", srapi.AutoSclaerV2)
+	delerr = DeleteAutoscaler(context.Background(), k8sclient, "default", "test", srapi.AutoScalerV2)
 	require.Equal(t, nil, delerr)
 	var ev2autoscaler v2.HorizontalPodAutoscaler
 	geterr = k8sclient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev2autoscaler)

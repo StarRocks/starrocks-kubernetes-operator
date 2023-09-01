@@ -18,6 +18,7 @@ package cn
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -64,6 +65,18 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 		return nil
 	}
 
+	if err := cc.mutating(src); err != nil {
+		klog.Errorf("cnController sync failed when mutating, namespace=%s, name=%s, err=%s",
+			src.Namespace, src.Name, err.Error())
+		return err
+	}
+
+	if err := cc.validating(src); err != nil {
+		klog.Errorf("cnController sync failed when validating, namespace=%s, name=%s, err=%s",
+			src.Namespace, src.Name, err.Error())
+		return err
+	}
+
 	if !fe.CheckFEOk(ctx, cc.k8sClient, src) {
 		return nil
 	}
@@ -79,7 +92,7 @@ func (cc *CnController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	feconfig, _ := cc.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
-	// annotation: add query port in cnconfig.
+	// annotation: add query port in cn config.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
 
 	// generate new cn internal service.
@@ -300,4 +313,42 @@ func (cc *CnController) getFeConfig(ctx context.Context, feconfigMapInfo *srapi.
 
 func (cc *CnController) getCnSearchServiceName(src *srapi.StarRocksCluster) string {
 	return src.Name + "-cn" + CN_SEARCH_SUFFIX
+}
+
+func (cc *CnController) mutating(src *srapi.StarRocksCluster) error {
+	spec := src.Spec.StarRocksCnSpec
+
+	// Mutating because of the autoscaling policy.
+	// When the HPA policy with a fixed replica count is set: every time the starrockscluster CR is
+	// applied, the replica count of the StatefulSet object in K8S will be reset to the value
+	// specified by the 'Replicas' field, erasing the value previously set by HPA.
+	policy := spec.AutoScalingPolicy
+	if policy != nil {
+		spec.Replicas = nil
+	}
+
+	return nil
+}
+
+func (cc *CnController) validating(src *srapi.StarRocksCluster) error {
+	spec := src.Spec.StarRocksCnSpec
+
+	// validating the auto scaling policy
+	policy := spec.AutoScalingPolicy
+	if policy != nil {
+		minReplicas := int32(1) // default value
+		if policy.MinReplicas != nil {
+			minReplicas = *policy.MinReplicas
+			if minReplicas < 1 {
+				return fmt.Errorf("the min replicas must not be smaller than 1")
+			}
+		}
+
+		maxReplicas := policy.MaxReplicas
+		if maxReplicas < minReplicas {
+			return fmt.Errorf("the MaxReplicas must not be smaller than MinReplicas")
+		}
+	}
+
+	return nil
 }

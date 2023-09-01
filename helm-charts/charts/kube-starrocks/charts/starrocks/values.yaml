@@ -170,6 +170,16 @@ starrocksFESpec:
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
+  # number of replicas to deploy for cn component.
+  # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the starrocksCnSpec
+  # field, the replicas field of the cn statefulset created by the operator will be set to null. This ensures that the replicas
+  # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to CN, then the pods
+  # of Cn will not be recreated.
+  # Why should the replicas field in this values.yaml be set to null? This is the default replicas. When the user removes
+  # the autoScalingPolicy fields from the starrocksCnSpec, the corresponding HPA object will be deleted. And when the replicas
+  # field is set, the number of pods will immediately revert to the replicas count, even though the user did not specify
+  # the replicas count in their own values.yaml.
+  # replicas: 1
   image:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu

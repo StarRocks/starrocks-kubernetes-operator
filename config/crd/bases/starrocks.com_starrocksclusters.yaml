@@ -1145,7 +1145,12 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod
+                    description: 'Replicas is the number of desired Pod. When HPA
+                      policy is enabled with a fixed replica count: every time the
+                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      object in K8S will be reset to the value specified by the ''Replicas''
+                      field, erasing the value previously set by HPA. So operator
+                      will set it to nil when HPA policy is enabled.'
                     format: int32
                     minimum: 0
                     type: integer
@@ -2197,7 +2202,7 @@ spec:
                     description: AutoScalingPolicy auto scaling strategy
                     properties:
                       hpaPolicy:
-                        description: the policy of cn autoscale. operator use autoscaling
+                        description: the policy of autoscaling. operator use autoscaling
                           v2.
                         properties:
                           behavior:
@@ -2332,7 +2337,7 @@ spec:
                               the redundancy code will hide the restriction about
                               HorizontalPodAutoscaler version and kubernetes releases
                               matching issue. the splice will have unsafe.Pointer
-                              convert, so be careful to edit the struct fileds.
+                              convert, so be careful to edit the struct fields.
                             items:
                               description: MetricSpec specifies how to scale based
                                 on a single metric (only `type` and one other matching
@@ -2855,10 +2860,15 @@ spec:
                             type: array
                         type: object
                       maxReplicas:
-                        description: the max numbers of target.
+                        description: MaxReplicas is the upper limit for the number
+                          of pods that can be set by the autoscaler; cannot be smaller
+                          than MinReplicas.
                         format: int32
                         type: integer
                       minReplicas:
+                        description: MinReplicas is the lower limit for the number
+                          of replicas to which the autoscaler can scale down. It defaults
+                          to 1 pod.
                         format: int32
                         type: integer
                       version:
@@ -2866,6 +2876,8 @@ spec:
                         description: version represents the autoscaler version for
                           cn service. only support v1,v2beta2,v2
                         type: string
+                    required:
+                    - maxReplicas
                     type: object
                   cnEnvVars:
                     description: cnEnvVars is a slice of environment variables that
@@ -3094,7 +3106,12 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod
+                    description: 'Replicas is the number of desired Pod. When HPA
+                      policy is enabled with a fixed replica count: every time the
+                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      object in K8S will be reset to the value specified by the ''Replicas''
+                      field, erasing the value previously set by HPA. So operator
+                      will set it to nil when HPA policy is enabled.'
                     format: int32
                     minimum: 0
                     type: integer
@@ -4219,7 +4236,12 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod
+                    description: 'Replicas is the number of desired Pod. When HPA
+                      policy is enabled with a fixed replica count: every time the
+                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      object in K8S will be reset to the value specified by the ''Replicas''
+                      field, erasing the value previously set by HPA. So operator
+                      will set it to nil when HPA policy is enabled.'
                     format: int32
                     minimum: 0
                     type: integer
@@ -5471,7 +5493,12 @@ spec:
                     - type
                     type: object
                   replicas:
-                    description: Replicas is the number of desired Pod
+                    description: 'Replicas is the number of desired Pod. When HPA
+                      policy is enabled with a fixed replica count: every time the
+                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      object in K8S will be reset to the value specified by the ''Replicas''
+                      field, erasing the value previously set by HPA. So operator
+                      will set it to nil when HPA policy is enabled.'
                     format: int32
                     minimum: 0
                     type: integer

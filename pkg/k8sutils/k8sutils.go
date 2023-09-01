@@ -247,7 +247,7 @@ func DeleteAutoscaler(ctx context.Context, k8sclient client.Client, namespace, n
 	switch autoscalerVersion {
 	case srapi.AutoScalerV1:
 		autoscaler = &v1.HorizontalPodAutoscaler{}
-	case srapi.AutoSclaerV2:
+	case srapi.AutoScalerV2:
 		autoscaler = &v2.HorizontalPodAutoscaler{}
 	case srapi.AutoScalerV2Beta2:
 		autoscaler = &v2beta2.HorizontalPodAutoscaler{}

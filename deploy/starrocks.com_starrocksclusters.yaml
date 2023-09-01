@@ -1314,6 +1314,8 @@ spec:
                       version:
                         default: v2beta2
                         type: string
+                    required:
+                    - maxReplicas
                     type: object
                   cnEnvVars:
                     items:

@@ -39,13 +39,13 @@ Resource Types:
 </tr>
 </thead>
 <tbody><tr><td><p>&#34;v1&#34;</p></td>
-<td><p>the cn service use v1 autoscaler. reference to <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
-</td>
-</tr><tr><td><p>&#34;v2beta2&#34;</p></td>
-<td><p>the cn service use v2beta. reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+<td><p>AutoScalerV1 the cn service use v1 autoscaler. Reference to <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
 </td>
 </tr><tr><td><p>&#34;v2&#34;</p></td>
-<td><p>the cn service use v2. reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+<td><p>AutoScalerV2 the cn service use v2. Reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
+</td>
+</tr><tr><td><p>&#34;v2beta2&#34;</p></td>
+<td><p>AutoScalerV2Beta2 the cn service use v2beta2. Reference to  <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/</a></p>
 </td>
 </tr></tbody>
 </table>
@@ -75,7 +75,7 @@ HPAPolicy
 </em>
 </td>
 <td>
-<p>the policy of cn autoscale. operator use autoscaling v2.</p>
+<p>the policy of autoscaling. operator use autoscaling v2.</p>
 </td>
 </tr>
 <tr>
@@ -100,6 +100,8 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
+<p>MinReplicas is the lower limit for the number of replicas to which the autoscaler
+can scale down. It defaults to 1 pod.</p>
 </td>
 </tr>
 <tr>
@@ -110,8 +112,8 @@ int32
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>the max numbers of target.</p>
+<p>MaxReplicas is the upper limit for the number of pods that can be set by the autoscaler;
+cannot be smaller than MinReplicas.</p>
 </td>
 </tr>
 </tbody>
@@ -425,7 +427,7 @@ MetricTarget
 <p>Metrics specifies how to scale based on a single metric
 the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
 HorizontalPodAutoscaler version and kubernetes releases matching issue.
-the splice will have unsafe.Pointer convert, so be careful to edit the struct fileds.</p>
+the splice will have unsafe.Pointer convert, so be careful to edit the struct fields.</p>
 </td>
 </tr>
 <tr>
@@ -1395,7 +1397,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
@@ -2085,7 +2092,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
@@ -2522,7 +2534,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
@@ -2907,7 +2924,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
@@ -3246,7 +3268,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
@@ -3645,7 +3672,12 @@ int32
 </em>
 </td>
 <td>
-<p>Replicas is the number of desired Pod</p>
+<em>(Optional)</em>
+<p>Replicas is the number of desired Pod.
+When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
+applied, the replica count of the StatefulSet object in K8S will be reset to the value
+specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
+So operator will set it to nil when HPA policy is enabled.</p>
 </td>
 </tr>
 <tr>
