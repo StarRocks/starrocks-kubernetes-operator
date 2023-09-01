@@ -56,7 +56,7 @@ const (
 	AutoScalerV2 AutoScalerVersion = "v2"
 )
 
-// Complete completes the default value of AutoScalerVersion
+// Complete() completes the default value of AutoScalerVersion
 func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion {
 	if version != "" {
 		return version
