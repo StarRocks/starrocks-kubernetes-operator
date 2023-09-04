@@ -286,7 +286,9 @@ spec:
 {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ .Values.starrocksCnSpec.image.tag }}"
+    {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
+    {{- end }}
 {{- if .Values.starrocksCnSpec.serviceAccount }}
     serviceAccount: {{ .Values.starrocksCnSpec.serviceAccount }}
 {{- end }}
