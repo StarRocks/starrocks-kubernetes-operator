@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -299,7 +301,12 @@ var (
 // GetKubernetesVersion get kubernetes version. It should not be executed concurrently.
 // The global variable KUBE_MAJOR_VERSION and KUBE_MINOR_VERSION will be set.
 func GetKubernetesVersion() error {
-	config, err := clientcmd.BuildConfigFromFlags("", "~/.kube/config")
+	var configPath string
+	home := homedir.HomeDir()
+	if home != "" {
+		configPath = filepath.Join(home, ".kube", "config")
+	}
+	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
 		config, err = rest.InClusterConfig()
 		if err != nil {
