@@ -29,7 +29,6 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
 	appv1 "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -233,13 +232,14 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
+	// v2.HorizontalPodAutoscaler does not exist.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appv1.StatefulSet{}).
 		Owns(&appv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
-		Owns(&v2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
 
