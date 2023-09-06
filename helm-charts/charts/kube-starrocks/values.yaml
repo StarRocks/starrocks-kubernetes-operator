@@ -38,10 +38,10 @@ operator:
     resources:
       limits:
         cpu: 500m
-        memory: 200Mi
+        memory: 800Mi
       requests:
         cpu: 500m
-        memory: 200Mi
+        memory: 400Mi
     # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
     # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
     nodeSelector: {}

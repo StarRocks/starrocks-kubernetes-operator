@@ -206,9 +206,9 @@ spec:
         resources:
           limits:
             cpu: 500m
-            memory: 200Mi
+            memory: 800Mi
           requests:
             cpu: 500m
-            memory: 200Mi
+            memory: 400Mi
       serviceAccountName: starrocks
       terminationGracePeriodSeconds: 10
