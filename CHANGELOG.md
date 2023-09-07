@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v1.8.2](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.2)
+
+This is a minor release of StarRocks Kubernetes Operator, a project that aims to provide a Kubernetes-native way to
+deploy and manage StarRocks clusters on Kubernetes.
+
+### What's New
+
+1. **[operator.yaml] Change the resource of operator:** We have changed the default resource limit and request of
+   operator pod in case of OOM.
+2. **[operator] Remove the watch for the HPA resource:** We have removed the watch for the HPA resource, because
+   operator can not make sure what version of HPA is used in the cluster.
+
 ## [v1.8.1](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.1)
 
 This is a minor release of StarRocks Kubernetes Operator, a project that aims to provide a Kubernetes-native way to
