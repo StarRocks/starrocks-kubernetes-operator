@@ -419,6 +419,10 @@ spec:
       {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       {{- end }}
+      {{- if .Values.starrocksFeProxySpec.service.ports }}
+      ports:
+        {{- toYaml .Values.starrocksFeProxySpec.service.ports | nindent 8 }}
+      {{- end }}
     {{- end }}
     {{- if .Values.starrocksFeProxySpec.nodeSelector }}
     nodeSelector:

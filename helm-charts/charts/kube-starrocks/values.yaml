@@ -536,6 +536,15 @@ starrocks:
       type: ClusterIP
       # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
       loadbalancerIP: ""
+      # config the service port for fe proxy service.
+      # if you want to use a dedicated port for fe proxy service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+        # e.g. use a dedicated node port for fe proxy service. The containerPort and port field can be commented out.
+        # - name: http-port
+        #   nodePort: 30080 # The range of valid ports is 30000-32767
+        #   containerPort: 8080 # The port on the container to expose
+        #   port: 8080 # The port to expose on the service
     # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
     # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
     nodeSelector: {}
