@@ -90,14 +90,15 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		if svc.Name == "" {
 			svc.Name = src.Name + "-" + srapi.DEFAULT_FE_PROXY
 		}
-		setServiceType(src.Spec.StarRocksFeProxySpec.Service, &svc)
-		anno = getServiceAnnotations(src.Spec.StarRocksFeProxySpec.Service)
+		feproxySpec := src.Spec.StarRocksFeProxySpec
+		setServiceType(feproxySpec.Service, &svc)
+		anno = getServiceAnnotations(feproxySpec.Service)
 		srPorts = []srapi.StarRocksServicePort{
-			{
+			mergePort(feproxySpec.Service, srapi.StarRocksServicePort{
 				Name:          FE_PORXY_HTTP_PORT_NAME,
 				Port:          FE_PROXY_HTTP_PORT,
 				ContainerPort: FE_PROXY_HTTP_PORT,
-			},
+			}),
 		}
 	}
 
