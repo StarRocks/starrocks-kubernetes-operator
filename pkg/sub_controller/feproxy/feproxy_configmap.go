@@ -62,6 +62,7 @@ http {
   client_max_body_size 0;
   ignore_invalid_headers off;
   underscores_in_headers on;
+  proxy_read_timeout 600s;
 
   client_body_temp_path /tmp/client_temp;
   proxy_temp_path       /tmp/proxy_temp_path;
