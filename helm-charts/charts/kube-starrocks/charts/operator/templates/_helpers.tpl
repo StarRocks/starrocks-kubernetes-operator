@@ -1,5 +1,8 @@
+{{/*
+The default service account name to use for the operator.
+*/}}
 {{- define "operator.serviceAccountName" -}}
-{{- print "starrocks" }}
+{{- default "starrocks" .Values.global.rbac.serviceAccountName }}
 {{- end }}
 
 {{- define "operator.namespace" -}}
