@@ -53,7 +53,10 @@ operator:
       # - key: "key"
       #   operator: "Equal|Exists"
       #   value: "value"
-    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # if specified, restricts the manager's cache to watch objects in the desired namespace.
+    # Defaults to all namespaces.
+    watchNamespace: ""
 
 starrocks:
   # set the nameOverride values for creating the same resources with parent chart.
