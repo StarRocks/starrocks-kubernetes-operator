@@ -46,16 +46,17 @@ var (
 )
 
 var (
-	setupLog             = ctrl.Log.WithName("setup")
-	metricsAddr          string
-	enableLeaderElection bool
-	probeAddr            string
-	printVar             bool
+	_setupLog             = ctrl.Log.WithName("setup")
+	_metricsAddr          string
+	_enableLeaderElection bool
+	_probeAddr            string
+	_printVar             bool
+	_namespace            string
 )
 
 // Print version information to a given out writer.
 func Print(out io.Writer) {
-	if printVar {
+	if _printVar {
 		fmt.Fprint(out, "version="+VERSION+"\ngoversion="+GOVERSION+"\ncommit="+COMMIT+"\nbuild_date="+BUILD_DATE+"\n")
 	}
 }
@@ -63,12 +64,14 @@ func Print(out io.Writer) {
 func init() {
 	//the implied flag: kubeconfig.
 	//KUBECONFIG env will be used if you have config.
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+	flag.StringVar(&_metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	flag.StringVar(&_probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&_enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.BoolVar(&printVar, "version", false, "Prints current version.")
+	flag.BoolVar(&_printVar, "version", false, "Prints current version.")
+	flag.StringVar(&_namespace, "namespace", "", "if specified, "+
+		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
 
 	// set klog flag
 	klog.InitFlags(nil)
@@ -84,7 +87,7 @@ func main() {
 	flag.Parse()
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	if printVar {
+	if _printVar {
 		Print(os.Stdout)
 		return
 	}
@@ -92,15 +95,16 @@ func main() {
 	duration := 2 * time.Minute
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 pkg.Scheme,
-		MetricsBindAddress:     metricsAddr,
+		MetricsBindAddress:     _metricsAddr,
 		Port:                   9443,
 		SyncPeriod:             &duration,
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
+		HealthProbeBindAddress: _probeAddr,
+		LeaderElection:         _enableLeaderElection,
 		LeaderElectionID:       "c6c79638.starrocks.com",
+		Namespace:              _namespace,
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		_setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
 
@@ -112,21 +116,21 @@ func main() {
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
+		_setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
+		_setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
 
 	if err := k8sutils.GetKubernetesVersion(); err != nil {
-		setupLog.Error(err, "unable to get kubernetes version, continue to start manager")
+		_setupLog.Error(err, "unable to get kubernetes version, continue to start manager")
 	}
 
-	setupLog.Info("starting manager")
+	_setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		_setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
 }
