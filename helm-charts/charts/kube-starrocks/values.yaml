@@ -54,7 +54,11 @@ operator:
       #   operator: "Equal|Exists"
       #   value: "value"
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
-    # if specified, restricts the manager's cache to watch objects in the desired namespace.
+    # If specified, it will restrict operator to watch resources in the specified namespace. And
+    #  1. You must deploy your StarRocks cluster to the specified namespace.
+    #  2. You can not assign multiple namespaces to watchNamespace field.
+    # Note: In most cases, you should not set this value. If your kubernetes cluster manages too many nodes, and
+    # operator watching all namespaces use too many memory resources, you can set this value.
     # Defaults to all namespaces.
     watchNamespace: ""
 
