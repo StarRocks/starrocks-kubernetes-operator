@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [v1.8.3](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.3)
+
+This is a minor release of StarRocks Kubernetes Operator.
+
+### What's New
+
+1. **[operator] Set proxy_read_timeout 600s:**  We have set proxy_read_timeout to 600s in nginx.conf, because the
+   default value is 60s, which may cause timeout.
+2. **[chart] Add JAVA_OPTS_FOR_JDK_11 in FE config:** We have added JAVA_OPTS_FOR_JDK_11 in FE config, because the
+   default value is not suitable for JDK 11. **If you used the default config of FE in values.yaml, Upgrading to v1.8.3
+   will cause the pods of FE to restart.**
+3. **[chart] Allow user to specify serviceAccount for operator:** By default the operator chart will create a
+   serviceAccount for the operator, named starrocks. But if you want to use an existing serviceAccount, you can specify
+   it in values.yaml.
+4. **[operator] Support `Ports` for feProxy component:** We have supported `Ports` for feProxy component, allowing
+   users to specify the nodePort of feProxy service.
+5. **[operator] Add namespace flag:** It makes operator watch resources in a single namespace instead of all namespaces
+   in the cluster. In most cases, you should not set this value. If your kubernetes cluster manages too many nodes, and
+   operator watching all namespaces use too many memory resources, you can set this value.
+
 ## [v1.8.2](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.2)
 
 This is a minor release of StarRocks Kubernetes Operator, a project that aims to provide a Kubernetes-native way to
