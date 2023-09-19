@@ -15,7 +15,9 @@
 package pod
 
 import (
+	"os"
 	"strconv"
+	"strings"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -206,8 +208,16 @@ func Envs(spec v1.SpecInterface, config map[string]interface{}, feExternalServic
 		keys[env.Name] = true
 	}
 
+	unsupport_envs := make(map[string]bool)
+	if unsupport_envs_str := os.Getenv("KUBE_STARROCKS_UNSUPPORTED_ENVS"); unsupport_envs_str != "" {
+		unsupport_envs_slice := strings.Split(unsupport_envs_str, ",")
+		for _, name := range unsupport_envs_slice {
+			unsupport_envs[name] = true
+		}
+	}
+
 	addEnv := func(envVar corev1.EnvVar) {
-		if !keys[envVar.Name] {
+		if !keys[envVar.Name] && !unsupport_envs[envVar.Name] {
 			keys[envVar.Name] = true
 			envs = append(envs, envVar)
 		}
