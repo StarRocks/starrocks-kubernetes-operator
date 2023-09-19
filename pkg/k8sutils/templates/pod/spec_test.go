@@ -506,6 +506,12 @@ func TestEnvs(t *testing.T) {
 			},
 		},
 		{
+			Name: "HOST_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.hostIP"},
+			},
+		},
+		{
 			Name: "POD_NAMESPACE",
 			ValueFrom: &corev1.EnvVarSource{
 				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
