@@ -1,0 +1,106 @@
+# This manifest deploys a StarRocks cluster with FE, BE, CN, and mount their own config
+# By default, the StarRocks cluster will use the default configuration file.
+# FE default config: https://github.com/StarRocks/starrocks/blob/main/conf/fe.conf
+# BE default config: https://github.com/StarRocks/starrocks/blob/main/conf/be.conf
+# CN default config: https://github.com/StarRocks/starrocks/blob/main/conf/cn.conf
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-fe-cm
+      resolveKey: fe.conf
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-be-cm
+      resolveKey: be.conf
+  starRocksCnSpec:
+    image: starrocks/cn-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-cn-cm
+      resolveKey: cn.conf
+
+---
+
+# fe config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-fe-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  fe.conf: |
+    LOG_DIR = ${STARROCKS_HOME}/log
+    DATE = "$(date +%Y%m%d-%H%M%S)"
+    JAVA_OPTS="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseMembar -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xloggc:${LOG_DIR}/fe.gc.log.$DATE"
+    JAVA_OPTS_FOR_JDK_9="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    JAVA_OPTS_FOR_JDK_11="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseG1GC -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    http_port = 8030
+    rpc_port = 9020
+    query_port = 9030
+    edit_log_port = 9010
+    mysql_service_nio_enabled = true
+    sys_log_level = INFO
+
+---
+
+# be config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-be-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  be.conf: |
+    be_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+    sys_log_level = INFO
+    default_rowset_type = beta
+
+---
+
+# cn config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-cn-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  cn.conf: |
+    sys_log_level = INFO
+    # ports for admin, web, heartbeat service
+    thrift_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060

@@ -1,0 +1,64 @@
+# This manifest deploys a StarRocks cluster with FE, BE, CN.
+# CN nodes are optional components of StarRocks, and are only responsible for SQL execution.
+# You can increase the number of CN nodes to elastically scale compute resources without
+# changing the data distribution in your StarRocks cluster.
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+  starRocksCnSpec:
+    image: starrocks/cn-ubuntu:latest
+    replicas: 1   # comment out this line if autoScalingPolicy is enabled.
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    autoScalingPolicy:  # comment out this section if replicas is set.
+      maxReplicas: 10
+      minReplicas: 1
+      # operator creates an HPA resource based on the following field.
+      # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
+      hpaPolicy:
+        metrics:
+          - type: Resource
+            resource:
+              name: memory
+              target:
+                averageUtilization: 60
+                type: Utilization
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                averageUtilization: 60
+                type: Utilization
+        behavior:
+          scaleUp:
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled

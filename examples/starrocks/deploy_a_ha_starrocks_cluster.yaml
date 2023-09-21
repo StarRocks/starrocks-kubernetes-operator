@@ -1,0 +1,30 @@
+# This manifest deploys a high-availability StarRocks cluster with 3 FE pods and 3 BE pods.
+# A high-availability StarRocks cluster requires at least THREE FE pods in the StarRocks cluster. One of them is the
+# leader, and the other two are the followers.
+# A high-availability cluster of BEs is automatically formed when at least three BE pods are deployed and added to a
+# StarRocks cluster.
+# The requests and limits of FE and BE are set based on https://docs.starrocks.io/en-us/latest/deployment/plan_cluster
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3   # at least 3 FE pods
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3 # at least 3 BE pods
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi

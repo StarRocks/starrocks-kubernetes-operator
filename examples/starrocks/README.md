@@ -1,0 +1,10 @@
+This document explains how to deploy a StarRocks cluster using the Operator. It primarily covers:
+
+1. [Deploying a very simple StarRocks cluster](./deploy_a_very_simple_starrocks_cluster.yaml)
+2. [Deploying a HA StarRocks cluster](./deploy_a_ha_starrocks_cluster.yaml)
+3. [Deploying a StarRocks cluster with the CN component](./deploy_a_starrocks_cluster_with_cn.yaml)
+4. [Deploying a StarRocks cluster with custom configurations](./deploy_a_starrocks_cluster_with_custom_configurations.yaml)
+5. [Deploying a StarRocks cluster with persistent storage](./deploy_a_starrocks_cluster_with_persistent_storage.yaml)
+6. [Deploying a StarRocks cluster with share_data_mode](./deploy_a_starrocks_cluster_with_share_data_mode.yaml)
+7. [Deploying a StarRocks cluster with the FE Proxy component](./deploy_a_starrocks_cluster_with_fe_proxy.yaml)
+8. [Deploying a StarRocks cluster with all the above features](./deploy_a_starrocks_cluster_with_all_features.yaml)
