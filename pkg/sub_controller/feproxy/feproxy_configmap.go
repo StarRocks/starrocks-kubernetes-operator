@@ -75,6 +75,8 @@ http {
   server {
     listen 8080;
     resolver %v;
+    proxy_intercept_errors on;
+    recursive_error_pages on;
 
     location /nginx/health {
       access_log off;
@@ -87,7 +89,6 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_intercept_errors on;
       error_page 307 = @handle_redirect;
     }
 
@@ -98,7 +99,6 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_intercept_errors on;
       error_page 307 = @handle_redirect;
     }
 
@@ -109,7 +109,6 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_intercept_errors on;
       error_page 307 = @handle_redirect;
     }
 
@@ -121,6 +120,7 @@ http {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      error_page 307 = @handle_redirect;
     }
   }
 }
