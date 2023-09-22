@@ -88,6 +88,7 @@ AutoScalerVersion
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>version represents the autoscaler version for cn service. only support v1,v2beta2,v2</p>
 </td>
 </tr>
@@ -1554,6 +1555,20 @@ ConfigMapInfo
 </tr>
 <tr>
 <td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>runAsNonRoot</code><br/>
 <em>
 bool
@@ -2249,6 +2264,20 @@ ConfigMapInfo
 </tr>
 <tr>
 <td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>runAsNonRoot</code><br/>
 <em>
 bool
@@ -2691,6 +2720,20 @@ ConfigMapInfo
 </tr>
 <tr>
 <td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>runAsNonRoot</code><br/>
 <em>
 bool
@@ -3081,6 +3124,20 @@ ConfigMapInfo
 </tr>
 <tr>
 <td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>resolver</code><br/>
 <em>
 string
@@ -3421,6 +3478,20 @@ ConfigMapInfo
 <td>
 <em>(Optional)</em>
 <p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
 </td>
 </tr>
 <tr>
@@ -3825,6 +3896,20 @@ ConfigMapInfo
 <td>
 <em>(Optional)</em>
 <p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startupProbeFailureSeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.</p>
 </td>
 </tr>
 </tbody>

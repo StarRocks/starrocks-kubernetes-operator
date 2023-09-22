@@ -59,6 +59,7 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
 	Envs := pod.Envs(src.Spec.StarRocksCnSpec, config, feExternalServiceName, src.Namespace, cnSpec.CnEnvVars)
+	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	cnContainer := corev1.Container{
 		Name:            srapi.DEFAULT_CN,
 		Image:           cnSpec.Image,
@@ -69,9 +70,9 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		Resources:       cnSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
-		StartupProbe:    pod.StartupProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(webServerPort, pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(webServerPort, pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/cn_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
 	}

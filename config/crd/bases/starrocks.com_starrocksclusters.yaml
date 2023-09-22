@@ -1255,6 +1255,14 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  startupProbeFailureSeconds:
+                    description: StartupProbeFailureSeconds defines the total failure
+                      seconds of startupProbe. By default, the startupProbe use HTTP
+                      /api/health Probe, the failureThreshold is 60, the periodSeconds
+                      is 5. If FE needs to more time to start, you can change the
+                      default value by setting the StartupProbeFailureSeconds field.
+                    format: int32
+                    type: integer
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       meta storage.
@@ -3215,6 +3223,14 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  startupProbeFailureSeconds:
+                    description: StartupProbeFailureSeconds defines the total failure
+                      seconds of startupProbe. By default, the startupProbe use HTTP
+                      /api/health Probe, the failureThreshold is 60, the periodSeconds
+                      is 5. If FE needs to more time to start, you can change the
+                      default value by setting the StartupProbeFailureSeconds field.
+                    format: int32
+                    type: integer
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       meta storage.
@@ -4322,6 +4338,14 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  startupProbeFailureSeconds:
+                    description: StartupProbeFailureSeconds defines the total failure
+                      seconds of startupProbe. By default, the startupProbe use HTTP
+                      /api/health Probe, the failureThreshold is 60, the periodSeconds
+                      is 5. If FE needs to more time to start, you can change the
+                      default value by setting the StartupProbeFailureSeconds field.
+                    format: int32
+                    type: integer
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       meta storage.
@@ -5602,6 +5626,14 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  startupProbeFailureSeconds:
+                    description: StartupProbeFailureSeconds defines the total failure
+                      seconds of startupProbe. By default, the startupProbe use HTTP
+                      /api/health Probe, the failureThreshold is 60, the periodSeconds
+                      is 5. If FE needs to more time to start, you can change the
+                      default value by setting the StartupProbeFailureSeconds field.
+                    format: int32
+                    type: integer
                   storageVolumes:
                     description: StorageVolumes defines the additional storage for
                       meta storage.

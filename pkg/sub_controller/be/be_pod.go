@@ -76,6 +76,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
 	Envs := pod.Envs(src.Spec.StarRocksBeSpec, config, feExternalServiceName, src.Namespace, beSpec.BeEnvVars)
+	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	beContainer := corev1.Container{
 		Name:            srapi.DEFAULT_BE,
 		Image:           beSpec.Image,
@@ -86,9 +87,9 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		Resources:       beSpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
-		StartupProbe:    pod.StartupProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.WEBSERVER_PORT), pod.HEALTH_API_PATH),
+		StartupProbe:    pod.StartupProbe(beSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(webServerPort, pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(webServerPort, pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/be_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(beSpec),
 	}

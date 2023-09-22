@@ -11,6 +11,7 @@ type loadInterface interface {
 	GetNodeSelector() map[string]string
 	GetAffinity() *corev1.Affinity
 	GetTolerations() []corev1.Toleration
+	GetStartupProbeFailureSeconds() *int32
 
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
@@ -84,6 +85,12 @@ type StarRocksLoadSpec struct {
 	// the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
 	// +optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
+
+	// StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+	// By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
+	// If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.
+	// +optional
+	StartupProbeFailureSeconds *int32 `json:"startupProbeFailureSeconds,omitempty"`
 }
 
 // StarRocksService defines external service for starrocks component.
@@ -187,4 +194,8 @@ func (spec *StarRocksLoadSpec) GetAnnotations() map[string]string {
 
 func (spec *StarRocksLoadSpec) GetSchedulerName() string {
 	return spec.SchedulerName
+}
+
+func (spec *StarRocksLoadSpec) GetStartupProbeFailureSeconds() *int32 {
+	return spec.StartupProbeFailureSeconds
 }
