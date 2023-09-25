@@ -493,7 +493,7 @@ func TestLabels(t *testing.T) {
 }
 
 func TestEnvs(t *testing.T) {
-	envs_without_ip := []corev1.EnvVar{
+	envsWithoutIP := []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
 			ValueFrom: &corev1.EnvVarSource{
@@ -550,10 +550,10 @@ func TestEnvs(t *testing.T) {
 		config      map[string]interface{}
 	}
 	tests := []struct {
-		name           string
-		args           args
-		want           []corev1.EnvVar
-		unsupport_envs string
+		name            string
+		args            args
+		want            []corev1.EnvVar
+		unsupportedEnvs string
 	}{
 		{
 			name: "test envs for fe",
@@ -572,7 +572,7 @@ func TestEnvs(t *testing.T) {
 					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
 				},
 			}...),
-			unsupport_envs: "",
+			unsupportedEnvs: "",
 		},
 		{
 			name: "test envs for be",
@@ -595,7 +595,7 @@ func TestEnvs(t *testing.T) {
 					Value: fmt.Sprintf("%v", rutils.DefMap[rutils.QUERY_PORT]),
 				},
 			}...),
-			unsupport_envs: "",
+			unsupportedEnvs: "",
 		},
 		{
 			name: "test envs for cn",
@@ -618,7 +618,7 @@ func TestEnvs(t *testing.T) {
 					Value: fmt.Sprintf("%v", rutils.DefMap[rutils.QUERY_PORT]),
 				},
 			}...),
-			unsupport_envs: "",
+			unsupportedEnvs: "",
 		},
 		{
 			name: "test envs for be with unsupport envs",
@@ -627,7 +627,7 @@ func TestEnvs(t *testing.T) {
 				namespace:   "ns",
 				spec:        &v1.StarRocksBeSpec{},
 			},
-			want: append(append([]corev1.EnvVar(nil), envs_without_ip...), []corev1.EnvVar{
+			want: append(append([]corev1.EnvVar(nil), envsWithoutIP...), []corev1.EnvVar{
 				{
 					Name:  v1.COMPONENT_NAME,
 					Value: v1.DEFAULT_BE,
@@ -641,13 +641,13 @@ func TestEnvs(t *testing.T) {
 					Value: fmt.Sprintf("%v", rutils.DefMap[rutils.QUERY_PORT]),
 				},
 			}...),
-			unsupport_envs: "HOST_IP,POD_IP",
+			unsupportedEnvs: "HOST_IP,POD_IP",
 		},
 	}
 	for _, tt := range tests {
 		feExternalServiceName := service.ExternalServiceName("test", &v1.StarRocksFeSpec{})
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("KUBE_STARROCKS_UNSUPPORTED_ENVS", tt.unsupport_envs)
+			os.Setenv("KUBE_STARROCKS_UNSUPPORTED_ENVS", tt.unsupportedEnvs)
 			defer func() {
 				os.Setenv("KUBE_STARROCKS_UNSUPPORTED_ENVS", "")
 			}()
