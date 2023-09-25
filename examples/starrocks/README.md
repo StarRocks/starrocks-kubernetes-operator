@@ -9,3 +9,7 @@ references, and tailor them as necessary to fit the requirement. It primarily co
 6. [Deploying a StarRocks cluster running in shared_data mode](./deploy_a_starrocks_cluster_with_share_data_mode.yaml)
 7. [Deploying a StarRocks cluster with the FE Proxy component](./deploy_a_starrocks_cluster_with_fe_proxy.yaml)
 8. [Deploying a StarRocks cluster with all the above features](./deploy_a_starrocks_cluster_with_all_features.yaml)
+
+> Note:
+>
+> Some of the example YAML files need to be edited before using them. For example, the `shared_data mode` example needs editing to specify the shared data (MinIO, AWS, OSS, etc.) location and credentials. When editing these examples you will generally be editing ConfigMaps in the example file.
