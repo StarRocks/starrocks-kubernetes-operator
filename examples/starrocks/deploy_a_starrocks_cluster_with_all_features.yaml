@@ -1,0 +1,174 @@
+# This manifest deploys a StarRocks cluster with all supported features.
+# If you want to understand the meaning of the fields in the following custom resource, please
+# refer to the explanations in other examples.
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: a-starrocks-with-all-features   # change the name if needed.
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-fe-cm
+      resolveKey: fe.conf
+    storageVolumes:
+    - name: fe-storage-meta
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for metadata
+      mountPath: /opt/starrocks/fe/meta   # the path of metadata
+    - name: fe-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi    # the size of storage volume for log
+      mountPath: /opt/starrocks/fe/log    # the path of log
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-be-cm
+      resolveKey: be.conf
+    storageVolumes:
+    - name: be-storage-data
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for data
+      mountPath: /opt/starrocks/be/storage  # the path of data
+    - name: be-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi  # the size of storage volume for log
+      mountPath: /opt/starrocks/be/log  # the path of log
+  starRocksFeProxySpec:
+    replicas: 1
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+    service:
+      type: NodePort   # export fe proxy service
+      ports:
+        - containerPort: 8080
+          name: http-port
+          nodePort: 30180   # The range of valid ports is 30000-32767
+          port: 8080
+    resolver: "kube-dns.kube-system.svc.cluster.local"  # this is the default dns server.
+  starRocksCnSpec:
+    image: starrocks/cn-ubuntu:latest
+    # replicas: 1   # comment out this line if autoScalingPolicy is enabled.
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    configMapInfo:
+      configMapName: starrockscluster-sample-cn-cm
+      resolveKey: cn.conf
+    storageVolumes:
+    - name: cn-storage-data
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for data
+      mountPath: /opt/starrocks/cn/storage  # the path of data
+    - name: cn-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi  # the size of storage volume for log
+      mountPath: /opt/starrocks/cn/log  # the path of log
+    autoScalingPolicy:  # comment out this section if replicas is set.
+      maxReplicas: 10
+      minReplicas: 1
+      # operator creates an HPA resource based on the following field.
+      # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
+      hpaPolicy:
+        metrics:
+          - type: Resource
+            resource:
+              name: memory
+              target:
+                averageUtilization: 60
+                type: Utilization
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                averageUtilization: 60
+                type: Utilization
+        behavior:
+          scaleUp:
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled
+
+---
+
+# fe config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-fe-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  fe.conf: |
+    LOG_DIR = ${STARROCKS_HOME}/log
+    DATE = "$(date +%Y%m%d-%H%M%S)"
+    JAVA_OPTS="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseMembar -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xloggc:${LOG_DIR}/fe.gc.log.$DATE"
+    JAVA_OPTS_FOR_JDK_9="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=7 -XX:+CMSClassUnloadingEnabled -XX:-CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=80 -XX:SoftRefLRUPolicyMSPerMB=0 -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    JAVA_OPTS_FOR_JDK_11="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseG1GC -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    http_port = 8030
+    rpc_port = 9020
+    query_port = 9030
+    edit_log_port = 9010
+    mysql_service_nio_enabled = true
+    sys_log_level = INFO
+
+---
+
+# be config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-be-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  be.conf: |
+    be_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+    sys_log_level = INFO
+    default_rowset_type = beta
+
+---
+
+# cn config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starrockscluster-sample-cn-cm
+  labels:
+    cluster: starrockscluster-sample
+data:
+  cn.conf: |
+    sys_log_level = INFO
+    # ports for admin, web, heartbeat service
+    thrift_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060

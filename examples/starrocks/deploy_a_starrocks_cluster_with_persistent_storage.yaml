@@ -1,0 +1,72 @@
+# For FE component, it needs to store metadata of StarRocks and FE log.
+# For BE component, it needs to store data of StarRocks and BE log.
+# For CN component, it needs to store cache data of StarRocks and CN log.
+# By default, operator create an emptyDir storage volume for each metadata, data, and log.
+# This manifest deploys a StarRocks cluster with other persistent storage volume.
+#
+# Note: you do not need to create the storage volume in advance.
+#
+# If storageClassName is left blank, the default storage class will be used. You can view
+# available storage classes in the Kubernetes cluster with "kubectl get storageclass".
+# Note: selecting an appropriate storage class is crucial as it dictates the type of storage volume.
+# See https://kubernetes.io/docs/concepts/storage/persistent-volumes/ for more information.
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: a-starrocks-with-persistent-storage   # change the name if needed.
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+    storageVolumes:
+    - name: fe-storage-meta
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for metadata
+      mountPath: /opt/starrocks/fe/meta   # the path of metadata
+    - name: fe-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi    # the size of storage volume for log
+      mountPath: /opt/starrocks/fe/log    # the path of log
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    storageVolumes:
+    - name: be-storage-data
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for data
+      mountPath: /opt/starrocks/be/storage  # the path of data
+    - name: be-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi  # the size of storage volume for log
+      mountPath: /opt/starrocks/be/log  # the path of log
+  starRocksCnSpec:
+    image: starrocks/cn-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    storageVolumes:
+    - name: cn-storage-data
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 10Gi   # the size of storage volume for data
+      mountPath: /opt/starrocks/cn/storage  # the path of data
+    - name: cn-storage-log
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
+      storageSize: 1Gi  # the size of storage volume for log
+      mountPath: /opt/starrocks/cn/log  # the path of log

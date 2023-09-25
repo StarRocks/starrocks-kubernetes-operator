@@ -1,0 +1,26 @@
+# This manifest deploys a very simple StarRocks cluster with 1 FE and 1 BE.
+# Without any workload, Starrocks doesn't require too much cpu and memory resource.
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: a-starrocks-with-no-ha  # change the name if needed.
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
