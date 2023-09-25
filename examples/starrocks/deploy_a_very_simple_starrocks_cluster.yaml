@@ -1,5 +1,5 @@
 # This manifest deploys a very simple StarRocks cluster with 1 FE and 1 BE.
-# Without any workload, Starrocks doesn't require much memory.
+# Without any workload, Starrocks doesn't require too much cpu and memory resource.
 
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
