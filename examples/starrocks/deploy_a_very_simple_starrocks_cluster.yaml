@@ -4,7 +4,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: starrockscluster-basic-no-ha
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
