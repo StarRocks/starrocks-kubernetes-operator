@@ -591,6 +591,9 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  startupProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   storageVolumes:
                     items:
                       properties:
@@ -1506,6 +1509,9 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  startupProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   storageVolumes:
                     items:
                       properties:
@@ -2000,6 +2006,9 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  startupProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   storageVolumes:
                     items:
                       properties:
@@ -2587,6 +2596,9 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  startupProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   storageVolumes:
                     items:
                       properties:

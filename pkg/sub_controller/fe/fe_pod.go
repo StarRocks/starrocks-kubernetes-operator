@@ -75,6 +75,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
 	Envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
+	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
 		Image:           feSpec.Image,
@@ -85,9 +86,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		Resources:       feSpec.ResourceRequirements,
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
-		StartupProbe:    pod.StartupProbe(rutils.GetPort(config, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.LivenessProbe(rutils.GetPort(config, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.ReadinessProbe(rutils.GetPort(config, rutils.HTTP_PORT), pod.HEALTH_API_PATH),
+		StartupProbe:    pod.StartupProbe(feSpec.GetStartupProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(httpPort, pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(httpPort, pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/fe_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(feSpec),
 	}

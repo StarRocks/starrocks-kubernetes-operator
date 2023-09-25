@@ -32,30 +32,18 @@ const (
 )
 
 // StartupProbe returns a startup probe.
-func StartupProbe(port int32, path string) *corev1.Probe {
-	return &corev1.Probe{
-		FailureThreshold: 60,
-		PeriodSeconds:    5,
-		ProbeHandler:     getProbe(port, path),
-	}
+func StartupProbe(startupProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
+	return completeProbe(startupProbeFailureSeconds, 60, 5, getProbe(port, path))
 }
 
 // LivenessProbe returns a liveness.
 func LivenessProbe(port int32, path string) *corev1.Probe {
-	return &corev1.Probe{
-		PeriodSeconds:    5,
-		FailureThreshold: 3,
-		ProbeHandler:     getProbe(port, path),
-	}
+	return completeProbe(nil, 3, 5, getProbe(port, path))
 }
 
 // ReadinessProbe returns a readiness probe.
 func ReadinessProbe(port int32, path string) *corev1.Probe {
-	return &corev1.Probe{
-		PeriodSeconds:    5,
-		FailureThreshold: 3,
-		ProbeHandler:     getProbe(port, path),
-	}
+	return completeProbe(nil, 3, 5, getProbe(port, path))
 }
 
 // LifeCycle returns a lifecycle.
@@ -79,6 +67,19 @@ func getProbe(port int32, path string) corev1.ProbeHandler {
 			},
 		},
 	}
+}
+
+func completeProbe(failureSeconds *int32, defaultFailureThreshold int32, defaultPeriodSeconds int32,
+	probeHandler corev1.ProbeHandler) *corev1.Probe {
+	probe := &corev1.Probe{}
+	if failureSeconds != nil && *failureSeconds > 0 {
+		probe.FailureThreshold = (*failureSeconds + defaultPeriodSeconds - 1) / defaultPeriodSeconds
+	} else {
+		probe.FailureThreshold = defaultFailureThreshold
+	}
+	probe.PeriodSeconds = defaultPeriodSeconds
+	probe.ProbeHandler = probeHandler
+	return probe
 }
 
 func getVolumeName(mountInfo v1.MountInfo) string {

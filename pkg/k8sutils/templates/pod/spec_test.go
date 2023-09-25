@@ -116,7 +116,7 @@ func TestMakeStartupProbe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := StartupProbe(tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			if got := StartupProbe(nil, tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StartupProbe() = %v, want %v", got, tt.want)
 			}
 		})
@@ -825,6 +825,84 @@ func Test_getVolumeName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getVolumeName(tt.args.mountInfo); got != tt.want {
 				t.Errorf("getVolumeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_completeProbe(t *testing.T) {
+	type args struct {
+		originalProbe           *int32
+		defaultFailureThreshold int32
+		defaultPeriodSeconds    int32
+		probeHandler            corev1.ProbeHandler
+	}
+	tests := []struct {
+		name string
+		args args
+		want *corev1.Probe
+	}{
+		{
+			name: "test complete probe",
+			args: args{
+				originalProbe:           nil,
+				defaultFailureThreshold: 1,
+				defaultPeriodSeconds:    1,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 1,
+				PeriodSeconds:    1,
+			},
+		},
+		{
+			name: "test complete probe 2",
+			args: args{
+				originalProbe:           func() *int32 { v := int32(10); return &v }(),
+				defaultFailureThreshold: 1,
+				defaultPeriodSeconds:    5,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 2,
+				PeriodSeconds:    5,
+			},
+		},
+		{
+			name: "test complete probe 3",
+			args: args{
+				originalProbe:           func() *int32 { v := int32(0); return &v }(),
+				defaultFailureThreshold: 60,
+				defaultPeriodSeconds:    5,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 60,
+				PeriodSeconds:    5,
+			},
+		},
+		{
+			name: "test complete probe 4",
+			args: args{
+				originalProbe:           func() *int32 { v := int32(1); return &v }(),
+				defaultFailureThreshold: 60,
+				defaultPeriodSeconds:    5,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 1,
+				PeriodSeconds:    5,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := completeProbe(tt.args.originalProbe, tt.args.defaultFailureThreshold, tt.args.defaultPeriodSeconds, tt.args.probeHandler); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("completeProbe() = %v, want %v", got, tt.want)
 			}
 		})
 	}
