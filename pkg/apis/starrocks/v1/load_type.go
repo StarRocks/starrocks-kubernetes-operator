@@ -87,8 +87,9 @@ type StarRocksLoadSpec struct {
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
 	// StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
-	// By default, the startupProbe use HTTP /api/health Probe, the failureThreshold is 60, the periodSeconds is 5.
-	// If FE needs to more time to start, you can change the default value by setting the StartupProbeFailureSeconds field.
+	// Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+	// will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+	// the total time of seconds before startupProbe give up and fail the container start.
 	// +optional
 	StartupProbeFailureSeconds *int32 `json:"startupProbeFailureSeconds,omitempty"`
 }
