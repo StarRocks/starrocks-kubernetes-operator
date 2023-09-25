@@ -1,5 +1,5 @@
 # This manifest deploys a StarRocks cluster with FE, BE, CN.
-# CN nodes are optional components of StarRocks, and are only responsible for SQL execution.
+# CN nodes are optional components of StarRocks.
 # You can increase the number of CN nodes to elastically scale compute resources without
 # changing the data distribution in your StarRocks cluster.
 
