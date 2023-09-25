@@ -4,7 +4,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-basic-no-ha
+  name: a-starrocks-with-no-ha  # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest

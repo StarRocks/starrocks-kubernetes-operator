@@ -14,7 +14,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: a-starrocks-with-persistent-storage   # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
@@ -27,11 +27,11 @@ spec:
       memory: 16Gi
     storageVolumes:
     - name: fe-storage-meta
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for metadata
       mountPath: /opt/starrocks/fe/meta   # the path of metadata
     - name: fe-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi    # the size of storage volume for log
       mountPath: /opt/starrocks/fe/log    # the path of log
   starRocksBeSpec:
@@ -45,11 +45,11 @@ spec:
       memory: 64Gi
     storageVolumes:
     - name: be-storage-data
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for data
       mountPath: /opt/starrocks/be/storage  # the path of data
     - name: be-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi  # the size of storage volume for log
       mountPath: /opt/starrocks/be/log  # the path of log
   starRocksCnSpec:
@@ -63,10 +63,10 @@ spec:
       memory: 64Gi
     storageVolumes:
     - name: cn-storage-data
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for data
       mountPath: /opt/starrocks/cn/storage  # the path of data
     - name: cn-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi  # the size of storage volume for log
       mountPath: /opt/starrocks/cn/log  # the path of log

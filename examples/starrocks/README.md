@@ -1,6 +1,7 @@
-This document explains how to deploy a StarRocks cluster using the Operator. It primarily covers:
+This document explains how to deploy a StarRocks cluster using the Operator. Users can take these examples as
+references, and tailor them as necessary to fit the requirement. It primarily covers:
 
-1. [Deploying a very simple StarRocks cluster](./deploy_a_very_simple_starrocks_cluster.yaml)
+1. [Deploying a very simple StarRocks cluster](./deploy_a_starrocks_cluster_with_no_ha.yaml)
 2. [Deploying a HA StarRocks cluster](./deploy_a_ha_starrocks_cluster.yaml)
 3. [Deploying a StarRocks cluster with the CN component](./deploy_a_starrocks_cluster_with_cn.yaml)
 4. [Deploying a StarRocks cluster with custom configurations](./deploy_a_starrocks_cluster_with_custom_configurations.yaml)

@@ -5,7 +5,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: a-starrocks-with-all-features   # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
@@ -21,11 +21,11 @@ spec:
       resolveKey: fe.conf
     storageVolumes:
     - name: fe-storage-meta
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for metadata
       mountPath: /opt/starrocks/fe/meta   # the path of metadata
     - name: fe-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi    # the size of storage volume for log
       mountPath: /opt/starrocks/fe/log    # the path of log
   starRocksBeSpec:
@@ -42,11 +42,11 @@ spec:
       resolveKey: be.conf
     storageVolumes:
     - name: be-storage-data
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for data
       mountPath: /opt/starrocks/be/storage  # the path of data
     - name: be-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi  # the size of storage volume for log
       mountPath: /opt/starrocks/be/log  # the path of log
   starRocksFeProxySpec:
@@ -67,7 +67,7 @@ spec:
     resolver: "kube-dns.kube-system.svc.cluster.local"  # this is the default dns server.
   starRocksCnSpec:
     image: starrocks/cn-ubuntu:latest
-    replicas: 1   # comment out this line if autoScalingPolicy is enabled.
+    # replicas: 1   # comment out this line if autoScalingPolicy is enabled.
     limits:
       cpu: 16
       memory: 64Gi
@@ -79,11 +79,11 @@ spec:
       resolveKey: cn.conf
     storageVolumes:
     - name: cn-storage-data
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 10Gi   # the size of storage volume for data
       mountPath: /opt/starrocks/cn/storage  # the path of data
     - name: cn-storage-log
-      storageClassName: "openebs-hostpath"  # you can remove this line if you want to use the default storage class
+      storageClassName: ""  # you can remove this line if you want to use the default storage class
       storageSize: 1Gi  # the size of storage volume for log
       mountPath: /opt/starrocks/cn/log  # the path of log
     autoScalingPolicy:  # comment out this section if replicas is set.

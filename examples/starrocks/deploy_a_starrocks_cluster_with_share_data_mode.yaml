@@ -1,9 +1,10 @@
 # This manifest deploys a StarRocks cluster running in share data mode.
+# see https://docs.starrocks.io/en-us/latest/deployment/deploy_shared_data for more information about share data mode.
 
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: a-starrocks-in-share-data-mode   # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
@@ -52,9 +53,5 @@ data:
     # config for share data mode
     run_mode = shared_data
     cloud_native_meta_port = 6090
-    cloud_native_storage_type = S3
-    aws_s3_path = input your <bucket>[/path]
-    aws_s3_region = input region
-    aws_s3_endpoint = input endpoint
-    aws_s3_access_key = input key
-    aws_s3_secret_key = input secret
+    # create the default storage volume manually after the cluster is created
+    enable_load_volume_from_conf = false

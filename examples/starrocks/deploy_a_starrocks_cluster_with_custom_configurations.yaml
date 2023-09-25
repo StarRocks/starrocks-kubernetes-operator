@@ -1,5 +1,7 @@
 # This manifest deploys a StarRocks cluster with FE, BE, CN, and mount their own config
 # By default, the StarRocks cluster will use the default configuration file.
+# This configuration might not be apt for your specific environment; for instance, the
+# default -Xmx8192m setting for FE could potentially lead to JVM Out Of Memory issues.
 # FE default config: https://github.com/StarRocks/starrocks/blob/main/conf/fe.conf
 # BE default config: https://github.com/StarRocks/starrocks/blob/main/conf/be.conf
 # CN default config: https://github.com/StarRocks/starrocks/blob/main/conf/cn.conf
@@ -7,7 +9,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: a-starrocks-with-custom-config   # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest

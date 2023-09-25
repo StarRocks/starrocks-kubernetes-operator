@@ -1,5 +1,5 @@
-# This manifest deploys a high-availability StarRocks cluster with 3 FE pods and 3 BE pods.
-# A high-availability StarRocks cluster requires at least THREE FE pods in the StarRocks cluster. One of them is the
+# This manifest deploys a high-available StarRocks cluster with 3 FE pods and 3 BE pods.
+# A high-available StarRocks cluster requires at least THREE FE pods in the StarRocks cluster. One of them is the
 # leader, and the other two are the followers.
 # the number of BEs required depends on the default `replication_num` which is `3` by default.
 # StarRocks cluster.
@@ -8,7 +8,7 @@
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
-  name: starrockscluster-sample
+  name: a-ha-starrocks   # change the name if needed.
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
