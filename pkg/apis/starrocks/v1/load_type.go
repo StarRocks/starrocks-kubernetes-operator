@@ -90,6 +90,8 @@ type StarRocksLoadSpec struct {
 	// Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
 	// will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
 	// the total time of seconds before startupProbe give up and fail the container start.
+	// If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+	// will be rounded up
 	// +optional
 	StartupProbeFailureSeconds *int32 `json:"startupProbeFailureSeconds,omitempty"`
 }

@@ -1261,7 +1261,9 @@ spec:
                       the periodSeconds is 5, this means the startup will fail if
                       the pod can't start in 300 seconds. Your StartupProbeFailureSeconds
                       is the total time of seconds before startupProbe give up and
-                      fail the container start.
+                      fail the container start. If startupProbeFailureSeconds can't
+                      be divided by defaultPeriodSeconds, the failureThreshold will
+                      be rounded up
                     format: int32
                     type: integer
                   storageVolumes:
@@ -3230,7 +3232,9 @@ spec:
                       the periodSeconds is 5, this means the startup will fail if
                       the pod can't start in 300 seconds. Your StartupProbeFailureSeconds
                       is the total time of seconds before startupProbe give up and
-                      fail the container start.
+                      fail the container start. If startupProbeFailureSeconds can't
+                      be divided by defaultPeriodSeconds, the failureThreshold will
+                      be rounded up
                     format: int32
                     type: integer
                   storageVolumes:
@@ -4346,7 +4350,9 @@ spec:
                       the periodSeconds is 5, this means the startup will fail if
                       the pod can't start in 300 seconds. Your StartupProbeFailureSeconds
                       is the total time of seconds before startupProbe give up and
-                      fail the container start.
+                      fail the container start. If startupProbeFailureSeconds can't
+                      be divided by defaultPeriodSeconds, the failureThreshold will
+                      be rounded up
                     format: int32
                     type: integer
                   storageVolumes:
@@ -5635,7 +5641,9 @@ spec:
                       the periodSeconds is 5, this means the startup will fail if
                       the pod can't start in 300 seconds. Your StartupProbeFailureSeconds
                       is the total time of seconds before startupProbe give up and
-                      fail the container start.
+                      fail the container start. If startupProbeFailureSeconds can't
+                      be divided by defaultPeriodSeconds, the failureThreshold will
+                      be rounded up
                     format: int32
                     type: integer
                   storageVolumes:

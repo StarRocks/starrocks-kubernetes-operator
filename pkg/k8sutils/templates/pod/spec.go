@@ -72,8 +72,8 @@ func getProbe(port int32, path string) corev1.ProbeHandler {
 func completeProbe(failureSeconds *int32, defaultFailureThreshold int32, defaultPeriodSeconds int32,
 	probeHandler corev1.ProbeHandler) *corev1.Probe {
 	probe := &corev1.Probe{}
-	if failureSeconds != nil {
-		probe.FailureThreshold = (*failureSeconds) / defaultPeriodSeconds
+	if failureSeconds != nil && *failureSeconds > 0 {
+		probe.FailureThreshold = (*failureSeconds + defaultPeriodSeconds - 1) / defaultPeriodSeconds
 	} else {
 		probe.FailureThreshold = defaultFailureThreshold
 	}

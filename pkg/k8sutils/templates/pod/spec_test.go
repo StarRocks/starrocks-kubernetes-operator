@@ -861,13 +861,41 @@ func Test_completeProbe(t *testing.T) {
 			args: args{
 				originalProbe:           func() *int32 { v := int32(10); return &v }(),
 				defaultFailureThreshold: 1,
-				defaultPeriodSeconds:    1,
+				defaultPeriodSeconds:    5,
 				probeHandler:            corev1.ProbeHandler{},
 			},
 			want: &corev1.Probe{
 				ProbeHandler:     corev1.ProbeHandler{},
-				FailureThreshold: 10,
-				PeriodSeconds:    1,
+				FailureThreshold: 2,
+				PeriodSeconds:    5,
+			},
+		},
+		{
+			name: "test complete probe 3",
+			args: args{
+				originalProbe:           func() *int32 { v := int32(0); return &v }(),
+				defaultFailureThreshold: 60,
+				defaultPeriodSeconds:    5,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 60,
+				PeriodSeconds:    5,
+			},
+		},
+		{
+			name: "test complete probe 4",
+			args: args{
+				originalProbe:           func() *int32 { v := int32(1); return &v }(),
+				defaultFailureThreshold: 60,
+				defaultPeriodSeconds:    5,
+				probeHandler:            corev1.ProbeHandler{},
+			},
+			want: &corev1.Probe{
+				ProbeHandler:     corev1.ProbeHandler{},
+				FailureThreshold: 1,
+				PeriodSeconds:    5,
 			},
 		},
 	}
