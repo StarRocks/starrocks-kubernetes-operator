@@ -5,6 +5,6 @@ This document explains how to deploy a StarRocks cluster using the Operator. It 
 3. [Deploying a StarRocks cluster with the CN component](./deploy_a_starrocks_cluster_with_cn.yaml)
 4. [Deploying a StarRocks cluster with custom configurations](./deploy_a_starrocks_cluster_with_custom_configurations.yaml)
 5. [Deploying a StarRocks cluster with persistent storage](./deploy_a_starrocks_cluster_with_persistent_storage.yaml)
-6. [Deploying a StarRocks cluster with share_data_mode](./deploy_a_starrocks_cluster_with_share_data_mode.yaml)
+6. [Deploying a StarRocks cluster running in shared_data mode](./deploy_a_starrocks_cluster_with_share_data_mode.yaml)
 7. [Deploying a StarRocks cluster with the FE Proxy component](./deploy_a_starrocks_cluster_with_fe_proxy.yaml)
 8. [Deploying a StarRocks cluster with all the above features](./deploy_a_starrocks_cluster_with_all_features.yaml)
