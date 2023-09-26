@@ -20,7 +20,8 @@ StarRocks 包含了三个组件，FE、BE、CN，其中，FE 是必须的组件�
 下面提供了两种方法来解决该问题：
 
 1. [持久化日志](./logging_and_related_configurations_howto.md#3-持久化日志)。当 Pod 重启后，Pod 之前的日志仍然存在。
-2. [将日志打印到控制台](./logging_and_related_configurations_howto.md#4-将日志打印到控制台)。通过 `kubectl logs my-pod -p` 查看重启前的 Pod 的日志。
+2. [将日志打印到控制台](./logging_and_related_configurations_howto.md#4-将日志打印到控制台)
+   。通过 `kubectl logs my-pod -p` 查看重启前的 Pod 的日志。
 
 ## 3. 持久化日志
 
@@ -30,10 +31,10 @@ StarRocks 包含了三个组件，FE、BE、CN，其中，FE 是必须的组件�
 spec:
   starRocksFeSpec:
     storageVolumes:
-    - mountPath: /opt/starrocks/fe/log
-      name: fe-storage-log
-      storageSize: 10Gi
-      storageClassName: ""
+      - mountPath: /opt/starrocks/fe/log
+        name: fe-storage-log
+        storageSize: 10Gi
+        storageClassName: ""
 ```
 
 `storageClassName` 如果为空，Kubernetes 将使用默认的存储卷类型。你也可以通过 `kubectl get storageclass` 查看 Kubernetes
@@ -68,7 +69,9 @@ starrocksFESpec:
     storageClassName: ""
 ```
 
-> 注意：在 FE 中，`storageSize` 指定了元数据的存储卷的大小，`logStorageSize` 指定了日志的存储卷的大小。
+> 注意
+> 1. 在 FE 中，`storageSize` 指定了元数据的存储卷的大小，`logStorageSize` 指定了日志的存储卷的大小。
+> 2. 如果FE的元数据存储卷的剩余空间小于5GB, FE Pod 会停止运行，建议设置 storageSize 为 10GB 以上。
 
 ## 4. 将日志打印到控制台
 
@@ -78,8 +81,8 @@ starrocksFESpec:
 spec:
   starRocksFeSpec:
     feEnvVars:
-    - name: LOG_CONSOLE
-      value: "1"
+      - name: LOG_CONSOLE
+        value: "1"
 ```
 
 ### 4.1 Helm Chart 支持设置环境变量
@@ -92,8 +95,8 @@ spec:
 starrocks:
   starrocksFESpec:
     feEnvVars:
-    - name: LOG_CONSOLE
-      value: "1"
+      - name: LOG_CONSOLE
+        value: "1"
 ```
 
 针对 starrocks Helm Chart，配置如下：
@@ -101,8 +104,8 @@ starrocks:
 ```yaml
 starrocksFESpec:
   feEnvVars:
-  - name: LOG_CONSOLE
-    value: "1"
+    - name: LOG_CONSOLE
+      value: "1"
 ```
 
 ## 5. 将日志收集到 datadog
