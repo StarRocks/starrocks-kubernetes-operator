@@ -1,7 +1,7 @@
 # StarRocks Logging and Related Configurations
 
-StarRocks comprises three components: FE, BE, and CN. Among them, FE is essential. This document introduces the logging
-and associated configurations for StarRocks components, including:
+StarRocks is composed of three components: FE, BE, and CN. Among them, FE is essential. This document describes the
+logging and associated configurations for StarRocks components, including:
 
 1. Location of log storage;
 2. Default storage volume;
@@ -11,17 +11,18 @@ and associated configurations for StarRocks components, including:
 
 ## 1. Location of Log Storage
 
-1. The logs of the FE component are stored in: `/opt/starrocks/fe/log`, with key logs
+1. The FE component's logs are located in: `/opt/starrocks/fe/log`, with key logs
    including: `fe.out`, `fe.log`, `fe.warn.log`.
-2. The BE component's logs are located in: `/opt/starrocks/be/log`, key logs being: `be.out`, `be.INFO`, `be.WARNING`.
-3. CN component logs can be found in: `/opt/starrocks/cn/log`, with significant logs such
-   as: `cn.out`, `cn.INFO`, `cn.WARNING`.
+2. The BE component's logs are located in: `/opt/starrocks/be/log`, with key logs
+   including: `be.out`, `be.INFO`, `be.WARNING`.
+3. The CN component's logs are located in: `/opt/starrocks/cn/log`, with key logs
+   including: `cn.out`, `cn.INFO`, `cn.WARNING`.
 
 ## 2. Default Storage Volume
 
-By default, all components use the `emptyDir` storage volume. One inherent problem is that once a Pod restarts, we can't
-access logs from before the restart, which obviously complicates troubleshooting. To address this, we can adopt one of
-two approaches:
+By default, all components use the `emptyDir` storage volume. One inherent problem is that once a Pod restarts, logs
+before the restart will not be accessible anymore, which obviously complicates troubleshooting. To address this, one of
+two approaches can be adopted:
 
 1. Persist the logs so that logs from prior to the Pod restart remain available.
 2. Log to the console and view logs from prior to the restart using `kubectl logs my-pod -p`.
