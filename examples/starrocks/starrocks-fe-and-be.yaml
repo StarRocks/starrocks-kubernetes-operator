@@ -1,0 +1,24 @@
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:latest
+    replicas: 3
+    requests:
+      cpu: 4
+      memory: 16Gi
+    limits:
+      cpu: 4
+      memory: 16Gi
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:latest
+    replicas: 3
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 4
+      memory: 8Gi

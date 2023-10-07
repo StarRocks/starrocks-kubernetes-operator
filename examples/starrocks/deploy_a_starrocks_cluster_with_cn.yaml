@@ -28,33 +28,38 @@ spec:
       memory: 64Gi
   starRocksCnSpec:
     image: starrocks/cn-ubuntu:latest
-    # replicas: 1   # comment out this line if autoScalingPolicy is enabled.
     limits:
       cpu: 16
       memory: 64Gi
     requests:
       cpu: 16
       memory: 64Gi
-    autoScalingPolicy:  # comment out this section if replicas is set.
-      maxReplicas: 10
-      minReplicas: 1
+    autoScalingPolicy: # Automatic scaling policy of the CN cluster.
+      maxReplicas: 10 # The maximum number of CNs is set to 10.
+      minReplicas: 1 # The minimum number of CNs is set to 1.
       # operator creates an HPA resource based on the following field.
       # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
       hpaPolicy:
-        metrics:
+        metrics: # Resource metrics
           - type: Resource
             resource:
-              name: memory
+              name: memory  # The average memory usage of CNs is specified as a resource metric.
               target:
+                # The elastic scaling threshold is 60%.
+                # When the average memory utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average memory utilization of CNs is below 60%, the number of CNs decreases for scale-in.
                 averageUtilization: 60
                 type: Utilization
           - type: Resource
             resource:
-              name: cpu
+              name: cpu # The average CPU utilization of CNs is specified as a resource metric.
               target:
+                # The elastic scaling threshold is 60%.
+                # When the average CPU utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average CPU utilization of CNs is below 60%, the number of CNs decreases for scale-in.
                 averageUtilization: 60
                 type: Utilization
-        behavior:
+        behavior: #  The scaling behavior is customized according to business scenarios, helping you achieve rapid or slow scaling or disable scaling.
           scaleUp:
             policies:
               - type: Pods
