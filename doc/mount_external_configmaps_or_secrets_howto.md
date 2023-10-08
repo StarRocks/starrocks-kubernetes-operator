@@ -40,10 +40,11 @@ the corresponding component spec. The following is an example by using `kube-sta
 starrocks:
   starrocksBeSpec:
     configMaps:
+      # mount the whole configmap `my-configmap` to `/etc/my-configmap`
       - name: my-configmap
         mountPath: /etc/my-configmap
 
-  # kube-blocks chart will create a configmap named `my-configmap` with the following content
+  # a configmap named `my-configmap` will be created with the following content.
   configMaps:
   - name: my-configmap
     data:
@@ -61,11 +62,12 @@ using `kube-starrocks` Helm chart.
 starrocks:
   starrocksBeSpec:
     configMaps:
+      # mount the file `key.conf` in configmap `my-configmap` to `/opt/starrocks/be/conf/key.conf`
       - name: my-configmap
         mountPath: /opt/starrocks/be/conf/key.conf
         subPath: key.conf
 
-  # kube-blocks chart will create a configmap named `my-configmap` with the following content
+  # a configmap named `my-configmap` will be created with the following content.
   configMaps:
   - name: my-configmap
     data:
