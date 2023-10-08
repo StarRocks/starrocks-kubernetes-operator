@@ -345,7 +345,7 @@ starrocksBeSpec:
     # if you want to use a dedicated port for be service, you can config the port.
     # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
     ports: []
-      # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
+      # e.g. use a dedicated node port for be service. The containerPort and port field can be commented out.
       # - name: webserver
       #   nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose

@@ -67,10 +67,6 @@ type StarRocksLoadSpec struct {
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
-	// Probe defines the mode probe service in container is alive.
-	// +optional
-	Probe *StarRocksProbe `json:"probe,omitempty"`
-
 	// Service defines the template for the associated Kubernetes Service object.
 	// +optional
 	Service *StarRocksService `json:"service,omitempty"`
