@@ -110,6 +110,22 @@ be.conf: |
 {{- print "/opt/starrocks/be/log" }}
 {{- end }}
 
+{{- define "starrockscluster.cn.data.suffix" -}}
+{{- print "-data" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.data.path" -}}
+{{- print "/opt/starrocks/cn/storage" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.log.suffix" -}}
+{{- print "-log" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.log.path" -}}
+{{- print "/opt/starrocks/cn/log" }}
+{{- end }}
+
 {{/*
 starrockscluster.fe.config.hash is used to calculate the hash value of the fe.conf, and due to the length limit, only
 the first 8 digits are taken, which will be used as the annotations for pods.

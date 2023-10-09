@@ -402,7 +402,19 @@ spec:
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
+  {{- if .Values.starrocksCnSpec.storageSpec.name }}
+    storageVolumes:
+    - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.data.suffix" . }}
+      storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
+      storageSize: {{ .Values.starrocksCnSpec.storageSpec.storageSize }}
+      mountPath: {{template "starrockscluster.cn.data.path" . }}
+    - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.log.suffix" . }}
+      storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
+      storageSize: {{ .Values.starrocksCnSpec.storageSpec.logStorageSize }}
+      mountPath: {{template "starrockscluster.cn.log.path" . }}
+  {{- end }}
 {{- end }}
+
 {{- if .Values.starrocksFeProxySpec.enabled }}
   starRocksFeProxySpec:
     {{- if .Values.starrocksFeProxySpec.image.repository }}

@@ -303,6 +303,17 @@ starrocksCnSpec:
     requests:
       cpu: 4
       memory: 8Gi
+  # specify storageclass name and request size.
+  storageSpec:
+    # the name of volume for mount. if not will use emptyDir.
+    name: ""
+    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+    # you must set name when you set storageClassName
+    storageClassName: ""
+    # the storage size of persistent volume for data.
+    storageSize: 1Ti
+    # the storage size of persistent volume for log.
+    logStorageSize: 1Gi
   # the config start for cn, the base information as follows.
   config: |
     sys_log_level = INFO
