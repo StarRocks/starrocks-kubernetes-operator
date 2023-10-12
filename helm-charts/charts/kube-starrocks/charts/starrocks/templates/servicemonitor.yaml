@@ -1,0 +1,47 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.name" . }}-fe
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: http
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: fe
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.name" . }}-be
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: webserver
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: be
+{{- end }}
