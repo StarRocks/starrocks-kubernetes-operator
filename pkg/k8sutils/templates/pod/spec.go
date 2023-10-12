@@ -384,7 +384,7 @@ func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.
 		Containers:                    []corev1.Container{container},
 		Volumes:                       volumes,
 		ServiceAccountName:            spec.GetServiceAccount(),
-		TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
+		TerminationGracePeriodSeconds: spec.GetTerminationGracePeriodSeconds(),
 		Affinity:                      spec.GetAffinity(),
 		Tolerations:                   spec.GetTolerations(),
 		ImagePullSecrets:              spec.GetImagePullSecrets(),

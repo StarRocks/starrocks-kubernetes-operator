@@ -38,6 +38,17 @@ type StarRocksComponentSpec struct {
 	// file if specified. This is only valid for non-hostNetwork pods.
 	// +optional
 	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
+
+	// TerminationGracePeriodSeconds defines duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.
+	// Value must be non-negative integer. The value zero indicates stop immediately via
+	// the kill signal (no opportunity to shut down).
+	// If this value is nil, the default grace period will be used instead.
+	// The grace period is the duration in seconds after the processes running in the pod are sent
+	// a termination signal and the time when the processes are forcibly halted with a kill signal.
+	// Set this value longer than the expected cleanup time for your process.
+	// Defaults to 120 seconds.
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -105,4 +116,12 @@ func (spec *StarRocksComponentSpec) GetRunAsNonRoot() (*int64, *int64) {
 	userId := int64(1000)
 	groupId := int64(1000)
 	return &userId, &groupId
+}
+
+func (spec *StarRocksComponentSpec) GetTerminationGracePeriodSeconds() *int64 {
+	if spec.TerminationGracePeriodSeconds == nil {
+		v := int64(120)
+		return &v
+	}
+	return spec.TerminationGracePeriodSeconds
 }

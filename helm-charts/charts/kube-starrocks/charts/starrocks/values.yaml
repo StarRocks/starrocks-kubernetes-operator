@@ -177,6 +177,8 @@ starrocksFESpec:
     # - name: my-configmap
     #   mountPath: /etc/my-configmap
     #   subPath: ""
+  # terminationGracePeriodSeconds defines duration in seconds the FE pod needs to terminate gracefully.
+  terminationGracePeriodSeconds: 120
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -336,6 +338,8 @@ starrocksCnSpec:
     # - name: my-configmap
     #   mountPath: /etc/my-configmap
     #   subPath: ""
+  # terminationGracePeriodSeconds defines duration in seconds the CN pod needs to terminate gracefully.
+  terminationGracePeriodSeconds: 120
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -459,6 +463,8 @@ starrocksBeSpec:
     # - name: my-configmap
     #   mountPath: /etc/my-configmap
     #   subPath: ""
+  # terminationGracePeriodSeconds defines duration in seconds the BE pod needs to terminate gracefully.
+  terminationGracePeriodSeconds: 120
 
 # create secrets if necessary.
 secrets: []
