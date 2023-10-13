@@ -1,56 +1,384 @@
 # This manifest deploys a StarRocks cluster with all supported features.
-# If you want to understand the meaning of the fields in the following custom resource, please
-# refer to the explanations in other examples.
 
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
   name: a-starrocks-with-all-features   # change the name if needed.
 spec:
+  # the spec for starrocks FE.
   starRocksFeSpec:
+    # the image for starrocks FE.
     image: starrocks/fe-ubuntu:latest
+    # number of replicas for starrocks FE.
     replicas: 3
+    # define resources requests and limits for FE pods.
     limits:
       cpu: 8
       memory: 16Gi
     requests:
       cpu: 8
       memory: 16Gi
+    # reference the configMap for FE which contains the fe.conf.
     configMapInfo:
       configMapName: starrockscluster-sample-fe-cm
       resolveKey: fe.conf
+    # fe storage volumes for persistent meta data and log
     storageVolumes:
-    - name: fe-storage-meta
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 10Gi   # the size of storage volume for metadata
-      mountPath: /opt/starrocks/fe/meta   # the path of metadata
-    - name: fe-storage-log
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 1Gi    # the size of storage volume for log
-      mountPath: /opt/starrocks/fe/log    # the path of log
-  starRocksBeSpec:
+      - name: fe-storage-meta
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        storageClassName: ""
+        # the persistent volume size. FE container stop running if the disk free space which the
+        # fe meta directory residents, is less than 5Gi.
+        storageSize: 10Gi
+        # the mount path for FE meta.
+        mountPath: /opt/starrocks/fe/meta
+      - name: fe-storage-log
+        storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path for FE log.
+        mountPath: /opt/starrocks/fe/log
+    # add annotations for fe pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # affinity for fe pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for fe pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # Additional fe container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    feEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the fe service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for fe service.
+      annotations: {}
+      # config the service port for fe service.
+      # if you want to use a dedicated port for fe service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for http port of fe service.
+      # - name: http
+      #   nodePort: 30030 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for fe access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    startupProbeFailureSeconds: 300
+
+  # the spec for starrocks BE.
+  starRocksBeSpec: # the image for starrocks BE.
     image: starrocks/be-ubuntu:latest
+    # number of replicas to deploy for a BE statefulset.
     replicas: 3
+    # define resources requests and limits for BE pods.
     limits:
       cpu: 16
       memory: 64Gi
     requests:
       cpu: 16
       memory: 64Gi
+    # reference to the configmap for BE which contains the be.conf.
     configMapInfo:
       configMapName: starrockscluster-sample-be-cm
       resolveKey: be.conf
+    # be storage volumes for persistent storage.
     storageVolumes:
-    - name: be-storage-data
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 10Gi   # the size of storage volume for data
-      mountPath: /opt/starrocks/be/storage  # the path of data
-    - name: be-storage-log
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 1Gi  # the size of storage volume for log
-      mountPath: /opt/starrocks/be/log  # the path of log
+      - name: be-storage-data
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        storageClassName: ""
+        # the size of storage volume for data
+        storageSize: 10Gi
+        # the mount path for BE data.
+        mountPath: /opt/starrocks/be/storage
+      - name: be-storage-log
+        storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path for BE log.
+        mountPath: /opt/starrocks/be/log
+    # add annotations for be pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # affinity for be pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for be pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # Additional be container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    beEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the be service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for be service.
+      annotations: {}
+      # config the service port for be service.
+      # if you want to use a dedicated port for be service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for be service.
+      # - name: webserver
+      #   nodePort: 30040 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for be access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+
+  # the spec for starrocks CN.
+  starRocksCnSpec: # the image for starrocks CN.
+    image: starrocks/cn-ubuntu:latest
+    # number of replicas to deploy for a CN statefulset.
+    # comment out this line if autoScalingPolicy is enabled.
+    # replicas: 1
+    # define resources requests and limits for CN pods.
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    # reference to the configmap for CN which contains the cn.conf.
+    configMapInfo:
+      configMapName: starrockscluster-sample-cn-cm
+      resolveKey: cn.conf
+    storageVolumes:
+      - name: cn-storage-data
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        storageClassName: ""
+        # the size of storage volume for data
+        storageSize: 10Gi
+        # the mount path of CN data
+        mountPath: /opt/starrocks/cn/storage
+      - name: cn-storage-log
+        storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path of CN log
+        mountPath: /opt/starrocks/cn/log
+    # comment out this section if you don't want to enable autoscaling policy.
+    autoScalingPolicy:
+      # the max replicas for CN autoscaling.
+      maxReplicas: 10
+      # the min replicas for CN autoscaling.
+      minReplicas: 1
+      # operator creates an HPA resource based on the following field.
+      # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
+      hpaPolicy:
+        metrics:
+          - type: Resource
+            resource:
+              # The average memory usage of CNs is specified as a resource metric.
+              name: memory
+              target:
+                # The elastic scaling threshold is 60%.
+                # When the average memory utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average memory utilization of CNs is below 60%, the number of CNs decreases for scale-in.
+                averageUtilization: 60
+                type: Utilization
+          - type: Resource
+            resource:
+              # The average CPU utilization of CNs is specified as a resource metric.
+              name: cpu
+              target:
+                # The elastic scaling threshold is 60%.
+                # When the average CPU utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average CPU utilization of CNs is below 60%, the number of CNs decreases for scale-in.
+                averageUtilization: 60
+                type: Utilization
+        # The scaling behavior is customized according to business scenarios, helping
+        # you achieve rapid or slow scaling or disable scaling.
+        behavior:
+          scaleUp:
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled
+    # add annotations for cn pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # Additional cn container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    # affinity for cn pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for cn pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    cnEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the cn service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for cn service.
+      annotations: {}
+      # config the service port for cn service.
+      # if you want to use a dedicated port for cn service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for cn service.
+      # - name: webserver
+      #   nodePort: 30040 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for cn access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+
+  # the spec for starrocks FE proxy.
   starRocksFeProxySpec:
     replicas: 1
+    # define resources requests and limits for FE proxy pods.
     limits:
       cpu: 1
       memory: 2Gi
@@ -60,59 +388,10 @@ spec:
     service:
       type: NodePort   # export fe proxy service
       ports:
-        - containerPort: 8080
-          name: http-port
+        - name: http-port
           nodePort: 30180   # The range of valid ports is 30000-32767
-          port: 8080
-    resolver: "kube-dns.kube-system.svc.cluster.local"  # this is the default dns server.
-  starRocksCnSpec:
-    image: starrocks/cn-ubuntu:latest
-    # replicas: 1   # comment out this line if autoScalingPolicy is enabled.
-    limits:
-      cpu: 16
-      memory: 64Gi
-    requests:
-      cpu: 16
-      memory: 64Gi
-    configMapInfo:
-      configMapName: starrockscluster-sample-cn-cm
-      resolveKey: cn.conf
-    storageVolumes:
-    - name: cn-storage-data
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 10Gi   # the size of storage volume for data
-      mountPath: /opt/starrocks/cn/storage  # the path of data
-    - name: cn-storage-log
-      storageClassName: ""  # you can remove this line if you want to use the default storage class
-      storageSize: 1Gi  # the size of storage volume for log
-      mountPath: /opt/starrocks/cn/log  # the path of log
-    autoScalingPolicy:  # comment out this section if replicas is set.
-      maxReplicas: 10
-      minReplicas: 1
-      # operator creates an HPA resource based on the following field.
-      # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
-      hpaPolicy:
-        metrics:
-          - type: Resource
-            resource:
-              name: memory
-              target:
-                averageUtilization: 60
-                type: Utilization
-          - type: Resource
-            resource:
-              name: cpu
-              target:
-                averageUtilization: 60
-                type: Utilization
-        behavior:
-          scaleUp:
-            policies:
-              - type: Pods
-                value: 1
-                periodSeconds: 10
-          scaleDown:
-            selectPolicy: Disabled
+    # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
+    resolver: "kube-dns.kube-system.svc.cluster.local"
 
 ---
 

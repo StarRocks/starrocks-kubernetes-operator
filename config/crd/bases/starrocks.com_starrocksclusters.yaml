@@ -1118,32 +1118,6 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
-                  probe:
-                    description: Probe defines the mode probe service in container
-                      is alive.
-                    properties:
-                      initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated. Default to 10 seconds.
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        description: How often (in seconds) to perform the probe.
-                          Default to Kubernetes default (10 seconds). Minimum value
-                          is 1.
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        description: Type identifies the mode of probe main container
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
-                    type: object
                   replicas:
                     description: 'Replicas is the number of desired Pod. When HPA
                       policy is enabled with a fixed replica count: every time the
@@ -3089,32 +3063,6 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
-                  probe:
-                    description: Probe defines the mode probe service in container
-                      is alive.
-                    properties:
-                      initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated. Default to 10 seconds.
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        description: How often (in seconds) to perform the probe.
-                          Default to Kubernetes default (10 seconds). Minimum value
-                          is 1.
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        description: Type identifies the mode of probe main container
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
-                    type: object
                   replicas:
                     description: 'Replicas is the number of desired Pod. When HPA
                       policy is enabled with a fixed replica count: every time the
@@ -4229,32 +4177,6 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
-                    type: object
-                  probe:
-                    description: Probe defines the mode probe service in container
-                      is alive.
-                    properties:
-                      initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated. Default to 10 seconds.
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        description: How often (in seconds) to perform the probe.
-                          Default to Kubernetes default (10 seconds). Minimum value
-                          is 1.
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        description: Type identifies the mode of probe main container
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
                     type: object
                   replicas:
                     description: 'Replicas is the number of desired Pod. When HPA
@@ -5497,32 +5419,6 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
-                    type: object
-                  probe:
-                    description: Probe defines the mode probe service in container
-                      is alive.
-                    properties:
-                      initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated. Default to 10 seconds.
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        description: How often (in seconds) to perform the probe.
-                          Default to Kubernetes default (10 seconds). Minimum value
-                          is 1.
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        description: Type identifies the mode of probe main container
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
                     type: object
                   replicas:
                     description: 'Replicas is the number of desired Pod. When HPA

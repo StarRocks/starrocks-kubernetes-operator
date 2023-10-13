@@ -515,24 +515,6 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
-                  probe:
-                    properties:
-                      initialDelaySeconds:
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
-                    type: object
                   replicas:
                     format: int32
                     minimum: 0
@@ -1433,24 +1415,6 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
-                  probe:
-                    properties:
-                      initialDelaySeconds:
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
-                    type: object
                   replicas:
                     format: int32
                     minimum: 0
@@ -1940,24 +1904,6 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    type: object
-                  probe:
-                    properties:
-                      initialDelaySeconds:
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
                     type: object
                   replicas:
                     format: int32
@@ -2519,24 +2465,6 @@ spec:
                   podLabels:
                     additionalProperties:
                       type: string
-                    type: object
-                  probe:
-                    properties:
-                      initialDelaySeconds:
-                        format: int32
-                        minimum: 0
-                        type: integer
-                      periodSeconds:
-                        format: int32
-                        minimum: 1
-                        type: integer
-                      type:
-                        enum:
-                        - tcp
-                        - command
-                        type: string
-                    required:
-                    - type
                     type: object
                   replicas:
                     format: int32

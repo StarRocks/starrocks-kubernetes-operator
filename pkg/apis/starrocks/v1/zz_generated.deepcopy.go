@@ -817,11 +817,6 @@ func (in *StarRocksLoadSpec) DeepCopyInto(out *StarRocksLoadSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.Probe != nil {
-		in, out := &in.Probe, &out.Probe
-		*out = new(StarRocksProbe)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.Service != nil {
 		in, out := &in.Service, &out.Service
 		*out = new(StarRocksService)
