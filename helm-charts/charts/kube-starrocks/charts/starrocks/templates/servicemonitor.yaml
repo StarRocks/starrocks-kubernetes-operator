@@ -1,0 +1,72 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.fe.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: http
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: fe
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.be.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: webserver
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: be
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.cn.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: webserver
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: cn
+
+{{- end }}

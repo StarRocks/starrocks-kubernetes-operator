@@ -1,5 +1,3 @@
-Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }}
+Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} operator chart.
 
-Please refer to the following document to create a StarRocks cluster.
-
-https://docs.starrocks.io/en-us/latest/deployment/helm
+Please see the values.yaml for more operation information: https://github.com/yandongxiao/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/operator/values.yaml
