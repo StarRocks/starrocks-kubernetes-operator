@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "starrockscluster.name" . }}-fe
+  name: {{ template "starrockscluster.fe.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
@@ -26,7 +26,7 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "starrockscluster.name" . }}-be
+  name: {{ template "starrockscluster.be.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
@@ -44,4 +44,29 @@ spec:
     matchLabels:
       app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
       app.kubernetes.io/component: be
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "starrockscluster.cn.name" . }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+spec:
+  endpoints:
+    - port: webserver
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ template "starrockscluster.namespace" . }}
+  selector:
+    matchLabels:
+      app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
+      app.kubernetes.io/component: cn
+
 {{- end }}
