@@ -16,6 +16,7 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -68,7 +69,7 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 	var newHashv, oldHashv string
 
 	newHso := statefulSetHashObject(new, excludeReplicas)
-	klog.V(4).Infof("new statefulset hash object: %+v", newHso)
+	klog.V(constant.LOG_LEVEL).Infof("new statefulset hash object: %+v", newHso)
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -82,13 +83,12 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 		oldHashv = old.Annotations[srapi.ComponentResourceHash]
 	} else {
 		oldHso := statefulSetHashObject(old, excludeReplicas)
-		klog.V(4).Infof("old statefulset hash object: %+v", oldHso)
+		klog.V(constant.LOG_LEVEL).Infof("old statefulset hash object: %+v", oldHso)
 		oldHashv = hash.HashObject(oldHso)
 	}
 
 	anno := Annotations{}
 	anno.AddAnnotation(new.Annotations)
-	// anno.Add(srapi.ComponentGeneration, strconv.FormatInt(old.Generation+1, 10))
 	anno.Add(srapi.ComponentResourceHash, newHashv)
 	new.Annotations = anno
 

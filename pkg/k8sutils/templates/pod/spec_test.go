@@ -901,7 +901,8 @@ func Test_completeProbe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := completeProbe(tt.args.originalProbe, tt.args.defaultFailureThreshold, tt.args.defaultPeriodSeconds, tt.args.probeHandler); !reflect.DeepEqual(got, tt.want) {
+			if got := completeProbe(tt.args.originalProbe, tt.args.defaultFailureThreshold,
+				tt.args.defaultPeriodSeconds, tt.args.probeHandler); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("completeProbe() = %v, want %v", got, tt.want)
 			}
 		})

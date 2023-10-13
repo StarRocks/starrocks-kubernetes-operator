@@ -18,6 +18,7 @@ package statefulset
 
 import (
 	"fmt"
+
 	appsv1 "k8s.io/api/apps/v1"
 )
 
@@ -43,8 +44,9 @@ func Status(sts *appsv1.StatefulSet) (string, bool, error) {
 		return fmt.Sprintf("partitioned roll out complete: %d new pods have been updated", sts.Status.UpdatedReplicas), true, nil
 	}
 	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
-		return fmt.Sprintf("waiting for statefulset rolling update to complete %d pods at revision %s...\n",
+		return fmt.Sprintf("waiting for statefulset rolling update to complete %d pods at revision %s",
 			sts.Status.UpdatedReplicas, sts.Status.UpdateRevision), false, nil
 	}
-	return fmt.Sprintf("statefulset rolling update complete %d pods at revision %s...\n", sts.Status.CurrentReplicas, sts.Status.CurrentRevision), true, nil
+	return fmt.Sprintf("statefulset rolling update complete %d pods at revision %s",
+		sts.Status.CurrentReplicas, sts.Status.CurrentRevision), true, nil
 }

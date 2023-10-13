@@ -16,6 +16,7 @@ package resource_utils
 
 import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -227,7 +228,7 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
 
 	nhsvc := serviceHashObject(nsvc)
-	klog.V(4).Infof("new service hash object: %+v", nhsvc)
+	klog.V(constant.LOG_LEVEL).Infof("new service hash object: %+v", nhsvc)
 	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
 		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -236,7 +237,7 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 
 	// calculate the old hash value from the old service, not from annotation.
 	ohsvc := serviceHashObject(oldsvc)
-	klog.V(4).Infof("old service hash object: %+v", ohsvc)
+	klog.V(constant.LOG_LEVEL).Infof("old service hash object: %+v", ohsvc)
 	ohsvcValue = hash.HashObject(ohsvc)
 
 	return nhsvcValue == ohsvcValue &&
@@ -260,7 +261,6 @@ func HaveEqualOwnerReference(svc1 *corev1.Service, svc2 *corev1.Service) bool {
 	for _, o := range svc1.OwnerReferences {
 		key := o.Kind + o.Name
 		set[key] = true
-
 	}
 
 	for _, o := range svc2.OwnerReferences {

@@ -52,12 +52,12 @@ func (a Annotations) AddAnnotation(annotation Annotations) {
 // them into the new resource. If a key is present in both resources, the new
 // resource wins. It also copies the ResourceVersion from the old resource to
 // the new resource to prevent update conflicts.
-func MergeMetadata(new *metav1.ObjectMeta, old metav1.ObjectMeta) {
-	new.ResourceVersion = old.ResourceVersion
-	new.SetFinalizers(MergeSlices(new.Finalizers, old.Finalizers))
-	new.SetLabels(mergeMaps(new.Labels, old.Labels))
-	new.SetAnnotations(mergeMaps(new.Annotations, old.Annotations))
-	new.OwnerReferences = mergeOwnerReferences(new.OwnerReferences, old.OwnerReferences)
+func MergeMetadata(newMeta *metav1.ObjectMeta, oldMeta metav1.ObjectMeta) {
+	newMeta.ResourceVersion = oldMeta.ResourceVersion
+	newMeta.SetFinalizers(MergeSlices(newMeta.Finalizers, oldMeta.Finalizers))
+	newMeta.SetLabels(mergeMaps(newMeta.Labels, oldMeta.Labels))
+	newMeta.SetAnnotations(mergeMaps(newMeta.Annotations, oldMeta.Annotations))
+	newMeta.OwnerReferences = mergeOwnerReferences(newMeta.OwnerReferences, oldMeta.OwnerReferences)
 }
 
 func MergeSlices(new []string, old []string) []string {
@@ -74,8 +74,8 @@ func MergeSlices(new []string, old []string) []string {
 	return new
 }
 
-func mergeMaps(new map[string]string, old map[string]string) map[string]string {
-	return mergeMapsByPrefix(new, old, "")
+func mergeMaps(newMap map[string]string, oldMap map[string]string) map[string]string {
+	return mergeMapsByPrefix(newMap, oldMap, "")
 }
 
 func mergeMapsByPrefix(from map[string]string, to map[string]string, prefix string) map[string]string {

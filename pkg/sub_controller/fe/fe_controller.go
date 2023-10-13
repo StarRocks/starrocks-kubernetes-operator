@@ -97,12 +97,14 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 		return rutils.ServiceDeepEqual(new, esvc)
 	}); err != nil {
-		klog.Error("FeController Sync ", "create or patch internal service namespace ", internalService.Namespace, " name ", internalService.Name, " failed, message ", err.Error())
+		klog.Error("FeController Sync ", "create or patch internal service namespace ",
+			internalService.Namespace, " name ", internalService.Name, " failed, message ", err.Error())
 		return err
 	}
 
 	if err = k8sutils.ApplyService(ctx, fc.k8sClient, &svc, rutils.ServiceDeepEqual); err != nil {
-		klog.Error("FeController Sync ", "create or patch external service namespace ", svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
+		klog.Error("FeController Sync ", "create or patch external service namespace ",
+			svc.Namespace, " name ", svc.Name, " failed, message ", err.Error())
 		return err
 	}
 
@@ -147,7 +149,8 @@ func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
 }
 
 // GetFeConfig get the fe start config.
-func GetFeConfig(ctx context.Context, k8sClient client.Client, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
+func GetFeConfig(ctx context.Context,
+	k8sClient client.Client, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
 	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
 		return make(map[string]interface{}), nil
 	}
@@ -178,18 +181,23 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("feController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.", src.Namespace, statefulSetName, err.Error())
+		klog.Errorf("feController ClearResources delete statefulset failed, namespace=%s,name=%s, error=%s.",
+			src.Namespace, statefulSetName, err.Error())
 		return err
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("feController ClearResources delete search service, namespace=%s,name=%s,error=%s.", src.Namespace, searchServiceName, err.Error())
+		klog.Errorf("feController ClearResources delete search service, namespace=%s,name=%s,error=%s.",
+			src.Namespace, searchServiceName, err.Error())
 		return err
 	}
-	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)); err != nil && !apierrors.IsNotFound(err) {
-		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.", src.Namespace, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
+	externalServiceName := service.ExternalServiceName(src.Name, feSpec)
+	err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, externalServiceName)
+	if err != nil && !apierrors.IsNotFound(err) {
+		klog.Errorf("feController ClearResources delete external service, namespace=%s, name=%s,error=%s.",
+			src.Namespace, externalServiceName, err.Error())
 		return err
 	}
 
@@ -200,8 +208,10 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 func CheckFEOk(ctx context.Context, k8sClient client.Client, src *srapi.StarRocksCluster) bool {
 	endpoints := corev1.Endpoints{}
 	// 1. wait for fe ok.
-	if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)}, &endpoints); err != nil {
-		klog.Errorf("waiting fe available, fe service name %s, occur failed %s", service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), err.Error())
+	externalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	if err := k8sClient.Get(ctx,
+		types.NamespacedName{Namespace: src.Namespace, Name: externalServiceName}, &endpoints); err != nil {
+		klog.Errorf("waiting fe available, fe service name %s, occur failed %s", externalServiceName, err.Error())
 		return false
 	}
 

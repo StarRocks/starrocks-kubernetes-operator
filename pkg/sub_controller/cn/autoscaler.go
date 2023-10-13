@@ -27,8 +27,8 @@ func (cc *CnController) generateAutoScalerName(src *srapi.StarRocksCluster) stri
 	return load.Name(src.Name, src.Spec.StarRocksCnSpec) + "-autoscaler"
 }
 
-func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPolicy, target *appv1.StatefulSet, src *srapi.StarRocksCluster) *rutils.PodAutoscalerParams {
-
+func (cc *CnController) buildCnAutoscalerParams(scalerInfo srapi.AutoScalingPolicy, target *appv1.StatefulSet,
+	src *srapi.StarRocksCluster) *rutils.PodAutoscalerParams {
 	labels := rutils.Labels{}
 	labels.AddLabel(target.Labels)
 	labels.Add(srapi.ComponentLabelKey, "autoscaler")

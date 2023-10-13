@@ -22,19 +22,13 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func setHashLabel(labelName string, labels map[string]string, template interface{}) map[string]string {
-	if labels == nil {
-		labels = map[string]string{}
-	}
-	labels[labelName] = HashObject(template)
-	return labels
-}
-
 // HashObject returns a hash of a given object using the 32-bit FNV-1 hash function
 // and the spew library to print the object (see WriteHashObject).
 // This is inspired by controller revisions in StatefulSets:
 // https://github.com/kubernetes/kubernetes/blob/8de1569ddae62e8fab559fe6bd210a5d6100a277/pkg/controller/history/controller_history.go#L89-L101
-func HashObject(object interface{}) string { //nolint:revive
+//
+//nolint:lll
+func HashObject(object interface{}) string {
 	objHash := fnv.New32a()
 	WriteHashObject(objHash, object)
 	return fmt.Sprint(objHash.Sum32())

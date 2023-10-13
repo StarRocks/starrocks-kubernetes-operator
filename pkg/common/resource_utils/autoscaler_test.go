@@ -27,13 +27,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const _defaultNamespace = "default"
+const _defaultName = "test"
+
 func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 	labels := Labels{}
-	labels["cluster"] = "test"
-	labels["namespace"] = "default"
+	labels["cluster"] = _defaultName
+	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{
 		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      "default",
+		Namespace:      _defaultNamespace,
 		Name:           "test",
 		Labels:         labels,
 		TargetName:     "test-statefulset",
@@ -49,8 +52,8 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 	}
 
 	ls := make(map[string]string)
-	ls["cluster"] = "test"
-	ls["namespace"] = "default"
+	ls["cluster"] = _defaultName
+	ls["namespace"] = _defaultNamespace
 	ha := &v1.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
@@ -81,10 +84,10 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 	labels := Labels{}
 	labels["cluster"] = "test"
-	labels["namespace"] = "default"
+	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{
 		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      "default",
+		Namespace:      _defaultNamespace,
 		Name:           "test",
 		Labels:         labels,
 		TargetName:     "test-statefulset",
@@ -172,7 +175,7 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
-			Namespace: "default",
+			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
 				Kind: "StarRocksCluster",
@@ -260,10 +263,10 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 	labels := Labels{}
 	labels["cluster"] = "test"
-	labels["namespace"] = "default"
+	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{
 		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      "default",
+		Namespace:      _defaultNamespace,
 		Name:           "test",
 		Labels:         labels,
 		TargetName:     "test-statefulset",
@@ -351,7 +354,7 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
-			Namespace: "default",
+			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
 				Kind: "StarRocksCluster",

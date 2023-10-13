@@ -67,10 +67,13 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 		return res, nil
 	}
 
-	value, _ := data[key]
+	value := data[key]
 
 	viper.SetConfigType("properties")
-	viper.ReadConfig(bytes.NewBuffer([]byte(value)))
+	err := viper.ReadConfig(bytes.NewBuffer([]byte(value)))
+	if err != nil {
+		return nil, err
+	}
 
 	return viper.AllSettings(), nil
 }

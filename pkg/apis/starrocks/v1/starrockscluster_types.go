@@ -192,7 +192,8 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 // ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
 type ClusterPhase string
 
-// MemberPhase represent the component phase about be, cn, be. the possible value for component phase are: reconciliing, failed, running, waitting.
+// MemberPhase represent the component phase about be, cn, be. the possible value for component phase are:
+// reconciling, failed, running.
 type MemberPhase string
 
 const (

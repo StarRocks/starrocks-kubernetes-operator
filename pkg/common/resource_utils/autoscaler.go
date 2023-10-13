@@ -113,11 +113,11 @@ func buildAutoscalerV2beta2(pap *PodAutoscalerParams) *v2beta2.HorizontalPodAuto
 	// the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign align.
 	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
 		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
-			metrics := unsafe.Slice((*v2beta2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))
+			metrics := unsafe.Slice((*v2beta2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])),
+				len(pap.ScalerPolicy.HPAPolicy.Metrics))
 			ha.Spec.Metrics = metrics
 		}
 		ha.Spec.Behavior = (*v2beta2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(pap.ScalerPolicy.HPAPolicy.Behavior))
-
 	}
 
 	return ha
@@ -149,7 +149,8 @@ func buildAutoscalerV2(pap *PodAutoscalerParams) *v2.HorizontalPodAutoscaler {
 	// the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign.
 	if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
 		if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
-			metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])), len(pap.ScalerPolicy.HPAPolicy.Metrics))
+			metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])),
+				len(pap.ScalerPolicy.HPAPolicy.Metrics))
 			ha.Spec.Metrics = metrics
 		}
 		ha.Spec.Behavior = (*v2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(pap.ScalerPolicy.HPAPolicy.Behavior))

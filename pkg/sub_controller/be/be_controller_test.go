@@ -46,9 +46,9 @@ func init() {
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	clientgoscheme.AddToScheme(sch)
+	_ = clientgoscheme.AddToScheme(sch)
 	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	schemeBuilder.AddToScheme(sch)
+	_ = schemeBuilder.AddToScheme(sch)
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -164,7 +164,9 @@ func Test_Sync(t *testing.T) {
 
 	bc := New(k8sutils.NewFakeClient(sch, src, &ep))
 	err := bc.Sync(context.Background(), src)
-	bc.UpdateStatus(src)
+	require.Equal(t, nil, err)
+	err = bc.UpdateStatus(src)
+	require.Equal(t, nil, err)
 	beStatus := src.Status.StarRocksBeStatus
 	require.Equal(t, beStatus.Phase, srapi.ComponentReconciling)
 	require.Equal(t, nil, err)
@@ -173,10 +175,13 @@ func Test_Sync(t *testing.T) {
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
-	require.NoError(t, bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.ExternalServiceName(src.Name, spec), Namespace: "default"}, &asvc))
+	require.NoError(t, bc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: service.ExternalServiceName(src.Name, spec), Namespace: "default"}, &asvc))
 	require.Equal(t, service.ExternalServiceName(src.Name, spec), asvc.Name)
-	require.NoError(t, bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
+	require.NoError(t, bc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
 	require.Equal(t, searchServiceName, rsvc.Name)
-	require.NoError(t, bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
+	require.NoError(t, bc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
