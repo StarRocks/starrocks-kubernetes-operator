@@ -76,6 +76,13 @@ From the navigation path, `"Administration" -> "Configuration" -> "Add Data Sour
 
 ## 5. Deploy StarRocks Cluster
 
+There are two ways to turn on the prometheus metrics scrape for the StarRocks cluster.
+
+1. Turn on the prometheus metrics scrape by adding annotations
+2. Turn on the prometheus metrics scrape by using ServiceMonitor CRD
+
+### 5.1 Turn on the prometheus metrics scrape by adding annotations
+
 Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks) with some customized values.
 
 Following is an example of the content of the `sr-values.yaml`.
@@ -109,6 +116,7 @@ starrocksBESpec:
       cpu: 4
       memory: 4Gi
 ```
+
 * For chart v1.8.0 and above,
 ```yaml
 starrocks:
@@ -141,6 +149,7 @@ starrocks:
 ```
 
 Note that `"prometheus.io/*` annotations are the must items to be added, this will allow prometheus to auto discover StarRocks PODs and to collect the metrics.
+This method will restart the StarRocks cluster.
 
 An equivalent StarRocks CRD may look like,
 ```yaml
@@ -154,7 +163,6 @@ spec:
     configMapInfo:
       configMapName: kube-starrocks-be-cm
       resolveKey: be.conf
-    fsGroup: 0
     image: starrocks/be-ubuntu:3.1-latest
     limits:
       cpu: 4
@@ -172,7 +180,6 @@ spec:
     configMapInfo:
       configMapName: kube-starrocks-fe-cm
       resolveKey: fe.conf
-    fsGroup: 0
     image: starrocks/fe-ubuntu:3.1-latest
     limits:
       cpu: 4
@@ -189,11 +196,27 @@ spec:
 ```
 
 Run the following commands to deploy StarRocks operator and StarRocks cluster,
+
 ```shell
 helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
 helm repo update
 helm install starrocks -f sr-values.yaml starrocks-community/kube-starrocks
 ```
+
+### 5.2 Turn on the prometheus metrics scrape by using ServiceMonitor CRD
+
+Compared to the annotation approach, ServiceMonitor allows for more flexible definition of selector and relabeling rules in the future.
+Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks) with some customized values.
+
+```shell
+starrocks:
+  metrics:
+    serviceMonitor:
+      enabled: ture
+```
+
+Note: This only works for chart v1.8.4 and above.
+
 
 ## 6. Import StarRocks Grafana Dashboard
 
