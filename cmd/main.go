@@ -62,8 +62,8 @@ func Print(out io.Writer) {
 }
 
 func init() {
-	//the implied flag: kubeconfig.
-	//KUBECONFIG env will be used if you have config.
+	// the implied flag: kubeconfig.
+	// KUBECONFIG env will be used if you have config.
 	flag.StringVar(&_metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&_probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&_enableLeaderElection, "leader-elect", false,
@@ -76,7 +76,7 @@ func init() {
 	// set klog flag
 	klog.InitFlags(nil)
 	// to use klog.V for debugging, we have to set the flag.
-	flag.Set("v", "2")
+	_ = flag.Set("v", "2")
 }
 
 func main() {
@@ -108,7 +108,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	//initial all controllers
+	// initial all controllers
 	for _, c := range pkg.Controllers {
 		c.Init(mgr)
 	}

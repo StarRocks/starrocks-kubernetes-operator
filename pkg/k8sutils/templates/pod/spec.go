@@ -33,17 +33,23 @@ const (
 
 // StartupProbe returns a startup probe.
 func StartupProbe(startupProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
-	return completeProbe(startupProbeFailureSeconds, 60, 5, getProbe(port, path))
+	var defaultFailureThreshold int32 = 60
+	var defaultPeriodSeconds int32 = 5
+	return completeProbe(startupProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
 // LivenessProbe returns a liveness.
 func LivenessProbe(port int32, path string) *corev1.Probe {
-	return completeProbe(nil, 3, 5, getProbe(port, path))
+	var defaultFailureThreshold int32 = 3
+	var defaultPeriodSeconds int32 = 5
+	return completeProbe(nil, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
 // ReadinessProbe returns a readiness probe.
 func ReadinessProbe(port int32, path string) *corev1.Probe {
-	return completeProbe(nil, 3, 5, getProbe(port, path))
+	var defaultFailureThreshold int32 = 3
+	var defaultPeriodSeconds int32 = 5
+	return completeProbe(nil, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
 // LifeCycle returns a lifecycle.
@@ -83,9 +89,10 @@ func completeProbe(failureSeconds *int32, defaultFailureThreshold int32, default
 }
 
 func getVolumeName(mountInfo v1.MountInfo) string {
+	suffixLen := 4
 	suffix := hash.HashObject(mountInfo)
-	if len(suffix) > 4 {
-		suffix = suffix[:4]
+	if len(suffix) > suffixLen {
+		suffix = suffix[:suffixLen]
 	}
 	return mountInfo.Name + "-" + suffix
 }
@@ -200,7 +207,8 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 	return labels
 }
 
-func Envs(spec v1.SpecInterface, config map[string]interface{}, feExternalServiceName string, namespace string, envs []corev1.EnvVar) []corev1.EnvVar {
+func Envs(spec v1.SpecInterface, config map[string]interface{},
+	feExternalServiceName string, namespace string, envs []corev1.EnvVar) []corev1.EnvVar {
 	// copy envs
 	envs = append([]corev1.EnvVar(nil), envs...)
 
@@ -408,10 +416,10 @@ func Annotations(spec v1.SpecInterface) map[string]string {
 }
 
 func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
-	_, groupId := spec.GetRunAsNonRoot()
+	_, groupID := spec.GetRunAsNonRoot()
 	fsGroup := (*int64)(nil)
-	if groupId != nil {
-		fsGroup = groupId
+	if groupID != nil {
+		fsGroup = groupID
 	}
 	onRootMismatch := corev1.FSGroupChangeOnRootMismatch
 	sc := &corev1.PodSecurityContext{
@@ -422,16 +430,16 @@ func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
 }
 
 func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
-	userId, groupId := spec.GetRunAsNonRoot()
+	userID, groupID := spec.GetRunAsNonRoot()
 
 	var runAsNonRoot *bool
-	if userId != nil && *userId != 0 {
+	if userID != nil && *userID != 0 {
 		b := true
 		runAsNonRoot = &b
 	}
 	return &corev1.SecurityContext{
-		RunAsUser:                userId,
-		RunAsGroup:               groupId,
+		RunAsUser:                userID,
+		RunAsGroup:               groupID,
 		RunAsNonRoot:             runAsNonRoot,
 		AllowPrivilegeEscalation: func() *bool { b := false; return &b }(),
 		// starrocks will create pid file, eg.g /opt/starrocks/fe/bin/fe.pid, so set it to false

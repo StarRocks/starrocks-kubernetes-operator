@@ -52,9 +52,12 @@ If you want to downgrade the version of values.yaml, you can run the following c
 `)
 		flag.PrintDefaults()
 	}
-	flag.StringVar(&inputFilePath, "input", "", "the input path of values.yaml for kube-starrocks chart, if not specified, it will read from stdin")
-	flag.StringVar(&targetChartVersion, "target-version", "", "the chart version, which this tool will change the values.yaml to")
-	flag.StringVar(&outputFilePath, "output", "", "the output path of values.yaml for kube-starrocks chart, if not specified, it will write to stdout")
+	flag.StringVar(&inputFilePath, "input", "",
+		"the input path of values.yaml for kube-starrocks chart, if not specified, it will read from stdin")
+	flag.StringVar(&targetChartVersion, "target-version", "",
+		"the chart version, which this tool will change the values.yaml to")
+	flag.StringVar(&outputFilePath, "output", "",
+		"the output path of values.yaml for kube-starrocks chart, if not specified, it will write to stdout")
 	flag.Parse()
 
 	log.SetOutput(os.Stderr)

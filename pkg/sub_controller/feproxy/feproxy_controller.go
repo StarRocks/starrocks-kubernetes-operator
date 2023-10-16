@@ -59,7 +59,8 @@ func (controller *FeProxyController) GetControllerName() string {
 func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	if feProxySpec == nil {
-		klog.Infof("FeProxyController Sync: the fe proxy component is not needed, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
+		klog.Infof("FeProxyController Sync: the fe proxy component is not needed, namespace = %v, "+
+			"starrocks cluster name = %v", src.Namespace, src.Name)
 		if err := controller.ClearResources(ctx, src); err != nil {
 			klog.Errorf("FeProxyController Sync: clear fe proxy resource failed, "+
 				"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
@@ -187,7 +188,7 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 		},
 	})
 
-	port := int32(8080)
+	var port int32 = 8080
 	image := "nginx:1.24.0"
 	if feProxySpec.Image != "" && !strings.HasPrefix(feProxySpec.Image, ":") {
 		image = feProxySpec.Image
@@ -205,12 +206,12 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 	}
 
 	// nginx container will run as nginx user, not allowed to change
-	userId := int64(101)
-	groupId := int64(101)
+	var userID int64 = 101
+	var groupID int64 = 101
 	runAsNonRoot := true
 	container.SecurityContext = &corev1.SecurityContext{
-		RunAsUser:                &userId,
-		RunAsGroup:               &groupId,
+		RunAsUser:                &userID,
+		RunAsGroup:               &groupID,
 		RunAsNonRoot:             &runAsNonRoot,
 		AllowPrivilegeEscalation: func() *bool { b := false; return &b }(),
 		// nginx will write content to some file specified by client_body_temp_path

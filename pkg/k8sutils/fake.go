@@ -46,31 +46,31 @@ func NewFailingClient(err error) Client {
 	return failingClient{err: err}
 }
 
-func (fc failingClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (fc failingClient) Get(_ context.Context, _ client.ObjectKey, _ client.Object, _ ...client.GetOption) error {
 	return fc.err
 }
 
-func (fc failingClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (fc failingClient) List(_ context.Context, _ client.ObjectList, _ ...client.ListOption) error {
 	return fc.err
 }
 
-func (fc failingClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (fc failingClient) Create(_ context.Context, _ client.Object, _ ...client.CreateOption) error {
 	return fc.err
 }
 
-func (fc failingClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+func (fc failingClient) Delete(_ context.Context, _ client.Object, _ ...client.DeleteOption) error {
 	return fc.err
 }
 
-func (fc failingClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (fc failingClient) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
 	return fc.err
 }
 
-func (fc failingClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (fc failingClient) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
 	return fc.err
 }
 
-func (fc failingClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+func (fc failingClient) DeleteAllOf(_ context.Context, _ client.Object, _ ...client.DeleteAllOfOption) error {
 	return fc.err
 }
 
@@ -90,10 +90,10 @@ type failingStatusWriter struct {
 	err error
 }
 
-func (fsw failingStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (fsw failingStatusWriter) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
 	return fsw.err
 }
 
-func (fsw failingStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (fsw failingStatusWriter) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
 	return fsw.err
 }

@@ -109,19 +109,19 @@ func (spec *StarRocksComponentSpec) GetHostAliases() []corev1.HostAlias {
 
 func (spec *StarRocksComponentSpec) GetRunAsNonRoot() (*int64, *int64) {
 	runAsNonRoot := spec.RunAsNonRoot
-	if runAsNonRoot == nil || *runAsNonRoot == false {
+	if runAsNonRoot == nil || !*runAsNonRoot {
 		return nil, nil
 	}
 
-	userId := int64(1000)
-	groupId := int64(1000)
-	return &userId, &groupId
+	var userID int64 = 1000
+	var groupID int64 = 1000
+	return &userID, &groupID
 }
 
 func (spec *StarRocksComponentSpec) GetTerminationGracePeriodSeconds() *int64 {
+	var defaultSeconds int64 = 120
 	if spec.TerminationGracePeriodSeconds == nil {
-		v := int64(120)
-		return &v
+		return &defaultSeconds
 	}
 	return spec.TerminationGracePeriodSeconds
 }

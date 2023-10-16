@@ -58,6 +58,7 @@ const (
 
 // Complete() completes the default value of AutoScalerVersion
 func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion {
+	const kubernetesVersion = 26
 	if version != "" {
 		return version
 	}
@@ -69,7 +70,7 @@ func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion
 			// keep backward compatibility
 			return AutoScalerV2Beta2
 		}
-		if minorNumber >= 26 {
+		if minorNumber >= kubernetesVersion {
 			return AutoScalerV2
 		} else {
 			return AutoScalerV2Beta2

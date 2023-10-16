@@ -116,9 +116,8 @@ func TestMakeStatefulset(t *testing.T) {
 	}
 
 	type args struct {
-		cluster         v1.StarRocksCluster
-		spec            v1.SpecInterface
-		podTemplateSpec corev1.PodTemplateSpec
+		cluster v1.StarRocksCluster
+		spec    v1.SpecInterface
 	}
 	tests := []struct {
 		name string
@@ -178,7 +177,6 @@ func TestMakeStatefulset(t *testing.T) {
 			if !reflect.DeepEqual(got.Spec, tt.want.Spec) {
 				t.Errorf("MakeStatefulset Spec = %v, want %v", got.Spec, tt.want.Spec)
 			}
-
 		})
 	}
 }

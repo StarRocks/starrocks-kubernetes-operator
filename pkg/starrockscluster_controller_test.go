@@ -99,7 +99,8 @@ func TestReconcileConstructFeResource(t *testing.T) {
 	}
 
 	r := newStarRocksClusterController(src)
-	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
+	res, err := r.Reconcile(context.Background(),
+		reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
 	require.Equal(t, reconcile.Result{}, res)
 }
@@ -270,7 +271,8 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 		}},
 	}
 	r := newStarRocksClusterController(src, ep)
-	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
+	res, err := r.Reconcile(context.Background(),
+		reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
 	require.Equal(t, reconcile.Result{}, res)
 }
@@ -343,7 +345,8 @@ func TestStarRocksClusterReconciler_CnStatus(t *testing.T) {
 	}
 
 	r := newStarRocksClusterController(src, ep, st)
-	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
+	res, err := r.Reconcile(context.Background(),
+		reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
 	require.NoError(t, err)
 	require.Equal(t, reconcile.Result{}, res)
 }

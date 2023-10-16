@@ -40,10 +40,10 @@ func init() {
 	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	chemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	clientgoscheme.AddToScheme(sch)
-	chemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	chemeBuilder.AddToScheme(sch)
+	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
+	_ = clientgoscheme.AddToScheme(sch)
+	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
+	_ = schemeBuilder.AddToScheme(sch)
 }
 
 func Test_DeleteAutoscaler(t *testing.T) {

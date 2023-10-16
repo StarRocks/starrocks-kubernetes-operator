@@ -45,13 +45,14 @@ type StarRocksLoadSpec struct {
 	// +optional
 	Image string `json:"image"`
 
-	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-	// If specified, these secrets will be passed to individual puller implementations for them to use.
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the
+	// images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for
+	// them to use.
 	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
 	// +optional
 	// +patchMergeKey=name
 	// +patchStrategy=merge
-	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"` //nolint:lll
 
 	// SchedulerName is the name of the kubernetes scheduler that will be used to schedule the pods.
 	// +optional

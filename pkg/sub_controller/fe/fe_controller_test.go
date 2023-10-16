@@ -48,21 +48,22 @@ func init() {
 	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	chemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	clientgoscheme.AddToScheme(sch)
-	chemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	chemeBuilder.AddToScheme(sch)
+	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
+	_ = clientgoscheme.AddToScheme(sch)
+	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
+	_ = schemeBuilder.AddToScheme(sch)
 }
 
-func TestFeController_updateStatus(t *testing.T) {
+func TestFeController_updateStatus(_ *testing.T) {
 	var creatings, readys, faileds []string
 	podmap := make(map[string]corev1.Pod)
 	// get all pod status that controlled by st.
 	var podList corev1.PodList
 	podList.Items = append(podList.Items, corev1.Pod{Status: corev1.PodStatus{Phase: corev1.PodPending}})
 
-	for _, pod := range podList.Items {
-		podmap[pod.Name] = pod
+	for i := range podList.Items {
+		pod := &podList.Items[i]
+		podmap[pod.Name] = podList.Items[i]
 		if ready := k8sutils.PodIsReady(&pod.Status); ready {
 			readys = append(readys, pod.Name)
 		} else if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodPending {
@@ -159,7 +160,9 @@ func Test_SyncDeploy(t *testing.T) {
 	fc := New(k8sutils.NewFakeClient(sch, src))
 
 	err := fc.Sync(context.Background(), src)
-	fc.UpdateStatus(src)
+	require.Equal(t, nil, err)
+	err = fc.UpdateStatus(src)
+	require.Equal(t, nil, err)
 	festatus := src.Status.StarRocksFeStatus
 	require.Equal(t, nil, err)
 	require.Equal(t, festatus.Phase, srapi.ComponentReconciling)
@@ -169,11 +172,14 @@ func Test_SyncDeploy(t *testing.T) {
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksFeSpec
-	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
+	require.NoError(t, fc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
 	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
-	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
+	require.NoError(t, fc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
-	require.NoError(t, fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
+	require.NoError(t, fc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
 	// validate service selector matches statefulset selector
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

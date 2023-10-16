@@ -18,9 +18,10 @@ package k8sutils
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
+
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -56,7 +57,8 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 	}
 
 	if equal(svc, &esvc) {
-		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ", svc.Namespace, " name ", svc.Name)
+		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ",
+			"namespace ", svc.Namespace, " name ", svc.Name)
 		return nil
 	}
 
@@ -154,7 +156,8 @@ func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.St
 }
 
 func CreateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.Info("Creating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(), " kind ", object.GetObjectKind().GroupVersionKind().Kind)
+	klog.Info("Creating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(),
+		" kind ", object.GetObjectKind().GroupVersionKind().Kind)
 	if err := k8sclient.Create(ctx, object); err != nil {
 		return err
 	}
@@ -162,7 +165,8 @@ func CreateClientObject(ctx context.Context, k8sclient client.Client, object cli
 }
 
 func UpdateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.Info("Updating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(), " kind ", object.GetObjectKind())
+	klog.Info("Updating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(),
+		" kind ", object.GetObjectKind())
 	if err := k8sclient.Update(ctx, object); err != nil {
 		return err
 	}
@@ -171,7 +175,8 @@ func UpdateClientObject(ctx context.Context, k8sclient client.Client, object cli
 
 // PatchClientObject patch object when the object exist. if not return error.
 func PatchClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.V(4).Infof("patch resource namespace=%s,name=%s,kind=%s.", object.GetNamespace(), object.GetName(), object.GetObjectKind())
+	klog.V(constant.LOG_LEVEL).Infof("patch resource namespace=%s,name=%s,kind=%s.",
+		object.GetNamespace(), object.GetName(), object.GetObjectKind())
 	if err := k8sclient.Patch(ctx, object, client.Merge); err != nil {
 		return err
 	}
@@ -181,7 +186,8 @@ func PatchClientObject(ctx context.Context, k8sclient client.Client, object clie
 
 // CreateOrUpdate patch object if not exist create object.
 func CreateOrUpdate(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.V(4).Infof("patch or create resource namespace=%s,name=%s,kind=%s.", object.GetNamespace(), object.GetName(), object.GetObjectKind())
+	klog.V(constant.LOG_LEVEL).Infof("patch or create resource namespace=%s,name=%s,kind=%s.",
+		object.GetNamespace(), object.GetName(), object.GetObjectKind())
 	if err := k8sclient.Update(ctx, object); apierrors.IsNotFound(err) {
 		return k8sclient.Create(ctx, object)
 	} else if err != nil {
@@ -247,7 +253,8 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 }
 
 // DeleteAutoscaler as version type delete response autoscaler.
-func DeleteAutoscaler(ctx context.Context, k8sclient client.Client, namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
+func DeleteAutoscaler(ctx context.Context, k8sClient client.Client,
+	namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
 	var autoscaler client.Object
 	switch autoscalerVersion {
 	case srapi.AutoScalerV1:
@@ -257,16 +264,16 @@ func DeleteAutoscaler(ctx context.Context, k8sclient client.Client, namespace, n
 	case srapi.AutoScalerV2Beta2:
 		autoscaler = &v2beta2.HorizontalPodAutoscaler{}
 	default:
-		return errors.New(fmt.Sprintf("the autoscaler type %s is not supported.", autoscalerVersion))
+		return fmt.Errorf("the autoscaler type %s is not supported", autoscalerVersion)
 	}
 
-	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, autoscaler); apierrors.IsNotFound(err) {
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, autoscaler); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
 		return err
 	}
 
-	return k8sclient.Delete(ctx, autoscaler)
+	return k8sClient.Delete(ctx, autoscaler)
 }
 
 func PodIsReady(status *corev1.PodStatus) bool {

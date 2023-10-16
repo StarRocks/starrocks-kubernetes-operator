@@ -43,10 +43,10 @@ func init() {
 	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	chemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	clientgoscheme.AddToScheme(sch)
-	chemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	chemeBuilder.AddToScheme(sch)
+	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
+	_ = clientgoscheme.AddToScheme(sch)
+	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
+	_ = schemeBuilder.AddToScheme(sch)
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -144,7 +144,8 @@ func Test_Sync(t *testing.T) {
 
 	cc := New(k8sutils.NewFakeClient(sch, src, &ep))
 	err := cc.Sync(context.Background(), src)
-	cc.UpdateStatus(src)
+	require.Equal(t, nil, err)
+	err = cc.UpdateStatus(src)
 	require.Equal(t, nil, err)
 	ccStatus := src.Status.StarRocksCnStatus
 	require.Equal(t, srapi.ComponentReconciling, ccStatus.Phase)
@@ -153,10 +154,13 @@ func Test_Sync(t *testing.T) {
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	cnSpec := src.Spec.StarRocksCnSpec
-	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: service.ExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: service.ExternalServiceName(src.Name, cnSpec), Namespace: "default"}, &asvc))
 	require.Equal(t, service.ExternalServiceName(src.Name, cnSpec), asvc.Name)
-	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: cc.getCnSearchServiceName(src), Namespace: "default"}, &rsvc))
-	require.Equal(t, cc.getCnSearchServiceName(src), rsvc.Name)
-	require.NoError(t, cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: load.Name(src.Name, cnSpec), Namespace: "default"}, &st))
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: service.SearchServiceName(src.Name, (*srapi.StarRocksCnSpec)(nil)), Namespace: "default"}, &rsvc))
+	require.Equal(t, service.SearchServiceName(src.Name, (*srapi.StarRocksCnSpec)(nil)), rsvc.Name)
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{Name: load.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
