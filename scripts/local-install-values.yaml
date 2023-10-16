@@ -1,0 +1,45 @@
+operator:
+  starrocksOperator:
+    image:
+      repository: starrocks/operator
+      tag: v1.8.3
+
+starrocks:
+  starrocksFESpec:
+    image:
+      repository: starrocks/fe-ubuntu
+      tag: 3.1.2
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    service:
+      type: NodePort
+      ports:
+      - containerPort: 9030
+        name: query
+        nodePort: 30002
+        port: 9030
+  starrocksBeSpec:
+    image:
+      repository: starrocks/be-ubuntu
+      tag: 3.1.2
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+  starrocksFeProxySpec:
+    enabled: true
+    service:
+      type: NodePort
+      ports:
+      - name: http-port
+        nodePort: 30001
+        containerPort: 8080
+        port: 8080        
