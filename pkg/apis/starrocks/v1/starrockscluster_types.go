@@ -68,6 +68,7 @@ type SpecInterface interface {
 	loadInterface
 	GetHostAliases() []corev1.HostAlias
 	GetRunAsNonRoot() (*int64, *int64)
+	GetTerminationGracePeriodSeconds() *int64
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -179,6 +180,13 @@ func (spec *StarRocksFeProxySpec) GetHostAliases() []corev1.HostAlias {
 func (spec *StarRocksFeProxySpec) GetRunAsNonRoot() (*int64, *int64) {
 	// fe proxy will set run as nginx user by default, and can not be changed by crd
 	return nil, nil
+}
+
+// GetTerminationGracePeriodSeconds
+// fe proxy does not have field TerminationGracePeriodSeconds, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
+	return nil
 }
 
 // ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
