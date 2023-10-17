@@ -30,7 +30,7 @@ starrocksOperator:
   image:
     # image sliced by "repository:tag"
     repository: starrocks/operator
-    tag: v1.8.3
+    tag: v1.8.4
   imagePullPolicy: Always
   replicaCount: 1
   resources:
@@ -55,3 +55,9 @@ starrocksOperator:
   # operator watching all namespaces use too many memory resources, you can set this value.
   # Defaults to all namespaces.
   watchNamespace: ""
+  # Additional operator container environment variables
+  # You specify this manually like you would a raw deployment manifest.
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # operator supports the following environment variables:
+  # KUBE_STARROCKS_UNSUPPORTED_ENVS: "XXX,YYY" # The environment variables that will not be passed to starrocks container.
+  env: []

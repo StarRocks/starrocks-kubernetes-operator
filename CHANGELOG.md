@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## [v1.8.4](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.4)
+
+Release Notes for starrocks-kubernetes-operator v1.8.4
+
+We are excited to announce the release of starrocks-kubernetes-operator v1.8.4, a Kubernetes operator for StarRocks.
+This release brings several new features, bug fixes, and documentation improvements.
+
+### What's New
+
+1. **[Feature] add golangci-lint GitHub Action:** This feature enables the golangci-lint tool to check the code quality
+   and style of the operator project on every pull request.
+2. **[Feature] allow you to configure the terminationGracePeriodSeconds in StarRocksCluster CRD:** This feature allows
+   you to specify how long to wait before forcefully terminating a pod when deleting or updating a StarRocksCluster
+   resource.
+3. **[Feature] add storage fields for starrocksCnSpec in values.yaml:** This feature allows you to configure the storage
+   class and size for the CN nodes in the StarRocksCluster.
+4. **[Feature] integration with Prometheus by ServiceMonitor CRD:** This feature allows you to monitor the metrics of
+   StarRocks cluster by using Prometheus and ServiceMonitor CRD.
+5. **[Feature] support startupProbeFailureSeconds fields in StarRocksCluster CRD:** This feature allows you to configure
+   the startup probe failure threshold for the pods in the StarRocksCluster resource.
+6. **[Feature] facilitate the configuration of environmental variables for the operator pod:** for instance, one may
+   designate KUBE_STARROCKS_UNSUPPORTED_ENVS to eliminate environments incompatible with the kubernetes cluster.
+
+### Bug Fixes
+
+1. [Bugfix] This bugfix solves the problem that FE Proxy cannot handle stream load requests correctly when there are
+   multiple FE pods in the StarRocks cluster.
+
+### Maintenance
+
+1. **[Doc] Set up StarRocks locally:** This document provides a guide on how to set up a local StarRocks cluster.
+2. **[Doc] Establish a comprehensive StarRocks cluster, encompassing all available features.** For additional examples
+   concerning StarRocksCluster,
+   please refer to: https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/examples/starrocks.
+3. **[Doc] Augment the instructional material on StarRocks utilization**, encompassing topics such as '
+   logging_and_related_configurations_howto.md' and 'mount_external_configmaps_or_secrets_howto.md'.
+   For a holistic view of available guides,
+   please refer to: https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/doc
+
 ## [v1.8.3](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.3)
 
 This is a minor release of StarRocks Kubernetes Operator.
