@@ -47,6 +47,8 @@ spec:
 
 ---
 
+{{- if .Values.starrocksCluster.enabledCn }}
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -69,4 +71,5 @@ spec:
       app.starrocks.ownerreference/name: {{ template "starrockscluster.name" . }}
       app.kubernetes.io/component: cn
 
+{{- end }}
 {{- end }}

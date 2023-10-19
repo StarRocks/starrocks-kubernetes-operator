@@ -35,10 +35,11 @@ spec:
         {{- if .Values.starrocksOperator.watchNamespace }}
         - --namespace={{ .Values.starrocksOperator.watchNamespace }}
         {{- end }}
-        {{- if .Values.timeZone }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}
+        {{- if .Values.starrocksOperator.env }}
+        {{- toYaml .Values.starrocksOperator.env | nindent 8 }}
         {{- end }}
         image: "{{ .Values.starrocksOperator.image.repository }}:{{ .Values.starrocksOperator.image.tag }}"
         imagePullPolicy: {{ .Values.starrocksOperator.imagePullPolicy }}

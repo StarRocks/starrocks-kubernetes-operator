@@ -37,7 +37,7 @@ operator:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/operator
-      tag: v1.8.3
+      tag: v1.8.4
     imagePullPolicy: Always
     replicaCount: 1
     resources:
@@ -62,6 +62,12 @@ operator:
     # operator watching all namespaces use too many memory resources, you can set this value.
     # Defaults to all namespaces.
     watchNamespace: ""
+    # Additional operator container environment variables
+    # You specify this manually like you would a raw deployment manifest.
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    # operator supports the following environment variables:
+    # KUBE_STARROCKS_UNSUPPORTED_ENVS: "XXX,YYY" # The environment variables that will not be passed to starrocks container.
+    env: []
 
 starrocks:
   # set the nameOverride values for creating the same resources with parent chart.
@@ -243,6 +249,8 @@ starrocks:
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
       #   subPath: ""
+    # terminationGracePeriodSeconds defines duration in seconds the FE pod needs to terminate gracefully.
+    terminationGracePeriodSeconds: 120
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
@@ -402,6 +410,8 @@ starrocks:
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
       #   subPath: ""
+    # terminationGracePeriodSeconds defines duration in seconds the CN pod needs to terminate gracefully.
+    terminationGracePeriodSeconds: 120
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -525,6 +535,8 @@ starrocks:
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
       #   subPath: ""
+    # terminationGracePeriodSeconds defines duration in seconds the BE pod needs to terminate gracefully.
+    terminationGracePeriodSeconds: 120
   
   # create secrets if necessary.
   secrets: []
