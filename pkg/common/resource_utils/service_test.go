@@ -109,7 +109,7 @@ func TestBuildExternalService(t *testing.T) {
 					Name:      "service-name",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2728763357",
+						srapi.ComponentResourceHash: "1503664666",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -124,13 +124,17 @@ func TestBuildExternalService(t *testing.T) {
 						srPorts := getFeServicePorts(map[string]interface{}{}, nil)
 						var ports []corev1.ServicePort
 						for _, sp := range srPorts {
-							ports = append(ports, corev1.ServicePort{
+							servicePort := corev1.ServicePort{
 								Name:       sp.Name,
 								Port:       sp.Port,
 								NodePort:   sp.NodePort,
 								Protocol:   corev1.ProtocolTCP,
 								TargetPort: intstr.FromInt(int(sp.ContainerPort)),
-							})
+							}
+							if servicePort.Name == FeQueryPortName {
+								servicePort.AppProtocol = func() *string { v := "mysql"; return &v }()
+							}
+							ports = append(ports, servicePort)
 						}
 						return ports
 					}(),
