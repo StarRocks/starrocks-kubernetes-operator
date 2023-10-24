@@ -75,9 +75,10 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{
-			Name:       "query-port",
-			Port:       rutils.GetPort(config, rutils.QUERY_PORT),
-			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.QUERY_PORT))),
+			Name:        "query-port",
+			Port:        rutils.GetPort(config, rutils.QUERY_PORT),
+			TargetPort:  intstr.FromInt(int(rutils.GetPort(config, rutils.QUERY_PORT))),
+			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
 		},
 	})
 

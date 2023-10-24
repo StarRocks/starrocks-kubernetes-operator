@@ -33,6 +33,23 @@ const (
 	FeProxyService StarRocksServiceType = "fe-proxy"
 )
 
+const (
+	FeHTTPPortName    = "http"
+	FeRPCPortName     = "rpc"
+	FeQueryPortName   = "query"
+	FeEditLogPortName = "edit-log"
+
+	BePortName          = "be"
+	BeWebserverPortName = "webserver"
+	BeHeartbeatPortName = "heartbeat"
+	BeBrpcPortName      = "brpc"
+
+	CnThriftPortName    = "thrift"
+	CnWebserverPortName = "webserver"
+	CnHeartbeatPortName = "heartbeat"
+	CnBrpcPortName      = "brpc"
+)
+
 // HashService service hash components
 type hashService struct {
 	name        string
@@ -108,13 +125,20 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 
 	var ports []corev1.ServicePort
 	for _, sp := range srPorts {
-		ports = append(ports, corev1.ServicePort{
+		servicePort := corev1.ServicePort{
 			Name:       sp.Name,
 			Port:       sp.Port,
 			NodePort:   sp.NodePort,
 			Protocol:   corev1.ProtocolTCP,
 			TargetPort: intstr.FromInt(int(sp.ContainerPort)),
-		})
+		}
+		if servicePort.Name == FeQueryPortName {
+			servicePort.AppProtocol = func() *string {
+				protocol := "mysql"
+				return &protocol
+			}()
+		}
+		ports = append(ports, servicePort)
 	}
 	// set Ports field before calculate resource hash
 	svc.Spec.Ports = ports
@@ -131,13 +155,13 @@ func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 	queryPort := GetPort(config, QUERY_PORT)
 	editPort := GetPort(config, EDIT_LOG_PORT)
 	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
-		Port: httpPort, ContainerPort: httpPort, Name: "http",
+		Port: httpPort, ContainerPort: httpPort, Name: FeHTTPPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: rpcPort, ContainerPort: rpcPort, Name: "rpc",
+		Port: rpcPort, ContainerPort: rpcPort, Name: FeRPCPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: queryPort, ContainerPort: queryPort, Name: "query",
+		Port: queryPort, ContainerPort: queryPort, Name: FeQueryPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: editPort, ContainerPort: editPort, Name: "edit-log",
+		Port: editPort, ContainerPort: editPort, Name: FeEditLogPortName,
 	}))
 
 	return srPorts
@@ -150,13 +174,13 @@ func getBeServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 	brpcPort := GetPort(config, BRPC_PORT)
 
 	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
-		Port: bePort, ContainerPort: bePort, Name: "be",
+		Port: bePort, ContainerPort: bePort, Name: BePortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
+		Port: webserverPort, ContainerPort: webserverPort, Name: BeWebserverPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
+		Port: heartPort, ContainerPort: heartPort, Name: BeHeartbeatPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
+		Port: brpcPort, ContainerPort: brpcPort, Name: BeBrpcPortName,
 	}))
 
 	return srPorts
@@ -168,13 +192,13 @@ func getCnServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
 	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
-		Port: thriftPort, ContainerPort: thriftPort, Name: "thrift",
+		Port: thriftPort, ContainerPort: thriftPort, Name: CnThriftPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: webserverPort, ContainerPort: webserverPort, Name: "webserver",
+		Port: webserverPort, ContainerPort: webserverPort, Name: CnWebserverPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: heartPort, ContainerPort: heartPort, Name: "heartbeat",
+		Port: heartPort, ContainerPort: heartPort, Name: CnHeartbeatPortName,
 	}), mergePort(service, srapi.StarRocksServicePort{
-		Port: brpcPort, ContainerPort: brpcPort, Name: "brpc",
+		Port: brpcPort, ContainerPort: brpcPort, Name: CnBrpcPortName,
 	}))
 
 	return srPorts
