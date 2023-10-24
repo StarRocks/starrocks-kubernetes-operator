@@ -38,6 +38,7 @@ import (
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 func init() {
@@ -83,7 +84,9 @@ type StarRocksClusterReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	klog.Info("StarRocksClusterReconciler reconcile the update crd name ", req.Name, " namespace ", req.Namespace)
+	log := log.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	log.WithName("StarRocksClusterReconciler").Info("Reconcile the StarRocksClusterReconciler"
+	log.Info("StarRocksClusterReconciler reconcile the update crd name ", req.Name, " namespace ", req.Namespace)
 	var esrc srapi.StarRocksCluster
 	err := r.Client.Get(ctx, req.NamespacedName, &esrc)
 	if err != nil {
