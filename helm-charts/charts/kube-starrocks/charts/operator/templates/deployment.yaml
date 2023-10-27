@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "kube-starrocks.name" . }}-operator
+  name: {{ template "operator.name" . }}-operator
   namespace: {{ template "operator.namespace" . }}
   labels:
-    app: {{ template "kube-starrocks.name" . }}-operator
+    app: {{ template "operator.name" . }}-operator
   {{- if .Values.starrocksOperator.annotations }}
   annotations:
     {{- toYaml .Values.starrocksOperator.annotations | nindent 4 }}
@@ -13,7 +13,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ template "kube-starrocks.name" . }}-operator
+      app: {{ template "operator.name" . }}-operator
   replicas: {{ .Values.starrocksOperator.replicaCount }}
   template:
     metadata:
@@ -23,7 +23,7 @@ spec:
         {{- toYaml .Values.starrocksOperator.annotations | nindent 8 }}
       {{- end }}
       labels:
-        app: {{ template "kube-starrocks.name" . }}-operator
+        app: {{ template "operator.name" . }}-operator
         version: {{ $.Chart.Version }}
     spec:
       automountServiceAccountToken: true

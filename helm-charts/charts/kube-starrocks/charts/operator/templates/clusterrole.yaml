@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "kube-starrocks.name" . }}-operator
+  name: {{ template "operator.name" . }}-operator
   labels:
-    app: {{ template "kube-starrocks.name" . }}-operator
+    app: {{ template "operator.name" . }}-operator
 rules:
 - apiGroups:
   - apps
