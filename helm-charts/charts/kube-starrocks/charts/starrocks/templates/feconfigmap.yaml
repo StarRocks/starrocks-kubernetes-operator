@@ -4,7 +4,7 @@ metadata:
   name: {{ template "starrockscluster.fe.configmap.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
-    cluster: {{ template "kube-starrocks.name" . }}
+    cluster: {{ template "starrockscluster.name" . }}
     app: "fe"
 data:
 {{ include "starrockscluster.fe.config" . | indent 2 }}

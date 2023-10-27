@@ -1,11 +1,4 @@
 {{/*
-Expand the name of the chart.
-*/}}
-{{- define "kube-starrocks.name" -}}
-{{- default .Chart.Name .Values.nameOverride -}}
-{{- end }}
-
-{{/*
 Common labels
 */}}
 {{- define "starrockscluster.labels" -}}
@@ -18,7 +11,7 @@ initpassword secret name
 */}}
 
 {{- define "starrockscluster.initpassword.secret.name" -}}
-{{ default (print (include "kube-starrocks.name" .) "-credential") .Values.initPassword.passwordSecret }}
+{{ default (print (include "starrockscluster.name" .) "-credential") .Values.initPassword.passwordSecret }}
 {{- end }}
 
 {{/*
@@ -26,7 +19,7 @@ starrockscluster
 */}}
 
 {{- define "starrockscluster.name" -}}
-{{ default (include "kube-starrocks.name" .) .Values.starrocksCluster.name }}
+{{ default (default .Chart.Name .Values.nameOverride) .Values.starrocksCluster.name }}
 {{- end }}
 
 {{- define "starrockscluster.namespace" -}}
@@ -34,15 +27,15 @@ starrockscluster
 {{- end }}
 
 {{- define "starrockscluster.fe.name" -}}
-{{- print (include "kube-starrocks.name" .) "-fe" }}
+{{- print (include "starrockscluster.name" .) "-fe" }}
 {{- end }}
 
 {{- define "starrockscluster.cn.name" -}}
-{{- print (include "kube-starrocks.name" .) "-cn" }}
+{{- print (include "starrockscluster.name" .) "-cn" }}
 {{- end }}
 
 {{- define "starrockscluster.be.name" -}}
-{{- print (include "kube-starrocks.name" .) "-be" }}
+{{- print (include "starrockscluster.name" .) "-be" }}
 {{- end }}
 
 {{- define "starrockscluster.be.configmap.name" -}}

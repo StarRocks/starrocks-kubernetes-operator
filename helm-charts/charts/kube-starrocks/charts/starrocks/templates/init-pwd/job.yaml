@@ -8,14 +8,14 @@ spec:
   template:
     spec:
       containers:
-      - name: {{ template "kube-starrocks.name" . }}-initpwd
+      - name: {{ template "starrockscluster.name" . }}-initpwd
         image: {{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}
         imagePullPolicy: Always
         command:
         - /bin/bash
         args:
         - /opt/starrocks/fe_initpwd.sh
-        - {{ template "kube-starrocks.name" . }}-fe-0.{{ template "kube-starrocks.name" . }}-fe-search
+        - {{ template "starrockscluster.name" . }}-fe-0.{{ template "starrockscluster.name" . }}-fe-search
         - "9030"
         env:
         - name: INIT_PWD

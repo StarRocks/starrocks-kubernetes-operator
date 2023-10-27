@@ -5,7 +5,7 @@ metadata:
   name: {{ template "starrockscluster.cn.configmap.name" . }}
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
-    cluster: {{ template "kube-starrocks.name" . }}
+    cluster: {{ template "starrockscluster.name" . }}
     app: "cn"
 data:
 {{ include "starrockscluster.cn.config" . | indent 2 }}

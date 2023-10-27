@@ -9,6 +9,6 @@ The default service account name to use for the operator.
 {{- default .Release.Namespace .Values.starrocksOperator.namespaceOverride }}
 {{- end }}
 
-{{- define "kube-starrocks.name" -}}
+{{- define "operator.name" -}}
 {{- default .Chart.Name .Values.nameOverride -}}
 {{- end }}

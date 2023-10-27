@@ -41,7 +41,7 @@ metrics:
 
 # deploy a starrocks cluster
 starrocksCluster:
-  # the name of starrockscluster cluster, if not set, the chart name will be used.
+  # the name of starrockscluster cluster, if not set, the value of nameOverride fields will be used.
   name: ""
   # the namespace of starrockscluster cluster, if not set, the release namespace will be used.
   namespace: ""
