@@ -14,10 +14,12 @@ operator:
       # if set true, the clusterrole, clusterrolebinding, role, rolebinding, serviceaccount resources will be created for
       # operator. If changed to false later, these resources will be deleted.
       create: true
-      # If the default service account created by helm chart is not satisfied, e.g. can not download
-      # image from private registry, you can set the serviceAccountName to use the specified service
-      # account. You should create the service account in the same namespace with operator in advance.
-      serviceAccountName: ""
+      serviceAccount:
+        name: "starrocks"
+        # Optional annotations to add to serviceaccount manifest
+        annotations: {}
+        # Optional labels to add to serviceaccount manifest
+        labels: {}
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
