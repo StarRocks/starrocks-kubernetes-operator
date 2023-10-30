@@ -205,7 +205,7 @@ operator:
   starrocksOperator:
     image:
       repository: starrocks/operator
-      tag: v1.8.4
+      tag: v1.8.5
 
 starrocks:
   starrocksFESpec:

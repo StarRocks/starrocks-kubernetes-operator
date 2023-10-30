@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## [v1.8.5](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.5)
+
+Release Notes for starrocks-kubernetes-operator v1.8.5
+
+We are pleased to announce the release of starrocks-kubernetes-operator v1.8.5. This release includes several bug fixes
+and enhancements. Here are the key updates:
+
+### What's New
+
+1. **[Chart] Service Account Customization**: The operator now supports to provide the ability to add custom
+   annotations and labels. **The previous `operator.global.rbac.serviceAccountName` field is no longer supported.**
+2. **[Operator] Explicit Protocol Selection for Istio:** To provide additional functionality such as routing and rich
+   metrics, Istio needs to determine the protocol of the traffic. This is now achieved by automatically adding the
+   appProtocol field. This enhancement is particularly important for "server-first" protocols like MySQL, which are
+   incompatible with automatic protocol detection and may cause connection failures.
+
+### Bug Fixes
+
+1. Fixed an issue that occurred when `starrocks.initPassword.enabled` is true and the value
+   of `starrocks.starrocksCluster.name` is set. The FE service domain name would follow the set value, while the initpwd
+   pod would still use the `starrocks.nameOverride` value to compose the FE service domain name. This fix ensures
+   consistent hostname usage.
+
+### Notes for Deployed Users
+
+If `starrocks.starrocksCluster.name` is not set, the result of helm template will remain the same as before. If
+`starrocks.starrocksCluster.name` is set and is different from the value of `starrocks.nameOverride`, the old configmaps
+for FE, BE, and CN will be deleted. New configmaps with the new name for FE, BE, and CN will be created. **This may
+result in the restart of FE/BE/CN pods.**
+
+We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
+welcome.
+
 ## [v1.8.4](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.4)
 
 Release Notes for starrocks-kubernetes-operator v1.8.4
