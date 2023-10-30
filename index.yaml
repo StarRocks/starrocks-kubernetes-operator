@@ -3,6 +3,33 @@ entries:
   kube-starrocks:
   - apiVersion: v2
     appVersion: 3.1-latest
+    created: "2023-10-30T12:44:45.376324+08:00"
+    description: kube-starrocks includes two subcharts, operator and starrocks
+    digest: 093e3ace256d84a5b4cf9d0f7cad2657662c85aa19e679dfafb758d48f1418ff
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: kube-starrocks
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.5/kube-starrocks-1.8.5.tgz
+    version: 1.8.5
+  - apiVersion: v2
+    appVersion: 3.1-latest
     created: "2023-10-17T17:09:26.857506+08:00"
     description: kube-starrocks includes two subcharts, operator and starrocks
     digest: fe5131249422bacb463016d5db542612c03b151b69d6f01c3b0ad44917cfcf63
@@ -226,6 +253,33 @@ entries:
     version: 1.6.1
   operator:
   - apiVersion: v2
+    appVersion: 1.8.5
+    created: "2023-10-30T12:44:47.78851+08:00"
+    description: A Helm chart for StarRocks operator
+    digest: c4c268dbf25560c5507ef961dc2e7065ba2516f60706865b2487279ae27401a9
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: operator
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.5/operator-1.8.5.tgz
+    version: 1.8.5
+  - apiVersion: v2
     appVersion: 1.8.4
     created: "2023-10-17T17:09:29.259283+08:00"
     description: A Helm chart for StarRocks operator
@@ -363,6 +417,33 @@ entries:
   starrocks:
   - apiVersion: v2
     appVersion: 3.1-latest
+    created: "2023-10-30T12:44:50.215278+08:00"
+    description: A Helm chart for StarRocks cluster
+    digest: 49a3d0550752b2dbf42623609c242b95b09e2e927d69274789de3f6be8bdf741
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: starrocks
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.5/starrocks-1.8.5.tgz
+    version: 1.8.5
+  - apiVersion: v2
+    appVersion: 3.1-latest
     created: "2023-10-17T17:09:31.591122+08:00"
     description: A Helm chart for StarRocks cluster
     digest: 70210dc32002d2a6bda7076390a33a5229a3c6d286e038ab5e367ab5c060eb57
@@ -496,4 +577,4 @@ entries:
     urls:
     - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.0/starrocks-1.8.0.tgz
     version: 1.8.0
-generated: "2023-10-17T17:09:31.590364+08:00"
+generated: "2023-10-30T12:44:50.214523+08:00"

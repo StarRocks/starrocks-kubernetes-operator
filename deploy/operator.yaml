@@ -171,7 +171,7 @@ spec:
         kubectl.kubernetes.io/default-container: manager
       labels:
         app: kube-starrocks-operator
-        version: 1.8.4
+        version: 1.8.5
     spec:
       automountServiceAccountToken: true
       containers:
@@ -182,7 +182,7 @@ spec:
         env:
         - name: TZ
           value: Asia/Shanghai
-        image: "starrocks/operator:v1.8.4"
+        image: "starrocks/operator:v1.8.5"
         imagePullPolicy: Always
         name: manager
         securityContext:

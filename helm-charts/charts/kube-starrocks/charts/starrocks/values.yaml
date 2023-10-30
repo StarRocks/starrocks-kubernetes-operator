@@ -9,6 +9,9 @@ nameOverride: "kube-starrocks"
 # After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
 # It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
 # When both password and passwordSecret are set, only passwordSecret takes effect.
+# Note: If you install StarRocks using helm install without setting the initPassword, then for subsequent upgrade deployments,
+#       you should also not set the initPassword.
+#       If you install StarRocks using helm install and set the initPassword, please always retain the configuration of initPassword.
 initPassword:
   enabled: false
   password: ""
