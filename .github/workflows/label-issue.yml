@@ -1,0 +1,43 @@
+name: Label Issue Action
+on:
+  issues:
+    types:
+      - reopened
+      - opened
+permissions:
+  issues: write
+jobs:
+  label_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueTitle = context.payload.issue.title.toLowerCase();
+            const labelsToAdd = [];
+
+            if (issueTitle.includes('bug')) {
+              labelsToAdd.push('bug');
+            }
+
+            if (issueTitle.includes('feature')) {
+              labelsToAdd.push('feature');
+            }
+            
+            if (issueTitle.includes('enhancement')) {
+              labelsToAdd.push('enhancement');
+            }
+
+            if (issueTitle.includes('documentation')) {
+              labelsToAdd.push('documentation');
+            }
+
+            if (labelsToAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelsToAdd
+              });
+            }
