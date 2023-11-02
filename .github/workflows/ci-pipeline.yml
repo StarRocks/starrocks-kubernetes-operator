@@ -1,4 +1,4 @@
-name: CI PIPELINE
+name: UNIT TEST ACTION
 
 on:
   pull_request:
