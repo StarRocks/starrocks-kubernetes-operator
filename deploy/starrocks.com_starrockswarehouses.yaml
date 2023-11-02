@@ -17,11 +17,7 @@ spec:
     singular: starrockswarehouse
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .status.starRocksCnStatus.phase
-      name: CnStatus
-      type: string
-    name: v1
+  - name: v1
     schema:
       openAPIV3Schema:
         properties:
@@ -723,7 +719,25 @@ spec:
                     required:
                     - maxReplicas
                     type: object
-                  cnEnvVars:
+                  configMapInfo:
+                    properties:
+                      configMapName:
+                        type: string
+                      resolveKey:
+                        type: string
+                    type: object
+                  configMaps:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        name:
+                          type: string
+                        subPath:
+                          type: string
+                      type: object
+                    type: array
+                  envVars:
                     items:
                       properties:
                         name:
@@ -781,24 +795,6 @@ spec:
                           type: object
                       required:
                       - name
-                      type: object
-                    type: array
-                  configMapInfo:
-                    properties:
-                      configMapName:
-                        type: string
-                      resolveKey:
-                        type: string
-                    type: object
-                  configMaps:
-                    items:
-                      properties:
-                        mountPath:
-                          type: string
-                        name:
-                          type: string
-                        subPath:
-                          type: string
                       type: object
                     type: array
                   hostAliases:

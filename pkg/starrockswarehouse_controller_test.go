@@ -72,7 +72,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 							Namespace: "test",
 						},
 						Spec: v1.StarRocksWarehouseSpec{
-							Template: &v1.StarRocksCnSpec{},
+							Template: &v1.WarehouseComponentSpec{},
 						},
 					}),
 			},
@@ -125,7 +125,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 						},
 						Spec: v1.StarRocksWarehouseSpec{
 							StarRocksCluster: "test",
-							Template:         &v1.StarRocksCnSpec{},
+							Template:         &v1.WarehouseComponentSpec{},
 						},
 					},
 					&v1.StarRocksCluster{
@@ -172,7 +172,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 						},
 						Spec: v1.StarRocksWarehouseSpec{
 							StarRocksCluster: "test",
-							Template:         &v1.StarRocksCnSpec{},
+							Template:         &v1.WarehouseComponentSpec{},
 						},
 					},
 					&v1.StarRocksCluster{

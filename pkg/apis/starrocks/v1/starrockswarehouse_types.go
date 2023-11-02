@@ -17,15 +17,12 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// WarehouseComponentSpec
-// +kubebuilder:object:generate=false
-type WarehouseComponentSpec = StarRocksCnSpec
 
 // StarRocksWarehouseSpec defines the desired state of StarRocksWarehouse
 type StarRocksWarehouseSpec struct {
@@ -33,7 +30,27 @@ type StarRocksWarehouseSpec struct {
 	StarRocksCluster string `json:"starRocksCluster"`
 
 	// Template define component configuration.
-	Template *StarRocksCnSpec `json:"template"`
+	Template *WarehouseComponentSpec `json:"template"`
+}
+
+// WarehouseComponentSpec defines the desired state of component.
+type WarehouseComponentSpec struct {
+	StarRocksComponentSpec `json:",inline"`
+
+	// +optional
+	// envVars is a slice of environment variables that are added to the pods, the default is empty.
+	EnvVars []corev1.EnvVar `json:"envVars,omitempty"`
+
+	// AutoScalingPolicy auto scaling strategy
+	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
+}
+
+func (componentSpec *WarehouseComponentSpec) ToCnSpec() *StarRocksCnSpec {
+	return &StarRocksCnSpec{
+		StarRocksComponentSpec: componentSpec.StarRocksComponentSpec,
+		CnEnvVars:              componentSpec.EnvVars,
+		AutoScalingPolicy:      componentSpec.AutoScalingPolicy,
+	}
 }
 
 // WarehouseComponentStatus
@@ -45,7 +62,7 @@ type StarRocksWarehouseStatus struct {
 	// Phase represents the state of a warehouse. The possible value are: running, failed, pending and deleting.
 	Phase Phase `json:"phase"`
 
-	// WarehouseStatus represents the status of cn service. The status has reconciling, failed and running.
+	// WarehouseStatus represents the status of service. The status has reconciling, failed and running.
 	*WarehouseComponentStatus `json:",inline"`
 }
 
@@ -54,7 +71,6 @@ type StarRocksWarehouseStatus struct {
 // +kubebuilder:resource:shortName=warehouse
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
 // +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient

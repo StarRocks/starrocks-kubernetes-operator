@@ -5,15 +5,6 @@ nameOverride: "kube-starrocks"
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 
-# This configuration is used to modify the root password during initial deployment.
-# After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
-# It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
-# When both password and passwordSecret are set, only passwordSecret takes effect.
-initPassword:
-  enabled: false
-  # The name of the secret which contains password, the key in the secret is "password", and you should create it first.
-  passwordSecret: ""
-
 # This configuration is used to integrate with external system DataDog.
 # You can enable the integration by setting the enabled to true, e.g. datalog.log.enabled=true will enable datadog agent
 # to collect the log.
@@ -26,18 +17,18 @@ datadog:
   metrics:
     enabled: false
 
-# The name of starrocks cluster. Note: the starrocks cluster should be created before the warehouse by operator.
-starRocksCluster:
+spec:
+  # The name of starrocks cluster.
+  # Note: the starrocks cluster must be created before the warehouse by operator.
+  starRocksClusterName:
 
-# spec for compute node, compute node provide compute function.
-starrocksCnSpec:
-  # number of replicas to deploy for cn component.
-  # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the starrocksCnSpec
-  # field, the replicas field of the cn statefulset created by the operator will be set to null. This ensures that the replicas
-  # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to CN, then the pods
-  # of Cn will not be recreated.
+  # number of replicas to deploy.
+  # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the spec
+  # field, the replicas field of the statefulset created by the operator will be set to null. This ensures that the replicas
+  # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to the statefulset,
+  # then the pods will not be recreated.
   # Why should the replicas field in this values.yaml be set to null? This is the default replicas. When the user removes
-  # the autoScalingPolicy fields from the starrocksCnSpec, the corresponding HPA object will be deleted. And when the replicas
+  # the autoScalingPolicy fields from the spec, the corresponding HPA object will be deleted. And when the replicas
   # field is set, the number of pods will immediately revert to the replicas count, even though the user did not specify
   # the replicas count in their own values.yaml.
   # replicas: 1
@@ -45,9 +36,9 @@ starrocksCnSpec:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
     tag: 3.1-latest
-  # serviceAccount for cn access cloud service.
+  # serviceAccount for pod access cloud service.
   serviceAccount: ""
-  # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
+  # add annotations for pods. example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # If runAsNonRoot is true, the container is run as non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
@@ -55,17 +46,17 @@ starrocksCnSpec:
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the cn service type, only supported ClusterIP, NodePort, LoadBalancer
+    # the service type, only supported ClusterIP, NodePort, LoadBalancer
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for cn service.
+    # add annotations for service.
     annotations: {}
-    # config the service port for cn service.
-    # if you want to use a dedicated port for cn service, you can config the port.
+    # config the service port for service.
+    # if you want to use a dedicated port for service, you can config the port.
     # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
     ports: []
-      # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
+      # e.g. use a dedicated node port for service. The containerPort and port field can be commented out.
       # - name: webserver
       #   nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
@@ -87,11 +78,11 @@ starrocksCnSpec:
     #   - "example.com"
   # schedulerName allows you to specify which scheduler will be used for the pod
   schedulerName: ""
-  # Additional cn container environment variables
+  # Additional container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # This means you can bind in environment variables from secrets.
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
-  cnEnvVars: []
+  envVars: []
     # e.g. static environment variable:
     # - name: DEMO_GREETING
     #   value: "Hello from the environment"
@@ -101,7 +92,7 @@ starrocksCnSpec:
     #     secretKeyRef:
     #       name: mysecret
     #       key: username
-  # affinity for cn pod scheduling.
+  # affinity for pod scheduling.
   affinity: {}
     # nodeAffinity:
     #   requiredDuringSchedulingIgnoredDuringExecution:
@@ -111,7 +102,7 @@ starrocksCnSpec:
     #             operator: In
     #             values:
     #               - target-host-name
-  # Node tolerations for cn pod scheduling to nodes with taints
+  # Node tolerations for pod scheduling to nodes with taints
   # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   tolerations: []
     # - key: "key"
@@ -146,7 +137,7 @@ starrocksCnSpec:
     #         periodSeconds: 10
     #     scaleDown:
     #       selectPolicy: Disabled
-  # define resources requests and limits for cn pods.
+  # define resources requests and limits for pods.
   resources:
     limits:
       cpu: 8
@@ -176,7 +167,7 @@ starrocksCnSpec:
     # - name: my-configmap
     #   mountPath: /etc/my-configmap
     #   subPath: ""
-  # cn storageSpec for persistent data.
+  # n storageSpec for persistent data.
   storageSpec:
     # the name of volume for mount. if not will use emptyDir.
     name: ""

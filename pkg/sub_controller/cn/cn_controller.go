@@ -68,8 +68,8 @@ var FeNotOkError = errors.New("component fe is not ok")
 var GetFeFeatureInfoError = errors.New("get fe /api/v2/feature info error")
 
 func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
-	cnSpec := warehouse.Spec.Template
-	if warehouse.Spec.StarRocksCluster == "" || cnSpec == nil {
+	template := warehouse.Spec.Template
+	if warehouse.Spec.StarRocksCluster == "" || template == nil {
 		return SpecMissingError
 	}
 
@@ -86,7 +86,7 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 	if !fe.CheckFEOk(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
 		return FeNotOkError
 	}
-	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), cnSpec)
+	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec())
 }
 
 func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
@@ -208,8 +208,8 @@ func (cc *CnController) applyStatefulset(ctx context.Context, st *appv1.Stateful
 
 // UpdateWarehouseStatus updates the status of StarRocksWarehouse.
 func (cc *CnController) UpdateWarehouseStatus(warehouse *srapi.StarRocksWarehouse) error {
-	cnSpec := warehouse.Spec.Template
-	if cnSpec == nil {
+	template := warehouse.Spec.Template
+	if template == nil {
 		warehouse.Status.WarehouseComponentStatus = nil
 		return nil
 	}
@@ -224,7 +224,7 @@ func (cc *CnController) UpdateWarehouseStatus(warehouse *srapi.StarRocksWarehous
 	status := warehouse.Status.WarehouseComponentStatus
 	status.Phase = srapi.ComponentReconciling
 
-	return cc.UpdateStatus(object.NewFromWarehouse(warehouse), cnSpec, status)
+	return cc.UpdateStatus(object.NewFromWarehouse(warehouse), template.ToCnSpec(), status)
 }
 
 // UpdateClusterStatus update the status of StarRocksCluster.

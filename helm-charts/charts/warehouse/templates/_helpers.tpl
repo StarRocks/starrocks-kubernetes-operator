@@ -17,8 +17,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 {{- define "starrockswarehouse.config" -}}
 cn.conf: |
-{{- if .Values.starrocksCnSpec.config | indent 2 }}
-{{ .Values.starrocksCnSpec.config | indent 2 }}
+{{- if .Values.spec.config | indent 2 }}
+{{ .Values.spec.config | indent 2 }}
 {{- end }}
 {{- end }}
 
@@ -27,8 +27,8 @@ starrockswarehouse.config.hash is used to calculate the hash value of the cn.con
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
 {{- define "starrockswarehouse.config.hash" }}
-  {{- if .Values.starrocksCnSpec.config }}
-    {{- $hash := toJson .Values.starrocksCnSpec.config | sha256sum | trunc 8 }}
+  {{- if .Values.spec.config }}
+    {{- $hash := toJson .Values.spec.config | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
   {{- else }}
     {{- printf "no-config" }}
@@ -36,7 +36,7 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- end }}
 
 {{- define "starrockswarehouse.webserver.port" -}}
-{{- include "starrockswarehouse.get.webserver.port" .Values.starrocksCnSpec }}
+{{- include "starrockswarehouse.get.webserver.port" .Values.spec }}
 {{- end }}
 
 {{- define "starrockswarehouse.get.webserver.port" -}}
@@ -51,10 +51,6 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- if (index $configMap "webserver_port") -}}
 {{- print (index $configMap "webserver_port") }}
 {{- end }}
-{{- end }}
-
-{{- define "starrockswarehouse.initpassword.secret.name" -}}
-{{ default (print (include "starrockswarehouse.name" .) "-credential") .Values.initPassword.passwordSecret }}
 {{- end }}
 
 {{- define "starrockscluster.cn.data.suffix" -}}

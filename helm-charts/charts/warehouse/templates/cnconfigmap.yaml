@@ -1,4 +1,4 @@
-{{- if and .Values.starrocksCnSpec .Values.starrocksCnSpec.config }}
+{{- if and .Values.spec .Values.spec.config }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

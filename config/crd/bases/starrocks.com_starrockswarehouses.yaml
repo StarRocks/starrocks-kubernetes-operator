@@ -17,11 +17,7 @@ spec:
     singular: starrockswarehouse
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .status.starRocksCnStatus.phase
-      name: CnStatus
-      type: string
-    name: v1
+  - name: v1
     schema:
       openAPIV3Schema:
         description: StarRocksWarehouse defines a starrocks warehouse.
@@ -1592,8 +1588,39 @@ spec:
                     required:
                     - maxReplicas
                     type: object
-                  cnEnvVars:
-                    description: cnEnvVars is a slice of environment variables that
+                  configMapInfo:
+                    description: the reference for configMap which store the config
+                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
+                    properties:
+                      configMapName:
+                        description: the config info for start progress.
+                        type: string
+                      resolveKey:
+                        description: the config response key in configmap.
+                        type: string
+                    type: object
+                  configMaps:
+                    description: the reference for configMap which allow users to
+                      mount any files to container.
+                    items:
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        name:
+                          description: This must match the Name of a ConfigMap or
+                            Secret in the same namespace, and the length of name must
+                            not more than 50 characters.
+                          type: string
+                        subPath:
+                          description: SubPath within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
+                      type: object
+                    type: array
+                  envVars:
+                    description: envVars is a slice of environment variables that
                       are added to the pods, the default is empty.
                     items:
                       description: EnvVar represents an environment variable present
@@ -1701,37 +1728,6 @@ spec:
                           type: object
                       required:
                       - name
-                      type: object
-                    type: array
-                  configMapInfo:
-                    description: the reference for configMap which store the config
-                      info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
-                    properties:
-                      configMapName:
-                        description: the config info for start progress.
-                        type: string
-                      resolveKey:
-                        description: the config response key in configmap.
-                        type: string
-                    type: object
-                  configMaps:
-                    description: the reference for configMap which allow users to
-                      mount any files to container.
-                    items:
-                      properties:
-                        mountPath:
-                          description: Path within the container at which the volume
-                            should be mounted.  Must not contain ':'.
-                          type: string
-                        name:
-                          description: This must match the Name of a ConfigMap or
-                            Secret in the same namespace, and the length of name must
-                            not more than 50 characters.
-                          type: string
-                        subPath:
-                          description: SubPath within the volume from which the container's
-                            volume should be mounted. Defaults to "" (volume's root).
-                          type: string
                       type: object
                     type: array
                   hostAliases:
