@@ -28,8 +28,9 @@ func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *sra
 	}
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 
-	feServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
-	proxyPass := fmt.Sprintf("http://%s:%d", feServiceName, httpPort)
+	feSearchServiceName := service.SearchServiceName(src.Name, feSpec)
+	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
+	proxyPass := fmt.Sprintf("http://%s:%d", feExternalServiceName, httpPort)
 
 	resolver := feProxySpec.Resolver
 	if resolver == "" {
@@ -74,7 +75,7 @@ http {
 
   server {
     listen 8080;
-    resolver %v;
+    resolver %[1]s;
     proxy_intercept_errors on;
     recursive_error_pages on;
 
@@ -84,7 +85,7 @@ http {
     }
 
     location / {
-      proxy_pass %v;
+      proxy_pass %[2]s;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -93,7 +94,7 @@ http {
     }
 
     location /api/transaction/load {
-      proxy_pass %v;
+      proxy_pass %[2]s;
       proxy_pass_request_body off;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
@@ -103,7 +104,7 @@ http {
     }
 
     location ~ ^/api/.*/.*/_stream_load$ {
-      proxy_pass %v;
+      proxy_pass %[2]s;
       proxy_pass_request_body off;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
@@ -113,6 +114,26 @@ http {
     }
 
     location @handle_redirect {
+      if ($upstream_http_location ~ "%[3]s") {
+        rewrite ^ /_redirect_to_fe last;
+      }
+      if ($upstream_http_location !~ "%[3]s") {
+        rewrite ^ /_redirect_to_others last;
+      }
+    }
+
+    location /_redirect_to_fe {
+      set $redirect_uri '$upstream_http_location';
+      proxy_pass $redirect_uri;
+      proxy_set_header Expect $http_expect;
+      proxy_pass_request_body off;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      error_page 307 = @handle_redirect;
+    }
+
+    location /_redirect_to_others {
       set $redirect_uri '$upstream_http_location';
       proxy_pass $redirect_uri;
       proxy_set_header Expect $http_expect;
@@ -124,7 +145,7 @@ http {
     }
   }
 }
-`, resolver, proxyPass, proxyPass, proxyPass),
+`, resolver, proxyPass, feSearchServiceName),
 		},
 	}
 
