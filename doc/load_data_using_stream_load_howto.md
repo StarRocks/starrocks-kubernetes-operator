@@ -3,34 +3,6 @@
 The issue is that when the load client residents in a different network other than FE/BE's private network. FE's HTTP
 307 brings BE's private network address to the client who does not recognize and can't process the redirection.
 
-## Issues of Stream Load
-
-Stream Load Interaction:
-
-![Stream Load Interaction](./images/stream_load_interaction.png)
-
-The issues:
-
-![Issues When Client Is Not In the Same Private Network](./images/issues_of_stream_load.png)
-
-## Issues of Transactional Stream Load
-
-Transactional Stream Load Interaction:
-
-![Transactional Stream Load Interaction](./images/transactional_stream_load_interaction.png)
-
-The issues:
-
-![Issues When Client Is Not In the Same Private Network](./images/issues_of_transactional_stream_load.png)
-
-## Using Fe Proxy to Solve the Issues
-
-![Using Fe Proxy to Solve the Issues](./images/stream_load-fe-proxy.png)
-
-## How to Deploy Fe Proxy
-
-### Deploy Fe Proxy Using Helm
-
 If you install StarRocks with Helm, you can add the following configuration to the `values.yaml` file:
 
 For `kube-starrocks` Helm chart:
