@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## [v1.8.6](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.6)
+
+Release Notes for starrocks-kubernetes-operator v1.8.6
+
+We are pleased to announce the release of starrocks-kubernetes-operator v1.8.6. This release includes several bug fixes
+and enhancements. Here are the key updates:
+
+### Bug Fixes
+
+1. Fix the problem of nginx sending the request body to FE when redirecting the stream load request, which may cause
+   the stream load to fail. (#303)
+
+### Maintenance
+
+1. [Documentation] add doc/load_data_using_stream_load.md. This document introduces how to load data from outside the
+   k8s network to StarRocks through fe-proxy.
+2. [Documentation] update change_root_password_howto.md. This document adds the steps of how to update the
+   root password through Helm Chart.
+3. [Chore] Add GitHub Actions to add label on issue and PR. This chore improves the project quality by adding necessary
+   labels to issues and PRs.
+
+We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
+welcome.
+
 ## [v1.8.5](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.5)
 
 Release Notes for starrocks-kubernetes-operator v1.8.5

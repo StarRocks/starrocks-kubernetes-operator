@@ -156,14 +156,14 @@ mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name}
 echo "copy yaml files for operator and crd"
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
-echo "build migrate-chart-value tool"
-cd $HOME_PATH/scripts/migrate-chart-value
-GOARCH=amd64 GOOS=linux go build -o migrate-chart-value-amd64-linux main.go
-GOARCH=amd64 GOOS=darwin go build -o migrate-chart-value-amd64-darwin main.go
-GOARCH=arm64 GOOS=darwin go build -o migrate-chart-value-arm64-darwin main.go
-cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-linux $HOME_PATH/artifacts/
-cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-darwin $HOME_PATH/artifacts/
-cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-arm64-darwin $HOME_PATH/artifacts/
+#echo "build migrate-chart-value tool"
+#cd $HOME_PATH/scripts/migrate-chart-value
+#GOARCH=amd64 GOOS=linux go build -o migrate-chart-value-amd64-linux main.go
+#GOARCH=amd64 GOOS=darwin go build -o migrate-chart-value-amd64-darwin main.go
+#GOARCH=arm64 GOOS=darwin go build -o migrate-chart-value-arm64-darwin main.go
+#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-linux $HOME_PATH/artifacts/
+#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-darwin $HOME_PATH/artifacts/
+#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-arm64-darwin $HOME_PATH/artifacts/
 
 # gh release upload
 # gh release upload $1 $HOME_PATH/artifacts/*.tgz $HOME_PATH/artifacts/*.yaml

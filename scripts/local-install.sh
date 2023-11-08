@@ -185,13 +185,13 @@ operator:
   starrocksOperator:
     image:
       repository: starrocks/operator
-      tag: v1.8.5
+      tag: v1.8.6
 
 starrocks:
   starrocksFESpec:
     image:
       repository: starrocks/fe-ubuntu
-      tag: 3.1.2
+      tag: 3.1.4
     resources:
       limits:
         cpu: 2
@@ -209,7 +209,7 @@ starrocks:
   starrocksBeSpec:
     image:
       repository: starrocks/be-ubuntu
-      tag: 3.1.2
+      tag: 3.1.4
     resources:
       limits:
         cpu: 2

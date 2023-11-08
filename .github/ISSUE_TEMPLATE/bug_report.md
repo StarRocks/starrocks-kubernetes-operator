@@ -21,6 +21,6 @@ A clear and concise description of what you expected to happen.
 
 ## Please complete the following information
 
-- Operator Version: [e.g. v1.8.5]
+- Operator Version: [e.g. v1.8.6]
 - Chart Name: [e.g. kube-starrocks]
-- Chart Version [e.g. v1.8.5]
+- Chart Version [e.g. v1.8.6]
