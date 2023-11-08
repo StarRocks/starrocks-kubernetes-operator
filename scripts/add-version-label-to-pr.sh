@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # input parameters: a list of PR numbers and a version tag
-# e.g. v1.8.5 1 2 3 4 5
+# e.g. v1.8.6 1 2 3 4 5
 VERSION_TAG=$1
 
 # create label by gh
