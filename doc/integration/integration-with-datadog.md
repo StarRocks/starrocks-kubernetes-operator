@@ -9,7 +9,7 @@ If this is a fresh install, add the Helm Datadog repo:
 
 ```bash
 helm repo add datadog https://helm.datadoghq.com
-helm repo update
+helm repo update datadog
 ```
 
 Create a Kubernetes Secret to store your Datadog API key and app key:
@@ -46,7 +46,7 @@ If this is a fresh install, add the Helm StarRocks Operator repo
 
 ```bash
 helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update
+helm repo update starrocks-community
 ```
 
 **Add** the following configuration to your `sr-values.yaml` file:

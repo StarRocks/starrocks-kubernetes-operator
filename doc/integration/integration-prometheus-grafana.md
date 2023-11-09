@@ -20,7 +20,7 @@ Follow the instructions from [Prometheus Helm Chart](https://artifacthub.io/pack
 
 ```shell
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+helm repo update prometheus-community
 helm install prometheus prometheus-community/prometheus
 ```
 
@@ -42,7 +42,7 @@ service:
 Install the Grafana service with the following commands.
 ```shell
 helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
+helm repo update grafana
 helm install grafana -f grafana-values.yaml grafana/grafana
 ```
 
@@ -199,7 +199,7 @@ Run the following commands to deploy StarRocks operator and StarRocks cluster,
 
 ```shell
 helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update
+helm repo update starrocks-community
 helm install starrocks -f sr-values.yaml starrocks-community/kube-starrocks
 ```
 
