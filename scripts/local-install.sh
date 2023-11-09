@@ -1,20 +1,30 @@
 #!/usr/bin/env bash
 
-VERSION=
+# This script is used to install starrocks on local k8s cluster.
+# Make sure `docker` is installed，See [install docker](https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/doc/local_installation_how_to.md#11-install-docker) for more details.
+#
+# It will do the following things:
+#   1. install kubectl, helm, kind on your machine.
+#   2. create a kind cluster named `starrocks`.
+#   3. install [kube-starrocks](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks) helm chart.
+
+# specify the k8s version installed by kind
 K8S_VERSION="v1.23.4"
 
-UPGRADE=false
-CLEAN=false
-KIND=true
+# helm, kind, kubectl download url
+HELM_URL="https://get.helm.sh"
+KIND_URL="https://kind.sigs.k8s.io/dl/v0.20.0"
+KUBECTL_URL="https://dl.k8s.io/release/v1.28.3/bin"
+HELM_CHART_URL="https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.6/kube-starrocks-1.8.6.tgz"
+# NOTE:
+# if you can not access the following url, you can try to use the following url.
+# And you can specify the url by command arguments.
+# HELM_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
+# KIND_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
+# KUBECTL_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
+# HELM_CHART_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-starrocks-1.8.6.tgz"
 
-# Pre-requisites:
-# - kubectl
-# - helm
-# - docker
-# - kind
-
-# Check if the binary is installed
-# If not, return false, else return true
+# checkBinary checks if the binary is installed. If not, return 1, else return 0
 function checkBinary() {
   if command -v "$1" &>/dev/null; then
     echo "The binary $1 is installed"
@@ -25,6 +35,7 @@ function checkBinary() {
   fi
 }
 
+# mustInstalled checks if the binary is installed. If not, exit
 function mustInstalled() {
   if ! command -v "$1" &>/dev/null; then
     echo "The binary $1 is not installed"
@@ -34,77 +45,80 @@ function mustInstalled() {
   fi
 }
 
+# installHelm installs helm
 function installHelm() {
   echo "installing helm"
   # Linux AMD64 / x86_64
   [[ $(uname -m) = x86_64 && $(uname) = Linux ]] &&
-    curl -LO https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz &&
+    curl -LO $HELM_URL/helm-v3.12.3-linux-amd64.tar.gz &&
     tar -zxvf helm-v3.12.3-linux-amd64.tar.gz && sudo mv linux-amd64/helm /usr/local/bin/helm
 
   # Linux ARM64
   [[ $(uname -m) = aarch64 && $(uname) = Linux ]] &&
-    curl -LO https://get.helm.sh/helm-v3.12.3-linux-arm64.tar.gz &&
+    curl -LO $HELM_URL/helm-v3.12.3-linux-arm64.tar.gz &&
     tar -zxvf helm-v3.12.3-linux-arm64.tar.gz && sudo mv linux-arm64/helm /usr/local/bin/helm
 
   # MacOS Intel
   [[ $(uname -m) = x86_64 && $(uname) = Darwin ]] &&
-    curl -LO https://get.helm.sh/helm-v3.12.3-darwin-amd64.tar.gz &&
+    curl -LO $HELM_URL/helm-v3.12.3-darwin-amd64.tar.gz &&
     tar -zxvf helm-v3.12.3-darwin-amd64.tar.gz && sudo mv darwin-amd64/helm /usr/local/bin/helm
 
   # MacOS M1 / ARM
   [[ $(uname -m) = arm64 && $(uname) = Darwin ]] &&
-    curl -LO https://get.helm.sh/helm-v3.12.3-darwin-arm64.tar.gz &&
+    curl -LO $HELM_URL/helm-v3.12.3-darwin-arm64.tar.gz &&
     tar -zxvf helm-v3.12.3-darwin-arm64.tar.gz && sudo mv darwin-arm64/helm /usr/local/bin/helm
 }
 
+# installKubectl installs kubectl
 function installKubectl() {
   echo "Installing kubectl"
   # Linux AMD64 / x86_64
   [[ $(uname -m) = x86_64 && $(uname) = Linux ]] &&
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    curl -LO "$KUBECTL_URL/linux/amd64/kubectl"
 
   # Linux ARM64
   [[ $(uname -m) = aarch64 && $(uname) = Linux ]] &&
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+    curl -LO "$KUBECTL_URL/linux/arm64/kubectl"
 
   # MacOS Intel Macs
   [[ $(uname -m) = x86_64 && $(uname) = Darwin ]] &&
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
+    curl -LO "$KUBECTL_URL/darwin/amd64/kubectl"
 
   # MacOS M1 / ARM
   [[ $(uname -m) = arm64 && $(uname) = Darwin ]] &&
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/arm64/kubectl"
+    curl -LO "$KUBECTL_URL/darwin/arm64/kubectl"
 
   chmod +x ./kubectl
   sudo mv ./kubectl /usr/local/bin/kubectl
-  sudo chown root: /usr/local/bin/kubectl
 }
 
+# installKind installs kind
 function installKind() {
   echo "Installing kind"
   # Linux AMD64 / x86_64
   [[ $(uname -m) = x86_64 && $(uname) = Linux ]] &&
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+    curl -Lo ./kind $KIND_URL/kind-linux-amd64
   # Linux ARM64
   [[ $(uname -m) = aarch64 && $(uname) = Linux ]] &&
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-arm64
+    curl -Lo ./kind $KIND_URL/kind-linux-arm64
   # MacOS Intel
   [[ $(uname -m) = x86_64 && $(uname) = Darwin ]] &&
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-darwin-amd64
+    curl -Lo ./kind $KIND_URL/kind-darwin-amd64
   # MacOS M1 / ARM
   [[ $(uname -m) = arm64 && $(uname) = Darwin ]] &&
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-darwin-arm64
+    curl -Lo ./kind $KIND_URL/kind-darwin-arm64
 
   # install kind
   chmod +x ./kind
   sudo mv ./kind /usr/local/bin/kind
 }
 
+# checkPrerequisites checks if the prerequisites are installed. If not, install them
 function checkPrerequisites() {
   mustInstalled docker
 
   # If kind is not installed, install kind
-  if $KIND && ! checkBinary kind; then
+  if ! checkBinary kind; then
     installKind
   fi
 
@@ -119,15 +133,15 @@ function checkPrerequisites() {
   fi
 }
 
+# cmdHelp prints the help message
 function cmdHelp() {
   echo "Usage: $0 [options]"
   echo "Options:"
-  echo "       --clean"
   echo "  -h,  --help"
   echo "  -k,  --k8s-version <K8S_VERSION>, specify the version of k8s to install, default is $K8S_VERSION"
-  echo "  -u,  --upgrade, equals to helm upgrade"
 }
 
+# kindCreateCluster creates a kind cluster
 function kindCreateCluster() {
   echo "Creating kind cluster"
 
@@ -148,37 +162,11 @@ nodes:
   kind create cluster --image=kindest/node:$K8S_VERSION --name=starrocks --config=/tmp/kind.yaml || exit 1
 }
 
+# install installs kube-starrocks helm chart
 function install() {
+  echo "Installing kube-starrocks helm chart"
   helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-
-  echo "Update helm repo"
   helm repo update starrocks-community
-
-  cmd="helm"
-
-  if $UPGRADE; then
-    cmd="$cmd upgrade"
-  else
-    cmd="$cmd install"
-  fi
-
-  cmd="$cmd -n starrocks starrocks starrocks-community/kube-starrocks"
-
-  if [ -n "$VERSION" ]; then
-    cmd="$cmd --version $VERSION"
-  fi
-
-  if $UPGRADE; then
-    cmd="$cmd --timeout 30s"
-  else
-    cmd="$cmd --create-namespace --timeout 60s"
-  fi
-
-  if $UPGRADE; then
-    echo "Upgrading starrocks"
-  else
-    echo "Installing starrocks"
-  fi
 
   cat <<EOF >/tmp/local-install-values.yaml
 operator:
@@ -197,8 +185,8 @@ starrocks:
         cpu: 2
         memory: 4Gi
       requests:
-        cpu: 500m
-        memory: 1Gi
+        cpu: 100m
+        memory: 200Mi
     service:
       type: NodePort
       ports:
@@ -215,8 +203,8 @@ starrocks:
         cpu: 2
         memory: 4Gi
       requests:
-        cpu: 500m
-        memory: 1Gi
+        cpu: 100m
+        memory: 200Mi
   starrocksFeProxySpec:
     enabled: true
     resources:
@@ -232,14 +220,11 @@ starrocks:
         port: 8080
 EOF
 
+  cmd="helm install -n starrocks starrocks $HELM_CHART_URL --create-namespace --timeout 60s"
   eval "$cmd -f /tmp/local-install-values.yaml" 1>/dev/null
 }
 
-function clean() {
-  echo "Cleaning kind cluster"
-  kind delete cluster --name starrocks
-}
-
+# parseInput parses the input parameters
 function parseInput() {
   while [ $# -gt 0 ]; do
     case $1 in
@@ -247,21 +232,25 @@ function parseInput() {
       cmdHelp
       exit
       ;;
-    -u | --upgrade)
-      UPGRADE=true
-      shift
-      ;;
-    -v | --version)
-      VERSION=$2
-      shift 2
-      ;;
     -k | --k8s-version)
       K8S_VERSION=$2
       shift 2
       ;;
-    --clean)
-      CLEAN=true
-      shift
+    --helm-url)
+      HELM_URL=$2
+      shift 2
+      ;;
+    --kind-url)
+      KIND_URL=$2
+      shift 2
+      ;;
+    --kubectl-url)
+      KUBECTL_URL=$2
+      shift 2
+      ;;
+    --helm-chart-url)
+      HELM_CHART_URL=$2
+      shift 2
       ;;
     *)
       echo "Invalid option $1"
@@ -271,18 +260,8 @@ function parseInput() {
     esac
   done
 
-  if $CLEAN; then
-    clean
-    exit
-  fi
-
-  if $UPGRADE; then
-    install && echo 'StarRocks is installed successfully!' || echo 'StarRocks is installed failed!'
-    exit
-  fi
-
   checkPrerequisites
-  (kind get clusters | grep starrocks) || kindCreateCluster
+  (sudo kind get clusters | grep starrocks) || kindCreateCluster
   install && echo 'StarRocks is installed successfully!' || echo 'StarRocks is installed failed!'
 }
 
