@@ -16,7 +16,7 @@ qualified domain name) mode.
 ## Requirements
 
 * kubernetes 1.18+
-* golang 1.18+
+* golang 1.19+
 
 ## Supported Features
 

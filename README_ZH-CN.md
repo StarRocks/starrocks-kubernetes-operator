@@ -9,7 +9,7 @@
 ## 要求
 
 * kubernetes 1.18+
-* golang 1.18+
+* golang 1.19+
 
 ## 支持的功能
 

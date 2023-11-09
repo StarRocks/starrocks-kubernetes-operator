@@ -16,9 +16,9 @@ The following table lists the minimum and recommended hardware configurations fo
 
 The following section will cover:
 
-1. [Prerequisites](#1-prerequisites) - The prerequisites for installing StarRocks.
-2. [Installation from scratch manually](#2-installation-from-scratch-manually) - Install StarRocks with helm from
-   scratch.
+1. [Prerequisites](./local_installation_how_to.md#1-prerequisites) - The prerequisites for installing StarRocks.
+2. [Installation from scratch manually](./local_installation_how_to.md#2-installation-from-scratch-manually) - Install
+   StarRocks with helm from scratch.
 3. [Installation by scripts](./local_installation_how_to.md#3-installation-by-script) - Install StarRocks with scripts.
 4. [Load data to StarRocks](./local_installation_how_to.md#4-load-data-to-starrocks) - Load data to StarRocks.
 5. [Uninstall StarRocks](./local_installation_how_to.md#5-uninstall-starrocks) - Uninstall StarRocks.
@@ -27,67 +27,15 @@ The following section will cover:
 
 In order to install StarRocks, you need to have the following prerequisites:
 
-1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) command-line tool.
-2. Install [helm](https://helm.sh/) command-line tool.
-3. Install [docker](https://docs.docker.com/get-docker/) command-line tool.
+1. Install [docker](https://docs.docker.com/get-docker/) command-line tool.
+2. Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) command-line tool.
+3. Install [helm](https://helm.sh/) command-line tool.
 4. Install [kind](https://kind.sigs.k8s.io/) command-line tool.
 
 > You should be logged in as a user with sudo privileges to install the above tools.
+> The following steps will assume you are using a Linux or Mac machine with root privileges.
 
-### 1.1 Install `kubectl`
-
-The following steps will guide you to install kubectl:
-
-```shell
-# 1. download kubectl
-# Linux amd64
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-# Linux arm64
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
-# MacOS amd64
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
-# MacOS arm64
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/arm64/kubectl"
-
-# 2. install kubectl
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin/kubectl
-sudo chown root: /usr/local/bin/kubectl
-
-# 3. check the version you installed
-kubectl version --client
-```
-
-> see [install kubectl on linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
-> or [install kubectl on macos](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) for more details.
-
-### 1.2 Install `helm`
-
-The following steps will guide you to install helm:
-
-```shell
-# 1. download helm
-# Linux amd64
-curl -LO https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz
-# Linux arm64
-curl -LO https://get.helm.sh/helm-v3.12.3-linux-arm64.tar.gz
-# MacOS amd64
-curl -LO https://get.helm.sh/helm-v3.12.3-darwin-amd64.tar.gz
-# MacOS arm64
-curl -LO https://get.helm.sh/helm-v3.12.3-darwin-arm64.tar.gz
-
-# 2. install helm
-# e.g. Linux arm64
-tar -zxvf helm-v3.12.3-linux-arm64.tar.gz 
-sudo mv linux-arm64/helm /usr/local/bin/helm
-
-# 3. check the version you installed
-helm version
-```
-
-> see https://helm.sh/docs/intro/install/ for more details.
-
-### 1.3 Install `docker`
+### 1.1 Install `docker`
 
 The following steps will guide you to install docker:
 
@@ -118,6 +66,58 @@ installation is complete, the Docker icon will be displayed in the menu bar.
 > If installing [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/) is not allowed, you can
 > use
 [colima](https://github.com/abiosoft/colima) as another option.
+
+### 1.2 Install `kubectl`
+
+The following steps will guide you to install kubectl:
+
+```shell
+# 1. download kubectl
+# Linux amd64
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+# Linux arm64
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+# MacOS amd64
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
+# MacOS arm64
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/arm64/kubectl"
+
+# 2. install kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+# 3. check the version you installed
+kubectl version --client
+```
+
+> see [install kubectl on linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+> or [install kubectl on macos](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) for more details.
+
+### 1.3 Install `helm`
+
+The following steps will guide you to install helm:
+
+```shell
+# 1. download helm
+# Linux amd64
+curl -LO https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz
+# Linux arm64
+curl -LO https://get.helm.sh/helm-v3.12.3-linux-arm64.tar.gz
+# MacOS amd64
+curl -LO https://get.helm.sh/helm-v3.12.3-darwin-amd64.tar.gz
+# MacOS arm64
+curl -LO https://get.helm.sh/helm-v3.12.3-darwin-arm64.tar.gz
+
+# 2. install helm
+# e.g. Linux arm64
+tar -zxvf helm-v3.12.3-linux-amd64.tar.gz 
+sudo mv linux-amd64/helm /usr/local/bin/helm
+
+# 3. check the version you installed
+helm version
+```
+
+> see https://helm.sh/docs/intro/install/ for more details.
 
 ### 1.4 Install `kind`
 
@@ -169,7 +169,7 @@ EOF
 # kubernetes installation
 unset http_proxy
 unset https_proxy
-kind create cluster --image=kindest/node:v1.23.4 --name=starrocks --config=kind.yaml
+sudo kind create cluster --image=kindest/node:v1.23.4 --name=starrocks --config=kind.yaml
 
 # waiting for the new kubernetes cluster to be running healthily
 ```
@@ -269,7 +269,7 @@ kube-starrocks-operator-7498c7fbd-qsbgb   1/1     Running   0          3m
 
 ## 3. Installation by script
 
-Make sure `docker` is installed，See [install docker](#13-install-docker) for more details.
+Make sure `docker` is installed，See [install docker](./local_installation_how_to.md#11-install-docker) for more details.
 
 By default, the [script](../scripts/local-install.sh) will do the following things:
 
@@ -297,9 +297,9 @@ create database test_db;
 use test_db;
 CREATE TABLE `table1`
 (
-    `id` int(11) NOT NULL COMMENT "用户 ID",
-    `name` varchar(65533) NULL COMMENT "用户姓名",
-    `score` int(11) NOT NULL COMMENT "用户得分"
+    `id` int(11) NOT NULL COMMENT "user id",
+    `name` varchar(65533) NULL COMMENT "user name",
+    `score` int(11) NOT NULL COMMENT "user score"
 )
 ENGINE=OLAP
 PRIMARY KEY(`id`)
