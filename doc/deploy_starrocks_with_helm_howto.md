@@ -12,7 +12,7 @@ There are three charts in this repository:
 
 ```bash
 $ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-$ helm repo update
+$ helm repo update starrocks-community
 $ helm search repo starrocks-community
 NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
 # install both operator and starrocks

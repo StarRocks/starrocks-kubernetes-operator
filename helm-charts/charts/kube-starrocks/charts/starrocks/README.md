@@ -16,7 +16,7 @@
 
     ```bash
     $ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-    $ helm repo update
+    $ helm repo update starrocks-community
     $ helm search repo starrocks-community
     NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
     starrocks-community/kube-starrocks      1.8.0            3.1-latest   kube-starrocks includes two subcharts, starrock...

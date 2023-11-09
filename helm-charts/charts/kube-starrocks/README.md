@@ -21,7 +21,7 @@
    2. Update the Helm Chart Repo to the latest version.
 
       ```Bash
-      helm repo update
+      helm repo update starrocks-community
       ```
 
    3. View the Helm Chart Repo that you added.
