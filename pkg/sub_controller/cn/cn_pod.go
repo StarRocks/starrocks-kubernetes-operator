@@ -71,8 +71,8 @@ func (cc *CnController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.LivenessProbe(webServerPort, pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.ReadinessProbe(webServerPort, pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(cnSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/cn_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
 	}

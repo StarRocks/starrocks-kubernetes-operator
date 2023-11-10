@@ -507,6 +507,9 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  livenessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -515,6 +518,9 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readinessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   replicas:
                     format: int32
                     minimum: 0
@@ -1410,6 +1416,9 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  livenessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -1418,6 +1427,9 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readinessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   replicas:
                     format: int32
                     minimum: 0
@@ -1903,6 +1915,9 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  livenessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -1911,6 +1926,9 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readinessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   replicas:
                     format: int32
                     minimum: 0
@@ -2464,6 +2482,9 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  livenessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -2472,6 +2493,9 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readinessProbeFailureSeconds:
+                    format: int32
+                    type: integer
                   replicas:
                     format: int32
                     minimum: 0

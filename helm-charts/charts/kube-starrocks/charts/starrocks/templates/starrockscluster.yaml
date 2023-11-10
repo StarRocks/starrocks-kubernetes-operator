@@ -106,6 +106,15 @@ spec:
 {{toYaml .Values.starrocksFESpec.tolerations | indent 4 }}
 {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksFESpec.terminationGracePeriodSeconds }}
+    {{- if .Values.starrocksFESpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.starrocksFESpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.starrocksFESpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.starrocksFESpec.readinessProbeFailureSeconds }}
+    {{- end }}
 {{- if .Values.starrocksFESpec.secrets }}
     secrets:
     {{- range .Values.starrocksFESpec.secrets }}
@@ -243,6 +252,15 @@ spec:
 {{toYaml .Values.starrocksBeSpec.tolerations | indent 4 }}
 {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksBeSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.starrocksBeSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.starrocksBeSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.starrocksBeSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
+    {{- end }}
 {{- if .Values.starrocksBeSpec.secrets }}
     secrets:
     {{- range .Values.starrocksBeSpec.secrets }}
@@ -336,6 +354,15 @@ spec:
 {{toYaml .Values.starrocksCnSpec.tolerations | indent 4 }}
 {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksCnSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.starrocksCnSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.starrocksCnSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.starrocksCnSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
+    {{- end }}
 {{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
     autoScalingPolicy:
 {{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
@@ -450,5 +477,11 @@ spec:
     {{- if .Values.starrocksFeProxySpec.tolerations }}
     tolerations:
       {{- toYaml .Values.starrocksFeProxySpec.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.starrocksFeProxySpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.starrocksFeProxySpec.readinessProbeFailureSeconds }}
     {{- end }}
 {{- end }}

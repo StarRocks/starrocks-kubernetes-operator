@@ -29,8 +29,9 @@ import (
 
 func TestMakeLivenessProbe(t *testing.T) {
 	type args struct {
-		port int32
-		path string
+		seconds *int32
+		port    int32
+		path    string
 	}
 	tests := []struct {
 		name string
@@ -38,7 +39,7 @@ func TestMakeLivenessProbe(t *testing.T) {
 		want *corev1.Probe
 	}{
 		{
-			name: "test",
+			name: "liveness probe with default seconds",
 			args: args{
 				port: 8080,
 				path: "/api/health2",
@@ -49,10 +50,23 @@ func TestMakeLivenessProbe(t *testing.T) {
 				ProbeHandler:     getProbe(8080, "/api/health2"),
 			},
 		},
+		{
+			name: "liveness probe with specified seconds",
+			args: args{
+				seconds: func() *int32 { s := int32(50); return &s }(),
+				port:    8080,
+				path:    "/api/health2",
+			},
+			want: &corev1.Probe{
+				PeriodSeconds:    5,
+				FailureThreshold: 10,
+				ProbeHandler:     getProbe(8080, "/api/health2"),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := LivenessProbe(tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			if got := LivenessProbe(tt.args.seconds, tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("LivenessProbe() = %v, want %v", got, tt.want)
 			}
 		})
@@ -61,8 +75,9 @@ func TestMakeLivenessProbe(t *testing.T) {
 
 func TestMakeReadinessProbe(t *testing.T) {
 	type args struct {
-		port int32
-		path string
+		seconds *int32
+		port    int32
+		path    string
 	}
 	tests := []struct {
 		name string
@@ -70,7 +85,7 @@ func TestMakeReadinessProbe(t *testing.T) {
 		want *corev1.Probe
 	}{
 		{
-			name: "test",
+			name: "readiness probe with default seconds",
 			args: args{
 				port: 8080,
 				path: "/api/health2",
@@ -81,10 +96,23 @@ func TestMakeReadinessProbe(t *testing.T) {
 				ProbeHandler:     getProbe(8080, "/api/health2"),
 			},
 		},
+		{
+			name: "readiness probe with specified seconds",
+			args: args{
+				seconds: func() *int32 { s := int32(50); return &s }(),
+				port:    8080,
+				path:    "/api/health2",
+			},
+			want: &corev1.Probe{
+				PeriodSeconds:    5,
+				FailureThreshold: 10,
+				ProbeHandler:     getProbe(8080, "/api/health2"),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReadinessProbe(tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			if got := ReadinessProbe(tt.args.seconds, tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ReadinessProbe() = %v, want %v", got, tt.want)
 			}
 		})
