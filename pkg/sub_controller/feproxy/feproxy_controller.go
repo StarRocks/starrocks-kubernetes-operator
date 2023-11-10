@@ -200,8 +200,8 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 		Resources:       feProxySpec.ResourceRequirements,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		VolumeMounts:    volumeMounts,
-		LivenessProbe:   pod.LivenessProbe(port, "/nginx/health"),
-		ReadinessProbe:  pod.ReadinessProbe(port, "/nginx/health"),
+		LivenessProbe:   pod.LivenessProbe(feProxySpec.GetLivenessProbeFailureSeconds(), port, "/nginx/health"),
+		ReadinessProbe:  pod.ReadinessProbe(feProxySpec.GetReadinessProbeFailureSeconds(), port, "/nginx/health"),
 		SecurityContext: pod.ContainerSecurityContext(feProxySpec),
 	}
 

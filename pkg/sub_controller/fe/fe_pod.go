@@ -87,8 +87,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		StartupProbe:    pod.StartupProbe(feSpec.GetStartupProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
-		LivenessProbe:   pod.LivenessProbe(httpPort, pod.HEALTH_API_PATH),
-		ReadinessProbe:  pod.ReadinessProbe(httpPort, pod.HEALTH_API_PATH),
+		LivenessProbe:   pod.LivenessProbe(feSpec.GetLivenessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
+		ReadinessProbe:  pod.ReadinessProbe(feSpec.GetReadinessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
 		Lifecycle:       pod.LifeCycle("/opt/starrocks/fe_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(feSpec),
 	}

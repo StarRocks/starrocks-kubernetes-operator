@@ -14,6 +14,8 @@ type loadInterface interface {
 	GetAffinity() *corev1.Affinity
 	GetTolerations() []corev1.Toleration
 	GetStartupProbeFailureSeconds() *int32
+	GetLivenessProbeFailureSeconds() *int32
+	GetReadinessProbeFailureSeconds() *int32
 
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
@@ -85,14 +87,30 @@ type StarRocksLoadSpec struct {
 	// +optional
 	ConfigMapInfo ConfigMapInfo `json:"configMapInfo,omitempty"`
 
-	// StartupProbeFailureSeconds defines the total failure seconds of startupProbe.
+	// StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
 	// Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
 	// will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
 	// the total time of seconds before startupProbe give up and fail the container start.
 	// If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
-	// will be rounded up
+	// will be rounded up.
 	// +optional
 	StartupProbeFailureSeconds *int32 `json:"startupProbeFailureSeconds,omitempty"`
+
+	// LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+	// Default failureThreshold is 3 and the periodSeconds is 5, this means the liveness
+	// will fail if the pod can't respond in 15 seconds. Your LivenessProbeFailureSeconds is
+	// the total time of seconds before the container restart. If LivenessProbeFailureSeconds
+	// can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+	// +optional
+	LivenessProbeFailureSeconds *int32 `json:"livenessProbeFailureSeconds,omitempty"`
+
+	// ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+	// Default failureThreshold is 3 and the periodSeconds is 5, this means the readiness
+	// will fail if the pod can't respond in 15 seconds. Your ReadinessProbeFailureSeconds is
+	// the total time of seconds before pods becomes not ready. If ReadinessProbeFailureSeconds
+	// can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+	// +optional
+	ReadinessProbeFailureSeconds *int32 `json:"readinessProbeFailureSeconds,omitempty"`
 }
 
 // StarRocksService defines external service for starrocks component.
@@ -200,4 +218,12 @@ func (spec *StarRocksLoadSpec) GetSchedulerName() string {
 
 func (spec *StarRocksLoadSpec) GetStartupProbeFailureSeconds() *int32 {
 	return spec.StartupProbeFailureSeconds
+}
+
+func (spec *StarRocksLoadSpec) GetLivenessProbeFailureSeconds() *int32 {
+	return spec.LivenessProbeFailureSeconds
+}
+
+func (spec *StarRocksLoadSpec) GetReadinessProbeFailureSeconds() *int32 {
+	return spec.ReadinessProbeFailureSeconds
 }

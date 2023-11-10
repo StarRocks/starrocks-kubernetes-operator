@@ -38,18 +38,18 @@ func StartupProbe(startupProbeFailureSeconds *int32, port int32, path string) *c
 	return completeProbe(startupProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
-// LivenessProbe returns a liveness.
-func LivenessProbe(port int32, path string) *corev1.Probe {
+// LivenessProbe returns a liveness probe.
+func LivenessProbe(livenessProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
 	var defaultFailureThreshold int32 = 3
 	var defaultPeriodSeconds int32 = 5
-	return completeProbe(nil, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
+	return completeProbe(livenessProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
 // ReadinessProbe returns a readiness probe.
-func ReadinessProbe(port int32, path string) *corev1.Probe {
+func ReadinessProbe(readinessProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
 	var defaultFailureThreshold int32 = 3
 	var defaultPeriodSeconds int32 = 5
-	return completeProbe(nil, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
+	return completeProbe(readinessProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
 // LifeCycle returns a lifecycle.

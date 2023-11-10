@@ -181,7 +181,21 @@ starrocksFESpec:
     #   mountPath: /etc/my-configmap
     #   subPath: ""
   # terminationGracePeriodSeconds defines duration in seconds the FE pod needs to terminate gracefully.
+  # default value is 120 seconds
   terminationGracePeriodSeconds: 120
+
+  # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
+  # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
+
+  # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
+  # default value is 300 seconds
+  startupProbeFailureSeconds:
+  # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+  # default value is 15 seconds
+  livenessProbeFailureSeconds:
+  # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+  # default value is 15 seconds
+  readinessProbeFailureSeconds:
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -342,7 +356,21 @@ starrocksCnSpec:
     #   mountPath: /etc/my-configmap
     #   subPath: ""
   # terminationGracePeriodSeconds defines duration in seconds the CN pod needs to terminate gracefully.
+  # default value is 120 seconds
   terminationGracePeriodSeconds: 120
+
+  # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
+  # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
+
+  # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
+  # default value is 300 seconds
+  startupProbeFailureSeconds:
+  # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+  # default value is 15 seconds
+  livenessProbeFailureSeconds:
+  # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+  # default value is 15 seconds
+  readinessProbeFailureSeconds:
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -467,7 +495,21 @@ starrocksBeSpec:
     #   mountPath: /etc/my-configmap
     #   subPath: ""
   # terminationGracePeriodSeconds defines duration in seconds the BE pod needs to terminate gracefully.
+  # default value is 120 seconds
   terminationGracePeriodSeconds: 120
+
+  # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
+  # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
+
+  # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
+  # default value is 300 seconds
+  startupProbeFailureSeconds:
+  # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+  # default value is 15 seconds
+  livenessProbeFailureSeconds:
+  # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+  # default value is 15 seconds
+  readinessProbeFailureSeconds:
 
 # create secrets if necessary.
 secrets: []
@@ -542,3 +584,13 @@ starrocksFeProxySpec:
     #   operator: "Equal|Exists"
     #   value: "value"
     #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+  # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
+  # including: livenessProbeFailureSeconds, readinessProbeFailureSeconds
+
+  # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+  # default value is 15 seconds
+  livenessProbeFailureSeconds:
+  # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+  # default value is 15 seconds
+  readinessProbeFailureSeconds:
