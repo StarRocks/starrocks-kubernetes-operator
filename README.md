@@ -6,33 +6,66 @@
 
 ## Overview
 
-Using [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), a framework that enables the deployment of
-StarRocks Custom Resource Definition (CRD) resources within a Kubernetes environment.
+StarRocks Kubernetes Operator is a project that implements the deployment and operation of StarRocks, a next-generation
+sub-second MPP OLAP database, on Kubernetes. It facilitates the deployment of StarRocks' Frontend (FE), Backend (BE),
+and Compute Node (CN) components within your Kubernetes environment. It also includes Helm chart for easy installation
+and configuration. With StarRocks Kubernetes Operator, you can easily manage the lifecycle of StarRocks clusters, such
+as installing, scaling, upgrading etc.
 
-The Kubernetes Operator provided by StarRocks facilitates the deployment of StarRocks' Front End (FE), Back End (BE),
-and Compute Node (CN) components within your Kubernetes environment. By default, these components operate in FQDN (fully
-qualified domain name) mode.
+## Prerequisites
 
-## Requirements
+1. Kubernetes version >= 1.18
+2. Helm version >= 3.0
 
-* kubernetes 1.18+
-* golang 1.19+
+## Features
 
-## Supported Features
+### Operator Features
 
-* FE decouples with CN and BE. FE is a must-have component, BE and CN can be optionally deployed.
-* Support v2 horizontalpodautoscalers for CN cluster.
+- Support deploying StarRocks FE, BE and CN components separately
+  FE component is a must-have component, BE and CN components can be optionally deployed
+- Support multiple StarRocks clusters in one Kubernetes cluster
+- Support external clients outside the network of kubernetes to load data into StarRocks using STREAM LOAD
+- Support automatic scaling for CN nodes based on CPU and memory usage
+- Support mounting persistent volumes for StarRocks containers
 
-## Install Operator in kubernetes
+### Helm Chart Features
 
-Apply the custom resource definition (CRD) for the Operator:
+- Support Helm Chart for easy installation and configuration
+    - using kube-starrocks Helm chart to install both operator and StarRocks cluster
+    - using operator Helm Chart to install operator, and using starrocks Helm Chart to install starrocks cluster
+- Support initializing the password of root in your StarRocks cluster during installation.
+- Support integration with other components in the Kubernetes ecosystem, such as Prometheus, Datadog, etc.
+
+## Installation
+
+In order to use StarRocks in Kubernetes, you need to install:
+
+1. StarRocksCluster CRD
+2. StarRocks Operator
+3. StarRocksCluster CR
+
+There are two ways to install Operator and StarRocks Cluster.
+
+1. Install Operator and StarRocks Cluster by yaml Manifest.
+2. Install Operator and StarRocks Cluster by Helm Chart.
+
+> Note: In every release, we will provide the latest version of the yaml Manifest and Helm Chart. You can find them
+> in https://github.com/StarRocks/starrocks-kubernetes-operator/releases
+
+## Installation by yaml Manifest
+
+Please see [Deploy StarRocks With Operator](./doc/deploy_starrocks_with_operator_howto.md) document for more details.
+
+### 1. Apply the StarRocksCluster CRD
 
 ```console
 kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
 ```
 
-Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace.
-To use the Operator in a custom namespace, download
+### 2. Apply the Operator manifest
+
+Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace. To use the
+Operator in a custom namespace, download
 the [Operator manifest](https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml)
 and edit all instances of namespace: starrocks to specify your custom namespace.
 Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the
@@ -42,11 +75,10 @@ command below.
 kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
 ```
 
-## Deploy the StarRocks cluster
+### 3. Deploy the StarRocks cluster
 
-You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN components.
-The starrocks cluster CRD fields explains in [api.md](./doc/api.md).
-The [examples](./examples/starrocks) directory contains some simple example for reference.
+You need to prepare a separate yaml file to deploy the StarRocks. The starrocks cluster CRD fields explains
+in [api.md](./doc/api.md). The [examples](./examples/starrocks) directory contains some simple example for reference.
 
 You can use any of the template yaml file as a starting point. You can further add more configurations into the template
 yaml file following this deployment documentation.
@@ -58,36 +90,16 @@ template to start a 3 FE and 3 BE StarRocks cluster.
 kubectl apply -f starrocks-fe-and-be.yaml
 ```
 
-## Connect to the deployed StarRocks Cluster
+## Installation by Helm Chart
 
-After deploying the StarRocks cluster, you can use `kubectl get svc -n <namespace>` to find the IP to connect to. For
-example if the namespace that starrocks is deployed into is `starrocks`, you can:
+Please see [kube-starrocks](./helm-charts/charts/kube-starrocks/README.md) for how to install both operator and
+StarRocks cluster by Helm Chart.
 
-```console
-kubectl get svc -n starrocks
-```
+If you want more flexibility in managing your StarRocks clusters, you can deploy Operator
+using [operator](./helm-charts/charts/kube-starrocks/charts/operator) Helm Chart and StarRocks
+using [starrocks](./helm-charts/charts/kube-starrocks/charts/starrocks) Helm Chart separately.
 
-`<your-StarRocksCluster-name>-fe-service`'s clusterIP is the IP to use to connect to StarRocks FE.
+## Other Documents
 
-## Stop the StarRocks cluster
-
-Delete the custom resource:
-
-```console
-kubectl delete -f starrocks-fe-and-be.yaml
-```
-
-Remove the Operator:
-
-```console
-kubectl delete -f  https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
-```
-
-## Install StarRocks with Helm
-
-StarRocks has embraced Helm for its deployment needs. You can find the Helm chart for StarRocks
-at [artifacthub](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks).
-
-See [deploy_starrocks_with_helm.md](./doc/deploy_starrocks_with_helm_howto.md) for more details.
-
-There are more documents in the [doc](./doc/README.md) directory.
+- In [doc](./doc) directory, you can find more documents about how to use StarRocks Operator.
+- In [examples](./examples/starrocks) directory, you can find more examples about how to write StarRocksCluster CR.
