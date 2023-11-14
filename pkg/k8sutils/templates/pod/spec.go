@@ -387,7 +387,7 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 	return ports
 }
 
-func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.Container, volumes []corev1.Volume) corev1.PodSpec {
+func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Volume) corev1.PodSpec {
 	podSpec := corev1.PodSpec{
 		Containers:                    []corev1.Container{container},
 		Volumes:                       volumes,
@@ -400,9 +400,6 @@ func Spec(spec v1.SpecInterface, defaultServiceAccount string, container corev1.
 		HostAliases:                   spec.GetHostAliases(),
 		SchedulerName:                 spec.GetSchedulerName(),
 		AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
-	}
-	if podSpec.ServiceAccountName == "" {
-		podSpec.ServiceAccountName = defaultServiceAccount
 	}
 	return podSpec
 }

@@ -39,3 +39,18 @@ func init() {
 type Controller interface {
 	Init(mgr ctrl.Manager)
 }
+
+// GetPhaseFromComponent return the Phase of Cluster or Warehouse based on the component status.
+// It returns empty string if not sure the phase.
+func GetPhaseFromComponent(componentStatus *v1.StarRocksComponentStatus) v1.Phase {
+	if componentStatus == nil {
+		return ""
+	}
+	if componentStatus.Phase == v1.ComponentReconciling {
+		return v1.ClusterPending
+	}
+	if componentStatus.Phase == v1.ComponentFailed {
+		return v1.ClusterFailed
+	}
+	return ""
+}

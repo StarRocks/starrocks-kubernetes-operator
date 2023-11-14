@@ -31,9 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type SubController interface {
-	// Sync reconcile for sub controller. bool represent the component have updated.
-	Sync(ctx context.Context, src *srapi.StarRocksCluster) error
+type ClusterSubController interface {
+	// SyncCluster reconcile for sub controller. bool represent the component have updated.
+	SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// ClearResources clear all resource about sub-component.
 	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error
@@ -41,8 +41,19 @@ type SubController interface {
 	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string
 
-	// UpdateStatus update the component status on src.
-	UpdateStatus(src *srapi.StarRocksCluster) error
+	// UpdateClusterStatus update the component status on src.
+	UpdateClusterStatus(src *srapi.StarRocksCluster) error
+}
+
+type WarehouseSubController interface {
+	// ClearWarehouse will clear all resource about warehouse.
+	ClearWarehouse(ctx context.Context, namespace string, name string) error
+
+	SyncWarehouse(ctx context.Context, src *srapi.StarRocksWarehouse) error
+
+	GetControllerName() string
+
+	UpdateWarehouseStatus(warehouse *srapi.StarRocksWarehouse) error
 }
 
 type LoadType string

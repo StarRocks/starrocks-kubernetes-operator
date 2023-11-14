@@ -156,7 +156,7 @@ spec:
 {{- end }}
 {{- end }}
 
-{{- if .Values.starrocksBeSpec }}
+{{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}

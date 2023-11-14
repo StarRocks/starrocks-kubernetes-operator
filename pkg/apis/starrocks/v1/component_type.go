@@ -70,7 +70,7 @@ type StarRocksComponentStatus struct {
 
 	// Phase the value from all pods of component status. If component have one failed pod phase=failed,
 	// also if fe have one creating pod phase=creating, also if component all running phase=running, others unknown.
-	Phase MemberPhase `json:"phase"`
+	Phase ComponentPhase `json:"phase"`
 
 	// +optional
 	// Reason represents the reason of not running.

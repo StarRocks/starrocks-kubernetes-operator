@@ -1,0 +1,1 @@
+Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} warehouse chart. Please wait for a few minutes for the warehouse to be ready.
