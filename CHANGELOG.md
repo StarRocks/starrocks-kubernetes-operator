@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [v1.8.7](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.7)
+
+Release Notes for starrocks-kubernetes-operator v1.8.7
+
+We are pleased to announce the release of starrocks-kubernetes-operator v1.8.7. This release includes several updates
+and improvements that enhance the functionality and usability of the StarRocks Kubernetes Operator.
+
+### Enhancement
+
+1. Added failure seconds for liveness and readiness. When StarRocks is under heavy load, the default Liveness Probe and
+   Readiness Probe may fail, causing the container to restart. This update mitigates this issue by adding failure
+   seconds for liveness and readiness.
+
+### Maintenance
+
+1. [Documentation] Updated README.md and README_ZH-CN.md. This update provides more accurate and comprehensive
+   information about StarRocks Operator.
+2. [Documentation]
+   Added [local_installation_how_to.md](https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/doc/local_installation_how_to.md)
+   for users. This guide provides step-by-step instructions for local installation of the Operator and StarRocks
+   Cluster. And it also provides a script to help users install the Operator and StarRocks Cluster locally.
+
+We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
+welcome.
+
 ## [v1.8.6](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.6)
 
 Release Notes for starrocks-kubernetes-operator v1.8.6
