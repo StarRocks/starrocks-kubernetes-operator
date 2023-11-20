@@ -17,7 +17,14 @@ spec:
     singular: starrockswarehouse
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: status
+      type: string
+    - jsonPath: .status.reason
+      name: reason
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         description: StarRocksWarehouse defines a starrocks warehouse.

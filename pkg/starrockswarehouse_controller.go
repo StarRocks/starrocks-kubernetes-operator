@@ -18,6 +18,8 @@ package pkg
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -85,29 +87,44 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	warehouse = warehouse.DeepCopy()
+	if warehouse.Status.WarehouseComponentStatus == nil {
+		warehouse.Status.WarehouseComponentStatus = &srapi.StarRocksCnStatus{
+			StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+				Phase: srapi.ComponentReconciling,
+			},
+		}
+	}
 
 	for _, controller := range r.subControllers {
 		klog.Infof("StarRocksWarehouseReconciler reconcile component, namespace=%v, name=%v, controller=%v",
 			warehouse.Namespace, warehouse.Name, controller.GetControllerName())
 		if err := controller.SyncWarehouse(ctx, warehouse); err != nil {
-			if err == cn.SpecMissingError {
-				klog.Infof("the spec part is invalid, skip sync warehouse %s/%s", warehouse.Namespace, warehouse.Name)
+			warehouse.Status.Phase = srapi.ComponentFailed
+			if errors.Is(err, cn.SpecMissingError) {
+				reason := fmt.Sprintf("the spec part is invalid %s/%s", warehouse.Namespace, warehouse.Name)
+				warehouse.Status.Reason = reason
+				klog.Info(reason)
 				return ctrl.Result{}, nil
-			} else if err == cn.StarRocksClusterMissingError {
-				klog.Infof("StarRocksCluster %s/%s not found, skip sync warehouse %s/%s",
+			} else if errors.Is(err, cn.StarRocksClusterMissingError) {
+				reason := fmt.Sprintf("StarRocksCluster %s/%s not found for %s/%s",
 					warehouse.Namespace, warehouse.Spec.StarRocksCluster, warehouse.Namespace, warehouse.Name)
+				warehouse.Status.Reason = reason
+				klog.Infof(reason)
 				return ctrl.Result{}, nil
-			} else if err == cn.FeNotOkError {
-				klog.Infof("StarRocksFe is not ok, skip sync warehouse %s/%s", warehouse.Namespace, warehouse.Name)
+			} else if errors.Is(err, cn.FeNotOkError) {
+				klog.Infof("StarRocksFe is not ready, %s/%s", warehouse.Namespace, warehouse.Name)
 				return ctrl.Result{}, nil
-			} else if err == cn.GetFeFeatureInfoError {
-				klog.Infof("failed to get FE feature or FE does not support multi-warehouse, skip sync warehouse %s/%s",
+			} else if errors.Is(err, cn.GetFeFeatureInfoError) {
+				reason := fmt.Sprintf("failed to get FE feature or FE does not support multi-warehouse %s/%s",
 					warehouse.Namespace, warehouse.Name)
+				warehouse.Status.Reason = reason
+				klog.Info(reason)
 				return ctrl.Result{}, nil
 			}
-			klog.Errorf("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
+			reason := fmt.Sprintf("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
 				warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
+			warehouse.Status.Reason = reason
+			klog.Info(err)
 			return ctrl.Result{}, err
 		}
 	}
@@ -120,12 +137,6 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 				warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
 			return requeueIfError(err)
 		}
-	}
-
-	warehouse.Status.Phase = srapi.ClusterRunning
-	phase := GetPhaseFromComponent(&warehouse.Status.WarehouseComponentStatus.StarRocksComponentStatus)
-	if phase != "" {
-		warehouse.Status.Phase = phase
 	}
 
 	return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
