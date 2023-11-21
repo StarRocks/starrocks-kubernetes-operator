@@ -59,9 +59,6 @@ type WarehouseComponentStatus = StarRocksCnStatus
 
 // StarRocksWarehouseStatus defines the observed state of StarRocksWarehouse.
 type StarRocksWarehouseStatus struct {
-	// Phase represents the state of a warehouse. The possible value are: running, failed, pending and deleting.
-	Phase Phase `json:"phase"`
-
 	// WarehouseStatus represents the status of service. The status has reconciling, failed and running.
 	*WarehouseComponentStatus `json:",inline"`
 }
@@ -71,6 +68,8 @@ type StarRocksWarehouseStatus struct {
 // +kubebuilder:resource:shortName=warehouse
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="status",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="reason",type=string,JSONPath=`.status.reason`
 // +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient

@@ -214,16 +214,8 @@ func (cc *CnController) UpdateWarehouseStatus(warehouse *srapi.StarRocksWarehous
 		return nil
 	}
 
-	if warehouse.Status.WarehouseComponentStatus == nil {
-		warehouse.Status.WarehouseComponentStatus = &srapi.StarRocksCnStatus{
-			StarRocksComponentStatus: srapi.StarRocksComponentStatus{
-				Phase: srapi.ComponentReconciling,
-			},
-		}
-	}
 	status := warehouse.Status.WarehouseComponentStatus
 	status.Phase = srapi.ComponentReconciling
-
 	return cc.UpdateStatus(object.NewFromWarehouse(warehouse), template.ToCnSpec(), status)
 }
 
