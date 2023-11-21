@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
@@ -29,6 +28,7 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
@@ -36,10 +36,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-func init() {
-	Controllers = append(Controllers, &StarRocksWarehouseReconciler{})
-}
 
 // StarRocksWarehouseReconciler reconciles a StarRocksWarehouse object
 type StarRocksWarehouseReconciler struct {
@@ -153,16 +149,26 @@ func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Complete(r)
 }
 
-// Init initial the StarRocksWarehouseReconciler for reconcile.
-func (r *StarRocksWarehouseReconciler) Init(mgr ctrl.Manager) {
-	if err := (&StarRocksWarehouseReconciler{
+func SetupWarehouseReconciler(mgr ctrl.Manager) error {
+	// check StarRocksWarehouse CRD exists or not
+	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}); err != nil {
+		if meta.IsNoMatchError(err) {
+			klog.Infof("StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler")
+			return nil
+		}
+		return err
+	}
+
+	reconciler := &StarRocksWarehouseReconciler{
 		Client:         mgr.GetClient(),
 		recorder:       mgr.GetEventRecorderFor(name),
 		subControllers: []sub_controller.WarehouseSubController{cn.New(mgr.GetClient())},
-	}).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "failed to setup StarRocksWarehouseReconciler")
-		os.Exit(1)
 	}
+	if err := reconciler.SetupWithManager(mgr); err != nil {
+		klog.Error(err, "failed to setup StarRocksWarehouseReconciler")
+		return err
+	}
+	return nil
 }
 
 // UpdateStarRocksWarehouseStatus update the status of warehouse.
