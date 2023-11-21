@@ -134,7 +134,25 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 							Namespace: "test",
 						},
 						Spec: v1.StarRocksClusterSpec{
-							StarRocksFeSpec: &v1.StarRocksFeSpec{},
+							StarRocksFeSpec: &v1.StarRocksFeSpec{
+								StarRocksComponentSpec: v1.StarRocksComponentSpec{
+									StarRocksLoadSpec: v1.StarRocksLoadSpec{
+										ConfigMapInfo: v1.ConfigMapInfo{
+											ConfigMapName: "fe-configmap",
+											ResolveKey:    "fe.conf",
+										},
+									},
+								},
+							},
+						},
+					},
+					&corev1.ConfigMap{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "fe-configmap",
+							Namespace: "test",
+						},
+						Data: map[string]string{
+							"fe.conf": "run_mode = shared_data",
 						},
 					},
 					&corev1.Endpoints{
@@ -181,7 +199,25 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 							Namespace: "test",
 						},
 						Spec: v1.StarRocksClusterSpec{
-							StarRocksFeSpec: &v1.StarRocksFeSpec{},
+							StarRocksFeSpec: &v1.StarRocksFeSpec{
+								StarRocksComponentSpec: v1.StarRocksComponentSpec{
+									StarRocksLoadSpec: v1.StarRocksLoadSpec{
+										ConfigMapInfo: v1.ConfigMapInfo{
+											ConfigMapName: "fe-configmap",
+											ResolveKey:    "fe.conf",
+										},
+									},
+								},
+							},
+						},
+					},
+					&corev1.ConfigMap{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "fe-configmap",
+							Namespace: "test",
+						},
+						Data: map[string]string{
+							"fe.conf": "run_mode = shared_data",
 						},
 					},
 					&corev1.Endpoints{
