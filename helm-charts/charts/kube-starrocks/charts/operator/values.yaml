@@ -33,6 +33,8 @@ starrocksOperator:
     # image sliced by "repository:tag"
     repository: starrocks/operator
     tag: v1.8.6
+  args:
+    - --leader-elect
   imagePullPolicy: Always
   replicaCount: 1
   resources:

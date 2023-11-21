@@ -6,7 +6,7 @@ metadata:
   namespace: {{ template "starrockswarehouse.namespace" . }}
   labels:
     warehouse: {{ template "starrockswarehouse.name" . }}
-    app: "cn"
+    app: "warehouse"
 data:
 {{ include "starrockswarehouse.config" . | indent 2 }}
 

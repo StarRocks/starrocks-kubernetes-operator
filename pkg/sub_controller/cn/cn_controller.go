@@ -62,10 +62,10 @@ func (cc *CnController) GetControllerName() string {
 	return "cnController"
 }
 
-var SpecMissingError = errors.New("Template or StarRocksCluster is missing")
+var SpecMissingError = errors.New("template or starRocksCluster is missing")
 var StarRocksClusterMissingError = errors.New("custom resource StarRocksCluster is missing")
-var FeNotOkError = errors.New("component fe is not ok")
-var GetFeFeatureInfoError = errors.New("get fe /api/v2/feature info error")
+var FeNotOkError = errors.New("component fe is not ready")
+var GetFeFeatureInfoError = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
 
 func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
 	template := warehouse.Spec.Template
