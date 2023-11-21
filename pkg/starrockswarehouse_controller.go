@@ -19,7 +19,6 @@ package pkg
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
@@ -96,32 +95,33 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 			warehouse.Namespace, warehouse.Name, controller.GetControllerName())
 		if err := controller.SyncWarehouse(ctx, warehouse); err != nil {
 			warehouse.Status.Phase = srapi.ComponentFailed
-			if errors.Is(err, cn.SpecMissingError) {
-				reason := fmt.Sprintf("the spec part is invalid %s/%s", warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = reason
-				klog.Info(reason)
-				return ctrl.Result{}, nil
-			} else if errors.Is(err, cn.StarRocksClusterMissingError) {
-				reason := fmt.Sprintf("StarRocksCluster %s/%s not found for %s/%s",
+			switch {
+			case errors.Is(err, cn.SpecMissingError):
+				klog.Infof("the spec part is invalid %s/%s", warehouse.Namespace, warehouse.Name)
+				warehouse.Status.Reason = cn.SpecMissingError.Error()
+				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+			case errors.Is(err, cn.StarRocksClusterMissingError):
+				klog.Infof("StarRocksCluster %s/%s not found for %s/%s",
 					warehouse.Namespace, warehouse.Spec.StarRocksCluster, warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = reason
-				klog.Infof(reason)
-				return ctrl.Result{}, nil
-			} else if errors.Is(err, cn.FeNotReadyError) {
+				warehouse.Status.Reason = cn.StarRocksClusterMissingError.Error()
+				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+			case errors.Is(err, cn.FeNotReadyError):
 				klog.Infof("StarRocksFe is not ready, %s/%s", warehouse.Namespace, warehouse.Name)
-				return ctrl.Result{}, nil
-			} else if errors.Is(err, cn.GetFeFeatureInfoError) {
-				reason := fmt.Sprintf("failed to get FE feature or FE does not support multi-warehouse %s/%s",
-					warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = reason
-				klog.Info(reason)
-				return ctrl.Result{}, nil
+				warehouse.Status.Reason = cn.FeNotReadyError.Error()
+				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+			case errors.Is(err, cn.GetFeFeatureInfoError):
+				klog.Info("Failed to get FE feature or FE does not support multi-warehouse %s/%s", warehouse.Namespace, warehouse.Name)
+				warehouse.Status.Reason = cn.GetFeFeatureInfoError.Error()
+				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+			default:
+				klog.Info("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
+					warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
+				warehouse.Status.Reason = err.Error()
+				if updateError := r.UpdateStarRocksWarehouseStatus(ctx, warehouse); updateError != nil {
+					return ctrl.Result{}, updateError
+				}
+				return ctrl.Result{}, err
 			}
-			reason := fmt.Sprintf("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
-				warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
-			warehouse.Status.Reason = reason
-			klog.Info(err)
-			return ctrl.Result{}, err
 		}
 	}
 
