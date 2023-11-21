@@ -40,10 +40,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func init() {
-	Controllers = append(Controllers, &StarRocksClusterReconciler{})
-}
-
 var (
 	name                  = "starrockscluster-controller"
 	feControllerName      = "fe-controller"

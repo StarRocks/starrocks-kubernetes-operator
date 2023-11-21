@@ -37,10 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func init() {
-	Controllers = append(Controllers, &StarRocksWarehouseReconciler{})
-}
-
 // StarRocksWarehouseReconciler reconciles a StarRocksWarehouse object
 type StarRocksWarehouseReconciler struct {
 	client.Client

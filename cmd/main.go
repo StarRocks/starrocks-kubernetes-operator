@@ -52,6 +52,7 @@ var (
 	_probeAddr            string
 	_printVar             bool
 	_namespace            string
+	_watch_warehouse      bool
 )
 
 // Print version information to a given out writer.
@@ -72,6 +73,7 @@ func init() {
 	flag.BoolVar(&_printVar, "version", false, "Prints current version.")
 	flag.StringVar(&_namespace, "namespace", "", "if specified, "+
 		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
+	flag.BoolVar(&_watch_warehouse, "watch-warehouse", false, "please apply StarRocksWarehouse CRD, before enable operator to watch.")
 
 	// set klog flag
 	klog.InitFlags(nil)
@@ -109,6 +111,10 @@ func main() {
 	}
 
 	// initial all controllers
+	pkg.Controllers = append(pkg.Controllers, &pkg.StarRocksClusterReconciler{})
+	if _watch_warehouse {
+		pkg.Controllers = append(pkg.Controllers, &pkg.StarRocksWarehouseReconciler{})
+	}
 	for _, c := range pkg.Controllers {
 		c.Init(mgr)
 	}
