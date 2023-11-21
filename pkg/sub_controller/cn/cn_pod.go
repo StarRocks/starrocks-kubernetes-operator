@@ -105,8 +105,11 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 	podSpec := pod.Spec(cnSpec, cnContainer, vols)
 	annotations := pod.Annotations(cnSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(cnSpec)
+	metaName := object.Name + "-" + srapi.DEFAULT_CN
 	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
+			// Name should not define in here, but it is used to compute the value of srapi.ComponentResourceHash
+			Name:        metaName,
 			Annotations: annotations,
 			Namespace:   object.Namespace,
 			Labels:      pod.Labels(object.AliasName, cnSpec),
