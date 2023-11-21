@@ -64,8 +64,9 @@ func (cc *CnController) GetControllerName() string {
 
 var SpecMissingError = errors.New("Template or StarRocksCluster is missing")
 var StarRocksClusterMissingError = errors.New("custom resource StarRocksCluster is missing")
-var FeNotOkError = errors.New("component fe is not ok")
-var GetFeFeatureInfoError = errors.New("get fe /api/v2/feature info error")
+var FeNotOkError = errors.New("component fe is not ready")
+var StarRocksClusterRunModeError = errors.New("StarRocks Cluster should run in shared_data mode")
+var GetFeFeatureInfoError = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
 
 func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
 	template := warehouse.Spec.Template
@@ -81,6 +82,14 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 			return StarRocksClusterMissingError
 		}
 		return err
+	}
+
+	feconfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	if err != nil {
+		return err
+	}
+	if val := feconfig["run_mode"]; val == nil || !strings.Contains(val.(string), "shared_data") {
+		return StarRocksClusterRunModeError
 	}
 
 	if !fe.CheckFEOk(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
