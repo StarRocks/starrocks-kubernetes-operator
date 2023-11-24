@@ -18,7 +18,6 @@ package pkg
 
 import (
 	"context"
-	"os"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -39,10 +38,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-func init() {
-	Controllers = append(Controllers, &StarRocksClusterReconciler{})
-}
 
 var (
 	name                  = "starrockscluster-controller"
@@ -233,8 +228,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// Init initial the StarRocksClusterReconciler for reconcile.
-func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
+func SetupClusterReconciler(mgr ctrl.Manager) error {
 	subcs := make(map[string]sub_controller.ClusterSubController)
 	feController := fe.New(mgr.GetClient())
 	subcs[feControllerName] = feController
@@ -245,14 +239,17 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	feProxyController := feproxy.New(mgr.GetClient())
 	subcs[feProxyControllerName] = feProxyController
 
-	if err := (&StarRocksClusterReconciler{
+	reconciler := &StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor(name),
 		Scs:      subcs,
-	}).SetupWithManager(mgr); err != nil {
-		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
-		os.Exit(1)
 	}
+
+	if err := reconciler.SetupWithManager(mgr); err != nil {
+		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
+		return err
+	}
+	return nil
 }
 
 func requeueIfError(err error) (ctrl.Result, error) {

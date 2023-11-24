@@ -21,23 +21,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var (
-	// Controllers through the init for add Controller.
-	Controllers []Controller
-	Scheme      = runtime.NewScheme()
+	Scheme = runtime.NewScheme()
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(v1.AddToScheme(Scheme))
 	// +kubebuilder:scaffold:scheme
-}
-
-type Controller interface {
-	Init(mgr ctrl.Manager)
 }
 
 // GetPhaseFromComponent return the Phase of Cluster or Warehouse based on the component status.
