@@ -107,7 +107,7 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 				warehouse.Status.Reason = reason
 				klog.Infof(reason)
 				return ctrl.Result{}, nil
-			} else if errors.Is(err, cn.FeNotOkError) {
+			} else if errors.Is(err, cn.FeNotReadyError) {
 				klog.Infof("StarRocksFe is not ready, %s/%s", warehouse.Namespace, warehouse.Name)
 				return ctrl.Result{}, nil
 			} else if errors.Is(err, cn.GetFeFeatureInfoError) {

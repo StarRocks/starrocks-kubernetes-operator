@@ -331,20 +331,20 @@ func GetEnvVarValue(k8sClient client.Client, namespace string, envVar corev1.Env
 			// If ConfigMapKeyRef is not nil, get the value from the configmap's key
 			name := valueFrom.ConfigMapKeyRef.Name
 			key := valueFrom.ConfigMapKeyRef.Key
-			return configMapKeySelectorRuntimeValue(k8sClient, namespace, name, key)
+			return getValueFromConfigmap(k8sClient, namespace, name, key)
 		} else if valueFrom.SecretKeyRef != nil {
 			// If SecretKeyRef is not nil, get the value from the secret's key
 			name := valueFrom.SecretKeyRef.Name
 			key := valueFrom.SecretKeyRef.Key
-			return secretKeySelectorRuntimeValue(k8sClient, namespace, name, key)
+			return getValueFromSecret(k8sClient, namespace, name, key)
 		}
 	}
 	return "", fmt.Errorf("invalid environment variable: %v", envVar)
 }
 
-// ConfigMapKeySelectorRuntimeValue returns the runtime value of a key in a configmap.
+// getValueFromConfigmap returns the runtime value of a key in a configmap.
 // It assumes that the configmap and the key exist and are valid.
-func configMapKeySelectorRuntimeValue(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+func getValueFromConfigmap(k8sClient client.Client, namespace string, name string, key string) (string, error) {
 	var configMap corev1.ConfigMap
 	err := k8sClient.Get(context.Background(),
 		types.NamespacedName{
@@ -361,9 +361,9 @@ func configMapKeySelectorRuntimeValue(k8sClient client.Client, namespace string,
 	return value, nil
 }
 
-// SecretKeySelectorRuntimeValue returns the runtime value of a key in a secret.
+// getValueFromSecret returns the value of a key in a secret.
 // It assumes that the secret and the key exist and are valid.
-func secretKeySelectorRuntimeValue(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+func getValueFromSecret(k8sClient client.Client, namespace string, name string, key string) (string, error) {
 	var secret corev1.Secret
 	err := k8sClient.Get(context.Background(),
 		types.NamespacedName{

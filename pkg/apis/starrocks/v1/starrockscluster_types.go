@@ -189,10 +189,16 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 	return nil
 }
 
-// Phase represent the cluster phase. the possible value for cluster phase are: running, failed, pending, deleting.
+// Phase is defined under status, e.g.
+// 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
+// 2. StarRocksWarehouseStatus.Phase represents the phase of starrocks warehouse.
+// The possible value for cluster phase are: running, failed, pending, deleting.
 type Phase string
 
-// ComponentPhase represent the component phase about be, cn, be. The possible value for component phase are: reconciling, failed, running.
+// ComponentPhase represent the component phase. e.g.
+// 1. StarRocksCluster contains three components: FE, CN, BE.
+// 2. StarRocksWarehouse reuse the CN component.
+// The possible value for component phase are: reconciling, failed, running.
 type ComponentPhase string
 
 const (
@@ -212,8 +218,10 @@ const (
 const (
 	// ComponentReconciling the starrocks have component in starting.
 	ComponentReconciling ComponentPhase = "reconciling"
+
 	// ComponentFailed have at least one service failed.
 	ComponentFailed ComponentPhase = "failed"
+
 	// ComponentRunning all components runs available.
 	ComponentRunning ComponentPhase = "running"
 )

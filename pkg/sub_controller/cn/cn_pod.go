@@ -71,8 +71,10 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 		if cc.addWarehouseEnv(feExternalServiceName,
 			strconv.FormatInt(int64(rutils.GetPort(config, rutils.HTTP_PORT)), 10)) {
 			envs = append(envs, corev1.EnvVar{
-				Name:  "KUBE_STARROCKS_MULTI_WAREHOUSE",
-				Value: strings.ReplaceAll(object.Name, "-", "_"), // Note not object.AliasName
+				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
+				// the cn_entrypoint.sh in container will use this env to create warehouse. Because of '-' character
+				// is not allowed in Warehouse SQL, so we replace it with '_'.
+				Value: strings.ReplaceAll(object.Name, "-", "_"),
 			})
 		} else {
 			return nil, GetFeFeatureInfoError
@@ -118,21 +120,22 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 	}, nil
 }
 
+// addWarehouseEnv add env to cn pod if FE support multi-warehouse
+// call FE /api/v2/feature to make sure FE support multi-warehouse
+// the response is like:
+//
+//	{
+//	 "features": [
+//	   {
+//	     "name": "Feature Name",
+//	     "description": "Feature Description",
+//	     "link": "https://github.com/starrocksdb/starrocks/issues/new"
+//	   }
+//	 ],
+//	 "version": "feature/add-api-feature-interface",
+//	 "status": "OK"
+//	}
 func (cc *CnController) addWarehouseEnv(feExternalServiceName string, feHTTPPort string) bool {
-	// call FE /api/v2/feature to make sure FE support multi-warehouse
-	// the response is like:
-	//{
-	//  "features": [
-	//    {
-	//      "name": "Feature Name",
-	//      "description": "Feature Description",
-	//      "link": "https://github.com/starrocksdb/starrocks/issues/new"
-	//    }
-	//  ],
-	//  "version": "feature/add-api-feature-interface",
-	//  "status": "OK"
-	//}
-	// TODO: remove comment and update interface
 	klog.Infof("call FE to get features information")
 	resp, err := http.Get(fmt.Sprintf("http://%s:%s/api/v2/feature", feExternalServiceName, feHTTPPort))
 	if err != nil {

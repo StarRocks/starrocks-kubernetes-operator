@@ -62,9 +62,9 @@ func (cc *CnController) GetControllerName() string {
 	return "cnController"
 }
 
-var SpecMissingError = errors.New("Template or StarRocksCluster is missing")
+var SpecMissingError = errors.New("spec.template or spec.starRocksCluster is missing")
 var StarRocksClusterMissingError = errors.New("custom resource StarRocksCluster is missing")
-var FeNotOkError = errors.New("component fe is not ready")
+var FeNotReadyError = errors.New("component fe is not ready")
 var StarRocksClusterRunModeError = errors.New("StarRocks Cluster should run in shared_data mode")
 var GetFeFeatureInfoError = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
 
@@ -92,8 +92,8 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return StarRocksClusterRunModeError
 	}
 
-	if !fe.CheckFEOk(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
-		return FeNotOkError
+	if !fe.CheckFEReady(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
+		return FeNotReadyError
 	}
 	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec())
 }
@@ -106,7 +106,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	if !fe.CheckFEOk(ctx, cc.k8sClient, src.Namespace, src.Name) {
+	if !fe.CheckFEReady(ctx, cc.k8sClient, src.Namespace, src.Name) {
 		return nil
 	}
 

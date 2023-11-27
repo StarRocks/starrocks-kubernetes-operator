@@ -63,7 +63,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	if !fe.CheckFEOk(ctx, be.k8sClient, src.Namespace, src.Name) {
+	if !fe.CheckFEReady(ctx, be.k8sClient, src.Namespace, src.Name) {
 		return nil
 	}
 

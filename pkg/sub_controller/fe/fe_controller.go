@@ -206,11 +206,11 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return nil
 }
 
-// CheckFEOk check the fe cluster is ok for add cn node.
-func CheckFEOk(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
+// CheckFEReady check the fe cluster is ok for add cn node.
+func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
 	endpoints := corev1.Endpoints{}
 	serviceName := service.ExternalServiceName(clusterName, (*srapi.StarRocksFeSpec)(nil))
-	// 1. wait for fe ok.
+	// 1. wait for FE ready.
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: clusterNamespace,
