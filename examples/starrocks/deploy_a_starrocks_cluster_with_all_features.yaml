@@ -22,7 +22,7 @@ spec:
     configMapInfo:
       configMapName: starrockscluster-sample-fe-cm
       resolveKey: fe.conf
-    # fe storage volumes for persistent meta data and log
+    # fe storage volumes for persistent metadata and log
     storageVolumes:
       - name: fe-storage-meta
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.

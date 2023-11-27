@@ -19,6 +19,7 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,20 +32,26 @@ const STARROCKS_WAREHOUSE_FINALIZER = "starrocks.com.starrockswarehouse/protecti
 func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range volumes {
-		pvcs = append(pvcs, corev1.PersistentVolumeClaim{
+		if pod.IsSpecialStorageClass(vm.StorageClassName) {
+			continue
+		}
+		pvc := corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{Name: vm.Name},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					corev1.ReadWriteOnce,
 				},
 				StorageClassName: vm.StorageClassName,
-				Resources: corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						corev1.ResourceStorage: resource.MustParse(vm.StorageSize),
-					},
-				},
 			},
-		})
+		}
+		if vm.StorageSize != "" {
+			pvc.Spec.Resources = corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resource.MustParse(vm.StorageSize),
+				},
+			}
+		}
+		pvcs = append(pvcs, pvc)
 	}
 	return pvcs
 }

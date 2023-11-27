@@ -923,8 +923,8 @@ spec:
                         subPath:
                           type: string
                       required:
+                      - mountPath
                       - name
-                      - storageSize
                       type: object
                     type: array
                   terminationGracePeriodSeconds:

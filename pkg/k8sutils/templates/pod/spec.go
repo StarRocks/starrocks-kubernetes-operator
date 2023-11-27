@@ -20,37 +20,14 @@ import (
 	"strings"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
 	HEALTH_API_PATH = "/api/health"
 )
-
-// StartupProbe returns a startup probe.
-func StartupProbe(startupProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
-	var defaultFailureThreshold int32 = 60
-	var defaultPeriodSeconds int32 = 5
-	return completeProbe(startupProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
-}
-
-// LivenessProbe returns a liveness probe.
-func LivenessProbe(livenessProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
-	var defaultFailureThreshold int32 = 3
-	var defaultPeriodSeconds int32 = 5
-	return completeProbe(livenessProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
-}
-
-// ReadinessProbe returns a readiness probe.
-func ReadinessProbe(readinessProbeFailureSeconds *int32, port int32, path string) *corev1.Probe {
-	var defaultFailureThreshold int32 = 3
-	var defaultPeriodSeconds int32 = 5
-	return completeProbe(readinessProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
-}
 
 // LifeCycle returns a lifecycle.
 func LifeCycle(preStopScriptPath string) *corev1.Lifecycle {
@@ -61,131 +38,6 @@ func LifeCycle(preStopScriptPath string) *corev1.Lifecycle {
 			},
 		},
 	}
-}
-
-func getProbe(port int32, path string) corev1.ProbeHandler {
-	return corev1.ProbeHandler{
-		HTTPGet: &corev1.HTTPGetAction{
-			Path: path,
-			Port: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: port,
-			},
-		},
-	}
-}
-
-func completeProbe(failureSeconds *int32, defaultFailureThreshold int32, defaultPeriodSeconds int32,
-	probeHandler corev1.ProbeHandler) *corev1.Probe {
-	probe := &corev1.Probe{}
-	if failureSeconds != nil && *failureSeconds > 0 {
-		probe.FailureThreshold = (*failureSeconds + defaultPeriodSeconds - 1) / defaultPeriodSeconds
-	} else {
-		probe.FailureThreshold = defaultFailureThreshold
-	}
-	probe.PeriodSeconds = defaultPeriodSeconds
-	probe.ProbeHandler = probeHandler
-	return probe
-}
-
-func getVolumeName(mountInfo v1.MountInfo) string {
-	suffixLen := 4
-	suffix := hash.HashObject(mountInfo)
-	if len(suffix) > suffixLen {
-		suffix = suffix[:suffixLen]
-	}
-	return mountInfo.Name + "-" + suffix
-}
-
-func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
-	references []v1.ConfigMapReference) ([]corev1.Volume, []corev1.VolumeMount) {
-	for _, reference := range references {
-		volumeName := getVolumeName(v1.MountInfo(reference))
-		volumes = append(volumes, corev1.Volume{
-			Name: volumeName,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: reference.Name,
-					},
-				},
-			},
-		})
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      volumeName,
-			MountPath: reference.MountPath,
-			SubPath:   reference.SubPath,
-		})
-	}
-	return volumes, volumeMounts
-}
-
-func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
-	references []v1.SecretReference) ([]corev1.Volume, []corev1.VolumeMount) {
-	for _, reference := range references {
-		volumeName := getVolumeName(v1.MountInfo(reference))
-		volumes = append(volumes, corev1.Volume{
-			Name: volumeName,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: reference.Name,
-				},
-			},
-		})
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      volumeName,
-			MountPath: reference.MountPath,
-			SubPath:   reference.SubPath,
-		})
-	}
-	return volumes, volumeMounts
-}
-
-func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.VolumeMount, map[string]bool) {
-	var volumes []corev1.Volume
-	var volumeMounts []corev1.VolumeMount
-	vexist := make(map[string]bool)
-	for _, sv := range spec.GetStorageVolumes() {
-		// do not use getVolumeName for backward compatibility
-		vexist[sv.MountPath] = true
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      sv.Name,
-			MountPath: sv.MountPath,
-			SubPath:   sv.SubPath,
-		})
-
-		volumes = append(volumes, corev1.Volume{
-			Name: sv.Name,
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: sv.Name,
-				},
-			},
-		})
-	}
-	return volumes, volumeMounts, vexist
-}
-
-func MountConfigMapInfo(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
-	cmInfo v1.ConfigMapInfo, mountPath string) ([]corev1.Volume, []corev1.VolumeMount) {
-	if cmInfo.ConfigMapName != "" && cmInfo.ResolveKey != "" {
-		// do not use getVolumeName for backward compatibility
-		volumes = append(volumes, corev1.Volume{
-			Name: cmInfo.ConfigMapName,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: cmInfo.ConfigMapName,
-					},
-				},
-			},
-		})
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      cmInfo.ConfigMapName,
-			MountPath: mountPath,
-		})
-	}
-	return volumes, volumeMounts
 }
 
 func Labels(clusterName string, spec v1.SpecInterface) map[string]string {

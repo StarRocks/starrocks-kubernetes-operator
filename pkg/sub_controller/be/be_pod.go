@@ -42,31 +42,10 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts, vexist := pod.MountStorageVolumes(beSpec)
 	// add default volume about log, if meta not configure.
 	if _, ok := vexist[_logPath]; !ok {
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			// use storage volume.
-			Name:      _logName,
-			MountPath: _logPath,
-		})
-		vols = append(vols, corev1.Volume{
-			Name: _logName,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
 	}
 	if _, ok := vexist[_storagePath]; !ok {
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			// use storage volume.
-			Name:      _storageName,
-			MountPath: _storagePath,
-		})
-
-		vols = append(vols, corev1.Volume{
-			Name: _storageName,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName, _storagePath, "")
 	}
 
 	// mount configmap, secrets to pod if needed

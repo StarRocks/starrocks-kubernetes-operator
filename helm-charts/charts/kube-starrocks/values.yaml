@@ -217,7 +217,7 @@ starrocks:
       limits:
         cpu: 8
         memory: 8Gi
-    # fe storageSpec for persistent meta data.
+    # fe storageSpec for persistent metadata.
     storageSpec:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -228,6 +228,14 @@ starrocks:
       storageSize: 10Gi
       # Setting this parameter can persist log storage
       logStorageSize: 5Gi
+    # mount other volumes if necessary.
+    # Note: please use storageSpec field for persistent metadata and log.
+    storageVolumes: []
+      # e.g. mount an emptyDir volume to /tmp
+      # - name: tmp-data
+      #   mountPath: /tmp
+      #   Note: if emptyDir is set, an emptyDir volume will be created, not PVC.
+      #   storageClassName: "emptyDir"
     # the config for start fe. the base information as follows.
     config: |
       LOG_DIR = ${STARROCKS_HOME}/log
@@ -408,6 +416,14 @@ starrocks:
       storageSize: 1Ti
       # the storage size of persistent volume for log.
       logStorageSize: 1Gi
+    # mount other volumes if necessary.
+    # Note: please use storageSpec field for persistent storage data and log.
+    storageVolumes: []
+      # e.g. mount an emptyDir volume to /tmp
+      # - name: tmp-data
+      #   mountPath: /tmp
+      #   Note: if emptyDir is set, an emptyDir volume will be created, not PVC.
+      #   storageClassName: "emptyDir"
     # the config start for cn, the base information as follows.
     config: |
       sys_log_level = INFO
@@ -547,6 +563,14 @@ starrocks:
       storageSize: 1Ti
       # Setting this parameter can persist log storage
       logStorageSize: 1Gi
+    # mount other volumes if necessary.
+    # Note: please use storageSpec field for persistent storage data and log.
+    storageVolumes: []
+      # e.g. mount an emptyDir volume to /tmp
+      # - name: tmp-data
+      #   mountPath: /tmp
+      #   Note: if emptyDir is set, an emptyDir volume will be created, not PVC.
+      #   storageClassName: "emptyDir"
     # the config for start be. the base information as follows.
     config: |
       be_port = 9060
@@ -669,3 +693,8 @@ starrocks:
     # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
     # default value is 15 seconds
     readinessProbeFailureSeconds:
+    # Note: will create emptyDir volume for fe proxy, PVC is not supported.
+    storageVolumes: []
+        # e.g. mount an emptyDir volume to /tmp
+        # - name: tmp-data
+        #   mountPath: /tmp

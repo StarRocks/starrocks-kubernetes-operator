@@ -47,16 +47,7 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
 	// add default volume about log
 	if _, ok := vexist[_logPath]; !ok {
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      _logName,
-			MountPath: _logPath,
-		})
-		vols = append(vols, corev1.Volume{
-			Name: _logName,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
 	}
 
 	// mount configmap, secrets to pod if needed

@@ -40,32 +40,12 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	feSpec := src.Spec.StarRocksFeSpec
 
 	vols, volMounts, vexist := pod.MountStorageVolumes(feSpec)
-	// add default volume about log ,meta if not configure.
+	// add default volume about log, meta if not configure.
 	if _, ok := vexist[_metaPath]; !ok {
-		volMounts = append(
-			volMounts, corev1.VolumeMount{
-				Name:      _metaName,
-				MountPath: _metaPath,
-			})
-		vols = append(vols, corev1.Volume{
-			Name: _metaName,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, _metaPath, "")
 	}
-
 	if _, ok := vexist[_logPath]; !ok {
-		volMounts = append(volMounts, corev1.VolumeMount{
-			Name:      _logName,
-			MountPath: _logPath,
-		})
-		vols = append(vols, corev1.Volume{
-			Name: _logName,
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, _logPath, "")
 	}
 
 	// mount configmap, secrets to pod if needed
