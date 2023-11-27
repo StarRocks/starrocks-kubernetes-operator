@@ -76,7 +76,7 @@ The following is a snippet of the values.yaml file:
 ```yaml
 starrocks:
   starrocksFESpec:
-    # fe storageSpec for persistent meta data.
+    # fe storageSpec for persistent metadata.
     storageSpec:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.

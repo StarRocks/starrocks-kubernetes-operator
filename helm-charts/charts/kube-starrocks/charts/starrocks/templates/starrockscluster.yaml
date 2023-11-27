@@ -134,27 +134,26 @@ spec:
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
-{{- if .Values.starrocksFESpec.storageSpec.name }}
+    {{- if or .Values.starrocksFESpec.storageSpec.name .Values.starrocksFESpec.emptyDirs }}
     storageVolumes:
+    {{- if .Values.starrocksFESpec.storageSpec.name }}
     - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.meta.suffix" . }}
-{{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}
-{{- end }}
-{{- if .Values.starrocksFESpec.storageSpec.storageSize }}
       storageSize: {{ .Values.starrocksFESpec.storageSpec.storageSize }}
-{{- end }}
       mountPath: {{ template "starrockscluster.fe.meta.path" . }}
-{{- if .Values.starrocksFESpec.storageSpec.logStorageSize }}
     - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.log.suffix" . }}
-{{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}
-{{- end }}
-{{- if .Values.starrocksFESpec.storageSpec.logStorageSize }}
       storageSize: {{ .Values.starrocksFESpec.storageSpec.logStorageSize }}
-{{- end }}      
       mountPath: {{ template "starrockscluster.fe.log.path" . }}
-{{- end }}
-{{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.emptyDirs }}
+    {{- range .Values.starrocksFESpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- end }}
 
 {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
@@ -280,29 +279,27 @@ spec:
     configMapInfo:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
-{{- if .Values.starrocksBeSpec.storageSpec.name }}
+    {{- if or .Values.starrocksBeSpec.storageSpec.name .Values.starrocksBeSpec.emptyDirs }}
+    {{- if .Values.starrocksBeSpec.storageSpec.name }}
     storageVolumes:
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.data.suffix" . }}
-{{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.storageSpec.storageSize }}
       storageSize: {{ .Values.starrocksBeSpec.storageSpec.storageSize }}
-{{- end }}
       mountPath: {{template "starrockscluster.be.data.path" . }}
-{{- if .Values.starrocksBeSpec.storageSpec.logStorageSize }}
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.log.suffix" . }}
-{{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.storageSpec.logStorageSize }}
       storageSize: {{ .Values.starrocksBeSpec.storageSpec.logStorageSize }}
-{{- end }}
       mountPath: {{template "starrockscluster.be.log.path" . }}
-{{- end }}
-{{- end }}
-{{- end }}
-
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.emptyDirs }}
+    {{- range .Values.starrocksBeSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
 {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ .Values.starrocksCnSpec.image.tag }}"
@@ -432,8 +429,9 @@ spec:
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
-  {{- if .Values.starrocksCnSpec.storageSpec.name }}
+    {{- if or .Values.starrocksCnSpec.storageSpec.namer .Values.starrocksCnSpec.emptyDirs }}
     storageVolumes:
+    {{- if .Values.starrocksCnSpec.storageSpec.name }}
     - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.data.suffix" . }}
       storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
       storageSize: {{ .Values.starrocksCnSpec.storageSpec.storageSize }}
@@ -442,10 +440,18 @@ spec:
       storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
       storageSize: {{ .Values.starrocksCnSpec.storageSpec.logStorageSize }}
       mountPath: {{template "starrockscluster.cn.log.path" . }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.emptyDirs }}
+    {{- range .Values.starrocksCnSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- end }}
   {{- end }}
-{{- end }}
 
-{{- if .Values.starrocksFeProxySpec.enabled }}
+  {{- if .Values.starrocksFeProxySpec.enabled }}
   starRocksFeProxySpec:
     {{- if .Values.starrocksFeProxySpec.image.repository }}
     image: "{{ .Values.starrocksFeProxySpec.image.repository }}:{{ .Values.starrocksFeProxySpec.image.tag }}"
@@ -484,4 +490,12 @@ spec:
     {{- if .Values.starrocksFeProxySpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksFeProxySpec.readinessProbeFailureSeconds }}
     {{- end }}
-{{- end }}
+    {{- if .Values.starrocksFeProxySpec.emptyDirs }}
+    storageVolumes:
+    {{- range .Values.starrocksFeProxySpec.emptyDirs }}
+    - name: {{ .name }}
+      storageClassName: "emptyDir"
+      mountPath: {{ .mountPath }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
