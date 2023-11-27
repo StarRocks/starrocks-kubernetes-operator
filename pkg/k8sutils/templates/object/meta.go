@@ -10,6 +10,7 @@ const (
 	StarRocksWarehouseKind = "StarRocksWarehouse"
 )
 
+// StarRocksObject is a wrapper of metav1.TypeMeta and metav1.ObjectMeta for StarRocksCluster and StarRocksWarehouse.
 type StarRocksObject struct {
 	*metav1.TypeMeta
 	*metav1.ObjectMeta
@@ -43,8 +44,7 @@ func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
 		ObjectMeta:  &warehouse.ObjectMeta,
 		ClusterName: warehouse.Spec.StarRocksCluster,
 		Kind:        StarRocksWarehouseKind,
-		// add warehouse suffix to avoid name conflict with cluster
-		AliasName: GetAliasName(warehouse.Name),
+		AliasName:   GetAliasName(warehouse.Name), // add a suffix to avoid name conflict with cluster
 	}
 }
 

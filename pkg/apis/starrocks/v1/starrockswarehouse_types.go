@@ -41,7 +41,7 @@ type WarehouseComponentSpec struct {
 	// envVars is a slice of environment variables that are added to the pods, the default is empty.
 	EnvVars []corev1.EnvVar `json:"envVars,omitempty"`
 
-	// AutoScalingPolicy auto scaling strategy
+	// AutoScalingPolicy defines auto scaling policy
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
 }
 
@@ -53,13 +53,12 @@ func (componentSpec *WarehouseComponentSpec) ToCnSpec() *StarRocksCnSpec {
 	}
 }
 
-// WarehouseComponentStatus
+// WarehouseComponentStatus represents the status of component.
 // +kubebuilder:object:generate=false
 type WarehouseComponentStatus = StarRocksCnStatus
 
 // StarRocksWarehouseStatus defines the observed state of StarRocksWarehouse.
 type StarRocksWarehouseStatus struct {
-	// WarehouseStatus represents the status of service. The status has reconciling, failed and running.
 	*WarehouseComponentStatus `json:",inline"`
 }
 

@@ -68,7 +68,8 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 	}
 	value := data[key]
 
-	// to avoid concurrency problems: concurrent map iteration and map write, we use a new viper instance
+	// We use a new viper instance, not the global one, in order to avoid concurrency problems: concurrent map iteration
+	// and map write,
 	v := viper.New()
 	v.SetConfigType("properties")
 	if err := v.ReadConfig(bytes.NewBuffer([]byte(value))); err != nil {

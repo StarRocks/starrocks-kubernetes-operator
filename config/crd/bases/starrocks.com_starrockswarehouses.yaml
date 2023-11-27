@@ -916,7 +916,7 @@ spec:
                       for collect to monitor system.
                     type: object
                   autoScalingPolicy:
-                    description: AutoScalingPolicy auto scaling strategy
+                    description: AutoScalingPolicy defines auto scaling policy
                     properties:
                       hpaPolicy:
                         description: the policy of autoscaling. operator use autoscaling

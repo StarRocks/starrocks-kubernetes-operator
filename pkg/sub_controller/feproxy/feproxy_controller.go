@@ -69,7 +69,7 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 		return nil
 	}
 
-	if !fe.CheckFEOk(ctx, controller.k8sClient, src.Namespace, src.Name) {
+	if !fe.CheckFEReady(ctx, controller.k8sClient, src.Namespace, src.Name) {
 		return nil
 	}
 
