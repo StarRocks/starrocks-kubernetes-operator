@@ -40,10 +40,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// judge two services equal or not in some fields. develoer can custom the function.
+// ServiceEqual judges two services equal or not in some fields. developer can custom the function.
 type ServiceEqual func(svc1 *corev1.Service, svc2 *corev1.Service) bool
 
-// judge two statefulset equal or not in some fields. develoer can custom the function.
+// StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
 type StatefulSetEqual func(st1 *appv1.StatefulSet, st2 *appv1.StatefulSet) bool
 
 func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Service, equal ServiceEqual) error {
@@ -57,8 +57,8 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 	}
 
 	if equal(svc, &esvc) {
-		klog.Info("CreateOrUpdateService service Name, Ports, Selector, ServiceType, Labels have not change ",
-			"namespace ", svc.Namespace, " name ", svc.Name)
+		klog.Info("Apply service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ",
+			svc.Namespace, " name ", svc.Name)
 		return nil
 	}
 
@@ -130,11 +130,11 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
-func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.StatefulSet, equal StatefulSetEqual) error {
+func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, st *appv1.StatefulSet, equal StatefulSetEqual) error {
 	var est appv1.StatefulSet
-	err := k8sclient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
+	err := k8sClient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
 	if err != nil && apierrors.IsNotFound(err) {
-		return CreateClientObject(ctx, k8sclient, st)
+		return CreateClientObject(ctx, k8sClient, st)
 	} else if err != nil {
 		return err
 	}
@@ -152,68 +152,48 @@ func ApplyStatefulSet(ctx context.Context, k8sclient client.Client, st *appv1.St
 	}
 
 	st.ResourceVersion = est.ResourceVersion
-	return UpdateClientObject(ctx, k8sclient, st)
+	return UpdateClientObject(ctx, k8sClient, st)
 }
 
-func CreateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.Info("Creating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(),
-		" kind ", object.GetObjectKind().GroupVersionKind().Kind)
-	if err := k8sclient.Create(ctx, object); err != nil {
+func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
+	klog.Infof("Creating k8s resource namespace=%s, name=%s, kind=%s", object.GetNamespace(), object.GetName(),
+		object.GetObjectKind().GroupVersionKind().Kind)
+	if err := k8sClient.Create(ctx, object); err != nil {
 		return err
 	}
 	return nil
 }
 
-func UpdateClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
+func UpdateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
 	klog.Info("Updating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(),
 		" kind ", object.GetObjectKind())
-	if err := k8sclient.Update(ctx, object); err != nil {
+	if err := k8sClient.Update(ctx, object); err != nil {
 		return err
 	}
 	return nil
 }
 
 // PatchClientObject patch object when the object exist. if not return error.
-func PatchClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
+func PatchClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
 	klog.V(constant.LOG_LEVEL).Infof("patch resource namespace=%s,name=%s,kind=%s.",
 		object.GetNamespace(), object.GetName(), object.GetObjectKind())
-	if err := k8sclient.Patch(ctx, object, client.Merge); err != nil {
+	if err := k8sClient.Patch(ctx, object, client.Merge); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-// CreateOrUpdate patch object if not exist create object.
-func CreateOrUpdate(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	klog.V(constant.LOG_LEVEL).Infof("patch or create resource namespace=%s,name=%s,kind=%s.",
-		object.GetNamespace(), object.GetName(), object.GetObjectKind())
-	if err := k8sclient.Update(ctx, object); apierrors.IsNotFound(err) {
-		return k8sclient.Create(ctx, object)
-	} else if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func DeleteClientObject(ctx context.Context, k8sclient client.Client, object client.Object) error {
-	if err := k8sclient.Delete(ctx, object); err != nil {
-		return err
-	}
 	return nil
 }
 
 // DeleteStatefulset delete statefulset.
-func DeleteStatefulset(ctx context.Context, k8sclient client.Client, namespace, name string) error {
+func DeleteStatefulset(ctx context.Context, k8sClient client.Client, namespace, name string) error {
 	var st appv1.StatefulSet
-	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &st); apierrors.IsNotFound(err) {
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &st); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
 		return err
 	}
 
-	return k8sclient.Delete(ctx, &st)
+	return k8sClient.Delete(ctx, &st)
 }
 
 // DeleteService delete service.
@@ -336,4 +316,66 @@ func GetKubernetesVersion() error {
 	KUBE_MAJOR_VERSION = version.Major
 	KUBE_MINOR_VERSION = version.Minor
 	return nil
+}
+
+// GetEnvVarValue returns the value of an environment variable. It handles both Value and ValueFrom cases.
+// It assumes that the environment variable exists and is valid.
+func GetEnvVarValue(k8sClient client.Client, namespace string, envVar corev1.EnvVar) (string, error) {
+	if envVar.Value != "" {
+		// If Value is not empty, return it directly
+		return envVar.Value, nil
+	} else if envVar.ValueFrom != nil {
+		// If ValueFrom is not nil, handle different sources
+		valueFrom := envVar.ValueFrom
+		if valueFrom.ConfigMapKeyRef != nil {
+			// If ConfigMapKeyRef is not nil, get the value from the configmap's key
+			name := valueFrom.ConfigMapKeyRef.Name
+			key := valueFrom.ConfigMapKeyRef.Key
+			return getValueFromConfigmap(k8sClient, namespace, name, key)
+		} else if valueFrom.SecretKeyRef != nil {
+			// If SecretKeyRef is not nil, get the value from the secret's key
+			name := valueFrom.SecretKeyRef.Name
+			key := valueFrom.SecretKeyRef.Key
+			return getValueFromSecret(k8sClient, namespace, name, key)
+		}
+	}
+	return "", fmt.Errorf("invalid environment variable: %v", envVar)
+}
+
+// getValueFromConfigmap returns the runtime value of a key in a configmap.
+// It assumes that the configmap and the key exist and are valid.
+func getValueFromConfigmap(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+	var configMap corev1.ConfigMap
+	err := k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		}, &configMap)
+	if err != nil {
+		return "", err
+	}
+	value, ok := configMap.Data[key]
+	if !ok {
+		return "", fmt.Errorf("key %s not found in configmap %s", key, name)
+	}
+	return value, nil
+}
+
+// getValueFromSecret returns the value of a key in a secret.
+// It assumes that the secret and the key exist and are valid.
+func getValueFromSecret(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+	var secret corev1.Secret
+	err := k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		}, &secret)
+	if err != nil {
+		return "", err
+	}
+	value, ok := secret.Data[key]
+	if !ok {
+		return "", fmt.Errorf("key %s not found in secret %s", key, name)
+	}
+	return string(value), nil
 }

@@ -18,19 +18,12 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog/v2"
-)
-
-type StarRocksServiceType string
-
-const (
-	FeService      StarRocksServiceType = "fe"
-	BeService      StarRocksServiceType = "be"
-	CnService      StarRocksServiceType = "cn"
-	FeProxyService StarRocksServiceType = "fe-proxy"
 )
 
 const (
@@ -64,14 +57,14 @@ type hashService struct {
 }
 
 // BuildExternalService build the external service. not have selector
-func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType StarRocksServiceType,
+func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterface,
 	config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
 	// the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: src.Namespace,
+			Name:      service.ExternalServiceName(object.AliasName, spec),
+			Namespace: object.GetNamespace(),
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
@@ -79,40 +72,18 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		},
 	}
 
-	anno := map[string]string{}
-	if serviceType == FeService {
-		spec := src.Spec.StarRocksFeSpec
-		if svc.Name == "" {
-			svc.Name = src.Name + "-" + srapi.DEFAULT_FE
-		}
-		setServiceType(spec.Service, &svc)
-		anno = getServiceAnnotations(spec.Service)
-		srPorts = getFeServicePorts(config, spec.Service)
-	} else if serviceType == BeService {
-		spec := src.Spec.StarRocksBeSpec
-		if svc.Name == "" {
-			svc.Name = src.Name + "-" + srapi.DEFAULT_BE
-		}
-		setServiceType(spec.Service, &svc)
-		anno = getServiceAnnotations(spec.Service)
-		srPorts = getBeServicePorts(config, spec.Service)
-	} else if serviceType == CnService {
-		spec := src.Spec.StarRocksCnSpec
-		if svc.Name == "" {
-			svc.Name = src.Name + "-" + srapi.DEFAULT_CN
-		}
-		setServiceType(spec.Service, &svc)
-		anno = getServiceAnnotations(spec.Service)
-		srPorts = getCnServicePorts(config, spec.Service)
-	} else if serviceType == FeProxyService {
-		if svc.Name == "" {
-			svc.Name = src.Name + "-" + srapi.DEFAULT_FE_PROXY
-		}
-		feproxySpec := src.Spec.StarRocksFeProxySpec
-		setServiceType(feproxySpec.Service, &svc)
-		anno = getServiceAnnotations(feproxySpec.Service)
+	setServiceType(spec.GetService(), &svc)
+	anno := getServiceAnnotations(spec.GetService())
+	switch spec.(type) {
+	case *srapi.StarRocksFeSpec:
+		srPorts = getFeServicePorts(config, spec.GetService())
+	case *srapi.StarRocksBeSpec:
+		srPorts = getBeServicePorts(config, spec.GetService())
+	case *srapi.StarRocksCnSpec:
+		srPorts = getCnServicePorts(config, spec.GetService())
+	case *srapi.StarRocksFeProxySpec:
 		srPorts = []srapi.StarRocksServicePort{
-			mergePort(feproxySpec.Service, srapi.StarRocksServicePort{
+			mergePort(spec.GetService(), srapi.StarRocksServicePort{
 				Name:          FE_PORXY_HTTP_PORT_NAME,
 				Port:          FE_PROXY_HTTP_PORT,
 				ContainerPort: FE_PROXY_HTTP_PORT,
@@ -120,7 +91,7 @@ func BuildExternalService(src *srapi.StarRocksCluster, name string, serviceType 
 		}
 	}
 
-	ref := metav1.NewControllerRef(src, src.GroupVersionKind())
+	ref := metav1.NewControllerRef(object, object.GroupVersionKind())
 	svc.OwnerReferences = []metav1.OwnerReference{*ref}
 
 	var ports []corev1.ServicePort

@@ -25,6 +25,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/deployment"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
@@ -42,7 +43,7 @@ type FeProxyController struct {
 	k8sClient client.Client
 }
 
-var _ sub_controller.SubController = &FeProxyController{}
+var _ sub_controller.ClusterSubController = &FeProxyController{}
 
 // New construct a FeController.
 func New(k8sClient client.Client) *FeProxyController {
@@ -55,8 +56,7 @@ func (controller *FeProxyController) GetControllerName() string {
 	return "feProxyController"
 }
 
-// Sync starRocksCluster spec to fe statefulset and service.
-func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	if feProxySpec == nil {
 		klog.Infof("FeProxyController Sync: the fe proxy component is not needed, namespace = %v, "+
@@ -69,7 +69,7 @@ func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRo
 		return nil
 	}
 
-	if !fe.CheckFEOk(ctx, controller.k8sClient, src) {
+	if !fe.CheckFEReady(ctx, controller.k8sClient, src.Namespace, src.Name) {
 		return nil
 	}
 
@@ -92,8 +92,8 @@ func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRo
 	}
 
 	// sync fe proxy service
-	externalServiceName := service.ExternalServiceName(src.Name, feProxySpec)
-	externalsvc := rutils.BuildExternalService(src, externalServiceName, rutils.FeProxyService, nil,
+	object := object.NewFromCluster(src)
+	externalsvc := rutils.BuildExternalService(object, feProxySpec, nil,
 		load.Selector(src.Name, feProxySpec), load.Labels(src.Name, feProxySpec))
 	if err := k8sutils.ApplyService(ctx, controller.k8sClient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
 		return err
@@ -102,8 +102,8 @@ func (controller *FeProxyController) Sync(ctx context.Context, src *srapi.StarRo
 	return nil
 }
 
-// UpdateStatus update the all resource status about fe.
-func (controller *FeProxyController) UpdateStatus(src *srapi.StarRocksCluster) error {
+// UpdateClusterStatus update the all resource status about fe.
+func (controller *FeProxyController) UpdateClusterStatus(src *srapi.StarRocksCluster) error {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	if feProxySpec == nil {
 		src.Status.StarRocksFeProxyStatus = nil
@@ -128,11 +128,11 @@ func (controller *FeProxyController) UpdateStatus(src *srapi.StarRocksCluster) e
 	}, &actual)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			klog.Infof("FeProxyController UpdateStatus: fe proxy deployment is not found, "+
+			klog.Infof("FeProxyController UpdateClusterStatus: fe proxy deployment is not found, "+
 				"namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
 			return nil
 		}
-		klog.Errorf("FeProxyController UpdateStatus: get fe proxy deployment failed, "+
+		klog.Errorf("FeProxyController UpdateClusterStatus: get fe proxy deployment failed, "+
 			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
 		return err
 	}
@@ -218,7 +218,7 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 		ReadOnlyRootFilesystem: func() *bool { b := false; return &b }(),
 	}
 
-	podSpec := pod.Spec(feProxySpec, src.Spec.ServiceAccount, container, vols)
+	podSpec := pod.Spec(feProxySpec, container, vols)
 	return corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: feProxySpec.GetAnnotations(),

@@ -51,6 +51,7 @@ starrocksCluster:
   # annotations for starrocks cluster.
   annotations: {}
   # specify the cn deploy or not.
+  enabledBe: true
   enabledCn: false
 
 # spec to deploy fe.
@@ -462,7 +463,7 @@ starrocksBeSpec:
     limits:
       cpu: 8
       memory: 8Gi
-  # specify storageclass name and request size.
+  # be storageSpec for persistent storage.
   storageSpec:
     # the name of volume for mount. if not will use emptyDir.
     name: ""

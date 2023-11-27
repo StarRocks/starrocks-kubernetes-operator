@@ -18,7 +18,6 @@ package pkg
 
 import (
 	"context"
-	"os"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -40,10 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func init() {
-	Controllers = append(Controllers, &StarRocksClusterReconciler{})
-}
-
 var (
 	name                  = "starrockscluster-controller"
 	feControllerName      = "fe-controller"
@@ -56,7 +51,7 @@ var (
 type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
-	Scs      map[string]sub_controller.SubController
+	Scs      map[string]sub_controller.ClusterSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -75,11 +70,6 @@ type StarRocksClusterReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the StarRocksCluster object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -108,10 +98,10 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	// subControllers reconcile for create or update sub resource.
+	// subControllers reconcile for create or update component.
 	for _, rc := range r.Scs {
-		if err := rc.Sync(ctx, src); err != nil {
-			klog.Errorf("StarRocksClusterReconciler reconcile sub resource reconcile failed, "+
+		if err := rc.SyncCluster(ctx, src); err != nil {
+			klog.Errorf("StarRocksClusterReconciler reconcile component failed, "+
 				"namespace=%v, name=%v, controller=%v, error=%v", src.Namespace, src.Name, rc.GetControllerName(), err)
 			return requeueIfError(err)
 		}
@@ -124,7 +114,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	for _, rc := range r.Scs {
 		// update component status.
-		if err := rc.UpdateStatus(src); err != nil {
+		if err := rc.UpdateClusterStatus(src); err != nil {
 			klog.Infof("StarRocksClusterReconciler reconcile update component %s status failed.err=%s\n", rc.GetControllerName(), err.Error())
 			return requeueIfError(err)
 		}
@@ -164,7 +154,7 @@ func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, 
 	})
 }
 
-// UpdateStarRocksCluster udpate the starrockscluster metadata, spec.
+// UpdateStarRocksCluster update the starrockscluster metadata, spec.
 func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
@@ -195,7 +185,7 @@ func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCl
 
 func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {
 	// calculate the status of starrocks cluster by subresource's status.
-	// clear resources when sub resource deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
+	// clear resources when component deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
 	for _, rc := range r.Scs {
 		if err := rc.ClearResources(ctx, src); err != nil {
 			klog.Errorf("StarRocksClusterReconciler reconcile clear resource failed, "+
@@ -203,30 +193,25 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 		}
 	}
 
-	smap := make(map[srapi.ClusterPhase]bool)
 	src.Status.Phase = srapi.ClusterRunning
-	func() {
-		feStatus := src.Status.StarRocksFeStatus
-		if feStatus != nil && feStatus.Phase == srapi.ComponentReconciling {
-			smap[srapi.ClusterPending] = true
-		} else if feStatus != nil && feStatus.Phase == srapi.ComponentFailed {
-			smap[srapi.ClusterFailed] = true
+	phase := GetPhaseFromComponent(&src.Status.StarRocksFeStatus.StarRocksComponentStatus)
+	if phase != "" {
+		src.Status.Phase = phase
+		return
+	}
+	if src.Status.StarRocksBeStatus != nil {
+		phase = GetPhaseFromComponent(&src.Status.StarRocksBeStatus.StarRocksComponentStatus)
+		if phase != "" {
+			src.Status.Phase = phase
+			return
 		}
-	}()
-
-	func() {
-		cnStatus := src.Status.StarRocksCnStatus
-		if cnStatus != nil && cnStatus.Phase == srapi.ComponentReconciling {
-			smap[srapi.ClusterPending] = true
-		} else if cnStatus != nil && cnStatus.Phase == srapi.ComponentFailed {
-			smap[srapi.ClusterFailed] = true
+	}
+	if src.Status.StarRocksCnStatus != nil {
+		phase = GetPhaseFromComponent(&src.Status.StarRocksCnStatus.StarRocksComponentStatus)
+		if phase != "" {
+			src.Status.Phase = phase
+			return
 		}
-	}()
-
-	if _, ok := smap[srapi.ClusterPending]; ok {
-		src.Status.Phase = srapi.ClusterPending
-	} else if _, ok := smap[srapi.ClusterFailed]; ok {
-		src.Status.Phase = srapi.ClusterFailed
 	}
 }
 
@@ -243,9 +228,8 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// Init initial the StarRocksClusterReconciler for reconcile.
-func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
-	subcs := make(map[string]sub_controller.SubController)
+func SetupClusterReconciler(mgr ctrl.Manager) error {
+	subcs := make(map[string]sub_controller.ClusterSubController)
 	feController := fe.New(mgr.GetClient())
 	subcs[feControllerName] = feController
 	cnController := cn.New(mgr.GetClient())
@@ -255,14 +239,17 @@ func (r *StarRocksClusterReconciler) Init(mgr ctrl.Manager) {
 	feProxyController := feproxy.New(mgr.GetClient())
 	subcs[feProxyControllerName] = feProxyController
 
-	if err := (&StarRocksClusterReconciler{
+	reconciler := &StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor(name),
 		Scs:      subcs,
-	}).SetupWithManager(mgr); err != nil {
-		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
-		os.Exit(1)
 	}
+
+	if err := reconciler.SetupWithManager(mgr); err != nil {
+		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
+		return err
+	}
+	return nil
 }
 
 func requeueIfError(err error) (ctrl.Result, error) {

@@ -18,12 +18,15 @@ import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const STARROCKS_WAREHOUSE_FINALIZER = "starrocks.com.starrockswarehouse/protection"
 
 func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
@@ -47,22 +50,22 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 }
 
 // MakeStatefulset  statefulset
-func MakeStatefulset(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) appv1.StatefulSet {
+func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) appv1.StatefulSet {
 	const defaultRollingUpdateStartPod int32 = 0
 	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
-	or := metav1.NewControllerRef(cluster, cluster.GroupVersionKind())
+	or := metav1.NewControllerRef(object, object.GroupVersionKind())
 	st := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            load.Name(cluster.Name, spec),
-			Namespace:       cluster.Namespace,
+			Name:            load.Name(object.AliasName, spec),
+			Namespace:       object.Namespace,
 			Annotations:     load.Annotations(),
-			Labels:          load.Labels(cluster.Name, spec),
+			Labels:          load.Labels(object.AliasName, spec),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas: spec.GetReplicas(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: load.Selector(cluster.Name, spec),
+				MatchLabels: load.Selector(object.AliasName, spec),
 			},
 			UpdateStrategy: appv1.StatefulSetUpdateStrategy{
 				Type: appv1.RollingUpdateStatefulSetStrategyType,
@@ -71,10 +74,16 @@ func MakeStatefulset(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTem
 				},
 			},
 			Template:             podTemplateSpec,
-			ServiceName:          service.SearchServiceName(cluster.Name, spec),
+			ServiceName:          service.SearchServiceName(object.AliasName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
 			PodManagementPolicy:  appv1.ParallelPodManagement,
 		},
+	}
+
+	// When Warehouse CR is deleted, operator need to get some environments from the statefulset to
+	// execute dropping warehouse statement.
+	if object.Kind == srobject.StarRocksWarehouseKind {
+		st.Finalizers = append(st.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
 	}
 
 	return st

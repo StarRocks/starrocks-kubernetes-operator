@@ -108,9 +108,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	// initial all controllers
-	for _, c := range pkg.Controllers {
-		c.Init(mgr)
+	// setup all reconciles
+	if err := pkg.SetupClusterReconciler(mgr); err != nil {
+		_setupLog.Error(err, "unable to set up cluster reconciler")
+		os.Exit(1)
+	}
+
+	if err := pkg.SetupWarehouseReconciler(mgr); err != nil {
+		_setupLog.Error(err, "unable to set up warehouse reconciler")
+		os.Exit(1)
 	}
 
 	//+kubebuilder:scaffold:builder

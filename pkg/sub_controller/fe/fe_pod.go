@@ -74,7 +74,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	Envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
+	envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
@@ -82,7 +82,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		Command:         []string{"/opt/starrocks/fe_entrypoint.sh"},
 		Args:            []string{"$(FE_SERVICE_NAME)"},
 		Ports:           pod.Ports(feSpec, config),
-		Env:             Envs,
+		Env:             envs,
 		Resources:       feSpec.ResourceRequirements,
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: corev1.PullIfNotPresent,
@@ -100,7 +100,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		})
 	}
 
-	podSpec := pod.Spec(feSpec, src.Spec.ServiceAccount, feContainer, vols)
+	podSpec := pod.Spec(feSpec, feContainer, vols)
 	annotations := pod.Annotations(feSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(feSpec)
 	return corev1.PodTemplateSpec{

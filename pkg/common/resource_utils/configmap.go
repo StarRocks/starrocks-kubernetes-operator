@@ -66,19 +66,19 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 	if _, ok := data[key]; !ok {
 		return res, nil
 	}
-
 	value := data[key]
 
-	viper.SetConfigType("properties")
-	err := viper.ReadConfig(bytes.NewBuffer([]byte(value)))
-	if err != nil {
+	// We use a new viper instance, not the global one, in order to avoid concurrency problems: concurrent map iteration
+	// and map write,
+	v := viper.New()
+	v.SetConfigType("properties")
+	if err := v.ReadConfig(bytes.NewBuffer([]byte(value))); err != nil {
 		return nil, err
 	}
-
-	return viper.AllSettings(), nil
+	return v.AllSettings(), nil
 }
 
-// getPort get ports from config file.
+// GetPort get ports from config file.
 func GetPort(config map[string]interface{}, key string) int32 {
 	if v, ok := config[key]; ok {
 		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {

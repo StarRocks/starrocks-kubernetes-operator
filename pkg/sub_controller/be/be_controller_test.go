@@ -42,7 +42,7 @@ var (
 )
 
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1alpha1"}
+	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
@@ -163,9 +163,9 @@ func Test_Sync(t *testing.T) {
 	}
 
 	bc := New(k8sutils.NewFakeClient(sch, src, &ep))
-	err := bc.Sync(context.Background(), src)
+	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
-	err = bc.UpdateStatus(src)
+	err = bc.UpdateClusterStatus(src)
 	require.Equal(t, nil, err)
 	beStatus := src.Status.StarRocksBeStatus
 	require.Equal(t, beStatus.Phase, srapi.ComponentReconciling)

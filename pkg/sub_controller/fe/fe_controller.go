@@ -23,6 +23,7 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
@@ -51,8 +52,8 @@ func (fc *FeController) GetControllerName() string {
 	return "feController"
 }
 
-// Sync starRocksCluster spec to fe statefulset and service.
-func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) error {
+// SyncCluster starRocksCluster spec to fe statefulset and service.
+func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	if src.Spec.StarRocksFeSpec == nil {
 		klog.Infof("FeController Sync: the fe component is not needed, namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
 		return nil
@@ -69,8 +70,8 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	}
 
 	// generate new fe service.
-	svc := rutils.BuildExternalService(src, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), rutils.FeService, config,
-		load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
+	object := object.NewFromCluster(src)
+	svc := rutils.BuildExternalService(object, feSpec, config, load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
 	// create or update fe external and domain search service, update the status of fe on src.
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
@@ -84,7 +85,7 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
-	st := statefulset.MakeStatefulset(src, feSpec, podTemplateSpec)
+	st := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
 		// if have restart annotation, we should exclude the interference for comparison.
 		return rutils.StatefulSetDeepEqual(new, est, false)
@@ -112,8 +113,8 @@ func (fc *FeController) Sync(ctx context.Context, src *srapi.StarRocksCluster) e
 	return nil
 }
 
-// UpdateStatus update the all resource status about fe.
-func (fc *FeController) UpdateStatus(src *srapi.StarRocksCluster) error {
+// UpdateClusterStatus update the all resource status about fe.
+func (fc *FeController) UpdateClusterStatus(src *srapi.StarRocksCluster) error {
 	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
 	feSpec := src.Spec.StarRocksFeSpec
 	if feSpec == nil {
@@ -205,14 +206,18 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return nil
 }
 
-// CheckFEOk check the fe cluster is ok for add cn node.
-func CheckFEOk(ctx context.Context, k8sClient client.Client, src *srapi.StarRocksCluster) bool {
+// CheckFEReady check the fe cluster is ok for add cn node.
+func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
 	endpoints := corev1.Endpoints{}
-	// 1. wait for fe ok.
-	externalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	serviceName := service.ExternalServiceName(clusterName, (*srapi.StarRocksFeSpec)(nil))
+	// 1. wait for FE ready.
 	if err := k8sClient.Get(ctx,
-		types.NamespacedName{Namespace: src.Namespace, Name: externalServiceName}, &endpoints); err != nil {
-		klog.Errorf("waiting fe available, fe service name %s, occur failed %s", externalServiceName, err.Error())
+		types.NamespacedName{
+			Namespace: clusterNamespace,
+			Name:      serviceName,
+		},
+		&endpoints); err != nil {
+		klog.Errorf("waiting fe available, fe service name %s, occur failed %s", serviceName, err.Error())
 		return false
 	}
 

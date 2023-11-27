@@ -698,10 +698,9 @@ func TestEnvs(t *testing.T) {
 
 func TestSpec(t *testing.T) {
 	type args struct {
-		spec                  v1.SpecInterface
-		defaultServiceAccount string
-		container             corev1.Container
-		volumes               []corev1.Volume
+		spec      v1.SpecInterface
+		container corev1.Container
+		volumes   []corev1.Volume
 	}
 	tests := []struct {
 		name string
@@ -718,9 +717,8 @@ func TestSpec(t *testing.T) {
 						},
 					},
 				},
-				defaultServiceAccount: "default",
-				container:             corev1.Container{},
-				volumes:               nil,
+				container: corev1.Container{},
+				volumes:   nil,
 			},
 			want: corev1.PodSpec{
 				Containers:                    []corev1.Container{{}},
@@ -732,14 +730,12 @@ func TestSpec(t *testing.T) {
 		{
 			name: "test service account name 2 in spec",
 			args: args{
-				spec:                  &v1.StarRocksFeSpec{},
-				defaultServiceAccount: "default",
-				container:             corev1.Container{},
-				volumes:               nil,
+				spec:      &v1.StarRocksFeSpec{},
+				container: corev1.Container{},
+				volumes:   nil,
 			},
 			want: corev1.PodSpec{
 				Containers:                    []corev1.Container{{}},
-				ServiceAccountName:            "default",
 				TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
 				AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
 			},
@@ -747,7 +743,7 @@ func TestSpec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Spec(tt.args.spec, tt.args.defaultServiceAccount, tt.args.container, tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
+			if got := Spec(tt.args.spec, tt.args.container, tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Spec() = %#v, want %#v", got, tt.want)
 			}
 		})

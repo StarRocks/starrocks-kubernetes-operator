@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -62,7 +63,101 @@ func Test_getServiceAnnotations(t *testing.T) {
 	}
 }
 
-func TestBuildExternalService(t *testing.T) {
+func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
+	warehouse := &srapi.StarRocksWarehouse{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksWarehouseSpec{
+			StarRocksCluster: "test",
+			Template: &srapi.WarehouseComponentSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Service: &srapi.StarRocksService{
+							Type:           corev1.ServiceTypeLoadBalancer,
+							LoadBalancerIP: "127.0.0.1",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	type args struct {
+		src *srapi.StarRocksWarehouse
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantCnService corev1.Service
+	}{
+		{
+			name: "build external service",
+			args: args{
+				src: warehouse,
+			},
+			wantCnService: corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-warehouse-cn-service",
+					Namespace: "default",
+					Annotations: map[string]string{
+						srapi.ComponentResourceHash: "3725082955",
+					},
+					OwnerReferences: func() []metav1.OwnerReference {
+						ref := metav1.NewControllerRef(warehouse, warehouse.GroupVersionKind())
+						return []metav1.OwnerReference{*ref}
+					}(),
+				},
+				Spec: corev1.ServiceSpec{
+					Type:                     corev1.ServiceTypeLoadBalancer,
+					PublishNotReadyAddresses: false,
+					LoadBalancerIP:           "127.0.0.1",
+					Ports: func() []corev1.ServicePort {
+						srPorts := getCnServicePorts(map[string]interface{}{}, nil)
+						var ports []corev1.ServicePort
+						for _, sp := range srPorts {
+							servicePort := corev1.ServicePort{
+								Name:       sp.Name,
+								Port:       sp.Port,
+								NodePort:   sp.NodePort,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(int(sp.ContainerPort)),
+							}
+							ports = append(ports, servicePort)
+						}
+						return ports
+					}(),
+				},
+			},
+		},
+	}
+
+	equal := func(got, want corev1.Service) {
+		gotData, _ := json.Marshal(got)
+		wantData, _ := json.Marshal(want)
+		if len(gotData) != len(wantData) {
+			t.Errorf("BuildExternalService() = %v, want %v", got, want)
+			return
+		}
+		for i := range gotData {
+			if gotData[i] != wantData[i] {
+				t.Errorf("BuildExternalService() = %v, want %v", got, want)
+				return
+			}
+		}
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotCnService := BuildExternalService(object.NewFromWarehouse(warehouse),
+				warehouse.Spec.Template.ToCnSpec(), map[string]interface{}{}, map[string]string{}, map[string]string{})
+			equal(gotCnService, tt.wantCnService)
+		})
+	}
+}
+
+func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -79,37 +174,50 @@ func TestBuildExternalService(t *testing.T) {
 					},
 				},
 			},
+			StarRocksBeSpec: &srapi.StarRocksBeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Service: &srapi.StarRocksService{
+							Type:           corev1.ServiceTypeLoadBalancer,
+							LoadBalancerIP: "127.0.0.1",
+						},
+					},
+				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Service: &srapi.StarRocksService{
+							Type:           corev1.ServiceTypeLoadBalancer,
+							LoadBalancerIP: "127.0.0.1",
+						},
+					},
+				},
+			},
 		},
 	}
+
 	type args struct {
-		src         *srapi.StarRocksCluster
-		name        string
-		serviceType StarRocksServiceType
-		config      map[string]interface{}
-		selector    map[string]string
-		labels      map[string]string
+		src *srapi.StarRocksCluster
 	}
 	tests := []struct {
-		name string
-		args args
-		want corev1.Service
+		name          string
+		args          args
+		wantFeService corev1.Service
+		wantBeService corev1.Service
+		wantCnService corev1.Service
 	}{
 		{
-			name: "test build external service",
+			name: "build external service",
 			args: args{
-				src:         src,
-				name:        "service-name",
-				serviceType: FeService,
-				config:      map[string]interface{}{},
-				selector:    map[string]string{},
-				labels:      map[string]string{},
+				src: src,
 			},
-			want: corev1.Service{
+			wantFeService: corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "service-name",
+					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "1503664666",
+						srapi.ComponentResourceHash: "2802874283",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -140,23 +248,102 @@ func TestBuildExternalService(t *testing.T) {
 					}(),
 				},
 			},
+			wantBeService: corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-be-service",
+					Namespace: "default",
+					Annotations: map[string]string{
+						srapi.ComponentResourceHash: "820013195",
+					},
+					OwnerReferences: func() []metav1.OwnerReference {
+						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
+						return []metav1.OwnerReference{*ref}
+					}(),
+				},
+				Spec: corev1.ServiceSpec{
+					Type:                     corev1.ServiceTypeLoadBalancer,
+					PublishNotReadyAddresses: false,
+					LoadBalancerIP:           "127.0.0.1",
+					Ports: func() []corev1.ServicePort {
+						srPorts := getBeServicePorts(map[string]interface{}{}, nil)
+						var ports []corev1.ServicePort
+						for _, sp := range srPorts {
+							servicePort := corev1.ServicePort{
+								Name:       sp.Name,
+								Port:       sp.Port,
+								NodePort:   sp.NodePort,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(int(sp.ContainerPort)),
+							}
+							ports = append(ports, servicePort)
+						}
+						return ports
+					}(),
+				},
+			},
+			wantCnService: corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-cn-service",
+					Namespace: "default",
+					Annotations: map[string]string{
+						srapi.ComponentResourceHash: "2894907321",
+					},
+					OwnerReferences: func() []metav1.OwnerReference {
+						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
+						return []metav1.OwnerReference{*ref}
+					}(),
+				},
+				Spec: corev1.ServiceSpec{
+					Type:                     corev1.ServiceTypeLoadBalancer,
+					PublishNotReadyAddresses: false,
+					LoadBalancerIP:           "127.0.0.1",
+					Ports: func() []corev1.ServicePort {
+						srPorts := getCnServicePorts(map[string]interface{}{}, nil)
+						var ports []corev1.ServicePort
+						for _, sp := range srPorts {
+							servicePort := corev1.ServicePort{
+								Name:       sp.Name,
+								Port:       sp.Port,
+								NodePort:   sp.NodePort,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(int(sp.ContainerPort)),
+							}
+							ports = append(ports, servicePort)
+						}
+						return ports
+					}(),
+				},
+			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := BuildExternalService(tt.args.src, tt.args.name, tt.args.serviceType, tt.args.config, tt.args.selector, tt.args.labels)
-			gotData, _ := json.Marshal(got)
-			wantData, _ := json.Marshal(tt.want)
-			if len(gotData) != len(wantData) {
-				t.Errorf("BuildExternalService() = %v, want %v", got, tt.want)
+
+	equal := func(got, want corev1.Service) {
+		gotData, _ := json.Marshal(got)
+		wantData, _ := json.Marshal(want)
+		if len(gotData) != len(wantData) {
+			t.Errorf("BuildExternalService() = %v, want %v", got, want)
+			return
+		}
+		for i := range gotData {
+			if gotData[i] != wantData[i] {
+				t.Errorf("BuildExternalService() = %v, want %v", got, want)
 				return
 			}
-			for i := range gotData {
-				if gotData[i] != wantData[i] {
-					t.Errorf("BuildExternalService() = %v, want %v", got, tt.want)
-					return
-				}
-			}
+		}
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			object := object.NewFromCluster(src)
+			gotFeService := BuildExternalService(object, src.Spec.StarRocksFeSpec,
+				map[string]interface{}{}, map[string]string{}, map[string]string{})
+			equal(gotFeService, tt.wantFeService)
+			gotBeService := BuildExternalService(object, src.Spec.StarRocksBeSpec,
+				map[string]interface{}{}, map[string]string{}, map[string]string{})
+			equal(gotBeService, tt.wantBeService)
+			gotCnService := BuildExternalService(object, src.Spec.StarRocksCnSpec,
+				map[string]interface{}{}, map[string]string{}, map[string]string{})
+			equal(gotCnService, tt.wantCnService)
 		})
 	}
 }

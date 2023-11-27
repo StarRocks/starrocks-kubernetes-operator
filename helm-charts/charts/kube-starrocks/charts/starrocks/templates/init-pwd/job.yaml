@@ -10,7 +10,7 @@ spec:
       containers:
       - name: {{ template "starrockscluster.name" . }}-initpwd
         image: {{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         command:
         - /bin/bash
         args:
