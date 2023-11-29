@@ -80,7 +80,7 @@ linters:
     - bodyclose
     - depguard
     - dogsled
-    #- dupl
+    - dupl
     - errcheck
     - exportloopref
     - funlen
@@ -153,6 +153,8 @@ issues:
 
 run:
   timeout: 5m
+  skip-files:
+    - ".*_test\\.go"
   skip-dirs:
     - test/testdata_etc # test files
     - internal/cache # extracted from Go code
