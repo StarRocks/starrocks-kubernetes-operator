@@ -326,7 +326,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, object object.Star
 		ScalerPolicy:    &policy,
 	}
 
-	autoScaler := rutils.BuildHorizontalPodAutoscaler(autoscalerParams)
+	autoScaler := rutils.BuildHorizontalPodAutoscaler(autoscalerParams, "")
 	autoScaler.SetAnnotations(make(map[string]string))
 	var clientObject client.Object
 	t := autoscalerParams.AutoscalerType.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
