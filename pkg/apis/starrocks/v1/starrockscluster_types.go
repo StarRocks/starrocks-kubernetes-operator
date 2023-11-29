@@ -294,7 +294,3 @@ type StarRocksClusterList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []StarRocksCluster `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&StarRocksCluster{}, &StarRocksClusterList{})
-}

@@ -21,20 +21,17 @@ import (
 	"errors"
 	"fmt"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
-	appv1 "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 )
 
 // StarRocksWarehouseReconciler reconciles a StarRocksWarehouse object
@@ -136,39 +133,6 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&srapi.StarRocksWarehouse{}).
-		Owns(&appv1.StatefulSet{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Service{}).
-		Owns(&v2.HorizontalPodAutoscaler{}).
-		Complete(r)
-}
-
-func SetupWarehouseReconciler(mgr ctrl.Manager) error {
-	// check StarRocksWarehouse CRD exists or not
-	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}); err != nil {
-		if meta.IsNoMatchError(err) {
-			klog.Infof("StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler")
-			return nil
-		}
-		return err
-	}
-
-	reconciler := &StarRocksWarehouseReconciler{
-		Client:         mgr.GetClient(),
-		recorder:       mgr.GetEventRecorderFor(name),
-		subControllers: []sub_controller.WarehouseSubController{cn.New(mgr.GetClient())},
-	}
-	if err := reconciler.SetupWithManager(mgr); err != nil {
-		klog.Error(err, "failed to setup StarRocksWarehouseReconciler")
-		return err
-	}
-	return nil
 }
 
 // UpdateStarRocksWarehouseStatus update the status of warehouse.
