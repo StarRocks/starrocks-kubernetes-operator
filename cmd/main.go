@@ -23,8 +23,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"k8s.io/klog/v2"
+
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.

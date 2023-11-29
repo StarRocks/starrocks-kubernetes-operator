@@ -23,19 +23,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
-
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
-	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
@@ -46,6 +33,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
 )
 
 type CnController struct {

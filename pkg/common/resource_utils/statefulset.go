@@ -15,13 +15,14 @@
 package resource_utils
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 )
 
 // hashStatefulsetObject contains the info for hash comparison.
