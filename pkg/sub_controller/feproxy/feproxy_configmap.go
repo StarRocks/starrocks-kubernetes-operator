@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
+
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 )
 
 func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *srapi.StarRocksCluster) error {

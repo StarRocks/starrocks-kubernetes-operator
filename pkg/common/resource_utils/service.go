@@ -15,15 +15,16 @@
 package resource_utils
 
 import (
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/klog/v2"
+
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/klog/v2"
 )
 
 const (
