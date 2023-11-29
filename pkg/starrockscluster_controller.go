@@ -19,8 +19,6 @@ package pkg
 import (
 	"context"
 
-	appv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,10 +32,6 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/be"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
 )
 
 var (
@@ -216,43 +210,21 @@ func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *s
 	}
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
-	// v2.HorizontalPodAutoscaler does not exist.
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&srapi.StarRocksCluster{}).
-		Owns(&appv1.StatefulSet{}).
-		Owns(&appv1.Deployment{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Service{}).
-		Complete(r)
-}
-
-func SetupClusterReconciler(mgr ctrl.Manager) error {
-	subcs := make(map[string]sub_controller.ClusterSubController)
-	feController := fe.New(mgr.GetClient())
-	subcs[feControllerName] = feController
-	cnController := cn.New(mgr.GetClient())
-	subcs[cnControllerName] = cnController
-	beController := be.New(mgr.GetClient())
-	subcs[beControllerName] = beController
-	feProxyController := feproxy.New(mgr.GetClient())
-	subcs[feProxyControllerName] = feProxyController
-
-	reconciler := &StarRocksClusterReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor(name),
-		Scs:      subcs,
-	}
-
-	if err := reconciler.SetupWithManager(mgr); err != nil {
-		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
-		return err
-	}
-	return nil
-}
-
 func requeueIfError(err error) (ctrl.Result, error) {
 	return ctrl.Result{}, err
+}
+
+// GetPhaseFromComponent return the Phase of Cluster or Warehouse based on the component status.
+// It returns empty string if not sure the phase.
+func GetPhaseFromComponent(componentStatus *srapi.StarRocksComponentStatus) srapi.Phase {
+	if componentStatus == nil {
+		return ""
+	}
+	if componentStatus.Phase == srapi.ComponentReconciling {
+		return srapi.ClusterPending
+	}
+	if componentStatus.Phase == srapi.ComponentFailed {
+		return srapi.ClusterFailed
+	}
+	return ""
 }

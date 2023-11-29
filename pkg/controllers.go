@@ -1,50 +1,89 @@
-/*
-Copyright 2021-present, StarRocks Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package pkg
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"context"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/klog/v2"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/be"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
 )
 
-var (
-	Scheme = runtime.NewScheme()
-)
+func SetupClusterReconciler(mgr ctrl.Manager) error {
+	subcs := make(map[string]sub_controller.ClusterSubController)
+	feController := fe.New(mgr.GetClient())
+	subcs[feControllerName] = feController
+	cnController := cn.New(mgr.GetClient())
+	subcs[cnControllerName] = cnController
+	beController := be.New(mgr.GetClient())
+	subcs[beControllerName] = beController
+	feProxyController := feproxy.New(mgr.GetClient())
+	subcs[feProxyControllerName] = feProxyController
 
-func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
-	utilruntime.Must(v1.AddToScheme(Scheme))
-	// +kubebuilder:scaffold:scheme
+	reconciler := &StarRocksClusterReconciler{
+		Client:   mgr.GetClient(),
+		Recorder: mgr.GetEventRecorderFor(name),
+		Scs:      subcs,
+	}
+
+	if err := reconciler.SetupWithManager(mgr); err != nil {
+		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
+		return err
+	}
+	return nil
 }
 
-// GetPhaseFromComponent return the Phase of Cluster or Warehouse based on the component status.
-// It returns empty string if not sure the phase.
-func GetPhaseFromComponent(componentStatus *v1.StarRocksComponentStatus) v1.Phase {
-	if componentStatus == nil {
-		return ""
+// SetupWithManager sets up the controller with the Manager.
+func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
+	// v2.HorizontalPodAutoscaler does not exist.
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&srapi.StarRocksCluster{}).
+		Owns(&appv1.StatefulSet{}).
+		Owns(&appv1.Deployment{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Service{}).
+		Complete(r)
+}
+
+func SetupWarehouseReconciler(mgr ctrl.Manager) error {
+	// check StarRocksWarehouse CRD exists or not
+	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}); err != nil {
+		if meta.IsNoMatchError(err) {
+			klog.Infof("StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler")
+			return nil
+		}
+		return err
 	}
-	if componentStatus.Phase == v1.ComponentReconciling {
-		return v1.ClusterPending
+
+	reconciler := &StarRocksWarehouseReconciler{
+		Client:         mgr.GetClient(),
+		recorder:       mgr.GetEventRecorderFor(name),
+		subControllers: []sub_controller.WarehouseSubController{cn.New(mgr.GetClient())},
 	}
-	if componentStatus.Phase == v1.ComponentFailed {
-		return v1.ClusterFailed
+	if err := reconciler.SetupWithManager(mgr); err != nil {
+		klog.Error(err, "failed to setup StarRocksWarehouseReconciler")
+		return err
 	}
-	return ""
+	return nil
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&srapi.StarRocksWarehouse{}).
+		Owns(&appv1.StatefulSet{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Service{}).
+		Owns(&v2.HorizontalPodAutoscaler{}).
+		Complete(r)
 }

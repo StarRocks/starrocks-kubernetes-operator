@@ -93,7 +93,3 @@ type StarRocksWarehouseList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []StarRocksWarehouse `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&StarRocksWarehouse{}, &StarRocksWarehouseList{})
-}
