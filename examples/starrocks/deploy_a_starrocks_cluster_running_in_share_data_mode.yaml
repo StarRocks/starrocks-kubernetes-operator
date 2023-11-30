@@ -58,5 +58,5 @@ data:
     # config for share data mode
     run_mode = shared_data
     cloud_native_meta_port = 6090
-    # create the default storage volume manually after the cluster is created
-    enable_load_volume_from_conf = false
+    # Whether volume can be created from conf. If it is enabled, a builtin storage volume may be created.
+    enable_load_volume_from_conf = ture
