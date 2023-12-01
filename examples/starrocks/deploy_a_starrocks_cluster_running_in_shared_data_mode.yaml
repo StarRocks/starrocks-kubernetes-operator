@@ -1,5 +1,5 @@
 # This manifest deploys a StarRocks cluster running in shared data mode.
-# see https://docs.starrocks.io/en-us/latest/deployment/deploy_shared_data for more information about shared-data mode.
+# see https://docs.starrocks.io/docs/cover_pages/shared_data_deployment/ for more information about shared-data mode.
 #
 # You will have to download and edit this YAML file to specify the details for your shared storage. See the 
 # examples in the docs, and add your customizations to the ConfigMap `starrockscluster-sample-fe-cm` at the 
