@@ -1,5 +1,5 @@
 # This manifest deploys a StarRocks cluster running in shared data mode.
-# see https://docs.starrocks.io/en-us/latest/deployment/deploy_shared_data for more information about share data mode.
+# see https://docs.starrocks.io/en-us/latest/deployment/deploy_shared_data for more information about shared-data mode.
 #
 # You will have to download and edit this YAML file to specify the details for your shared storage. See the 
 # examples in the docs, and add your customizations to the ConfigMap `starrockscluster-sample-fe-cm` at the 
@@ -55,7 +55,7 @@ data:
     edit_log_port = 9010
     mysql_service_nio_enabled = true
     sys_log_level = INFO
-    # config for share data mode
+    # config for shared-data mode
     run_mode = shared_data
     cloud_native_meta_port = 6090
     # Whether volume can be created from conf. If it is enabled, a builtin storage volume may be created.
