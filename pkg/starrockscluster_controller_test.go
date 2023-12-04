@@ -41,7 +41,7 @@ import (
 func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterReconciler {
 	srcController := &StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
-	srcController.Client = k8sutils.NewFakeClient(Scheme, objects...)
+	srcController.Client = k8sutils.NewFakeClient(srapi.Scheme, objects...)
 	fc := fe.New(srcController.Client)
 	cc := cn.New(srcController.Client)
 	srcController.Scs = make(map[string]sub_controller.ClusterSubController)

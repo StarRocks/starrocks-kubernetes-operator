@@ -19,8 +19,12 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 )
 
+func init() {
+	v1.Register()
+}
+
 func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWarehouseReconciler {
-	client := k8sutils.NewFakeClient(Scheme, objects...)
+	client := k8sutils.NewFakeClient(v1.Scheme, objects...)
 	warehouseController := &StarRocksWarehouseReconciler{
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
