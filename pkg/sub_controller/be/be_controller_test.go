@@ -19,11 +19,6 @@ import (
 	"testing"
 	"time"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -35,6 +30,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
 
 var (

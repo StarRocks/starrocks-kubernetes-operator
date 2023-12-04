@@ -23,19 +23,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"k8s.io/klog/v2"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg"
-	//+kubebuilder:scaffold:imports
 )
 
 var (
@@ -61,9 +58,7 @@ func Print(out io.Writer) {
 	}
 }
 
-func init() {
-	// the implied flag: kubeconfig.
-	// KUBECONFIG env will be used if you have config.
+func main() {
 	flag.StringVar(&_metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&_probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&_enableLeaderElection, "leader-elect", false,
@@ -77,9 +72,10 @@ func init() {
 	klog.InitFlags(nil)
 	// to use klog.V for debugging, we have to set the flag.
 	_ = flag.Set("v", "2")
-}
 
-func main() {
+	// Register CRD to SchemeBuilder
+	srapi.Register()
+
 	opts := zap.Options{
 		Development: true,
 	}
@@ -94,7 +90,7 @@ func main() {
 
 	duration := 2 * time.Minute
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 pkg.Scheme,
+		Scheme:                 srapi.Scheme,
 		MetricsBindAddress:     _metricsAddr,
 		Port:                   9443,
 		SyncPeriod:             &duration,

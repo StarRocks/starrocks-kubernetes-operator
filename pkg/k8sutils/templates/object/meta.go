@@ -1,8 +1,9 @@
 package object
 
 import (
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
 const (

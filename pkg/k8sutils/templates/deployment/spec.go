@@ -15,11 +15,12 @@
 package deployment
 
 import (
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 )
 
 // MakeDeployment make deployment

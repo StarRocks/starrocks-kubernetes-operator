@@ -5,10 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,10 +12,19 @@ import (
 	"k8s.io/client-go/tools/record"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 )
 
+func init() {
+	v1.Register()
+}
+
 func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWarehouseReconciler {
-	client := k8sutils.NewFakeClient(Scheme, objects...)
+	client := k8sutils.NewFakeClient(v1.Scheme, objects...)
 	warehouseController := &StarRocksWarehouseReconciler{
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
