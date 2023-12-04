@@ -93,14 +93,14 @@ linters:
     - goimports
     - gomnd
     - goprintffuncname
-    #- gosec
+    - gosec
     - gosimple
     - govet
     - ineffassign
     - lll
     - misspell
     - nakedret
-    #- noctx
+    - noctx
     - nolintlint
     - revive
     - staticcheck

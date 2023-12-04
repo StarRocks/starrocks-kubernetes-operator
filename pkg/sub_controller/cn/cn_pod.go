@@ -17,6 +17,7 @@ limitations under the License.
 package cn
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -138,7 +139,15 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 //	}
 func (cc *CnController) addWarehouseEnv(feExternalServiceName string, feHTTPPort string) bool {
 	klog.Infof("call FE to get features information")
-	resp, err := http.Get(fmt.Sprintf("http://%s:%s/api/v2/feature", feExternalServiceName, feHTTPPort))
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET",
+		fmt.Sprintf("http://%s:%s/api/v2/feature", feExternalServiceName, feHTTPPort), nil)
+	if err != nil {
+		klog.Errorf("failed to create request: %v", err)
+		return false
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		klog.Errorf("failed to get features information from FE, err: %v", err)
 		return false
