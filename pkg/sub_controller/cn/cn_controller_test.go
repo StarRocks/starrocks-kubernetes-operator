@@ -148,7 +148,7 @@ func Test_Sync(t *testing.T) {
 	cc := New(k8sutils.NewFakeClient(sch, src, &ep))
 	err := cc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
-	err = cc.UpdateClusterStatus(src)
+	err = cc.UpdateClusterStatus(context.Background(), src)
 	require.Equal(t, nil, err)
 	ccStatus := src.Status.StarRocksCnStatus
 	require.Equal(t, srapi.ComponentReconciling, ccStatus.Phase)
@@ -232,7 +232,7 @@ func TestCnController_UpdateStatus(t *testing.T) {
 			cc := &CnController{
 				k8sClient: tt.fields.k8sClient,
 			}
-			if err := cc.UpdateStatus(tt.args.object, tt.args.cnSpec, tt.args.cnStatus); (err != nil) != tt.wantErr {
+			if err := cc.UpdateStatus(context.Background(), tt.args.object, tt.args.cnSpec, tt.args.cnStatus); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateStatus() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			spew.Dump(tt.args.cnStatus)

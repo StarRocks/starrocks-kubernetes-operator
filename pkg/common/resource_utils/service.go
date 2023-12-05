@@ -18,10 +18,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/klog/v2"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
@@ -224,7 +222,6 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 	var nhsvcValue, ohsvcValue string
 
 	nhsvc := serviceHashObject(nsvc)
-	klog.V(constant.LOG_LEVEL).Infof("new service hash object: %+v", nhsvc)
 	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
 		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -233,7 +230,6 @@ func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
 
 	// calculate the old hash value from the old service, not from annotation.
 	ohsvc := serviceHashObject(oldsvc)
-	klog.V(constant.LOG_LEVEL).Infof("old service hash object: %+v", ohsvc)
 	ohsvcValue = hash.HashObject(ohsvc)
 
 	return nhsvcValue == ohsvcValue &&

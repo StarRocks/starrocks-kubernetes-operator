@@ -20,15 +20,16 @@ import (
 	"context"
 	"strings"
 
+	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
@@ -59,40 +60,37 @@ func (controller *FeProxyController) GetControllerName() string {
 
 func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
+	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
+	ctx = logr.NewContext(ctx, logger)
+
 	if feProxySpec == nil {
-		klog.Infof("FeProxyController Sync: the fe proxy component is not needed, namespace = %v, "+
-			"starrocks cluster name = %v", src.Namespace, src.Name)
+		logger.Info("src.Spec.StarRocksFeProxySpec == nil, clear fe proxy resource")
 		if err := controller.ClearResources(ctx, src); err != nil {
-			klog.Errorf("FeProxyController Sync: clear fe proxy resource failed, "+
-				"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
+			logger.Error(err, "clear fe proxy resource failed", "StarRocksCluster", src)
 			return err
 		}
 		return nil
 	}
 
 	if !fe.CheckFEReady(ctx, controller.k8sClient, src.Namespace, src.Name) {
+		logger.Info("FE is not ready, stop sync fe proxy")
 		return nil
 	}
 
-	// sync fe proxy configmap
 	err := controller.SyncConfigMap(ctx, src)
 	if err != nil {
-		klog.Errorf("FeProxyController Sync: sync fe proxy configmap failed, "+
-			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
+		logger.Error(err, "sync fe proxy configmap failed", "StarRocksCluster", src)
 		return err
 	}
 
-	// sync fe proxy deployment
 	podTemplate := controller.buildPodTemplate(src)
 	expectDeployment := deployment.MakeDeployment(src, feProxySpec, podTemplate)
 	err = k8sutils.ApplyDeployment(ctx, controller.k8sClient, expectDeployment)
 	if err != nil {
-		klog.Errorf("FeProxyController Sync: apply fe proxy deployment failed, "+
-			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
+		logger.Error(err, "sync fe proxy deployment failed", "StarRocksCluster", src)
 		return err
 	}
 
-	// sync fe proxy service
 	object := object.NewFromCluster(src)
 	externalsvc := rutils.BuildExternalService(object, feProxySpec, nil,
 		load.Selector(src.Name, feProxySpec), load.Labels(src.Name, feProxySpec))
@@ -104,7 +102,11 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 }
 
 // UpdateClusterStatus update the all resource status about fe.
-func (controller *FeProxyController) UpdateClusterStatus(src *srapi.StarRocksCluster) error {
+func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).
+		WithValues(log.ActionKey, log.ActionUpdateClusterStatus)
+	ctx = logr.NewContext(ctx, logger)
+
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	if feProxySpec == nil {
 		src.Status.StarRocksFeProxyStatus = nil
@@ -121,26 +123,25 @@ func (controller *FeProxyController) UpdateClusterStatus(src *srapi.StarRocksClu
 	}
 	src.Status.StarRocksFeProxyStatus = status
 
+	// TODO(yandongxiao): delete it
 	var actual appsv1.Deployment
 	deploymentName := load.Name(src.Name, feProxySpec)
-	err := controller.k8sClient.Get(context.Background(), types.NamespacedName{
+	err := controller.k8sClient.Get(ctx, types.NamespacedName{
 		Namespace: src.Namespace,
 		Name:      deploymentName,
 	}, &actual)
 	if err != nil {
+		logger.Error(err, "get fe proxy deployment failed", "StarRocksCluster", src)
 		if apierrors.IsNotFound(err) {
-			klog.Infof("FeProxyController UpdateClusterStatus: fe proxy deployment is not found, "+
-				"namespace = %v, starrocks cluster name = %v", src.Namespace, src.Name)
 			return nil
 		}
-		klog.Errorf("FeProxyController UpdateClusterStatus: get fe proxy deployment failed, "+
-			"namespace = %v, starrocks cluster name = %v, err = %v", src.Namespace, src.Name, err)
 		return err
 	}
 
 	status.ServiceName = service.ExternalServiceName(src.Name, feProxySpec)
 	if err := sub_controller.UpdateStatus(&status.StarRocksComponentStatus, controller.k8sClient,
 		src.Namespace, load.Name(src.Name, feProxySpec), pod.Labels(src.Name, feProxySpec), sub_controller.DeploymentLoadType); err != nil {
+		logger.Error(err, "update fe proxy status failed", "StarRocksCluster", src)
 		return err
 	}
 
@@ -149,6 +150,10 @@ func (controller *FeProxyController) UpdateClusterStatus(src *srapi.StarRocksClu
 
 // ClearResources clear resource about fe.
 func (controller *FeProxyController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
+	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).
+		WithValues(log.ActionKey, log.ActionClearResources)
+	ctx = logr.NewContext(ctx, logger)
+
 	if src.Spec.StarRocksFeProxySpec != nil {
 		return nil
 	}
@@ -156,22 +161,19 @@ func (controller *FeProxyController) ClearResources(ctx context.Context, src *sr
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	loadName := load.Name(src.Name, feProxySpec)
 	if err := k8sutils.DeleteDeployment(ctx, controller.k8sClient, src.Namespace, loadName); err != nil {
-		klog.Errorf("feProxyController ClearResources delete deployment failed, namespace=%s,name=%s, error=%s.",
-			src.Namespace, loadName, err.Error())
+		logger.Error(err, "delete fe proxy deployment failed", "StarRocksCluster", src)
 		return err
 	}
 
 	externalServiceName := service.ExternalServiceName(src.Name, feProxySpec)
 	if err := k8sutils.DeleteService(ctx, controller.k8sClient, src.Namespace, externalServiceName); err != nil {
-		klog.Errorf("feProxyController ClearResources delete external service, namespace=%s, name=%s, error=%s.",
-			src.Namespace, externalServiceName, err.Error())
+		logger.Error(err, "delete fe proxy service failed", "StarRocksCluster", src)
 		return err
 	}
 
 	configMapName := load.Name(src.Name, feProxySpec)
 	if err := k8sutils.DeleteConfigMap(ctx, controller.k8sClient, src.Namespace, configMapName); err != nil {
-		klog.Errorf("feProxyController ClearResources delete ConfigMap, namespace=%s, name=%s, error=%s.",
-			src.Namespace, externalServiceName, err.Error())
+		logger.Error(err, "delete fe proxy configmap failed", "StarRocksCluster", src)
 		return err
 	}
 

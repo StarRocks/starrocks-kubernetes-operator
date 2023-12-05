@@ -18,10 +18,8 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 )
 
@@ -70,7 +68,6 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 	var newHashv, oldHashv string
 
 	newHso := statefulSetHashObject(new, excludeReplicas)
-	klog.V(constant.LOG_LEVEL).Infof("new statefulset hash object: %+v", newHso)
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -84,7 +81,6 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 		oldHashv = old.Annotations[srapi.ComponentResourceHash]
 	} else {
 		oldHso := statefulSetHashObject(old, excludeReplicas)
-		klog.V(constant.LOG_LEVEL).Infof("old statefulset hash object: %+v", oldHso)
 		oldHashv = hash.HashObject(oldHso)
 	}
 
@@ -93,7 +89,6 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 	anno.Add(srapi.ComponentResourceHash, newHashv)
 	new.Annotations = anno
 
-	klog.Info("the statefulset name "+new.Name+" new hash value ", newHashv, " old have value ", oldHashv)
 	// avoid the update from kubectl.
 	return newHashv == oldHashv &&
 		new.Namespace == old.Namespace /* &&

@@ -25,9 +25,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -44,7 +44,7 @@ const (
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
-func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
+func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
 	// add default volume about log
@@ -70,7 +70,7 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		if cc.addWarehouseEnv(feExternalServiceName,
+		if cc.addWarehouseEnv(ctx, feExternalServiceName,
 			strconv.FormatInt(int64(rutils.GetPort(config, rutils.HTTP_PORT)), 10)) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
@@ -137,31 +137,32 @@ func (cc *CnController) buildPodTemplate(object srobject.StarRocksObject,
 //	 "version": "feature/add-api-feature-interface",
 //	 "status": "OK"
 //	}
-func (cc *CnController) addWarehouseEnv(feExternalServiceName string, feHTTPPort string) bool {
-	klog.Infof("call FE to get features information")
+func (cc *CnController) addWarehouseEnv(ctx context.Context, feExternalServiceName string, feHTTPPort string) bool {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("call FE to get features information")
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET",
+	req, err := http.NewRequestWithContext(ctx, "GET",
 		fmt.Sprintf("http://%s:%s/api/v2/feature", feExternalServiceName, feHTTPPort), nil)
 	if err != nil {
-		klog.Errorf("failed to create request: %v", err)
+		logger.Error(err, "failed to create request")
 		return false
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		klog.Errorf("failed to get features information from FE, err: %v", err)
+		logger.Error(err, "failed to get features information from FE")
 		return false
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		klog.Infof("FE return status code: %d", resp.StatusCode)
+		logger.Info("FE return status code is not 200", "statusCode", resp.StatusCode)
 		return false
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		klog.Errorf("failed to read response body, err: %v", err)
+		logger.Error(err, "failed to read response body")
 		return false
 	}
 
@@ -176,16 +177,16 @@ func (cc *CnController) addWarehouseEnv(feExternalServiceName string, feHTTPPort
 	}{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		klog.Errorf("failed to unmarshal response body, err: %v", err)
+		logger.Error(err, "failed to unmarshal response body")
 		return false
 	}
 
 	for _, feature := range result.Features {
 		if feature.Name == "multi-warehouse" {
-			klog.Infof("FE support multi-warehouse")
+			logger.Info("FE support multi-warehouse")
 			return true
 		}
 	}
-	klog.Infof("FE does not support multi-warehouse")
+	logger.Info("FE does not support multi-warehouse")
 	return false
 }

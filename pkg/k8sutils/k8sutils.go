@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/constant"
+	"github.com/go-logr/logr"
 
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
@@ -34,7 +34,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -49,6 +48,9 @@ type StatefulSetEqual func(st1 *appv1.StatefulSet, st2 *appv1.StatefulSet) bool
 
 func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update k8s service", "name", svc.Name)
+
 	var esvc corev1.Service
 	err := k8sclient.Get(ctx, types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, &esvc)
 	if err != nil && apierrors.IsNotFound(err) {
@@ -58,8 +60,7 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 	}
 
 	if equal(svc, &esvc) {
-		klog.Info("Apply service Name, Ports, Selector, ServiceType, Labels have not change ", "namespace ",
-			svc.Namespace, " name ", svc.Name)
+		logger.Info("expectHash == actualHash, no need to update service resource")
 		return nil
 	}
 
@@ -68,6 +69,9 @@ func ApplyService(ctx context.Context, k8sclient client.Client, svc *corev1.Serv
 }
 
 func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1.Deployment) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update deployment", "name", deploy.Name)
+
 	var actual appv1.Deployment
 	err := k8sClient.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, &actual)
 	if err != nil {
@@ -89,6 +93,7 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1
 	}
 
 	if expectHash == actualHash {
+		logger.Info("expectHash == actualHash, no need to update deployment resource")
 		return nil
 	}
 
@@ -101,6 +106,9 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1
 }
 
 func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *corev1.ConfigMap) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update configmap", "name", configmap.Name)
+
 	var actual corev1.ConfigMap
 	err := k8sClient.Get(ctx, types.NamespacedName{Name: configmap.Name, Namespace: configmap.Namespace}, &actual)
 	if err != nil {
@@ -132,6 +140,9 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
 func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, st *appv1.StatefulSet, equal StatefulSetEqual) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update statefulset", "name", st.Name)
+
 	var est appv1.StatefulSet
 	err := k8sClient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est)
 	if err != nil && apierrors.IsNotFound(err) {
@@ -146,9 +157,8 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, st *appv1.St
 	}
 	st.Spec.ServiceName = est.Spec.ServiceName
 
-	// if have restart annotation we should exclude it impacts on hash.
 	if equal(st, &est) {
-		klog.Infof("ApplyStatefulSet Sync exist statefulset name=%s, namespace=%s, equals to new statefulset.", est.Name, est.Namespace)
+		logger.Info("expectHash == actualHash, no need to update statefulset resource")
 		return nil
 	}
 
@@ -157,8 +167,6 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, st *appv1.St
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
-	klog.Infof("Creating k8s resource namespace=%s, name=%s, kind=%s", object.GetNamespace(), object.GetName(),
-		object.GetObjectKind().GroupVersionKind().Kind)
 	if err := k8sClient.Create(ctx, object); err != nil {
 		return err
 	}
@@ -166,8 +174,6 @@ func CreateClientObject(ctx context.Context, k8sClient client.Client, object cli
 }
 
 func UpdateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
-	klog.Info("Updating resource service ", "namespace ", object.GetNamespace(), " name ", object.GetName(),
-		" kind ", object.GetObjectKind())
 	if err := k8sClient.Update(ctx, object); err != nil {
 		return err
 	}
@@ -176,8 +182,6 @@ func UpdateClientObject(ctx context.Context, k8sClient client.Client, object cli
 
 // PatchClientObject patch object when the object exist. if not return error.
 func PatchClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
-	klog.V(constant.LOG_LEVEL).Infof("patch resource namespace=%s,name=%s,kind=%s.",
-		object.GetNamespace(), object.GetName(), object.GetObjectKind())
 	if err := k8sClient.Patch(ctx, object, client.Merge); err != nil {
 		return err
 	}
@@ -187,6 +191,9 @@ func PatchClientObject(ctx context.Context, k8sClient client.Client, object clie
 
 // DeleteStatefulset delete statefulset.
 func DeleteStatefulset(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete statefulset from kubernetes", "name", name)
+
 	var st appv1.StatefulSet
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &st); apierrors.IsNotFound(err) {
 		return nil
@@ -199,6 +206,9 @@ func DeleteStatefulset(ctx context.Context, k8sClient client.Client, namespace, 
 
 // DeleteService delete service.
 func DeleteService(ctx context.Context, k8sclient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete service from kubernetes", "name", name)
+
 	var svc corev1.Service
 	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &svc); apierrors.IsNotFound(err) {
 		return nil
@@ -211,6 +221,9 @@ func DeleteService(ctx context.Context, k8sclient client.Client, namespace, name
 
 // DeleteDeployment delete deployment.
 func DeleteDeployment(ctx context.Context, k8sclient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete deployment from kubernetes", "name", name)
+
 	var deploy appv1.Deployment
 	if err := k8sclient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &deploy); apierrors.IsNotFound(err) {
 		return nil
@@ -223,6 +236,9 @@ func DeleteDeployment(ctx context.Context, k8sclient client.Client, namespace, n
 
 // DeleteConfigMap delete configmap.
 func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete configmap from kubernetes", "name", name)
+
 	var cm corev1.ConfigMap
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &cm); apierrors.IsNotFound(err) {
 		return nil
@@ -236,6 +252,9 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 // DeleteAutoscaler as version type delete response autoscaler.
 func DeleteAutoscaler(ctx context.Context, k8sClient client.Client,
 	namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete autoscaler from kubernetes", "name", name)
+
 	var autoscaler client.Object
 	switch autoscalerVersion {
 	case srapi.AutoScalerV1:
@@ -273,6 +292,9 @@ func PodIsReady(status *corev1.PodStatus) bool {
 
 // GetConfigMap get the configmap name=name, namespace=namespace.
 func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name string) (*corev1.ConfigMap, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("fetch configmap from kubernetes", "name", name)
+
 	var configMap corev1.ConfigMap
 	if err := k8scient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &configMap); err != nil {
 		return nil, err
@@ -321,7 +343,7 @@ func GetKubernetesVersion() error {
 
 // GetEnvVarValue returns the value of an environment variable. It handles both Value and ValueFrom cases.
 // It assumes that the environment variable exists and is valid.
-func GetEnvVarValue(k8sClient client.Client, namespace string, envVar corev1.EnvVar) (string, error) {
+func GetEnvVarValue(ctx context.Context, k8sClient client.Client, namespace string, envVar corev1.EnvVar) (string, error) {
 	if envVar.Value != "" {
 		// If Value is not empty, return it directly
 		return envVar.Value, nil
@@ -332,12 +354,12 @@ func GetEnvVarValue(k8sClient client.Client, namespace string, envVar corev1.Env
 			// If ConfigMapKeyRef is not nil, get the value from the configmap's key
 			name := valueFrom.ConfigMapKeyRef.Name
 			key := valueFrom.ConfigMapKeyRef.Key
-			return getValueFromConfigmap(k8sClient, namespace, name, key)
+			return getValueFromConfigmap(ctx, k8sClient, namespace, name, key)
 		} else if valueFrom.SecretKeyRef != nil {
 			// If SecretKeyRef is not nil, get the value from the secret's key
 			name := valueFrom.SecretKeyRef.Name
 			key := valueFrom.SecretKeyRef.Key
-			return getValueFromSecret(k8sClient, namespace, name, key)
+			return getValueFromSecret(ctx, k8sClient, namespace, name, key)
 		}
 	}
 	return "", fmt.Errorf("invalid environment variable: %v", envVar)
@@ -345,9 +367,12 @@ func GetEnvVarValue(k8sClient client.Client, namespace string, envVar corev1.Env
 
 // getValueFromConfigmap returns the runtime value of a key in a configmap.
 // It assumes that the configmap and the key exist and are valid.
-func getValueFromConfigmap(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+func getValueFromConfigmap(ctx context.Context, k8sClient client.Client, namespace string, name string, key string) (string, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("fetch configmap from kubernetes", "name", name, "configmap-key", key)
+
 	var configMap corev1.ConfigMap
-	err := k8sClient.Get(context.Background(),
+	err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Name:      name,
 			Namespace: namespace,
@@ -364,9 +389,12 @@ func getValueFromConfigmap(k8sClient client.Client, namespace string, name strin
 
 // getValueFromSecret returns the value of a key in a secret.
 // It assumes that the secret and the key exist and are valid.
-func getValueFromSecret(k8sClient client.Client, namespace string, name string, key string) (string, error) {
+func getValueFromSecret(ctx context.Context, k8sClient client.Client, namespace string, name string, key string) (string, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("fetch secret from kubernetes", "name", name, "secret-key", key)
+
 	var secret corev1.Secret
-	err := k8sClient.Get(context.Background(),
+	err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Name:      name,
 			Namespace: namespace,

@@ -139,7 +139,7 @@ func Test_getValueFromConfigmap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getValueFromConfigmap(tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
+			got, err := getValueFromConfigmap(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getValueFromConfigmap() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -186,7 +186,7 @@ func Test_getValueFromSecret(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getValueFromSecret(tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
+			got, err := getValueFromSecret(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getValueFromSecret() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -284,7 +284,7 @@ func TestGetEnvVarValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetEnvVarValue(tt.args.k8sClient, tt.args.namespace, tt.args.envVar)
+			got, err := GetEnvVarValue(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.envVar)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEnvVarValue() error = %v, wantErr %v", err, tt.wantErr)
 				return

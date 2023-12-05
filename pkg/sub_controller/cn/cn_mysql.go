@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/go-logr/logr"
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
 	appv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -27,13 +27,14 @@ type SQLExecutor struct {
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
 // from the environment variables of the component CN.
-func NewSQLExecutor(k8sClient client.Client, namespace, aliasName string) (*SQLExecutor, error) {
+func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, aliasName string) (*SQLExecutor, error) {
 	rootPassword := ""
 	feServiceName := ""
 	feServicePort := ""
+	logger := logr.FromContextOrDiscard(ctx)
 
 	var est appv1.StatefulSet
-	if err := k8sClient.Get(context.Background(),
+	if err := k8sClient.Get(ctx,
 		types.NamespacedName{Namespace: namespace, Name: load.Name(aliasName, (*srapi.StarRocksCnSpec)(nil))},
 		&est); err != nil {
 		return nil, err
@@ -42,21 +43,20 @@ func NewSQLExecutor(k8sClient client.Client, namespace, aliasName string) (*SQLE
 	var err error
 	for _, envVar := range est.Spec.Template.Spec.Containers[0].Env {
 		if envVar.Name == "MYSQL_PWD" {
-			rootPassword, err = k8sutils.GetEnvVarValue(k8sClient, namespace, envVar)
+			rootPassword, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
-				klog.Infof("failed to get MYSQL_PWD from env vars, err: %v", err)
-				klog.Infof("use the default password: empty string")
+				logger.Error(err, "failed to get MYSQL_PWD from env vars, use the default password: empty string")
 			}
 		} else if envVar.Name == "FE_SERVICE_NAME" {
-			feServiceName, err = k8sutils.GetEnvVarValue(k8sClient, namespace, envVar)
+			feServiceName, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
-				klog.Errorf("failed to get FE_SERVICE_NAME from env vars, err: %v", err)
+				logger.Error(err, "failed to get FE_SERVICE_NAME from env vars")
 				return nil, err
 			}
 		} else if envVar.Name == "FE_QUERY_PORT" {
-			feServicePort, err = k8sutils.GetEnvVarValue(k8sClient, namespace, envVar)
+			feServicePort, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
-				klog.Errorf("failed to get FE_QUERY_PORT from env vars, err: %v", err)
+				logger.Error(err, "failed to get FE_QUERY_PORT from env vars")
 				return nil, err
 			}
 		}
