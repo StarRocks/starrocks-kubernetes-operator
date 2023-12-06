@@ -182,6 +182,8 @@ spec:
         - /sroperator
         args:
         - --leader-elect
+        - --zap-time-encoding iso8601
+        - --zap-encoder console
         env:
         - name: TZ
           value: Asia/Shanghai

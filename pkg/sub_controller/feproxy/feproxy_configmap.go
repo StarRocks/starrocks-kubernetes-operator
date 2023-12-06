@@ -6,7 +6,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -22,9 +21,6 @@ func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *sra
 	feSpec := src.Spec.StarRocksFeSpec
 	config, err := fe.GetFeConfig(ctx, controller.k8sClient, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
-		klog.Errorf("FeProxyController Sync: get fe configmap failed, "+
-			"namespace = %v, configmapName = %v, configmapKey = %v, error = %v",
-			src.Namespace, feSpec.ConfigMapInfo.ConfigMapName, feSpec.ConfigMapInfo.ResolveKey, err)
 		return err
 	}
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)

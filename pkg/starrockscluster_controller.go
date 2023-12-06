@@ -19,14 +19,15 @@ package pkg
 import (
 	"context"
 
+	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -34,19 +35,15 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
 )
 
-var (
-	name                  = "starrockscluster-controller"
-	feControllerName      = "fe-controller"
-	cnControllerName      = "cn-controller"
-	beControllerName      = "be-controller"
-	feProxyControllerName = "fe-proxy-controller"
+const (
+	_controllerName = "starrockscluster-controller"
 )
 
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
-	Scs      map[string]sub_controller.ClusterSubController
+	Scs      []sub_controller.ClusterSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -68,56 +65,65 @@ type StarRocksClusterReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	klog.Info("StarRocksClusterReconciler reconcile the update crd name ", req.Name, " namespace ", req.Namespace)
+	logger := log.Log.WithName("StarRocksClusterReconciler").WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = logr.NewContext(ctx, logger)
+	logger.Info("begin to reconcile StarRocksCluster")
+
+	logger.Info("get StarRocksCluster CR from kubernetes")
 	var esrc srapi.StarRocksCluster
 	err := r.Client.Get(ctx, req.NamespacedName, &esrc)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
-		klog.Errorf("the req kind does not exist, namespacedName = %v, name=%v, error = %v",
-			req.NamespacedName, req.Name, err)
+		logger.Error(err, "get StarRocksCluster object failed")
 		return requeueIfError(err)
 	}
-
 	src := esrc.DeepCopy()
 
 	// record the src updated or not by process.
 	oldHashValue := r.hashStarRocksCluster(src)
 	// reconcile src deleted
 	if !src.DeletionTimestamp.IsZero() {
-		klog.Info("StarRocksClusterReconciler reconcile the src delete namespace=" + req.Namespace + " name= " + req.Name)
+		logger.Info("deletion timestamp is not zero, clear StarRocksCluster related resources")
 		src.Status.Phase = srapi.ClusterDeleting
-		// if the src deleted, clean all resource ownerreference to src.
-		klog.Infof("StarRocksClusterReconciler reconcile namespace=%s, name=%s, deleted.\n", src.Namespace, src.Name)
 		return ctrl.Result{}, nil
 	}
 
 	// subControllers reconcile for create or update component.
 	for _, rc := range r.Scs {
-		if err := rc.SyncCluster(ctx, src); err != nil {
-			klog.Errorf("StarRocksClusterReconciler reconcile component failed, "+
-				"namespace=%v, name=%v, controller=%v, error=%v", src.Namespace, src.Name, rc.GetControllerName(), err)
+		kvs := []interface{}{"subController", rc.GetControllerName()}
+		logger.Info("sub controller sync spec", kvs...)
+		if err = rc.SyncCluster(ctx, src); err != nil {
+			logger.Error(err, "sub controller reconciles spec failed", kvs...)
 			return requeueIfError(err)
 		}
 	}
 
 	newHashValue := r.hashStarRocksCluster(src)
 	if oldHashValue != newHashValue {
+		logger.Info("the hash value of StarRocksCluster CR changed, send patch request to kubernetes")
 		return ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src)
 	}
 
 	for _, rc := range r.Scs {
-		// update component status.
-		if err := rc.UpdateClusterStatus(src); err != nil {
-			klog.Infof("StarRocksClusterReconciler reconcile update component %s status failed.err=%s\n", rc.GetControllerName(), err.Error())
+		kvs := []interface{}{"subController", rc.GetControllerName()}
+		logger.Info("sub controller update status", kvs...)
+		if err = rc.UpdateClusterStatus(ctx, src); err != nil {
+			logger.Error(err, "sub controller update status failed", kvs...)
 			return requeueIfError(err)
 		}
 	}
 
-	// generate the src status.
+	logger.Info("update StarRocksCluster level status")
 	r.reconcileStatus(ctx, src)
-	return ctrl.Result{}, r.UpdateStarRocksClusterStatus(ctx, src)
+	err = r.UpdateStarRocksClusterStatus(ctx, src)
+	if err != nil {
+		logger.Error(err, "update StarRocksCluster status failed")
+		return ctrl.Result{}, err
+	}
+	logger.Info("reconcile StarRocksCluster success")
+	return ctrl.Result{}, nil
 }
 
 // UpdateStarRocksClusterStatus update the status of src.
@@ -135,8 +141,6 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 
 // PatchStarRocksCluster patch spec, metadata
 func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
-	klog.Info("StarRocksClusterReconciler reconcile ", "namespace ", src.Namespace, " name ", src.Name)
-
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
 		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
@@ -178,16 +182,7 @@ func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCl
 	return hash.HashObject(ho)
 }
 
-func (r *StarRocksClusterReconciler) reconcileStatus(ctx context.Context, src *srapi.StarRocksCluster) {
-	// calculate the status of starrocks cluster by subresource's status.
-	// clear resources when component deleted. example: deployed fe,be,cn, when cn spec is deleted we should delete cn resources.
-	for _, rc := range r.Scs {
-		if err := rc.ClearResources(ctx, src); err != nil {
-			klog.Errorf("StarRocksClusterReconciler reconcile clear resource failed, "+
-				"namespace=%v, name=%v, controller=%v, error=%v", src.Namespace, src.Name, rc.GetControllerName(), err)
-		}
-	}
-
+func (r *StarRocksClusterReconciler) reconcileStatus(_ context.Context, src *srapi.StarRocksCluster) {
 	src.Status.Phase = srapi.ClusterRunning
 	phase := GetPhaseFromComponent(&src.Status.StarRocksFeStatus.StarRocksComponentStatus)
 	if phase != "" {

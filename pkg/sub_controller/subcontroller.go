@@ -43,7 +43,7 @@ type ClusterSubController interface {
 	GetControllerName() string
 
 	// UpdateClusterStatus update the component status on src.
-	UpdateClusterStatus(src *srapi.StarRocksCluster) error
+	UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error
 }
 
 type WarehouseSubController interface {
@@ -54,7 +54,7 @@ type WarehouseSubController interface {
 
 	GetControllerName() string
 
-	UpdateWarehouseStatus(warehouse *srapi.StarRocksWarehouse) error
+	UpdateWarehouseStatus(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error
 }
 
 type LoadType string

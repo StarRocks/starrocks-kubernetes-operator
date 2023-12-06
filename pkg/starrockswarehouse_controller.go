@@ -20,11 +20,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -57,25 +57,29 @@ type StarRocksWarehouseReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
+// https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	klog.Infof("StarRocksWarehouseReconciler reconcile the StarRocksWarehouse CR, namespace=%v, name=%v", req.Namespace, req.Name)
+	logger := logr.FromContextOrDiscard(ctx).WithName("StarRocksWarehouseReconciler").
+		WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = logr.NewContext(ctx, logger)
+	logger.Info("begin to reconcile StarRocksWarehouse")
 
-	klog.Infof("get StarRocksWarehouse CR, namespace=%v, name=%v", req.Namespace, req.Name)
+	logger.Info("get StarRocksWarehouse CR from kubernetes")
 	warehouse := &srapi.StarRocksWarehouse{}
 	err := r.Client.Get(ctx, req.NamespacedName, warehouse)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			klog.Infof("StarRocksWarehouse CR is not found, begin to clear warehouse, namespace=%v, name=%v",
-				req.Namespace, req.Name)
+			logger.Info("StarRocksWarehouse CR is not found, maybe deleted, begin to clear warehouse")
 			for _, controller := range r.subControllers {
+				kvs := []interface{}{"subController", controller.GetControllerName()}
+				logger.Info("sub controller begin to clear warehouse", kvs...)
 				if err = controller.ClearWarehouse(ctx, req.Namespace, req.Name); err != nil {
-					klog.Errorf("failed to clear warehouse %s/%s, error=%v", req.Namespace, req.Name, err)
+					logger.Error(err, "failed to clear warehouse", kvs...)
 				}
 			}
 			return ctrl.Result{}, nil
 		}
-		klog.Errorf("failed to get StarRocksWarehouse CR, namespace=%v, name=%v, error=%v", req.Namespace, req.Name, err)
+		logger.Error(err, "get StarRocksWarehouse CR failed")
 		return ctrl.Result{}, err
 	}
 
@@ -88,51 +92,39 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	for _, controller := range r.subControllers {
-		klog.Infof("StarRocksWarehouseReconciler reconcile component, namespace=%v, name=%v, controller=%v",
-			warehouse.Namespace, warehouse.Name, controller.GetControllerName())
-		if err := controller.SyncWarehouse(ctx, warehouse); err != nil {
-			warehouse.Status.Phase = srapi.ComponentFailed
-			switch {
-			case errors.Is(err, cn.SpecMissingError):
-				klog.Infof("the spec part is invalid %s/%s", warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = cn.SpecMissingError.Error()
-				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
-			case errors.Is(err, cn.StarRocksClusterMissingError):
-				klog.Infof("StarRocksCluster %s/%s not found for %s/%s",
-					warehouse.Namespace, warehouse.Spec.StarRocksCluster, warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = cn.StarRocksClusterMissingError.Error()
-				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
-			case errors.Is(err, cn.FeNotReadyError):
-				klog.Infof("StarRocksFe is not ready, %s/%s", warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = cn.FeNotReadyError.Error()
-				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
-			case errors.Is(err, cn.GetFeFeatureInfoError):
-				klog.Info("Failed to get FE feature or FE does not support multi-warehouse %s/%s", warehouse.Namespace, warehouse.Name)
-				warehouse.Status.Reason = cn.GetFeFeatureInfoError.Error()
-				return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
-			default:
-				klog.Info("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
-					warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
-				warehouse.Status.Reason = err.Error()
-				if updateError := r.UpdateStarRocksWarehouseStatus(ctx, warehouse); updateError != nil {
-					return ctrl.Result{}, updateError
-				}
+		kvs := []interface{}{"subController", controller.GetControllerName()}
+		logger.Info("sub controller sync spec", kvs...)
+		if err = controller.SyncWarehouse(ctx, warehouse); err != nil {
+			handled := handleSyncWarehouseError(ctx, err, warehouse)
+			if updateError := r.UpdateStarRocksWarehouseStatus(ctx, warehouse); updateError != nil {
+				return ctrl.Result{}, updateError
+			}
+			if handled {
+				return ctrl.Result{}, nil
+			} else {
 				return ctrl.Result{}, err
 			}
 		}
 	}
 
 	for _, controller := range r.subControllers {
-		klog.Infof("StarRocksWarehouseReconciler update component status, namespace=%v, name=%v, controller=%v",
-			warehouse.Namespace, warehouse.Name, controller.GetControllerName())
-		if err := controller.UpdateWarehouseStatus(warehouse); err != nil {
-			klog.Infof("failed to reconcile component, namespace=%v, name=%v, controller=%v, error=%v",
-				warehouse.Namespace, warehouse.Name, controller.GetControllerName(), err)
+		kvs := []interface{}{"subController", controller.GetControllerName()}
+		logger.Info("sub controller update warehouse status", kvs...)
+		if err = controller.UpdateWarehouseStatus(ctx, warehouse); err != nil {
+			logger.Error(err, "update warehouse status failed", kvs...)
 			return requeueIfError(err)
 		}
 	}
 
-	return ctrl.Result{}, r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+	logger.Info("update StarRocksWarehouse status")
+	err = r.UpdateStarRocksWarehouseStatus(ctx, warehouse)
+	if err != nil {
+		logger.Error(err, "update StarRocksWarehouse status failed")
+		return ctrl.Result{}, err
+	}
+
+	logger.Info("reconcile StarRocksWarehouse success")
+	return ctrl.Result{}, nil
 }
 
 // UpdateStarRocksWarehouseStatus update the status of warehouse.
@@ -145,4 +137,18 @@ func (r *StarRocksWarehouseReconciler) UpdateStarRocksWarehouseStatus(ctx contex
 		actualWarehouse.Status = warehouse.Status
 		return r.Client.Status().Update(ctx, actualWarehouse)
 	})
+}
+
+// handleSyncWarehouseError handles the error returned from SyncWarehouse, and update warehouse status.
+// If handled return true, else return false
+func handleSyncWarehouseError(ctx context.Context, err error, warehouse *srapi.StarRocksWarehouse) bool {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Error(err, "sub controller reconciles spec failed")
+	warehouse.Status.Phase = srapi.ComponentFailed
+	warehouse.Status.Reason = err.Error()
+	if errors.Is(err, cn.SpecMissingError) || errors.Is(err, cn.StarRocksClusterMissingError) ||
+		errors.Is(err, cn.FeNotReadyError) || errors.Is(err, cn.GetFeFeatureInfoError) {
+		return true
+	}
+	return false
 }

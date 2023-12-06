@@ -166,7 +166,7 @@ func Test_Sync(t *testing.T) {
 	bc := New(k8sutils.NewFakeClient(sch, src, &ep))
 	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
-	err = bc.UpdateClusterStatus(src)
+	err = bc.UpdateClusterStatus(context.Background(), src)
 	require.Equal(t, nil, err)
 	beStatus := src.Status.StarRocksBeStatus
 	require.Equal(t, beStatus.Phase, srapi.ComponentReconciling)

@@ -32,6 +32,7 @@ spec:
         - /sroperator
         args:
         - --leader-elect
+        {{- toYaml .Values.starrocksOperator.log | nindent 8 }}
         {{- if .Values.starrocksOperator.watchNamespace }}
         - --namespace={{ .Values.starrocksOperator.watchNamespace }}
         {{- end }}

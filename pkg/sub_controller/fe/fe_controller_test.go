@@ -162,7 +162,7 @@ func Test_SyncDeploy(t *testing.T) {
 
 	err := fc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
-	err = fc.UpdateClusterStatus(src)
+	err = fc.UpdateClusterStatus(context.Background(), src)
 	require.Equal(t, nil, err)
 	festatus := src.Status.StarRocksFeStatus
 	require.Equal(t, nil, err)

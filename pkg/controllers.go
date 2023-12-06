@@ -7,7 +7,6 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -19,24 +18,20 @@ import (
 )
 
 func SetupClusterReconciler(mgr ctrl.Manager) error {
-	subcs := make(map[string]sub_controller.ClusterSubController)
-	feController := fe.New(mgr.GetClient())
-	subcs[feControllerName] = feController
-	cnController := cn.New(mgr.GetClient())
-	subcs[cnControllerName] = cnController
-	beController := be.New(mgr.GetClient())
-	subcs[beControllerName] = beController
-	feProxyController := feproxy.New(mgr.GetClient())
-	subcs[feProxyControllerName] = feProxyController
+	subcs := []sub_controller.ClusterSubController{
+		fe.New(mgr.GetClient()),
+		be.New(mgr.GetClient()),
+		cn.New(mgr.GetClient()),
+		feproxy.New(mgr.GetClient()),
+	}
 
 	reconciler := &StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor(name),
+		Recorder: mgr.GetEventRecorderFor(_controllerName),
 		Scs:      subcs,
 	}
 
 	if err := reconciler.SetupWithManager(mgr); err != nil {
-		klog.Error(err, " unable to create controller ", "controller ", "StarRocksCluster ")
 		return err
 	}
 	return nil
@@ -55,11 +50,11 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func SetupWarehouseReconciler(mgr ctrl.Manager) error {
+func SetupWarehouseReconciler(ctx context.Context, mgr ctrl.Manager) error {
 	// check StarRocksWarehouse CRD exists or not
-	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}); err != nil {
+	if err := mgr.GetAPIReader().List(ctx, &srapi.StarRocksWarehouseList{}); err != nil {
 		if meta.IsNoMatchError(err) {
-			klog.Infof("StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler")
+			// StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler
 			return nil
 		}
 		return err
@@ -67,11 +62,10 @@ func SetupWarehouseReconciler(mgr ctrl.Manager) error {
 
 	reconciler := &StarRocksWarehouseReconciler{
 		Client:         mgr.GetClient(),
-		recorder:       mgr.GetEventRecorderFor(name),
+		recorder:       mgr.GetEventRecorderFor(_controllerName),
 		subControllers: []sub_controller.WarehouseSubController{cn.New(mgr.GetClient())},
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
-		klog.Error(err, "failed to setup StarRocksWarehouseReconciler")
 		return err
 	}
 	return nil
