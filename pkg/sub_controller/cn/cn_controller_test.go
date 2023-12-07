@@ -33,7 +33,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
@@ -96,7 +96,7 @@ func Test_ClearResources(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	cc := New(k8sutils.NewFakeClient(sch, &src, &st, &svc, &ssvc))
+	cc := New(fake.NewFakeClient(sch, &src, &st, &svc, &ssvc))
 	err := cc.ClearResources(context.Background(), &src)
 	require.Equal(t, nil, err)
 
@@ -145,7 +145,7 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	cc := New(k8sutils.NewFakeClient(sch, src, &ep))
+	cc := New(fake.NewFakeClient(sch, src, &ep))
 	err := cc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = cc.UpdateClusterStatus(context.Background(), src)
@@ -186,7 +186,7 @@ func TestCnController_UpdateStatus(t *testing.T) {
 		{
 			name: "update the status of cluster",
 			fields: fields{
-				k8sClient: k8sutils.NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(sch,
 					&appv1.StatefulSet{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test-cn",

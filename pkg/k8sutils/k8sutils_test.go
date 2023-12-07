@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
 var (
@@ -71,7 +72,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 		},
 	}
 
-	k8sClient := NewFakeClient(sch, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
+	k8sClient := fake.NewFakeClient(sch, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
 	// confirm the v1.autoscaler exist.
 	var cv1autoscaler v1.HorizontalPodAutoscaler
 	cerr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv1autoscaler)
@@ -120,7 +121,7 @@ func Test_getValueFromConfigmap(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: NewFakeClient(sch, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(sch, &corev1.ConfigMap{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -167,7 +168,7 @@ func Test_getValueFromSecret(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: NewFakeClient(sch, &corev1.Secret{
+				k8sClient: fake.NewFakeClient(sch, &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -213,7 +214,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value",
 			args: args{
-				k8sClient: NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(sch),
 				namespace: "default",
 				envVar: corev1.EnvVar{
 					Name:  "test",
@@ -226,7 +227,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(sch,
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
@@ -255,7 +256,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(sch,
 					&corev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",

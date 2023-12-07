@@ -32,7 +32,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
@@ -41,7 +41,7 @@ import (
 func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterReconciler {
 	srcController := &StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
-	srcController.Client = k8sutils.NewFakeClient(srapi.Scheme, objects...)
+	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
 	srcController.Scs = []sub_controller.ClusterSubController{fe.New(srcController.Client), cn.New(srcController.Client)}
 	return srcController
 }
