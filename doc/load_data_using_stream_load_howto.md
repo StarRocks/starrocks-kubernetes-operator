@@ -16,6 +16,7 @@ For `kube-starrocks` Helm chart:
 ```yaml
 starrocks:
   starRocksFeProxySpec:
+    enabled: true
     replicas: 1
     # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
     resolver: ""
@@ -38,6 +39,7 @@ For `starrocks` Helm chart:
 
 ```yaml
 starRocksFeProxySpec:
+  enabled: true
   replicas: 1
   # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
   resolver: ""
