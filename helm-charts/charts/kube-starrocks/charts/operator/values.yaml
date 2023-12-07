@@ -65,7 +65,7 @@ starrocksOperator:
   env: []
   # setting log related parameter
   log:
-    - --zap-time-encoding iso8601
-    - --zap-encoder console
+    - --zap-time-encoding=iso8601
+    - --zap-encoder=console
     # if you want open debug log, open this option
     # - --zap-log-level 4
