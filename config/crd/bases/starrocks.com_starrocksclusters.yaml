@@ -5769,8 +5769,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5822,8 +5821,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5862,8 +5860,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5902,8 +5899,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array

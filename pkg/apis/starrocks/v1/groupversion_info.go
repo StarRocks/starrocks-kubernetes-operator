@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the  v1alpha1 API group
+// Package v1 stores the v1 version of the API.
 // +kubebuilder:object:generate=true
 // +groupName=starrocks.com
 package v1

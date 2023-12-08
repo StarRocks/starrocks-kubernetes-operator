@@ -30,4 +30,5 @@ artifacts
 .DS_Store
 
 migrate-chart-value
+gen-crd-api-reference-docs-master/
 *.tgz
