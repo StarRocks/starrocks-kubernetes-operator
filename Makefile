@@ -135,11 +135,6 @@ CONTROLLER_GEN = $(GOBIN)/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
 
-GEN_DOCS = $(GOBIN)/gen-crd-api-reference-docs
-.PHONY: gen-tool
-gen-tool: ## Download gen-crd-api-reference-docs locally 0f necessary.
-	$(call go-get-tool,$(GEN_DOCS),github.com/ahmetb/gen-crd-api-reference-docs@v0.3.0)
-
 KUSTOMIZE = $(GOBIN)/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -151,10 +146,8 @@ envtest: ## Download envtest-setup locally if necessary.
 	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 .PHONY: gen-api
-gen-api: gen-tool
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md"
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.md"
-
+gen-api:
+	cd scripts && ./gen-api-reference-docs.sh
 
 .PHONY: crd-all
 crd-all: generate manifests gen-api

@@ -112,14 +112,9 @@ if [ $# -ne 1 ]; then
 fi
 export RELEASE_TAG=$1
 
-# set the home path
-HOME_PATH=$(
-  cd "$(dirname "$0")"
-  cd ..
-  pwd
-)
-echo "HOME_PATH: ${HOME_PATH}"
-export HOME_PATH=$HOME_PATH
+# include common.sh
+source ./common.sh
+export HOME_PATH=$(printHomePath)
 
 # use the latest chart values.yaml
 bash create-parent-chart-values.sh
@@ -156,14 +151,6 @@ mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name}
 echo "copy yaml files for operator and crd"
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
 
-#echo "build migrate-chart-value tool"
-#cd $HOME_PATH/scripts/migrate-chart-value
-#GOARCH=amd64 GOOS=linux go build -o migrate-chart-value-amd64-linux main.go
-#GOARCH=amd64 GOOS=darwin go build -o migrate-chart-value-amd64-darwin main.go
-#GOARCH=arm64 GOOS=darwin go build -o migrate-chart-value-arm64-darwin main.go
-#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-linux $HOME_PATH/artifacts/
-#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-amd64-darwin $HOME_PATH/artifacts/
-#cp $HOME_PATH/scripts/migrate-chart-value/migrate-chart-value-arm64-darwin $HOME_PATH/artifacts/
-
-# gh release upload
-# gh release upload $1 $HOME_PATH/artifacts/*.tgz $HOME_PATH/artifacts/*.yaml
+echo "generate api.md"
+cd $HOME_PATH/scripts
+bash gen-api-reference-docs.sh

@@ -65,7 +65,7 @@ type StarRocksComponentStatus struct {
 	// RunningInstances in running status pod names.
 	RunningInstances []string `json:"runningInstances,omitempty"`
 
-	// ResourceNames the statefulset names of fe in v1alpha1 version.
+	// ResourceNames the statefulset names of fe.
 	ResourceNames []string `json:"resourceNames,omitempty"`
 
 	// Phase the value from all pods of component status. If component have one failed pod phase=failed,
