@@ -1,0 +1,24 @@
+name: ACTION Run make test
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'pkg/**'
+
+jobs:
+  operator:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Call make test
+        run: make test

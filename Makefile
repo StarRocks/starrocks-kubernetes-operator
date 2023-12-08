@@ -81,7 +81,12 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test ./pkg/... -coverprofile=coverage.data -timeout 30m || return 1
+	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/... 			\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers/... 		\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/... 		\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/... 	\
+		-coverprofile=coverage.data -timeout 30m || return 1
 	@go tool cover -func=coverage.data
 
 ##@ Build
