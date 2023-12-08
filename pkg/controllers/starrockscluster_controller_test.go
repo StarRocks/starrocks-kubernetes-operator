@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkg
+package controllers
 
 import (
 	"context"
@@ -33,16 +33,16 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterReconciler {
 	srcController := &StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
-	srcController.Scs = []sub_controller.ClusterSubController{fe.New(srcController.Client), cn.New(srcController.Client)}
+	srcController.Scs = []subcontrollers.ClusterSubController{fe.New(srcController.Client), cn.New(srcController.Client)}
 	return srcController
 }
 

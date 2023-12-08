@@ -12,7 +12,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *srapi.StarRocksCluster) error {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkg
+package controllers
 
 import (
 	"context"
@@ -32,7 +32,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
 
 const (
@@ -43,7 +43,7 @@ const (
 type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
-	Scs      []sub_controller.ClusterSubController
+	Scs      []subcontrollers.ClusterSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete

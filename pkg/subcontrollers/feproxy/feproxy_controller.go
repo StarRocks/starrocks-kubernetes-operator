@@ -37,15 +37,15 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 type FeProxyController struct {
 	k8sClient client.Client
 }
 
-var _ sub_controller.ClusterSubController = &FeProxyController{}
+var _ subcontrollers.ClusterSubController = &FeProxyController{}
 
 // New construct a FeController.
 func New(k8sClient client.Client) *FeProxyController {
@@ -139,8 +139,8 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 	}
 
 	status.ServiceName = service.ExternalServiceName(src.Name, feProxySpec)
-	if err := sub_controller.UpdateStatus(&status.StarRocksComponentStatus, controller.k8sClient,
-		src.Namespace, load.Name(src.Name, feProxySpec), pod.Labels(src.Name, feProxySpec), sub_controller.DeploymentLoadType); err != nil {
+	if err := subcontrollers.UpdateStatus(&status.StarRocksComponentStatus, controller.k8sClient,
+		src.Namespace, load.Name(src.Name, feProxySpec), pod.Labels(src.Name, feProxySpec), subcontrollers.DeploymentLoadType); err != nil {
 		logger.Error(err, "update fe proxy status failed", "StarRocksCluster", src)
 		return err
 	}

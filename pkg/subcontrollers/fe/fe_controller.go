@@ -36,7 +36,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
 
 type FeController struct {
@@ -137,8 +137,8 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := sub_controller.UpdateStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
-		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), sub_controller.StatefulSetLoadType); err != nil {
+	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
+		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), subcontrollers.StatefulSetLoadType); err != nil {
 		return err
 	}
 

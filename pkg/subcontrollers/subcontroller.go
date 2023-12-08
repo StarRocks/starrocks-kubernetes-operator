@@ -16,7 +16,7 @@ limitations under the License.
 
 // +k8s:deepcopy-gen=package
 // +groupName=starrocks.com
-package sub_controller
+package subcontrollers
 
 import (
 	"context"
