@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkg
+package controllers
 
 import (
 	"context"
@@ -29,15 +29,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 )
 
 // StarRocksWarehouseReconciler reconciles a StarRocksWarehouse object
 type StarRocksWarehouseReconciler struct {
 	client.Client
 	recorder       record.EventRecorder
-	subControllers []sub_controller.WarehouseSubController
+	subControllers []subcontrollers.WarehouseSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrockswarehouses,verbs=get;list;watch;create;update;patch;delete

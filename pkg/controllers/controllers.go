@@ -1,4 +1,4 @@
-package pkg
+package controllers
 
 import (
 	"context"
@@ -10,15 +10,15 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/be"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/fe"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/feproxy"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
 func SetupClusterReconciler(mgr ctrl.Manager) error {
-	subcs := []sub_controller.ClusterSubController{
+	subcs := []subcontrollers.ClusterSubController{
 		fe.New(mgr.GetClient()),
 		be.New(mgr.GetClient()),
 		cn.New(mgr.GetClient()),
@@ -63,7 +63,7 @@ func SetupWarehouseReconciler(ctx context.Context, mgr ctrl.Manager) error {
 	reconciler := &StarRocksWarehouseReconciler{
 		Client:         mgr.GetClient(),
 		recorder:       mgr.GetEventRecorderFor(_controllerName),
-		subControllers: []sub_controller.WarehouseSubController{cn.New(mgr.GetClient())},
+		subControllers: []subcontrollers.WarehouseSubController{cn.New(mgr.GetClient())},
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		return err

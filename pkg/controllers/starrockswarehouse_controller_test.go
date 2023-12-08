@@ -1,4 +1,4 @@
-package pkg
+package controllers
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 )
 
 func init() {
@@ -28,7 +28,7 @@ func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWareho
 	warehouseController := &StarRocksWarehouseReconciler{
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
-		subControllers: []sub_controller.WarehouseSubController{
+		subControllers: []subcontrollers.WarehouseSubController{
 			cn.New(client),
 		},
 	}
@@ -267,7 +267,7 @@ func TestStarRocksWarehouseReconciler_SetupWithManager(t *testing.T) {
 	type fields struct {
 		Client         client.Client
 		recorder       record.EventRecorder
-		subControllers []sub_controller.WarehouseSubController
+		subControllers []subcontrollers.WarehouseSubController
 	}
 	type args struct {
 		mgr controllerruntime.Manager
@@ -298,7 +298,7 @@ func TestStarRocksWarehouseReconciler_UpdateStarRocksWarehouseStatus(t *testing.
 	type fields struct {
 		Client         client.Client
 		recorder       record.EventRecorder
-		subControllers []sub_controller.WarehouseSubController
+		subControllers []subcontrollers.WarehouseSubController
 	}
 	type args struct {
 		ctx       context.Context

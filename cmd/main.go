@@ -27,9 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg"
 )
 
 var (
@@ -75,12 +74,12 @@ func main() {
 	}
 
 	// setup all reconciles
-	if err := pkg.SetupClusterReconciler(mgr); err != nil {
+	if err := controllers.SetupClusterReconciler(mgr); err != nil {
 		logger.Error(err, "unable to set up cluster reconciler")
 		os.Exit(1)
 	}
 
-	if err := pkg.SetupWarehouseReconciler(context.Background(), mgr); err != nil {
+	if err := controllers.SetupWarehouseReconciler(context.Background(), mgr); err != nil {
 		logger.Error(err, "unable to set up warehouse reconciler")
 		os.Exit(1)
 	}
