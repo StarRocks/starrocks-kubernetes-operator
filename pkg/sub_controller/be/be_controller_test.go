@@ -33,7 +33,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
@@ -104,7 +104,7 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	bc := New(k8sutils.NewFakeClient(sch, src, &st, &svc, &ssvc))
+	bc := New(fake.NewFakeClient(sch, src, &st, &svc, &ssvc))
 	err := bc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
@@ -163,7 +163,7 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	bc := New(k8sutils.NewFakeClient(sch, src, &ep))
+	bc := New(fake.NewFakeClient(sch, src, &ep))
 	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = bc.UpdateClusterStatus(context.Background(), src)

@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/sub_controller/cn"
 )
@@ -24,7 +24,7 @@ func init() {
 }
 
 func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWarehouseReconciler {
-	client := k8sutils.NewFakeClient(v1.Scheme, objects...)
+	client := fake.NewFakeClient(v1.Scheme, objects...)
 	warehouseController := &StarRocksWarehouseReconciler{
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
