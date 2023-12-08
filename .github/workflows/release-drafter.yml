@@ -1,4 +1,4 @@
-name: Release Drafter Action
+name: Action Release Drafter
 
 on:
   push:

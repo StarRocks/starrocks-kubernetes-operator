@@ -1,11 +1,13 @@
-name: Label Issue Action
+name: Action Label Issue
 on:
   issues:
     types:
       - reopened
       - opened
+
 permissions:
   issues: write
+
 jobs:
   label_issues:
     runs-on: ubuntu-latest
