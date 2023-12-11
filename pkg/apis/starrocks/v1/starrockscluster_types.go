@@ -274,10 +274,11 @@ type StorageVolume struct {
 	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
 	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
 	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
-	StorageSize string `json:"storageSize"`
+	// +optional
+	StorageSize string `json:"storageSize,omitempty"`
 
 	// MountPath specify the path of volume mount.
-	MountPath string `json:"mountPath,omitempty"`
+	MountPath string `json:"mountPath"`
 
 	// SubPath within the volume from which the container's volume should be mounted.
 	// Defaults to "" (volume's root).

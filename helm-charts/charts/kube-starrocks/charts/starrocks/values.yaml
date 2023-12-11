@@ -143,7 +143,7 @@ starrocksFESpec:
     limits:
       cpu: 8
       memory: 8Gi
-  # fe storageSpec for persistent meta data.
+  # fe storageSpec for persistent metadata.
   storageSpec:
     name: ""
     # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -154,6 +154,12 @@ starrocksFESpec:
     storageSize: 10Gi
     # Setting this parameter can persist log storage
     logStorageSize: 5Gi
+  # mount other volumes if necessary.
+  # Note: please use storageSpec field for persistent metadata and log.
+  emptyDirs: []
+    # e.g. mount an emptyDir volume to /tmp
+    # - name: tmp-data
+    #   mountPath: /tmp
   # the config for start fe. the base information as follows.
   config: |
     LOG_DIR = ${STARROCKS_HOME}/log
@@ -334,6 +340,12 @@ starrocksCnSpec:
     storageSize: 1Ti
     # the storage size of persistent volume for log.
     logStorageSize: 1Gi
+  # mount other volumes if necessary.
+  # Note: please use storageSpec field for persistent storage data and log.
+  emptyDirs: []
+    # e.g. mount an emptyDir volume to /tmp
+    # - name: tmp-data
+    #   mountPath: /tmp
   # the config start for cn, the base information as follows.
   config: |
     sys_log_level = INFO
@@ -473,6 +485,12 @@ starrocksBeSpec:
     storageSize: 1Ti
     # Setting this parameter can persist log storage
     logStorageSize: 1Gi
+  # mount other volumes if necessary.
+  # Note: please use storageSpec field for persistent storage data and log.
+  emptyDirs: []
+    # e.g. mount an emptyDir volume to /tmp
+    # - name: tmp-data
+    #   mountPath: /tmp
   # the config for start be. the base information as follows.
   config: |
     be_port = 9060
@@ -595,3 +613,8 @@ starrocksFeProxySpec:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
   readinessProbeFailureSeconds:
+  # Note: will create emptyDir volume for fe proxy, PVC is not supported.
+  emptyDirs: []
+      # e.g. mount an emptyDir volume to /tmp
+      # - name: tmp-data
+      #   mountPath: /tmp
