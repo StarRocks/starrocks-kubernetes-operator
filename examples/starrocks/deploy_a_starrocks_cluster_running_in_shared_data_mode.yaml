@@ -59,4 +59,4 @@ data:
     run_mode = shared_data
     cloud_native_meta_port = 6090
     # Whether volume can be created from conf. If it is enabled, a builtin storage volume may be created.
-    enable_load_volume_from_conf = ture
+    enable_load_volume_from_conf = true
