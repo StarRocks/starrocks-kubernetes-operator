@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -70,8 +69,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		if cc.addWarehouseEnv(ctx, feExternalServiceName,
-			strconv.FormatInt(int64(rutils.GetPort(config, rutils.HTTP_PORT)), 10)) {
+		url := fmt.Sprintf("http://%v:%v/api/v2/feature", feExternalServiceName, rutils.GetPort(config, rutils.HTTP_PORT))
+		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
 				// the cn_entrypoint.sh in container will use this env to create warehouse. Because of '-' character
@@ -137,12 +136,11 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 //	 "version": "feature/add-api-feature-interface",
 //	 "status": "OK"
 //	}
-func (cc *CnController) addWarehouseEnv(ctx context.Context, feExternalServiceName string, feHTTPPort string) bool {
+func (cc *CnController) addWarehouseEnv(ctx context.Context, url string) bool {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("call FE to get features information")
 
-	req, err := http.NewRequestWithContext(ctx, "GET",
-		fmt.Sprintf("http://%s:%s/api/v2/feature", feExternalServiceName, feHTTPPort), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		logger.Error(err, "failed to create request")
 		return false

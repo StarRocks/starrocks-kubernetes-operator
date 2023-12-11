@@ -35,7 +35,10 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 
 	var est appv1.StatefulSet
 	if err := k8sClient.Get(ctx,
-		types.NamespacedName{Namespace: namespace, Name: load.Name(aliasName, (*srapi.StarRocksCnSpec)(nil))},
+		types.NamespacedName{
+			Namespace: namespace,
+			Name:      load.Name(aliasName, (*srapi.StarRocksCnSpec)(nil)),
+		},
 		&est); err != nil {
 		return nil, err
 	}
@@ -71,13 +74,16 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 
 // Execute sql statements. Every time a SQL statement needs to be executed, a new sql.DB instance will be created.
 // This is because SQL statements are executed infrequently.
-func (executor *SQLExecutor) Execute(ctx context.Context, statements string) error {
-	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/",
-		executor.RootPassword, executor.FeServiceName, executor.FeServicePort))
-	if err != nil {
-		return err
+func (executor *SQLExecutor) Execute(ctx context.Context, db *sql.DB, statements string) error {
+	var err error
+	if db == nil {
+		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/",
+			executor.RootPassword, executor.FeServiceName, executor.FeServicePort))
+		if err != nil {
+			return err
+		}
+		defer db.Close()
 	}
-	defer db.Close()
 
 	_, err = db.ExecContext(ctx, statements)
 	if err != nil {

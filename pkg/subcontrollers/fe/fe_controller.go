@@ -89,8 +89,8 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, est *appv1.StatefulSet) bool {
-		return rutils.StatefulSetDeepEqual(new, est, false)
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+		return rutils.StatefulSetDeepEqual(new, actual, false)
 	}); err != nil {
 		logger.Error(err, "deploy statefulset failed")
 		return err
@@ -204,7 +204,7 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return nil
 }
 
-// CheckFEReady check the fe cluster is ok for add cn node.
+// CheckFEReady check the fe cluster is ok.
 func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
 	logger := logr.FromContextOrDiscard(ctx)
 	endpoints := corev1.Endpoints{}
