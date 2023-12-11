@@ -19,6 +19,7 @@ package fe
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -184,4 +186,128 @@ func Test_SyncDeploy(t *testing.T) {
 		types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
 	// validate service selector matches statefulset selector
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
+}
+
+func TestCheckFEReady(t *testing.T) {
+	type args struct {
+		ctx              context.Context
+		k8sClient        client.Client
+		clusterNamespace string
+		clusterName      string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "test fe is not ready",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Endpoints{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Endpoints",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe-service",
+						Namespace: "default",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "test fe is ready",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Endpoints{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Endpoints",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe-service",
+						Namespace: "default",
+					},
+					Subsets: []corev1.EndpointSubset{
+						{
+							Addresses: []corev1.EndpointAddress{
+								{
+									IP: "127.0.0.1",
+								},
+							},
+						},
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckFEReady(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName); got != tt.want {
+				t.Errorf("CheckFEReady() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetFeConfig(t *testing.T) {
+	type args struct {
+		ctx           context.Context
+		k8sClient     client.Client
+		configMapInfo *srapi.ConfigMapInfo
+		namespace     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{
+			name: "test get FE config",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "fe-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"fe.config": "aa = bb",
+					},
+				}),
+				configMapInfo: &srapi.ConfigMapInfo{
+					ConfigMapName: "fe-configMap",
+					ResolveKey:    "fe.config",
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"aa": "bb",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetFeConfig(tt.args.ctx, tt.args.k8sClient, tt.args.configMapInfo, tt.args.namespace)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetFeConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetFeConfig() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

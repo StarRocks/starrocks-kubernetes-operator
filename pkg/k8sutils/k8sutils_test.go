@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package k8sutils
+package k8sutils_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/api/autoscaling/v2beta2"
@@ -33,6 +34,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
@@ -78,7 +81,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 	cerr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv1autoscaler)
 	require.Equal(t, nil, cerr)
 	require.Equal(t, "test", cv1autoscaler.Name)
-	delerr := DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV1)
+	delerr := k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV1)
 	require.Equal(t, nil, delerr)
 	var ev1autoscaler v1.HorizontalPodAutoscaler
 	geterr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev1autoscaler)
@@ -88,7 +91,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 	cerr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv2autoscaler)
 	require.Equal(t, nil, cerr)
 	require.Equal(t, "test", v2autoscaler.Name)
-	delerr = DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2)
+	delerr = k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2)
 	require.Equal(t, nil, delerr)
 	var ev2autoscaler v2.HorizontalPodAutoscaler
 	geterr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev2autoscaler)
@@ -98,7 +101,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 	cerr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv2beta2autoscaler)
 	require.Equal(t, nil, cerr)
 	require.Equal(t, "test", cv2beta2autoscaler.Name)
-	delerr = DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2Beta2)
+	delerr = k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2Beta2)
 	require.Equal(t, nil, delerr)
 	var ev2beta2autoscaler v2beta2.HorizontalPodAutoscaler
 	geterr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev2beta2autoscaler)
@@ -140,13 +143,13 @@ func Test_getValueFromConfigmap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getValueFromConfigmap(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
+			got, err := k8sutils.GetValueFromConfigmap(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getValueFromConfigmap() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetValueFromConfigmap() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("getValueFromConfigmap() got = %v, want %v", got, tt.want)
+				t.Errorf("GetValueFromConfigmap() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -187,13 +190,13 @@ func Test_getValueFromSecret(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getValueFromSecret(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
+			got, err := k8sutils.GetValueFromSecret(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getValueFromSecret() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetValueFromSecret() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("getValueFromSecret() got = %v, want %v", got, tt.want)
+				t.Errorf("GetValueFromSecret() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -285,13 +288,363 @@ func TestGetEnvVarValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetEnvVarValue(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.envVar)
+			got, err := k8sutils.GetEnvVarValue(context.Background(), tt.args.k8sClient, tt.args.namespace, tt.args.envVar)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEnvVarValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
 				t.Errorf("GetEnvVarValue() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		k8sClient client.Client
+		svc       *corev1.Service
+		equal     k8sutils.ServiceEqual
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test apply service which not exist",
+			args: args{
+				ctx:       context.Background(),
+				k8sClient: fake.NewFakeClient(sch),
+				svc: &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.ServiceKind,
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-service",
+						Namespace: "default",
+						// use label because it is used to calculate service hash
+						Labels: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+				equal: rutils.ServiceDeepEqual,
+			},
+		},
+		{
+			name: "test apply service which has been created",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.ServiceKind,
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-service",
+						Namespace: "default",
+					},
+				}),
+				svc: &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.ServiceKind,
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-service",
+						Namespace: "default",
+						// use label because it is used to calculate service hash
+						Labels: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+				equal: rutils.ServiceDeepEqual,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := k8sutils.ApplyService(tt.args.ctx, tt.args.k8sClient, tt.args.svc, tt.args.equal); (err != nil) != tt.wantErr {
+				t.Errorf("ApplyService() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			service := &corev1.Service{}
+			if err := tt.args.k8sClient.Get(context.Background(),
+				types.NamespacedName{
+					Name:      tt.args.svc.Name,
+					Namespace: tt.args.svc.Namespace,
+				},
+				service,
+			); err != nil {
+				t.Errorf("Get Service error = %v", err)
+			}
+			if service.Labels["test"] != "test" {
+				t.Errorf("Object does not have test annotation")
+			}
+
+			if err := k8sutils.DeleteService(context.Background(), tt.args.k8sClient, tt.args.svc.Namespace, tt.args.svc.Name); err != nil {
+				t.Errorf("Delete Service error = %v", err)
+			}
+		})
+	}
+}
+
+func TestApplyDeployment(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		k8sClient client.Client
+		deploy    *appsv1.Deployment
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test apply deployment which not exist",
+			args: args{
+				ctx:       context.Background(),
+				k8sClient: fake.NewFakeClient(sch),
+				deploy: &appsv1.Deployment{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Deployment",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test apply deployment which has been created",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Deployment",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-deployment",
+						Namespace: "default",
+					},
+				}),
+				deploy: &appsv1.Deployment{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Deployment",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-deployment",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := k8sutils.ApplyDeployment(tt.args.ctx, tt.args.k8sClient, tt.args.deploy); (err != nil) != tt.wantErr {
+				t.Errorf("ApplyDeployment() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			deployment := &appsv1.Deployment{}
+			if err := tt.args.k8sClient.Get(context.Background(), types.NamespacedName{
+				Name:      tt.args.deploy.Name,
+				Namespace: tt.args.deploy.Namespace},
+				deployment,
+			); err != nil {
+				t.Errorf("Get Deployment error = %v", err)
+			}
+			if deployment.Annotations["test"] != "test" {
+				t.Errorf("Object does not have test annotation")
+			}
+
+			if err := k8sutils.DeleteDeployment(context.Background(), tt.args.k8sClient, tt.args.deploy.Namespace, tt.args.deploy.Name); err != nil {
+				t.Errorf("Delete Deployment error = %v", err)
+			}
+		})
+	}
+}
+
+func TestApplyConfigMap(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		k8sClient client.Client
+		configmap *corev1.ConfigMap
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test apply configmap which not exist",
+			args: args{
+				ctx:       context.Background(),
+				k8sClient: fake.NewFakeClient(sch),
+				configmap: &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-configmap",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test apply configmap which has been created",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-configmap",
+						Namespace: "default",
+					},
+				}),
+				configmap: &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-configmap",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := k8sutils.ApplyConfigMap(tt.args.ctx, tt.args.k8sClient, tt.args.configmap); (err != nil) != tt.wantErr {
+				t.Errorf("ApplyConfigMap() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			configMap := &corev1.ConfigMap{}
+			if err := tt.args.k8sClient.Get(context.Background(), types.NamespacedName{
+				Name:      tt.args.configmap.Name,
+				Namespace: tt.args.configmap.Namespace},
+				configMap,
+			); err != nil {
+				t.Errorf("Get ConfigMap error = %v", err)
+			}
+			if configMap.Annotations["test"] != "test" {
+				t.Errorf("Object does not have test annotation")
+			}
+
+			if err := k8sutils.DeleteConfigMap(context.Background(), tt.args.k8sClient, tt.args.configmap.Namespace, tt.args.configmap.Name); err != nil {
+				t.Errorf("Delete Configmap error = %v", err)
+			}
+		})
+	}
+}
+
+func TestApplyStatefulSet(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		k8sClient client.Client
+		sts       *appsv1.StatefulSet
+		equal     k8sutils.StatefulSetEqual
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test apply sts which not exist",
+			args: args{
+				ctx:       context.Background(),
+				k8sClient: fake.NewFakeClient(sch),
+				sts: &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-sts",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test apply sts which has been created",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-sts",
+						Namespace: "default",
+					},
+				}),
+				sts: &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-sts",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := k8sutils.ApplyStatefulSet(tt.args.ctx, tt.args.k8sClient, tt.args.sts, tt.args.equal); (err != nil) != tt.wantErr {
+				t.Errorf("ApplyStatefulSet() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			sts := &appsv1.StatefulSet{}
+			if err := tt.args.k8sClient.Get(context.Background(), types.NamespacedName{
+				Name:      tt.args.sts.Name,
+				Namespace: tt.args.sts.Namespace},
+				sts,
+			); err != nil {
+				t.Errorf("Get StatefulSet error = %v", err)
+			}
+			if sts.Annotations["test"] != "test" {
+				t.Errorf("Object does not have test annotation")
+			}
+
+			if err := k8sutils.DeleteStatefulset(context.Background(), tt.args.k8sClient, tt.args.sts.Namespace, tt.args.sts.Name); err != nil {
+				t.Errorf("Delete Statfulset error = %v", err)
 			}
 		})
 	}

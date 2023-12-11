@@ -20,19 +20,12 @@ package v1
 const (
 	// ComponentLabelKey is Kubernetes recommended label key, it represents the component within the architecture
 	ComponentLabelKey string = "app.kubernetes.io/component"
-	// NameLabelKey is Kubernetes recommended label key, it represents the name of the application
-	NameLabelKey string = "app.kubernetes.io/name"
 
-	// OwnerReference list object depended by this object
+	// OwnerReference represents  owner of the object
 	OwnerReference string = "app.starrocks.ownerreference/name"
 
-	// ComponentsResourceHash the component hash
+	// ComponentResourceHash the component hash
 	ComponentResourceHash string = "app.starrocks.components/hash"
-
-	ComponentReplicasEmpty string = "app.starrocks.components/replica/empty"
-
-	// ComponentGeneration record for last update generation for compare with new spec.
-	// ComponentGeneration string = "app.starrocks.components/generation"
 )
 
 // the labels value. default statefulset name

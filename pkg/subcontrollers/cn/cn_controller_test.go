@@ -113,7 +113,7 @@ func Test_ClearResources(t *testing.T) {
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 }
 
-func Test_Sync(t *testing.T) {
+func Test_SyncCluster(t *testing.T) {
 	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -166,6 +166,120 @@ func Test_Sync(t *testing.T) {
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, cnSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
+}
+
+func Test_SyncWarehouse(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						ConfigMapInfo: srapi.ConfigMapInfo{
+							ConfigMapName: "fe-configMap",
+							ResolveKey:    "fe.conf",
+						},
+					},
+				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image:    "test.image",
+						Replicas: rutils.GetInt32Pointer(3),
+					},
+				},
+			},
+		},
+	}
+
+	// fe should run in shared_data mode
+	feConfigMap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "fe-configMap",
+			Namespace: "default",
+		},
+		Data: map[string]string{
+			"fe.conf": "run_mode = shared_data",
+		},
+	}
+
+	warehouse := &srapi.StarRocksWarehouse{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksWarehouseSpec{
+			StarRocksCluster: "test",
+			Template: &srapi.WarehouseComponentSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image:    "test.image",
+						Replicas: rutils.GetInt32Pointer(3),
+					},
+				},
+				EnvVars:           nil,
+				AutoScalingPolicy: nil,
+			},
+		},
+		Status: srapi.StarRocksWarehouseStatus{WarehouseComponentStatus: &srapi.WarehouseComponentStatus{}},
+	}
+
+	ep := &corev1.Endpoints{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-service",
+			Namespace: "default",
+		},
+		Subsets: []corev1.EndpointSubset{{
+			Addresses: []corev1.EndpointAddress{{
+				IP:       "172.0.0.1",
+				Hostname: "test-fe-access-01.cluster.local",
+			}},
+		}},
+	}
+
+	srapi.Register()
+
+	cc := New(fake.NewFakeClient(srapi.Scheme, src, feConfigMap, warehouse, ep))
+	cc.addEnvForWarehouse = true
+
+	err := cc.SyncWarehouse(context.Background(), warehouse)
+	require.Equal(t, nil, err)
+	err = cc.UpdateWarehouseStatus(context.Background(), warehouse)
+	require.Equal(t, nil, err)
+	require.Equal(t, srapi.ComponentReconciling, warehouse.Status.Phase)
+
+	var sts appv1.StatefulSet
+	var externalService corev1.Service
+	var searchService corev1.Service
+	object := object.NewFromWarehouse(warehouse)
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      service.ExternalServiceName(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Namespace: "default",
+		},
+		&externalService),
+	)
+	require.Equal(t, "test-warehouse-cn-service", externalService.Name)
+
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      service.SearchServiceName(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Namespace: "default"},
+		&searchService),
+	)
+	require.Equal(t, "test-warehouse-cn-search", searchService.Name)
+
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Namespace: "default"},
+		&sts),
+	)
+	require.Equal(t, "test-warehouse-cn", sts.Name)
 }
 
 func TestCnController_UpdateStatus(t *testing.T) {

@@ -37,28 +37,28 @@ type hashStatefulsetObject struct {
 }
 
 // StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
-func statefulSetHashObject(st *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
+func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	// set -1 for the initial is zero.
 	replicas := int32(-1)
 	if !excludeReplica {
-		if st.Spec.Replicas != nil {
-			replicas = *st.Spec.Replicas
+		if sts.Spec.Replicas != nil {
+			replicas = *sts.Spec.Replicas
 		}
 	}
 	selector := metav1.LabelSelector{}
-	if st.Spec.Selector != nil {
-		selector = *st.Spec.Selector
+	if sts.Spec.Selector != nil {
+		selector = *sts.Spec.Selector
 	}
 
 	return hashStatefulsetObject{
-		name:                 st.Name,
-		namespace:            st.Namespace,
-		labels:               st.Labels,
-		finalizers:           st.Finalizers,
+		name:                 sts.Name,
+		namespace:            sts.Namespace,
+		labels:               sts.Labels,
+		finalizers:           sts.Finalizers,
 		selector:             selector,
-		podTemplate:          st.Spec.Template,
-		serviceName:          st.Spec.ServiceName,
-		volumeClaimTemplates: st.Spec.VolumeClaimTemplates,
+		podTemplate:          sts.Spec.Template,
+		serviceName:          sts.Spec.ServiceName,
+		volumeClaimTemplates: sts.Spec.VolumeClaimTemplates,
 		replicas:             replicas,
 	}
 }

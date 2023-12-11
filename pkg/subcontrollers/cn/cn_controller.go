@@ -49,7 +49,8 @@ import (
 )
 
 type CnController struct {
-	k8sClient client.Client
+	k8sClient          client.Client
+	addEnvForWarehouse bool
 }
 
 func New(k8sClient client.Client) *CnController {
@@ -150,7 +151,9 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 	sts := statefulset.MakeStatefulset(object, cnSpec, *podTemplateSpec)
-	if err = cc.applyStatefulset(ctx, &sts); err != nil {
+	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, func(st1 *appv1.StatefulSet, st2 *appv1.StatefulSet) bool {
+		return rutils.StatefulSetDeepEqual(st1, st2, true)
+	}); err != nil {
 		return err
 	}
 
@@ -184,42 +187,6 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	if cnSpec.AutoScalingPolicy != nil {
 		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &sts)
 	}
-	return nil
-}
-
-func (cc *CnController) applyStatefulset(ctx context.Context, st *appv1.StatefulSet) error {
-	// create or update the status. create statefulset return, must ensure the
-	var est appv1.StatefulSet
-	if err := cc.k8sClient.Get(ctx, types.NamespacedName{Namespace: st.Namespace, Name: st.Name}, &est); apierrors.IsNotFound(err) {
-		return k8sutils.CreateClientObject(ctx, cc.k8sClient, st)
-	} else if err != nil {
-		return err
-	}
-	// if the spec is changed, update the status of cn on src.
-	var excludeReplica bool
-	// if replicas =0 and not the first time, exclude the hash for autoscaler
-	if st.Spec.Replicas == nil {
-		if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; !ok {
-			excludeReplica = true
-		}
-	}
-
-	// for compatible version <= v1.5, use `cn-domain-search` for internal service. we should exclude the interference.
-	st.Spec.ServiceName = est.Spec.ServiceName
-
-	if !rutils.StatefulSetDeepEqual(st, &est, excludeReplica) {
-		// if the replicas not zero, represent user have cancel autoscaler.
-		if st.Spec.Replicas != nil {
-			if _, ok := est.Annotations[srapi.ComponentReplicasEmpty]; ok {
-				rutils.MergeStatefulSets(st, est) // ResourceVersion will be set
-				delete(st.Annotations, srapi.ComponentReplicasEmpty)
-				return k8sutils.UpdateClientObject(ctx, cc.k8sClient, st)
-			}
-		}
-		st.ResourceVersion = est.ResourceVersion
-		return k8sutils.UpdateClientObject(ctx, cc.k8sClient, st)
-	}
-
 	return nil
 }
 
@@ -300,7 +267,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 	}
 
 	warehouseName := strings.ReplaceAll(name, "-", "_")
-	err = executor.Execute(ctx, fmt.Sprintf("DROP WAREHOUSE %s", warehouseName))
+	err = executor.Execute(ctx, nil, fmt.Sprintf("DROP WAREHOUSE %s", warehouseName))
 	if err != nil {
 		logger.Error(err, "drop warehouse failed", "warehouse", warehouseName)
 		// we do not return error here, because we want to delete the statefulset anyway.
