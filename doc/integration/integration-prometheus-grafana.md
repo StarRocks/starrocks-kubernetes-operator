@@ -212,7 +212,7 @@ Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packa
 starrocks:
   metrics:
     serviceMonitor:
-      enabled: ture
+      enabled: true
 ```
 
 Note: This only works for chart v1.8.4 and above.
