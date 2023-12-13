@@ -54,7 +54,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 
 	// mount configmap, secrets to pod if needed
 	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, cnSpec.ConfigMapInfo, _cnConfigPath)
-	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, cnSpec.ConfigMaps)
+	vols, volumeMounts = pod.MountConfigMaps(cnSpec, vols, volumeMounts, cnSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
 	if err := k8sutils.CheckVolumes(vols, volumeMounts); err != nil {
 		return nil, err
@@ -79,8 +79,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	cnContainer := corev1.Container{
 		Name:            srapi.DEFAULT_CN,
 		Image:           cnSpec.Image,
-		Command:         []string{"/opt/starrocks/cn_entrypoint.sh"},
-		Args:            []string{"$(FE_SERVICE_NAME)"},
+		Command:         pod.ContainerCommand(cnSpec),
+		Args:            pod.ContainerArgs(cnSpec),
 		Ports:           pod.Ports(cnSpec, config),
 		Env:             envs,
 		Resources:       cnSpec.ResourceRequirements,

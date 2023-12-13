@@ -198,18 +198,34 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 }
 
 // GetCapabilities
-// fe proxy does not have field Capabilities
+// fe proxy does not have field Capabilities, the reason why implementing this method is
+// // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetCapabilities() *corev1.Capabilities { return nil }
 
 // GetSidecars
-// fe proxy does not have field Sidecars
+// fe proxy does not have field Sidecars, the reason why implementing this method is
+// // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetSidecars() []corev1.Container {
 	return nil
 }
 
 // GetInitContainers
-// fe proxy does not have field InitContainers
+// fe proxy does not have field InitContainers, the reason why implementing this method is
+// // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetInitContainers() []corev1.Container {
+	return nil
+}
+
+// GetCommand
+// fe proxy does not have field command, the reason why implementing this method is
+// // that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) GetCommand() []string {
+	return nil
+}
+
+// GetArgs
+// fe proxy does not have field args
+func (spec *StarRocksFeProxySpec) GetArgs() []string {
 	return nil
 }
 

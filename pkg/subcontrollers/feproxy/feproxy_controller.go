@@ -197,7 +197,7 @@ func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluste
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 	vols, volumeMounts := pod.MountStorageVolumes(feProxySpec)
 
-	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, []srapi.ConfigMapReference{
+	vols, volumeMounts = pod.MountConfigMaps(feProxySpec, vols, volumeMounts, []srapi.ConfigMapReference{
 		{
 			Name:      load.Name(src.Name, feProxySpec),
 			MountPath: "/etc/nginx",

@@ -417,6 +417,10 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  args:
+                    items:
+                      type: string
+                    type: array
                   beEnvVars:
                     items:
                       properties:
@@ -504,6 +508,10 @@ spec:
                     x-kubernetes-list-map-keys:
                     - name
                     x-kubernetes-list-type: map
+                  command:
+                    items:
+                      type: string
+                    type: array
                   configMapInfo:
                     properties:
                       configMapName:
@@ -2359,6 +2367,10 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  args:
+                    items:
+                      type: string
+                    type: array
                   autoScalingPolicy:
                     properties:
                       hpaPolicy:
@@ -2776,6 +2788,10 @@ spec:
                       required:
                       - name
                       type: object
+                    type: array
+                  command:
+                    items:
+                      type: string
                     type: array
                   configMapInfo:
                     properties:
@@ -5253,6 +5269,10 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  args:
+                    items:
+                      type: string
+                    type: array
                   capabilities:
                     properties:
                       add:
@@ -5276,6 +5296,10 @@ spec:
                     x-kubernetes-list-map-keys:
                     - name
                     x-kubernetes-list-type: map
+                  command:
+                    items:
+                      type: string
+                    type: array
                   configMapInfo:
                     properties:
                       configMapName:
