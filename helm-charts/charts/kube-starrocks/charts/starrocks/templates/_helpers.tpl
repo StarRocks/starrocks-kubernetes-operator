@@ -119,6 +119,22 @@ be.conf: |
 {{- print "/opt/starrocks/cn/log" }}
 {{- end }}
 
+{{- define "starrockscluster.pre.start.script.name" -}}
+{{- print "start.sh" }}
+{{- end }}
+
+{{- define "starrockscluster.fe.pre.start.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-fe-pre-start-script" }}
+{{- end }}
+
+{{- define "starrockscluster.be.pre.start.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-be-pre-start-script" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.pre.start.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-cn-pre-start-script" }}
+{{- end }}
+
 {{/*
 starrockscluster.fe.config.hash is used to calculate the hash value of the fe.conf, and due to the length limit, only
 the first 8 digits are taken, which will be used as the annotations for pods.
@@ -153,6 +169,33 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- define "starrockscluster.cn.config.hash" }}
   {{- if .Values.starrocksCnSpec.config }}
     {{- $hash := toJson .Values.starrocksCnSpec.config | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.fe.prestart.script.hash" }}
+  {{- if .Values.starrocksFESpec.preStart }}
+    {{- $hash := toJson .Values.starrocksFESpec.preStart.script | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.be.prestart.script.hash" }}
+  {{- if .Values.starrocksBeSpec.preStart }}
+    {{- $hash := toJson .Values.starrocksBeSpec.preStart.script | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.cn.prestart.script.hash" }}
+  {{- if .Values.starrocksCnSpec.preStart }}
+    {{- $hash := toJson .Values.starrocksCnSpec.preStart.script | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
   {{- else }}
     {{- printf "no-config" }}

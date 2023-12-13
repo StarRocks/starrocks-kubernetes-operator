@@ -15,6 +15,7 @@
 package pod
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -296,5 +297,64 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 		ReadOnlyRootFilesystem: func() *bool { b := false; return &b }(),
 		// set additional Capabilities
 		Capabilities: spec.GetCapabilities(),
+	}
+}
+
+func getEntrypointScript(spec v1.SpecInterface) string {
+	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return "/opt/starrocks/fe_entrypoint.sh"
+	case *v1.StarRocksBeSpec:
+		return "/opt/starrocks/be_entrypoint.sh"
+	case *v1.StarRocksCnSpec:
+		return "/opt/starrocks/cn_entrypoint.sh"
+	}
+	return ""
+}
+
+func ContainerCommand(spec v1.SpecInterface) []string {
+	if spec.GetPreStartScriptLocation() == "" {
+		script := getEntrypointScript(spec)
+		switch spec.(type) {
+		case *v1.StarRocksFeSpec:
+			return []string{script}
+		case *v1.StarRocksBeSpec:
+			return []string{script}
+		case *v1.StarRocksCnSpec:
+			return []string{script}
+		}
+		return nil
+	}
+
+	return []string{"/bin/bash", "-c"}
+}
+
+func ContainerArgs(spec v1.SpecInterface) []string {
+	arg := "$(FE_SERVICE_NAME)"
+	if spec.GetPreStartScriptLocation() == "" {
+		switch spec.(type) {
+		case *v1.StarRocksFeSpec:
+			return []string{arg}
+		case *v1.StarRocksBeSpec:
+			return []string{arg}
+		case *v1.StarRocksCnSpec:
+			return []string{arg}
+		}
+		return nil
+	}
+
+	return []string{
+		fmt.Sprintf(`if [ ! -f "%[1]s" ]; then
+  echo "preStartScriptLocation: %[1]s, the file does not exist."
+  exit 1
+fi
+echo "begin to execute pre-start script: %[1]s"
+if ! bash "%[1]s"; then
+  echo "failed to execute pre-start script"
+  exit 1
+fi
+echo "succeed to execute pre-start script"
+"%[2]s" "%[3]s"
+`, spec.GetPreStartScriptLocation(), getEntrypointScript(spec), arg),
 	}
 }

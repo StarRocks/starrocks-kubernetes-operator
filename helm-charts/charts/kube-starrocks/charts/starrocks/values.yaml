@@ -62,6 +62,13 @@ starrocksFESpec:
     # image sliced by "repository:tag"
     repository: starrocks/fe-ubuntu
     tag: 3.1-latest
+  # specify the preStart for fe.
+  preStart: {}
+    # script: |
+    #     #! /bin/bash
+    #     echo "do something before start fe"
+    # # a configmap with name fe-pre-start-script will be created, and the script will be mounted to /etc/init-script/start.sh
+    # mountPath: /etc/init-script
   # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # If runAsNonRoot is true, the container is run as non-root user.
@@ -197,7 +204,6 @@ starrocksFESpec:
 
   # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
   # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
   startupProbeFailureSeconds:
@@ -224,6 +230,13 @@ starrocksCnSpec:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
     tag: 3.1-latest
+  # specify the preStart for cn.
+  preStart: {}
+    # script: |
+    #     #! /bin/bash
+    #     echo "do something before start cn"
+    # # a configmap with name cn-pre-start-script will be created, and the script will be mounted to /etc/init-script/start.sh
+    # mountPath: /etc/init-script/start.sh
   # serviceAccount for cn access cloud service.
   serviceAccount: ""
   # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -382,7 +395,6 @@ starrocksCnSpec:
 
   # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
   # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
   startupProbeFailureSeconds:
@@ -401,6 +413,15 @@ starrocksBeSpec:
     # image sliced by "repository:tag"
     repository: starrocks/be-ubuntu
     tag: 3.1-latest
+  # specify the preStartScriptLocation for be.
+  preStartScriptLocation: ""
+  # specify the preStart for be.
+  preStart: {}
+    # script: |
+    #     #! /bin/bash
+    #     echo "do something before start be"
+    # # a configmap with name be-pre-start-script will be created, and the script will be mounted to /etc/init-script/start.sh
+    # mountPath: /etc/init-script
   # serviceAccount for be access cloud service.
   serviceAccount: ""
   # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -537,7 +558,6 @@ starrocksBeSpec:
 
   # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
   # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
   startupProbeFailureSeconds:

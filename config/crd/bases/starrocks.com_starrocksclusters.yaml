@@ -1152,6 +1152,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  preStartScriptLocation:
+                    description: PreStartScriptLocation is the location of the pre-start
+                      script. It will be executed before the starrocks process starts.
+                      If the script exits with a non-zero exit code, the pod will
+                      be marked as failed.
+                    type: string
                   readinessProbeFailureSeconds:
                     description: ReadinessProbeFailureSeconds defines the total failure
                       seconds of readiness Probe. Default failureThreshold is 3 and
@@ -3148,6 +3154,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  preStartScriptLocation:
+                    description: PreStartScriptLocation is the location of the pre-start
+                      script. It will be executed before the starrocks process starts.
+                      If the script exits with a non-zero exit code, the pod will
+                      be marked as failed.
+                    type: string
                   readinessProbeFailureSeconds:
                     description: ReadinessProbeFailureSeconds defines the total failure
                       seconds of readiness Probe. Default failureThreshold is 3 and
@@ -5576,6 +5588,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  preStartScriptLocation:
+                    description: PreStartScriptLocation is the location of the pre-start
+                      script. It will be executed before the starrocks process starts.
+                      If the script exits with a non-zero exit code, the pod will
+                      be marked as failed.
+                    type: string
                   readinessProbeFailureSeconds:
                     description: ReadinessProbeFailureSeconds defines the total failure
                       seconds of readiness Probe. Default failureThreshold is 3 and

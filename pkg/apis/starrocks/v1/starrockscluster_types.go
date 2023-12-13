@@ -73,6 +73,7 @@ type SpecInterface interface {
 	GetRunAsNonRoot() (*int64, *int64)
 	GetTerminationGracePeriodSeconds() *int64
 	GetCapabilities() *corev1.Capabilities
+	GetPreStartScriptLocation() string
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -195,6 +196,13 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 
 // fe proxy does not have field Capabilities
 func (spec *StarRocksFeProxySpec) GetCapabilities() *corev1.Capabilities { return nil }
+
+// GetPreStartScriptLocation
+// fe proxy does not have field PreStartScriptLocation, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) GetPreStartScriptLocation() string {
+	return ""
+}
 
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.

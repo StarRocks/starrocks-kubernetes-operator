@@ -535,6 +535,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  preStartScriptLocation:
+                    type: string
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -1455,6 +1457,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  preStartScriptLocation:
+                    type: string
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -2532,6 +2536,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  preStartScriptLocation:
+                    type: string
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
