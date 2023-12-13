@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package be
+package be_test
 
 import (
 	"context"
@@ -25,31 +25,18 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-)
-
-var (
-	sch = runtime.NewScheme()
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 )
 
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	_ = clientgoscheme.AddToScheme(sch)
-	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	_ = schemeBuilder.AddToScheme(sch)
+	srapi.Register()
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -104,18 +91,18 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	bc := New(fake.NewFakeClient(sch, src, &st, &svc, &ssvc))
+	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &st, &svc, &ssvc))
 	err := bc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
 	var est appv1.StatefulSet
-	err = bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
+	err = bc.Client.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var aesvc corev1.Service
-	err = bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-be-access", Namespace: "default"}, &aesvc)
+	err = bc.Client.Get(context.Background(), types.NamespacedName{Name: "test-be-access", Namespace: "default"}, &aesvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var resvc corev1.Service
-	err = bc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-be-search", Namespace: "default"}, &resvc)
+	err = bc.Client.Get(context.Background(), types.NamespacedName{Name: "test-be-search", Namespace: "default"}, &resvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 }
 
@@ -163,7 +150,7 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	bc := New(fake.NewFakeClient(sch, src, &ep))
+	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &ep))
 	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = bc.UpdateClusterStatus(context.Background(), src)
@@ -176,13 +163,13 @@ func Test_Sync(t *testing.T) {
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
-	require.NoError(t, bc.k8sClient.Get(context.Background(),
+	require.NoError(t, bc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.ExternalServiceName(src.Name, spec), Namespace: "default"}, &asvc))
 	require.Equal(t, service.ExternalServiceName(src.Name, spec), asvc.Name)
-	require.NoError(t, bc.k8sClient.Get(context.Background(),
+	require.NoError(t, bc.Client.Get(context.Background(),
 		types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
 	require.Equal(t, searchServiceName, rsvc.Name)
-	require.NoError(t, bc.k8sClient.Get(context.Background(),
+	require.NoError(t, bc.Client.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }

@@ -40,13 +40,13 @@ import (
 )
 
 type FeController struct {
-	k8sClient client.Client
+	Client client.Client
 }
 
 // New construct a FeController.
 func New(k8sClient client.Client) *FeController {
 	return &FeController{
-		k8sClient: k8sClient,
+		Client: k8sClient,
 	}
 }
 
@@ -66,7 +66,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// get the fe configMap for resolve ports
 	feSpec := src.Spec.StarRocksFeSpec
 	logger.V(log.DebugLevel).Info("get fe configMap to resolve ports", "ConfigMapInfo", feSpec.ConfigMapInfo)
-	config, err := GetFeConfig(ctx, fc.k8sClient, &feSpec.ConfigMapInfo, src.Namespace)
+	config, err := GetFeConfig(ctx, fc.Client, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
 		logger.Error(err, "get fe config failed", "ConfigMapInfo", feSpec.ConfigMapInfo)
 		return err
@@ -89,14 +89,14 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.k8sClient, &st, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &st, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 		return rutils.StatefulSetDeepEqual(new, actual, false)
 	}); err != nil {
 		logger.Error(err, "deploy statefulset failed")
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.k8sClient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
+	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
 		// for compatible v1.5, we use `fe-domain-search` for internal communicating.
 		internalService.Name = st.Spec.ServiceName
 		return rutils.ServiceDeepEqual(new, esvc)
@@ -105,7 +105,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.k8sClient, &svc, rutils.ServiceDeepEqual); err != nil {
+	if err = k8sutils.ApplyService(ctx, fc.Client, &svc, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "deploy external service failed", "externalService", svc)
 		return err
 	}
@@ -137,13 +137,13 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.k8sClient,
+	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
 		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), subcontrollers.StatefulSetLoadType); err != nil {
 		return err
 	}
 
 	var st appv1.StatefulSet
-	if err := fc.k8sClient.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
+	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
 	}
 
@@ -183,19 +183,19 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	}
 
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
-	if err := k8sutils.DeleteStatefulset(ctx, fc.k8sClient, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete statefulset failed", "statefulsetName", statefulSetName)
 		return err
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
-	if err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete search service failed", "searchServiceName", searchServiceName)
 		return err
 	}
 	externalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	err := k8sutils.DeleteService(ctx, fc.k8sClient, src.Namespace, externalServiceName)
+	err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName)
 	if err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete external service failed", "externalServiceName", externalServiceName)
 		return err

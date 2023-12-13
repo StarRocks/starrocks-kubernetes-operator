@@ -24,12 +24,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -39,17 +35,8 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
 
-var (
-	sch = runtime.NewScheme()
-)
-
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	_ = clientgoscheme.AddToScheme(sch)
-	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	_ = schemeBuilder.AddToScheme(sch)
+	srapi.Register()
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -96,7 +83,7 @@ func Test_ClearResources(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	cc := New(fake.NewFakeClient(sch, &src, &st, &svc, &ssvc))
+	cc := New(fake.NewFakeClient(srapi.Scheme, &src, &st, &svc, &ssvc))
 	err := cc.ClearResources(context.Background(), &src)
 	require.Equal(t, nil, err)
 
@@ -145,7 +132,7 @@ func Test_SyncCluster(t *testing.T) {
 		}},
 	}
 
-	cc := New(fake.NewFakeClient(sch, src, &ep))
+	cc := New(fake.NewFakeClient(srapi.Scheme, src, &ep))
 	err := cc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = cc.UpdateClusterStatus(context.Background(), src)
@@ -300,7 +287,7 @@ func TestCnController_UpdateStatus(t *testing.T) {
 		{
 			name: "update the status of cluster",
 			fields: fields{
-				k8sClient: fake.NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(srapi.Scheme,
 					&appv1.StatefulSet{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test-cn",

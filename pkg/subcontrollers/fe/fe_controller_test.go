@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fe
+package fe_test
 
 import (
 	"context"
@@ -29,12 +29,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -42,20 +38,11 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-)
-
-var (
-	sch = runtime.NewScheme()
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	_ = clientgoscheme.AddToScheme(sch)
-	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	_ = schemeBuilder.AddToScheme(sch)
+	srapi.Register()
 }
 
 func TestFeController_updateStatus(_ *testing.T) {
@@ -115,18 +102,18 @@ func Test_ClearResources(t *testing.T) {
 		Spec: corev1.ServiceSpec{},
 	}
 
-	fc := New(fake.NewFakeClient(sch, src, svc, ssvc))
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc))
 	err := fc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
 	var est appv1.StatefulSet
-	err = fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var aesvc corev1.Service
-	err = fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-fe-access", Namespace: "default"}, &aesvc)
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: "test-fe-access", Namespace: "default"}, &aesvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var resvc corev1.Service
-	err = fc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-fe-search", Namespace: "default"}, &resvc)
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: "test-fe-search", Namespace: "default"}, &resvc)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 }
 
@@ -161,7 +148,7 @@ func Test_SyncDeploy(t *testing.T) {
 		},
 	}
 
-	fc := New(fake.NewFakeClient(sch, src))
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src))
 
 	err := fc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
@@ -176,13 +163,13 @@ func Test_SyncDeploy(t *testing.T) {
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksFeSpec
-	require.NoError(t, fc.k8sClient.Get(context.Background(),
+	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
 	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
-	require.NoError(t, fc.k8sClient.Get(context.Background(),
+	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
-	require.NoError(t, fc.k8sClient.Get(context.Background(),
+	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
 	// validate service selector matches statefulset selector
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
@@ -204,7 +191,7 @@ func TestCheckFEReady(t *testing.T) {
 			name: "test fe is not ready",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Endpoints{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Endpoints{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Endpoints",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -223,7 +210,7 @@ func TestCheckFEReady(t *testing.T) {
 			name: "test fe is ready",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Endpoints{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Endpoints{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Endpoints",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -250,7 +237,7 @@ func TestCheckFEReady(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CheckFEReady(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName); got != tt.want {
+			if got := fe.CheckFEReady(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName); got != tt.want {
 				t.Errorf("CheckFEReady() = %v, want %v", got, tt.want)
 			}
 		})
@@ -274,7 +261,7 @@ func TestGetFeConfig(t *testing.T) {
 			name: "test get FE config",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -300,7 +287,7 @@ func TestGetFeConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetFeConfig(tt.args.ctx, tt.args.k8sClient, tt.args.configMapInfo, tt.args.namespace)
+			got, err := fe.GetFeConfig(tt.args.ctx, tt.args.k8sClient, tt.args.configMapInfo, tt.args.namespace)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetFeConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return

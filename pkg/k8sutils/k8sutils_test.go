@@ -26,12 +26,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -39,18 +35,8 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
-var (
-	sch = runtime.NewScheme()
-)
-
 func init() {
-	groupVersion := schema.GroupVersion{Group: "starrocks.com", Version: "v1"}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	schemeBuilder := &scheme.Builder{GroupVersion: groupVersion}
-	_ = clientgoscheme.AddToScheme(sch)
-	schemeBuilder.Register(&srapi.StarRocksCluster{}, &srapi.StarRocksClusterList{})
-	_ = schemeBuilder.AddToScheme(sch)
+	srapi.Register()
 }
 
 func Test_DeleteAutoscaler(t *testing.T) {
@@ -75,7 +61,7 @@ func Test_DeleteAutoscaler(t *testing.T) {
 		},
 	}
 
-	k8sClient := fake.NewFakeClient(sch, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
+	k8sClient := fake.NewFakeClient(srapi.Scheme, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
 	// confirm the v1.autoscaler exist.
 	var cv1autoscaler v1.HorizontalPodAutoscaler
 	cerr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv1autoscaler)
@@ -124,7 +110,7 @@ func Test_getValueFromConfigmap(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: fake.NewFakeClient(sch, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -171,7 +157,7 @@ func Test_getValueFromSecret(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: fake.NewFakeClient(sch, &corev1.Secret{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -217,7 +203,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value",
 			args: args{
-				k8sClient: fake.NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
 				namespace: "default",
 				envVar: corev1.EnvVar{
 					Name:  "test",
@@ -230,7 +216,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: fake.NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(srapi.Scheme,
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
@@ -259,7 +245,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: fake.NewFakeClient(sch,
+				k8sClient: fake.NewFakeClient(srapi.Scheme,
 					&corev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
@@ -316,7 +302,7 @@ func TestService(t *testing.T) {
 			name: "test apply service which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
 				svc: &corev1.Service{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.ServiceKind,
@@ -338,7 +324,7 @@ func TestService(t *testing.T) {
 			name: "test apply service which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Service{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.ServiceKind,
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -407,7 +393,7 @@ func TestApplyDeployment(t *testing.T) {
 			name: "test apply deployment which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
 				deploy: &appsv1.Deployment{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Deployment",
@@ -427,7 +413,7 @@ func TestApplyDeployment(t *testing.T) {
 			name: "test apply deployment which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.Deployment{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Deployment",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -493,7 +479,7 @@ func TestApplyConfigMap(t *testing.T) {
 			name: "test apply configmap which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
 				configmap: &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
@@ -513,7 +499,7 @@ func TestApplyConfigMap(t *testing.T) {
 			name: "test apply configmap which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -534,6 +520,10 @@ func TestApplyConfigMap(t *testing.T) {
 						Annotations: map[string]string{
 							"test": "test",
 						},
+					},
+					// add Data to make sure the hash value will be changed
+					Data: map[string]string{
+						"key": "value",
 					},
 				},
 			},
@@ -580,7 +570,7 @@ func TestApplyStatefulSet(t *testing.T) {
 			name: "test apply sts which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(sch),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
 				sts: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
@@ -594,13 +584,16 @@ func TestApplyStatefulSet(t *testing.T) {
 						},
 					},
 				},
+				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
+					return rutils.StatefulSetDeepEqual(new, actual, false)
+				},
 			},
 		},
 		{
 			name: "test apply sts which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(sch, &corev1.Service{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -622,6 +615,13 @@ func TestApplyStatefulSet(t *testing.T) {
 							"test": "test",
 						},
 					},
+					// add spec to make sure the hash value will be changed
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: func() *int32 { v := int32(1); return &v }(),
+					},
+				},
+				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
+					return rutils.StatefulSetDeepEqual(new, actual, false)
 				},
 			},
 		},

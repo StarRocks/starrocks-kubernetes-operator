@@ -1,26 +1,11 @@
-/*
-Copyright 2021-present, StarRocks Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package controllers
+package fe_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,6 +16,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
@@ -39,8 +25,8 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
-func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterReconciler {
-	srcController := &StarRocksClusterReconciler{}
+func newStarRocksClusterController(objects ...runtime.Object) *controllers.StarRocksClusterReconciler {
+	srcController := &controllers.StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
 	srcController.Scs = []subcontrollers.ClusterSubController{
@@ -52,7 +38,7 @@ func newStarRocksClusterController(objects ...runtime.Object) *StarRocksClusterR
 	return srcController
 }
 
-func TestReconcileConstructFeResource(t *testing.T) {
+func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 	src := &srapi.StarRocksCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "starrockscluster-sample",
@@ -74,8 +60,8 @@ func TestReconcileConstructFeResource(t *testing.T) {
 							{
 								Name:             "fe-storage",
 								StorageClassName: rutils.GetStringPointer("shard-data"),
-								MountPath:        "/data/fe/meta",
 								StorageSize:      "10Gi",
+								MountPath:        "/data/fe/meta",
 							},
 						},
 					},
@@ -100,9 +86,68 @@ func TestReconcileConstructFeResource(t *testing.T) {
 		},
 	}
 
-	r := newStarRocksClusterController(src)
-	res, err := r.Reconcile(context.Background(),
-		reconcile.Request{NamespacedName: types.NamespacedName{Namespace: "default", Name: "starrockscluster-sample"}})
+	podList := &corev1.PodList{
+		Items: []corev1.Pod{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod1",
+					Namespace: "default",
+					Labels: map[string]string{
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
+					},
+				},
+				Status: corev1.PodStatus{
+					Phase: corev1.PodRunning,
+					ContainerStatuses: []corev1.ContainerStatus{{
+						Ready: true,
+					}},
+				},
+			}, {
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod2",
+					Namespace: "default",
+					Labels: map[string]string{
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
+					},
+				},
+				Status: corev1.PodStatus{
+					Phase: corev1.PodRunning,
+					ContainerStatuses: []corev1.ContainerStatus{{
+						Ready: true,
+					}},
+				},
+			}, {
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod3",
+					Namespace: "default",
+					Labels: map[string]string{
+						srapi.OwnerReference:    src.Name + "-" + srapi.DEFAULT_FE,
+						srapi.ComponentLabelKey: srapi.DEFAULT_FE,
+					},
+				},
+				Status: corev1.PodStatus{
+					Phase: corev1.PodRunning,
+					ContainerStatuses: []corev1.ContainerStatus{{
+						Ready: true,
+					}},
+				},
+			},
+		},
+	}
+
+	sts := &appv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{
+		Name:      src.Name + "-" + srapi.DEFAULT_FE,
+		Namespace: "default",
+	}}
+
+	r := newStarRocksClusterController(src, podList, sts)
+	res, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{
+		Namespace: "default",
+		Name:      "starrockscluster-sample",
+	}})
+
 	require.NoError(t, err)
 	require.Equal(t, reconcile.Result{}, res)
 }
