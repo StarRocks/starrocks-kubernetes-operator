@@ -91,8 +91,13 @@ func MountHostPathVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMo
 	return volumes, volumeMounts
 }
 
-func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+func MountConfigMaps(spec v1.SpecInterface, volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 	references []v1.ConfigMapReference) ([]corev1.Volume, []corev1.VolumeMount) {
+	prerequisitesOfChangingMode := false
+	if spec != nil && (spec.GetCommand() != nil || spec.GetArgs() != nil) {
+		prerequisitesOfChangingMode = true
+	}
+
 	for _, reference := range references {
 		volumeName := getVolumeName(v1.MountInfo(reference))
 		volumes = append(volumes, corev1.Volume{
@@ -102,6 +107,14 @@ func MountConfigMaps(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: reference.Name,
 					},
+					DefaultMode: func() *int32 {
+						if prerequisitesOfChangingMode && reference.SubPath != "" {
+							const executionPermission = int32(0755)
+							v := executionPermission
+							return &v
+						}
+						return nil
+					}(),
 				},
 			},
 		})

@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -529,6 +530,63 @@ func TestContainerSecurityContext(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ContainerSecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ContainerSecurityContext() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestK8sYamlMarshal(t *testing.T) {
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "input is map",
+			args: args{
+				data: map[string]string{
+					"hello": `metadata:
+  annotations:
+    app.starrocks.io/fe-config-hash: e615d940
+  creationTimestamp: "2023-12-13T05:25:55Z"
+`,
+				},
+			},
+			want: `hello: |
+  metadata:
+    annotations:
+      app.starrocks.io/fe-config-hash: e615d940
+    creationTimestamp: "2023-12-13T05:25:55Z"
+`,
+		},
+		{
+			name: "input is slice",
+			args: args{
+				data: []string{
+					`metadata:
+  annotations:
+    app.starrocks.io/fe-config-hash: e615d940
+  creationTimestamp: "2023-12-13T05:25:55Z"
+`,
+				},
+			},
+			want: `- |
+  metadata:
+    annotations:
+      app.starrocks.io/fe-config-hash: e615d940
+    creationTimestamp: "2023-12-13T05:25:55Z"
+`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got, err := yaml.Marshal(tt.args.data); err != nil {
+				t.Errorf("yaml marshal failed: %v", err)
+			} else if string(got) != tt.want {
+				t.Errorf("yaml marshal not expected, got: \n%v\n\nwant: \n%v\n", string(got), tt.want)
 			}
 		})
 	}

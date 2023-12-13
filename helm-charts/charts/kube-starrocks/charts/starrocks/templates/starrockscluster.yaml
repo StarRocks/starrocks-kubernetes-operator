@@ -17,6 +17,11 @@ spec:
       {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
     {{- end }}
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
+    {{- if .Values.starrocksFESpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{ .Values.starrocksFESpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+    {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
     {{- /*
@@ -57,6 +62,9 @@ spec:
       {{- else }}
       ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
+      {{- end }}
+      {{- if .Values.starrocksFESpec.entrypoint }}
+      app.starrocks.io/fe-entrypoint-hash: "{{ template "starrockscluster.fe.entrypoint.script.hash" . }}"
       {{- end }}
       {{- if .Values.starrocksFESpec.annotations }}
       {{- toYaml .Values.starrocksFESpec.annotations | nindent 6 }}
@@ -174,12 +182,19 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
     {{- end }}
-    {{- if .Values.starrocksFESpec.configMaps }}
+    {{- if or .Values.starrocksFESpec.configMaps .Values.starrocksFESpec.entrypoint }}
     configMaps:
+    {{- if .Values.starrocksFESpec.configMaps }}
     {{- range .Values.starrocksFESpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.entrypoint }}
+      - name: {{template "starrockscluster.fe.entrypoint.script.configmap.name" .}}
+        mountPath: {{ .Values.starrocksFESpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
     configMapInfo:
@@ -222,6 +237,11 @@ spec:
       {{- toYaml .Values.starrocksBeSpec.initContainers | nindent 6 }}
     {{- end }}
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
+    {{- if .Values.starrocksBeSpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{ .Values.starrocksBeSpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+    {{- end }}
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
     {{- /*
@@ -265,6 +285,9 @@ spec:
       {{- end }}
       {{- if .Values.starrocksBeSpec.annotations }}
       {{- toYaml .Values.starrocksBeSpec.annotations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.starrocksBeSpec.entrypoint }}
+      app.starrocks.io/be-entrypoint-hash: "{{ template "starrockscluster.be.entrypoint.script.hash" . }}"
       {{- end }}
     {{- if or .Values.starrocksBeSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
@@ -392,12 +415,19 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
     {{- end }}
-    {{- if .Values.starrocksBeSpec.configMaps }}
+    {{- if or .Values.starrocksBeSpec.configMaps .Values.starrocksBeSpec.entrypoint }}
     configMaps:
+    {{- if .Values.starrocksBeSpec.configMaps }}
     {{- range .Values.starrocksBeSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.entrypoint }}
+      - name: {{template "starrockscluster.be.entrypoint.script.configmap.name" .}}
+        mountPath: {{ .Values.starrocksBeSpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
     configMapInfo:
@@ -440,6 +470,11 @@ spec:
       {{- toYaml .Values.starrocksCnSpec.initContainers | nindent 6 }}
     {{- end }}
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
+    {{- if .Values.starrocksCnSpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{ .Values.starrocksCnSpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+    {{- end }}
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
@@ -605,6 +640,9 @@ spec:
       {{- if .Values.starrocksCnSpec.annotations }}
       {{- toYaml .Values.starrocksCnSpec.annotations | nindent 6 }}
       {{- end }}
+      {{- if .Values.starrocksCnSpec.entrypoint }}
+      app.starrocks.io/cn-entrypoint-hash: "{{ template "starrockscluster.cn.entrypoint.script.hash" . }}"
+      {{- end }}
     {{- if or .Values.starrocksCnSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
       {{- include "starrockscluster.cn.imagePullSecrets" . | nindent 6 }}
@@ -617,12 +655,19 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
     {{- end }}
-    {{- if .Values.starrocksCnSpec.configMaps }}
+    {{- if or .Values.starrocksCnSpec.configMaps .Values.starrocksCnSpec.entrypoint }}
     configMaps:
+    {{- if .Values.starrocksCnSpec.configMaps }}
     {{- range .Values.starrocksCnSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.entrypoint }}
+      - name: {{template "starrockscluster.cn.entrypoint.script.configmap.name" .}}
+        mountPath: {{ .Values.starrocksCnSpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
     configMapInfo:

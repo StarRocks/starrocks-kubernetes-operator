@@ -52,7 +52,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	// mount configmap, secrets to pod if needed
 	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, _feConfigPath)
-	vols, volMounts = pod.MountConfigMaps(vols, volMounts, feSpec.ConfigMaps)
+	vols, volMounts = pod.MountConfigMaps(feSpec, vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 	if err := k8sutils.CheckVolumes(vols, volMounts); err != nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
 		Image:           feSpec.Image,
-		Command:         []string{"/opt/starrocks/fe_entrypoint.sh"},
-		Args:            []string{"$(FE_SERVICE_NAME)"},
+		Command:         pod.ContainerCommand(feSpec),
+		Args:            pod.ContainerArgs(feSpec),
 		Ports:           pod.Ports(feSpec, config),
 		Env:             envs,
 		Resources:       feSpec.ResourceRequirements,

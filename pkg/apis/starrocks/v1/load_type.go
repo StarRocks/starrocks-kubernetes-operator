@@ -21,6 +21,8 @@ type loadInterface interface {
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
 	GetImagePullPolicy() corev1.PullPolicy
+	GetCommand() []string
+	GetArgs() []string
 }
 
 type StarRocksLoadSpec struct {

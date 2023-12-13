@@ -1,6 +1,7 @@
 package hash_test
 
 import (
+	"fmt"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -15,6 +16,10 @@ func TestHashObject(t *testing.T) {
 	type args struct {
 		object interface{}
 	}
+	type Object struct {
+		name string
+	}
+
 	tests := []struct {
 		name string
 		args args
@@ -119,6 +124,67 @@ func TestHashObject(t *testing.T) {
 	}
 }
 
-type Object struct {
-	name string
+func TestTwoObject(t *testing.T) {
+	type T1 struct {
+		name string
+		age  int
+	}
+	o1 := T1{
+		name: "test",
+		age:  10,
+	}
+
+	type T2 struct {
+		name string
+		age  int
+	}
+	o2 := T2{
+		name: "test",
+		age:  10,
+	}
+
+	o3 := struct {
+		name string
+		age  int
+	}{
+		name: "test",
+		age:  10,
+	}
+	o4 := T1{
+		name: "test",
+	}
+
+	if hash.HashObject(o1) != hash.HashObject(o2) {
+		fmt.Println("two object has different types")
+	}
+
+	if hash.HashObject(o1) != hash.HashObject(o3) {
+		fmt.Println("two object has different types")
+	}
+
+	if hash.HashObject(o1) == hash.HashObject(o4) {
+		fmt.Println("two object has the same types and values")
+	}
+}
+
+func TestTwoObject2(t *testing.T) {
+	a := int(10)
+	b := int(10)
+	type T1 struct {
+		name string
+		age  *int
+	}
+	o1 := T1{
+		name: "test",
+		age:  &a,
+	}
+
+	o2 := T1{
+		name: "test",
+		age:  &b,
+	}
+
+	if hash.HashObject(o1) == hash.HashObject(o2) {
+		fmt.Println("two object has the same types and values")
+	}
 }

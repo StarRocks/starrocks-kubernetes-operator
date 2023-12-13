@@ -131,6 +131,22 @@ be.conf: |
 {{- print "/opt/starrocks/cn/log" }}
 {{- end }}
 
+{{- define "starrockscluster.entrypoint.script.name" -}}
+{{- print "entrypoint.sh" }}
+{{- end }}
+
+{{- define "starrockscluster.fe.entrypoint.script.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-fe-entrypoint-script" }}
+{{- end }}
+
+{{- define "starrockscluster.be.entrypoint.script.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-be-entrypoint-script" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.entrypoint.script.configmap.name" -}}
+{{- print (include "starrockscluster.name" .) "-cn-entrypoint-script" }}
+{{- end }}
+
 {{/*
 Define a function to handle resource limits for fe
 */}}
@@ -225,6 +241,33 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- if (index $configMap "query_port") -}}
 {{- print (index $configMap "query_port") }}
 {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.fe.entrypoint.script.hash" }}
+  {{- if .Values.starrocksFESpec.entrypoint }}
+    {{- $hash := toJson .Values.starrocksFESpec.entrypoint.script | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.be.entrypoint.script.hash" }}
+  {{- if .Values.starrocksBeSpec.entrypoint }}
+    {{- $hash := toJson .Values.starrocksBeSpec.entrypoint.script | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
+{{- end }}
+
+{{- define "starrockscluster.cn.entrypoint.script.hash" }}
+  {{- if .Values.starrocksCnSpec.entrypoint }}
+    {{- $hash := toJson .Values.starrocksCnSpec.entrypoint.script | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else }}
+    {{- printf "no-config" }}
+  {{- end }}
 {{- end }}
 
 {{- define "starrockscluster.fe.http.port" -}}
