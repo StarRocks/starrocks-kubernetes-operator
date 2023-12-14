@@ -161,7 +161,7 @@ starrocks:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
         # e.g. use a dedicated node port for fe service. The containerPort and port field can be commented out.
-        # - name: http
+        # - name: http  # fill the name from the fe service ports
         #   nodePort: 30030 # The range of valid ports is 30000-32767
         #   containerPort: 8030 # The port on the container to expose
         #   port: 8030 # The port to expose on the service
@@ -321,7 +321,7 @@ starrocks:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
         # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
-        # - name: webserver
+        # - name: webserver # fill the name from the cn service ports
         #   nodePort: 30040 # The range of valid ports is 30000-32767
         #   containerPort: 8040 # The port on the container to expose
         #   port: 8040 # The port to expose on the service
@@ -494,7 +494,7 @@ starrocks:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
         # e.g. use a dedicated node port for be service. The containerPort and port field can be commented out.
-        # - name: webserver
+        # - name: webserver # fill the name from the be service ports
         #   nodePort: 30040 # The range of valid ports is 30000-32767
         #   containerPort: 8040 # The port on the container to expose
         #   port: 8040 # The port to expose on the service
@@ -657,7 +657,7 @@ starrocks:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
         # e.g. use a dedicated node port for fe proxy service. The containerPort and port field can be commented out.
-        # - name: http-port
+        # - name: http-port   # fill the name from the fe proxy service ports
         #   nodePort: 30080 # The range of valid ports is 30000-32767
         #   containerPort: 8080 # The port on the container to expose
         #   port: 8080 # The port to expose on the service

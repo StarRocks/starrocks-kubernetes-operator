@@ -22,7 +22,7 @@ spec:
     service:
       type: NodePort   # export fe service
       ports:
-      - name: query
+      - name: query   # fill the name from the fe service ports
         nodePort: 32755
         port: 9030
         containerPort: 9030
@@ -46,8 +46,8 @@ spec:
     service:
       type: NodePort   # export fe proxy service
       ports:
-        - containerPort: 8080
-          name: http-port
+        - name: http-port   # fill the name from the fe proxy service ports
+          containerPort: 8080
           nodePort: 30180   # The range of valid ports is 30000-32767
           port: 8080
     resolver: "kube-dns.kube-system.svc.cluster.local"  # this is the default dns server.
