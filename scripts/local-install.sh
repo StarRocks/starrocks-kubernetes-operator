@@ -214,7 +214,7 @@ starrocks:
     service:
       type: NodePort
       ports:
-      - name: http-port
+      - name: http-port   # fill the name from the fe proxy service ports
         nodePort: 30001
         containerPort: 8080
         port: 8080

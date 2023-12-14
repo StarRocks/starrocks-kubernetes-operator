@@ -29,8 +29,8 @@ starrocks:
     service:
       type: NodePort
       ports:
-        - containerPort: 8080
-          name: http-port
+        - name: http-port   # fill the name from the fe proxy service ports
+          containerPort: 8080
           nodePort: 30180
           port: 8080
 ```
@@ -52,8 +52,8 @@ starRocksFeProxySpec:
   service:
     type: NodePort
     ports:
-      - containerPort: 8080
-        name: http-port
+      - name: http-port   # fill the name from the fe proxy service ports
+        containerPort: 8080
         nodePort: 30180
         port: 8080
 ```
