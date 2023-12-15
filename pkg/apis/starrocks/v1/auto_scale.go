@@ -19,7 +19,10 @@ package v1
 import (
 	"strconv"
 
-	"k8s.io/api/autoscaling/v2beta2"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // AutoScalingPolicy defines the auto scale
@@ -39,6 +42,22 @@ type AutoScalingPolicy struct {
 	// MaxReplicas is the upper limit for the number of pods that can be set by the autoscaler;
 	// cannot be smaller than MinReplicas.
 	MaxReplicas int32 `json:"maxReplicas"`
+}
+
+type HPAPolicy struct {
+	// +optional
+	// Metrics specifies how to scale based on a single metric
+	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
+	// the splice will have unsafe.Pointer convert, so be careful to edit the struct fields.
+	Metrics []autoscalingv2beta2.MetricSpec `json:"metrics,omitempty"`
+
+	// +optional
+	// HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
+	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
+	// the
+	Behavior *autoscalingv2beta2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
 type AutoScalerVersion string
@@ -77,18 +96,18 @@ func (version AutoScalerVersion) Complete(major, minor string) AutoScalerVersion
 	return AutoScalerV2
 }
 
-type HPAPolicy struct {
-	// +optional
-	// Metrics specifies how to scale based on a single metric
-	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
-	// the splice will have unsafe.Pointer convert, so be careful to edit the struct fields.
-	Metrics []v2beta2.MetricSpec `json:"metrics,omitempty"`
+// CreateEmptyHPA create an empty HPA object based on the version information
+func (version AutoScalerVersion) CreateEmptyHPA(major, minor string) client.Object {
+	filledVersion := version.Complete(major, minor)
 
-	// +optional
-	// HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
-	// the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-	// HorizontalPodAutoscaler version and kubernetes releases matching issue.
-	// the
-	Behavior *v2beta2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
+	var object client.Object
+	switch filledVersion {
+	case AutoScalerV1:
+		object = &autoscalingv1.HorizontalPodAutoscaler{}
+	case AutoScalerV2:
+		object = &autoscalingv2.HorizontalPodAutoscaler{}
+	case AutoScalerV2Beta2:
+		object = &autoscalingv2beta2.HorizontalPodAutoscaler{}
+	}
+	return object
 }

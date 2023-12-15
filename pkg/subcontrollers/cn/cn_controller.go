@@ -25,9 +25,6 @@ import (
 
 	"github.com/go-logr/logr"
 	appv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
-	v2 "k8s.io/api/autoscaling/v2"
-	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -310,67 +307,48 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, object object.Star
 		ScalerPolicy:    &policy,
 	}
 
-	autoScaler := rutils.BuildHorizontalPodAutoscaler(autoscalerParams, "")
-	autoScaler.SetAnnotations(make(map[string]string))
-	var clientObject client.Object
-	t := autoscalerParams.AutoscalerType.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
-	switch t {
-	case srapi.AutoScalerV1:
-		clientObject = &v1.HorizontalPodAutoscaler{}
-	case srapi.AutoScalerV2:
-		clientObject = &v2.HorizontalPodAutoscaler{}
-	case srapi.AutoScalerV2Beta2:
-		clientObject = &v2beta2.HorizontalPodAutoscaler{}
-	}
+	expectHPA := rutils.BuildHorizontalPodAutoscaler(autoscalerParams, "")
+	expectHPA.SetAnnotations(make(map[string]string))
+
+	actualHPA := autoscalerParams.AutoscalerType.CreateEmptyHPA(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
 	if err := cc.k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: autoscalerParams.Namespace,
 			Name:      autoscalerParams.Name,
 		},
-		clientObject,
+		actualHPA,
 	); err != nil {
 		if apierrors.IsNotFound(err) {
-			return cc.k8sClient.Create(ctx, autoScaler)
+			return cc.k8sClient.Create(ctx, expectHPA)
 		}
 		return err
 	}
 
 	var expectHash, actualHash string
-	expectHash = hash.HashObject(autoScaler)
-	if v, ok := clientObject.GetAnnotations()[srapi.ComponentResourceHash]; ok {
+	expectHash = hash.HashObject(expectHPA)
+	if v, ok := actualHPA.GetAnnotations()[srapi.ComponentResourceHash]; ok {
 		actualHash = v
 	} else {
-		actualHash = hash.HashObject(clientObject)
+		actualHash = hash.HashObject(actualHPA)
 	}
 
 	if expectHash == actualHash {
 		logger.Info("expectHash == actualHash, no need to update HPA resource")
 		return nil
 	}
-	autoScaler.GetAnnotations()[srapi.ComponentResourceHash] = expectHash
-	return cc.k8sClient.Update(ctx, autoScaler)
+	expectHPA.GetAnnotations()[srapi.ComponentResourceHash] = expectHash
+	return cc.k8sClient.Update(ctx, expectHPA)
 }
 
 // deleteAutoScaler delete the autoscaler.
 func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
-	if src.Status.StarRocksCnStatus == nil {
-		return nil
-	}
-
-	if src.Status.StarRocksCnStatus.HorizontalScaler.Name == "" {
-		return nil
-	}
-
-	autoScalerName := src.Status.StarRocksCnStatus.HorizontalScaler.Name
-	version := src.Status.StarRocksCnStatus.HorizontalScaler.Version
-	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, src.Namespace, autoScalerName, version); err != nil && !apierrors.IsNotFound(err) {
+	autoScalerName := cc.generateAutoScalerName(src.Name, (*srapi.StarRocksCnSpec)(nil))
+	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, src.Namespace, autoScalerName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
 		return err
 	}
-
-	src.Status.StarRocksCnStatus.HorizontalScaler = srapi.HorizontalScaler{}
 	return nil
 }
 
