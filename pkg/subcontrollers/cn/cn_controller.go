@@ -296,6 +296,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 func (cc *CnController) deployAutoScaler(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
 	policy srapi.AutoScalingPolicy, target *appv1.StatefulSet) error {
 	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update k8s hpa resource")
 
 	labels := rutils.Labels{}
 	labels.AddLabel(target.Labels)

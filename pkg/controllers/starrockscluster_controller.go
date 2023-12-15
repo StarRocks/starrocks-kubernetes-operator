@@ -18,10 +18,10 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
@@ -30,9 +30,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
 const (
@@ -81,8 +84,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	src := esrc.DeepCopy()
 
-	// record the src updated or not by process.
-	oldHashValue := r.hashStarRocksCluster(src)
 	// reconcile src deleted
 	if !src.DeletionTimestamp.IsZero() {
 		logger.Info("deletion timestamp is not zero, clear StarRocksCluster related resources")
@@ -96,14 +97,12 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		logger.Info("sub controller sync spec", kvs...)
 		if err = rc.SyncCluster(ctx, src); err != nil {
 			logger.Error(err, "sub controller reconciles spec failed", kvs...)
+			handleSyncClusterError(src, rc, err)
+			if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
+				logger.Error(updateError, "failed to update StarRocksCluster Status")
+			}
 			return requeueIfError(err)
 		}
-	}
-
-	newHashValue := r.hashStarRocksCluster(src)
-	if oldHashValue != newHashValue {
-		logger.Info("the hash value of StarRocksCluster CR changed, send patch request to kubernetes")
-		return ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src)
 	}
 
 	for _, rc := range r.Scs {
@@ -111,6 +110,10 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		logger.Info("sub controller update status", kvs...)
 		if err = rc.UpdateClusterStatus(ctx, src); err != nil {
 			logger.Error(err, "sub controller update status failed", kvs...)
+			handleSyncClusterError(src, rc, err)
+			if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
+				logger.Error(updateError, "failed to update StarRocksCluster Status")
+			}
 			return requeueIfError(err)
 		}
 	}
@@ -139,20 +142,6 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 	})
 }
 
-// PatchStarRocksCluster patch spec, metadata
-func (r *StarRocksClusterReconciler) PatchStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
-	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		var esrc srapi.StarRocksCluster
-		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
-			return err
-		}
-
-		src.ResourceVersion = esrc.ResourceVersion
-
-		return k8sutils.PatchClientObject(ctx, r.Client, src)
-	})
-}
-
 // UpdateStarRocksCluster update the starrockscluster metadata, spec.
 func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
@@ -168,22 +157,9 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context,
 	})
 }
 
-// hash the starrockscluster for check the crd modified or not.
-func (r *StarRocksClusterReconciler) hashStarRocksCluster(src *srapi.StarRocksCluster) string {
-	type hashObject struct {
-		metav1.ObjectMeta
-		Spec srapi.StarRocksClusterSpec
-	}
-	ho := &hashObject{
-		ObjectMeta: src.ObjectMeta,
-		Spec:       src.Spec,
-	}
-
-	return hash.HashObject(ho)
-}
-
 func (r *StarRocksClusterReconciler) reconcileStatus(_ context.Context, src *srapi.StarRocksCluster) {
 	src.Status.Phase = srapi.ClusterRunning
+	src.Status.Reason = ""
 	phase := GetPhaseFromComponent(&src.Status.StarRocksFeStatus.StarRocksComponentStatus)
 	if phase != "" {
 		src.Status.Phase = phase
@@ -203,6 +179,24 @@ func (r *StarRocksClusterReconciler) reconcileStatus(_ context.Context, src *sra
 			return
 		}
 	}
+}
+
+// handleSyncClusterError handle errors from sub-controller, and log it in StarRocksCluster Status
+func handleSyncClusterError(src *srapi.StarRocksCluster, subController subcontrollers.ClusterSubController, err error) {
+	reason := err.Error()
+	switch subController.(type) {
+	case *fe.FeController:
+		reason = fmt.Sprintf("error from FE controller: %v", reason)
+	case *be.BeController:
+		reason = fmt.Sprintf("error from BE controller: %v", reason)
+	case *cn.CnController:
+		reason = fmt.Sprintf("error from CN controller: %v", reason)
+	case *feproxy.FeProxyController:
+		reason = fmt.Sprintf("error from fe-proxy controller: %v", reason)
+	}
+
+	src.Status.Phase = srapi.ClusterFailed
+	src.Status.Reason = reason
 }
 
 func requeueIfError(err error) (ctrl.Result, error) {
