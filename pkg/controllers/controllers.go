@@ -4,7 +4,6 @@ import (
 	"context"
 
 	appv1 "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -73,11 +72,12 @@ func SetupWarehouseReconciler(ctx context.Context, mgr ctrl.Manager) error {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
+	// v2.HorizontalPodAutoscaler does not exist.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksWarehouse{}).
 		Owns(&appv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
-		Owns(&v2.HorizontalPodAutoscaler{}).
 		Complete(r)
 }
