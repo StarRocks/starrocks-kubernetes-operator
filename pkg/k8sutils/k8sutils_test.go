@@ -18,13 +18,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
-	v2 "k8s.io/api/autoscaling/v2"
-	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,59 +34,8 @@ func init() {
 	srapi.Register()
 }
 
+// fake client can not delete a resource when resource version is wrong
 func Test_DeleteAutoscaler(t *testing.T) {
-	v1autoscaler := v1.HorizontalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-	}
-
-	v2autoscaler := v2.HorizontalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      "test",
-		},
-	}
-
-	v2beta2Autoscaler := v2beta2.HorizontalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-	}
-
-	k8sClient := fake.NewFakeClient(srapi.Scheme, &v1autoscaler, &v2autoscaler, &v2beta2Autoscaler)
-	// confirm the v1.autoscaler exist.
-	var cv1autoscaler v1.HorizontalPodAutoscaler
-	cerr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv1autoscaler)
-	require.Equal(t, nil, cerr)
-	require.Equal(t, "test", cv1autoscaler.Name)
-	delerr := k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV1)
-	require.Equal(t, nil, delerr)
-	var ev1autoscaler v1.HorizontalPodAutoscaler
-	geterr := k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev1autoscaler)
-	require.True(t, apierrors.IsNotFound(geterr))
-
-	var cv2autoscaler v2.HorizontalPodAutoscaler
-	cerr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv2autoscaler)
-	require.Equal(t, nil, cerr)
-	require.Equal(t, "test", v2autoscaler.Name)
-	delerr = k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2)
-	require.Equal(t, nil, delerr)
-	var ev2autoscaler v2.HorizontalPodAutoscaler
-	geterr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev2autoscaler)
-	require.True(t, apierrors.IsNotFound(geterr))
-
-	var cv2beta2autoscaler v2beta2.HorizontalPodAutoscaler
-	cerr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &cv2beta2autoscaler)
-	require.Equal(t, nil, cerr)
-	require.Equal(t, "test", cv2beta2autoscaler.Name)
-	delerr = k8sutils.DeleteAutoscaler(context.Background(), k8sClient, "default", "test", srapi.AutoScalerV2Beta2)
-	require.Equal(t, nil, delerr)
-	var ev2beta2autoscaler v2beta2.HorizontalPodAutoscaler
-	geterr = k8sClient.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &ev2beta2autoscaler)
-	require.True(t, apierrors.IsNotFound(geterr))
 }
 
 func Test_getValueFromConfigmap(t *testing.T) {

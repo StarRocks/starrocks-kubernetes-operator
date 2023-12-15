@@ -24,9 +24,6 @@ import (
 	"github.com/go-logr/logr"
 
 	appv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
-	v2 "k8s.io/api/autoscaling/v2"
-	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -249,31 +246,19 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 	return k8sClient.Delete(ctx, &cm)
 }
 
-// DeleteAutoscaler as version type delete response autoscaler.
-func DeleteAutoscaler(ctx context.Context, k8sClient client.Client,
-	namespace, name string, autoscalerVersion srapi.AutoScalerVersion) error {
+func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("delete autoscaler from kubernetes", "name", name)
 
-	var autoscaler client.Object
-	switch autoscalerVersion {
-	case srapi.AutoScalerV1:
-		autoscaler = &v1.HorizontalPodAutoscaler{}
-	case srapi.AutoScalerV2:
-		autoscaler = &v2.HorizontalPodAutoscaler{}
-	case srapi.AutoScalerV2Beta2:
-		autoscaler = &v2beta2.HorizontalPodAutoscaler{}
-	default:
-		return fmt.Errorf("the autoscaler type %s is not supported", autoscalerVersion)
-	}
-
-	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, autoscaler); apierrors.IsNotFound(err) {
+	var version srapi.AutoScalerVersion
+	hpaObject := version.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION)
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hpaObject); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
 		return err
 	}
 
-	return k8sClient.Delete(ctx, autoscaler)
+	return k8sClient.Delete(ctx, hpaObject)
 }
 
 func PodIsReady(status *corev1.PodStatus) bool {
