@@ -242,8 +242,8 @@ starrocks:
     service:
       type: NodePort
       ports:
-      - containerPort: 9030
-        name: query
+      - name: query   # fill the name from the fe service ports
+        containerPort: 9030
         nodePort: 30002
         port: 9030
   starrocksBeSpec:
@@ -266,7 +266,7 @@ starrocks:
     service:
       type: NodePort
       ports:
-      - name: http-port
+      - name: http-port   # fill the name from the fe proxy service ports
         nodePort: 30001
         containerPort: 8080
         port: 8080        

@@ -1,6 +1,0 @@
-apiVersion: starrocks.com/v1alpha1
-kind: ComputeNodeGroup
-metadata:
-  name: computenodegroup-sample
-spec:
-  # TODO(user): Add fields here

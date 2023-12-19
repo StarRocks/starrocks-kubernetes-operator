@@ -63,3 +63,9 @@ starrocksOperator:
   # operator supports the following environment variables:
   # KUBE_STARROCKS_UNSUPPORTED_ENVS: "XXX,YYY" # The environment variables that will not be passed to starrocks container.
   env: []
+  # setting log related parameter
+  log:
+    - --zap-time-encoding=iso8601
+    - --zap-encoder=console
+    # if you want open debug log, open this option
+    # - --zap-log-level 4

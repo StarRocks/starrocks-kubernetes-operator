@@ -17,7 +17,6 @@ package resource_utils
 import (
 	"testing"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/stretchr/testify/require"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
@@ -25,6 +24,8 @@ import (
 	"k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
 const _defaultNamespace = "default"
@@ -78,7 +79,7 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 			MinReplicas: GetInt32Pointer(1),
 		},
 	}
-	require.Equal(t, buildAutoscalerV1(pap), ha)
+	require.Equal(t, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV1), ha)
 }
 
 func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
@@ -100,65 +101,65 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
 			HPAPolicy: &srapi.HPAPolicy{
-				Metrics: []srapi.MetricSpec{{
-					Type: srapi.PodsMetricSourceType,
-					Object: &srapi.ObjectMetricSource{
-						DescribedObject: srapi.CrossVersionObjectReference{
+				Metrics: []v2beta2.MetricSpec{{
+					Type: v2beta2.PodsMetricSourceType,
+					Object: &v2beta2.ObjectMetricSource{
+						DescribedObject: v2beta2.CrossVersionObjectReference{
 							Kind:       "statefulset",
 							Name:       "test-statefulset",
 							APIVersion: "apps/v2beta2",
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
-						Metric: srapi.MetricIdentifier{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
 					},
-					Pods: &srapi.PodsMetricSource{
-						Metric: srapi.MetricIdentifier{
+					Pods: &v2beta2.PodsMetricSource{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 					},
-					Resource: &srapi.ResourceMetricSource{
+					Resource: &v2beta2.ResourceMetricSource{
 						Name: "test",
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 					},
-					ContainerResource: &srapi.ContainerResourceMetricSource{
+					ContainerResource: &v2beta2.ContainerResourceMetricSource{
 						Name: "test",
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 						Container: "test",
 					},
-					External: &srapi.ExternalMetricSource{
-						Metric: srapi.MetricIdentifier{
+					External: &v2beta2.ExternalMetricSource{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
@@ -257,7 +258,7 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, ha, buildAutoscalerV2beta2(pap))
+	require.Equal(t, ha, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV2Beta2))
 }
 
 func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
@@ -279,65 +280,65 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
 			HPAPolicy: &srapi.HPAPolicy{
-				Metrics: []srapi.MetricSpec{{
-					Type: srapi.PodsMetricSourceType,
-					Object: &srapi.ObjectMetricSource{
-						DescribedObject: srapi.CrossVersionObjectReference{
+				Metrics: []v2beta2.MetricSpec{{
+					Type: v2beta2.PodsMetricSourceType,
+					Object: &v2beta2.ObjectMetricSource{
+						DescribedObject: v2beta2.CrossVersionObjectReference{
 							Kind:       "statefulset",
 							Name:       "test-statefulset",
 							APIVersion: "apps/v2beta2",
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
-						Metric: srapi.MetricIdentifier{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
 					},
-					Pods: &srapi.PodsMetricSource{
-						Metric: srapi.MetricIdentifier{
+					Pods: &v2beta2.PodsMetricSource{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 					},
-					Resource: &srapi.ResourceMetricSource{
+					Resource: &v2beta2.ResourceMetricSource{
 						Name: "test",
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 					},
-					ContainerResource: &srapi.ContainerResourceMetricSource{
+					ContainerResource: &v2beta2.ContainerResourceMetricSource{
 						Name: "test",
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
 						Container: "test",
 					},
-					External: &srapi.ExternalMetricSource{
-						Metric: srapi.MetricIdentifier{
+					External: &v2beta2.ExternalMetricSource{
+						Metric: v2beta2.MetricIdentifier{
 							Name: "test",
 							Selector: &metav1.LabelSelector{
 								MatchLabels: make(map[string]string),
 							},
 						},
-						Target: srapi.MetricTarget{
-							Type:               srapi.ValueMetricType,
+						Target: v2beta2.MetricTarget{
+							Type:               v2beta2.ValueMetricType,
 							Value:              resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
 							AverageUtilization: GetInt32Pointer(1),
 						},
@@ -436,5 +437,5 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, ha, buildAutoscalerV2(pap))
+	require.Equal(t, ha, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV2))
 }

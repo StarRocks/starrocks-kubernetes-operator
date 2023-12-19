@@ -35,7 +35,7 @@ linters-settings:
       - pattern: 'interface{}'
         replacement: 'any'
   goimports:
-    local-prefixes: github.com/golangci/golangci-lint
+    local-prefixes: github.com/StarRocks/starrocks-kubernetes-operator/pkg
   gomnd:
     # don't include the "operation" and "assign"
     checks:
@@ -80,20 +80,20 @@ linters:
     - bodyclose
     - depguard
     - dogsled
-    #- dupl
+    - dupl
     - errcheck
     - exportloopref
     - funlen
     - gocheckcompilerdirectives
-    #- gochecknoinits
+    - gochecknoinits
     - goconst
     # - gocritic
     - gocyclo
     # - gofmt
-    # - goimports
+    - goimports
     - gomnd
     - goprintffuncname
-    #- gosec
+    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -153,6 +153,8 @@ issues:
 
 run:
   timeout: 5m
+  skip-files:
+    - ".*_test\\.go"
   skip-dirs:
     - test/testdata_etc # test files
     - internal/cache # extracted from Go code

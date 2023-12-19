@@ -1289,8 +1289,8 @@ spec:
                             volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
+                      - mountPath
                       - name
-                      - storageSize
                       type: object
                     type: array
                   terminationGracePeriodSeconds:
@@ -3267,8 +3267,8 @@ spec:
                             volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
+                      - mountPath
                       - name
-                      - storageSize
                       type: object
                     type: array
                   terminationGracePeriodSeconds:
@@ -4392,8 +4392,8 @@ spec:
                             volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
+                      - mountPath
                       - name
-                      - storageSize
                       type: object
                     type: array
                   tolerations:
@@ -5677,8 +5677,8 @@ spec:
                             volume should be mounted. Defaults to "" (volume's root).
                           type: string
                       required:
+                      - mountPath
                       - name
-                      - storageSize
                       type: object
                     type: array
                   terminationGracePeriodSeconds:
@@ -5769,8 +5769,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5822,8 +5821,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5862,8 +5860,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array
@@ -5902,8 +5899,7 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   resourceNames:
-                    description: ResourceNames the statefulset names of fe in v1alpha1
-                      version.
+                    description: ResourceNames the statefulset names of fe.
                     items:
                       type: string
                     type: array

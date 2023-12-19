@@ -22,7 +22,7 @@ spec:
     configMapInfo:
       configMapName: starrockscluster-sample-fe-cm
       resolveKey: fe.conf
-    # fe storage volumes for persistent meta data and log
+    # fe storage volumes for persistent metadata and log
     storageVolumes:
       - name: fe-storage-meta
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -93,7 +93,7 @@ spec:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
       # e.g. use a dedicated node port for http port of fe service.
-      # - name: http
+      # - name: http  # fill the name from the fe service ports
       #   nodePort: 30030 # The range of valid ports is 30000-32767
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
@@ -207,7 +207,7 @@ spec:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
       # e.g. use a dedicated node port for be service.
-      # - name: webserver
+      # - name: webserver # fill the name from the be service ports
       #   nodePort: 30040 # The range of valid ports is 30000-32767
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
@@ -354,7 +354,7 @@ spec:
       # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
       ports: []
       # e.g. use a dedicated node port for cn service.
-      # - name: webserver
+      # - name: webserver # fill the name from the cn service ports
       #   nodePort: 30040 # The range of valid ports is 30000-32767
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
@@ -388,7 +388,7 @@ spec:
     service:
       type: NodePort   # export fe proxy service
       ports:
-        - name: http-port
+        - name: http-port   # the name is from fe proxy service ports
           nodePort: 30180   # The range of valid ports is 30000-32767
     # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
     resolver: "kube-dns.kube-system.svc.cluster.local"

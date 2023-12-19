@@ -16,6 +16,7 @@ type loadInterface interface {
 	GetStartupProbeFailureSeconds() *int32
 	GetLivenessProbeFailureSeconds() *int32
 	GetReadinessProbeFailureSeconds() *int32
+	GetService() *StarRocksService
 
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
@@ -198,6 +199,10 @@ func (spec *StarRocksLoadSpec) GetAffinity() *corev1.Affinity {
 
 func (spec *StarRocksLoadSpec) GetTolerations() []corev1.Toleration {
 	return spec.Tolerations
+}
+
+func (spec *StarRocksLoadSpec) GetService() *StarRocksService {
+	return spec.Service
 }
 
 func (spec *StarRocksLoadSpec) GetNodeSelector() map[string]string {

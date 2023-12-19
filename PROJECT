@@ -10,14 +10,14 @@ resources:
   controller: true
   domain: starrocks.com
   kind: StarRocksCluster
-  path: github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1alpha1
-  version: v1alpha1
+  path: github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1
+  version: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
   domain: starrocks.com
-  kind: StarRocksCluster
+  kind: StarRocksWarehouse
   path: github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1
   version: v1
 version: "3"

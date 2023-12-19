@@ -47,7 +47,7 @@ type StarRocksClusterSpec struct {
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
 type StarRocksClusterStatus struct {
 	// Represents the state of cluster. the possible value are: running, failed, pending
-	Phase ClusterPhase `json:"phase"`
+	Phase Phase `json:"phase"`
 
 	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
@@ -189,34 +189,41 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 	return nil
 }
 
-// ClusterPhase represent the cluster phase. the possible value for cluster phase are: running, failed, pending.
-type ClusterPhase string
+// Phase is defined under status, e.g.
+// 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
+// 2. StarRocksWarehouseStatus.Phase represents the phase of starrocks warehouse.
+// The possible value for cluster phase are: running, failed, pending, deleting.
+type Phase string
 
-// MemberPhase represent the component phase about be, cn, be. the possible value for component phase are:
-// reconciling, failed, running.
-type MemberPhase string
+// ComponentPhase represent the component phase. e.g.
+// 1. StarRocksCluster contains three components: FE, CN, BE.
+// 2. StarRocksWarehouse reuse the CN component.
+// The possible value for component phase are: reconciling, failed, running.
+type ComponentPhase string
 
 const (
 	// ClusterRunning represents starrocks cluster is running.
-	ClusterRunning ClusterPhase = "running"
+	ClusterRunning Phase = "running"
 
 	// ClusterFailed represents starrocks cluster failed.
-	ClusterFailed ClusterPhase = "failed"
+	ClusterFailed Phase = "failed"
 
 	// ClusterPending represents the starrocks cluster is creating
-	ClusterPending ClusterPhase = "pending"
+	ClusterPending Phase = "pending"
 
 	// ClusterDeleting waiting all resource deleted
-	ClusterDeleting ClusterPhase = "deleting"
+	ClusterDeleting Phase = "deleting"
 )
 
 const (
 	// ComponentReconciling the starrocks have component in starting.
-	ComponentReconciling MemberPhase = "reconciling"
+	ComponentReconciling ComponentPhase = "reconciling"
+
 	// ComponentFailed have at least one service failed.
-	ComponentFailed MemberPhase = "failed"
+	ComponentFailed ComponentPhase = "failed"
+
 	// ComponentRunning all components runs available.
-	ComponentRunning MemberPhase = "running"
+	ComponentRunning ComponentPhase = "running"
 )
 
 // AnnotationOperationValue present the operation for fe, cn, be.
@@ -267,10 +274,11 @@ type StorageVolume struct {
 	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
 	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
 	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
-	StorageSize string `json:"storageSize"`
+	// +optional
+	StorageSize string `json:"storageSize,omitempty"`
 
 	// MountPath specify the path of volume mount.
-	MountPath string `json:"mountPath,omitempty"`
+	MountPath string `json:"mountPath"`
 
 	// SubPath within the volume from which the container's volume should be mounted.
 	// Defaults to "" (volume's root).
@@ -285,8 +293,4 @@ type StarRocksClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []StarRocksCluster `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&StarRocksCluster{}, &StarRocksClusterList{})
 }

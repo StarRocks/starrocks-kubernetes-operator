@@ -1,0 +1,26 @@
+name: Action Run helm template
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'helm-charts/**'
+
+jobs:
+  chart:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.10.0
+    - name: Run helm template
+      run: |
+        cd helm-charts/charts/kube-starrocks/
+        helm template -f values.yaml .

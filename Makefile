@@ -1,7 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.23
+ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -81,7 +81,12 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test ./... -coverprofile=coverage.data -timeout 30m || return 1
+	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/... 			\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers/... 		\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/... 		\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/... 	\
+		-coverprofile=coverage.data -timeout 30m || return 1
 	@go tool cover -func=coverage.data
 
 ##@ Build
@@ -135,11 +140,6 @@ CONTROLLER_GEN = $(GOBIN)/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
 
-GEN_DOCS = $(GOBIN)/gen-crd-api-reference-docs
-.PHONY: gen-tool
-gen-tool: ## Download gen-crd-api-reference-docs locally 0f necessary.
-	$(call go-get-tool,$(GEN_DOCS),github.com/ahmetb/gen-crd-api-reference-docs@v0.3.0)
-
 KUSTOMIZE = $(GOBIN)/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -151,10 +151,8 @@ envtest: ## Download envtest-setup locally if necessary.
 	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 .PHONY: gen-api
-gen-api: gen-tool
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/api.md"
-	$(GEN_DOCS)  -api-dir "./pkg/apis/starrocks/v1alpha1" -config "./scripts/docs/config.json" -template-dir "./scripts/docs/template" -out-file "doc/v1alpha1_api.md"
-
+gen-api:
+	cd scripts && ./gen-api-reference-docs.sh
 
 .PHONY: crd-all
 crd-all: generate manifests gen-api
