@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [v1.8.8](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.8)
+
+Release Notes for starrocks-kubernetes-operator v1.8.8
+
+We are pleased to announce the release of starrocks-kubernetes-operator v1.8.8.
+
+### BugFix
+
+1. When add annotations by `spec.StarRocksFeSpec/StarRocksBeSpec/StarRocksCnSpec.service` field, Operator should not
+   annotate on search(internal) service.
+
+We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
+welcome.
+
 ## [v1.8.7](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.7)
 
 Release Notes for starrocks-kubernetes-operator v1.8.7
