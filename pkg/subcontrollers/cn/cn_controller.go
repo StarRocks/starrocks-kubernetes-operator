@@ -183,8 +183,10 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	// build and deploy HPA
 	if cnSpec.AutoScalingPolicy != nil {
 		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &sts)
+	} else {
+		// If the HPA policy is nil, delete the HPA resource.
+		return cc.deleteAutoScaler(ctx, object)
 	}
-	return nil
 }
 
 // UpdateWarehouseStatus updates the status of StarRocksWarehouse.
@@ -253,6 +255,9 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	return nil
 }
 
+// ClearWarehouse clear the warehouse resource. It is different from ClearResources, which need to clear the
+// CN related resources of StarRocksCluster. ClearWarehouse only has CN related resources, when the warehouse CR
+// is deleted, sub resources of CN will be deleted by k8s.
 func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, name string) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionClearWarehouse)
 	ctx = logr.NewContext(ctx, logger)
@@ -341,11 +346,11 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, object object.Star
 }
 
 // deleteAutoScaler delete the autoscaler.
-func (cc *CnController) deleteAutoScaler(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.StarRocksObject) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
-	autoScalerName := cc.generateAutoScalerName(src.Name, (*srapi.StarRocksCnSpec)(nil))
-	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, src.Namespace, autoScalerName); err != nil && !apierrors.IsNotFound(err) {
+	autoScalerName := cc.generateAutoScalerName(object.AliasName, (*srapi.StarRocksCnSpec)(nil))
+	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, object.Namespace, autoScalerName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
 		return err
 	}
@@ -381,7 +386,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return err
 	}
 
-	if err := cc.deleteAutoScaler(ctx, src); err != nil && !apierrors.IsNotFound(err) {
+	if err := cc.deleteAutoScaler(ctx, object.NewFromCluster(src)); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
 		return err
 	}
