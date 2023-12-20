@@ -86,7 +86,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// reconcile src deleted
 	if !src.DeletionTimestamp.IsZero() {
 		logger.Info("deletion timestamp is not zero, clear StarRocksCluster related resources")
-		src.Status.Phase = srapi.ClusterDeleting
 		return ctrl.Result{}, nil
 	}
 
@@ -216,7 +215,7 @@ func GetPhaseFromComponent(componentStatus *srapi.StarRocksComponentStatus) srap
 		return ""
 	}
 	if componentStatus.Phase == srapi.ComponentReconciling {
-		return srapi.ClusterPending
+		return srapi.ClusterReconciling
 	}
 	if componentStatus.Phase == srapi.ComponentFailed {
 		return srapi.ClusterFailed

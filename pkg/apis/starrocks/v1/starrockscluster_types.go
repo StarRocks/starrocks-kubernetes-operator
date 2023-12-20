@@ -208,18 +208,15 @@ const (
 	// ClusterFailed represents starrocks cluster failed.
 	ClusterFailed Phase = "failed"
 
-	// ClusterPending represents the starrocks cluster is creating
-	ClusterPending Phase = "pending"
-
-	// ClusterDeleting waiting all resource deleted
-	ClusterDeleting Phase = "deleting"
+	// ClusterReconciling represents some component is reconciling
+	ClusterReconciling Phase = "reconciling"
 )
 
 const (
-	// ComponentReconciling the starrocks have component in starting.
+	// ComponentReconciling the starrocks component is reconciling
 	ComponentReconciling ComponentPhase = "reconciling"
 
-	// ComponentFailed have at least one service failed.
+	// ComponentFailed the pod of component is failed
 	ComponentFailed ComponentPhase = "failed"
 
 	// ComponentRunning all components runs available.
