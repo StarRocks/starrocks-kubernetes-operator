@@ -1,5 +1,3 @@
-# Ensure that the warehouse instance name differs from the starrocks instance name to avoid conflicts. For example, both
-# will generate configmaps using the 'nameOverride' as a prefix to the configmap name, followed by a specific suffix.
 nameOverride: "kube-starrocks"
 
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
@@ -19,7 +17,10 @@ datadog:
 
 spec:
   # The name of starrocks cluster, a must-have field.
-  # Note: the starrocks cluster must be created before the warehouse by operator.
+  # Note:
+  #   1. the starrocks cluster must be enterprise version.
+  #   2. the starrocks cluster must be created before the warehouse by operator
+  #   3. the starrocks cluster must run in shared-data mode.
   starRocksClusterName:
 
   # number of replicas to deploy.
@@ -35,7 +36,8 @@ spec:
   image:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
-    tag: 3.1-latest
+    # Note: the image tag must be greater than or equal to 3.2.0
+    tag: 3.2-latest
   # serviceAccount for pod access cloud service.
   serviceAccount: ""
   # add annotations for pods. example, if you want to config monitor for datadog, you can config the annotations.
