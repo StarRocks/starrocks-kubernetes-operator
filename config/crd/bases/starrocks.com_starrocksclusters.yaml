@@ -18,14 +18,20 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
     - jsonPath: .status.starRocksFeStatus.phase
       name: FeStatus
+      type: string
+    - jsonPath: .status.starRocksBeStatus.phase
+      name: BeStatus
       type: string
     - jsonPath: .status.starRocksCnStatus.phase
       name: CnStatus
       type: string
-    - jsonPath: .status.starRocksBeStatus.phase
-      name: BeStatus
+    - jsonPath: .status.starRocksFeProxyStatus.phase
+      name: FeProxyStatus
       type: string
     name: v1
     schema:
@@ -5744,6 +5750,9 @@ spec:
               phase:
                 description: 'Represents the state of cluster. the possible value
                   are: running, failed, pending'
+                type: string
+              reason:
+                description: Reason represents the errors when calling sub-controllers
                 type: string
               starRocksBeStatus:
                 description: Represents the status of be. the status have running,

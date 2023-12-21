@@ -49,6 +49,9 @@ type StarRocksClusterStatus struct {
 	// Represents the state of cluster. the possible value are: running, failed, pending
 	Phase Phase `json:"phase"`
 
+	// Reason represents the errors when calling sub-controllers
+	Reason string `json:"reason,omitempty"`
+
 	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
 
@@ -239,9 +242,11 @@ type HorizontalScaler struct {
 // +kubebuilder:resource:shortName=src
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
-// +kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
 // +kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
+// +kubebuilder:printcolumn:name="CnStatus",type=string,JSONPath=`.status.starRocksCnStatus.phase`
+// +kubebuilder:printcolumn:name="FeProxyStatus",type=string,JSONPath=`.status.starRocksFeProxyStatus.phase`
 // +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient

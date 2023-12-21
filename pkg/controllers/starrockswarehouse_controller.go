@@ -112,6 +112,11 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 		logger.Info("sub controller update warehouse status", kvs...)
 		if err = controller.UpdateWarehouseStatus(ctx, warehouse); err != nil {
 			logger.Error(err, "update warehouse status failed", kvs...)
+			warehouse.Status.Phase = srapi.ComponentFailed
+			warehouse.Status.Reason = err.Error()
+			if updateError := r.UpdateStarRocksWarehouseStatus(ctx, warehouse); updateError != nil {
+				logger.Error(err, "failed to update warehouse status")
+			}
 			return requeueIfError(err)
 		}
 	}

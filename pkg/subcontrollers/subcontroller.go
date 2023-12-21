@@ -43,7 +43,8 @@ type ClusterSubController interface {
 	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string
 
-	// UpdateClusterStatus update the component status on src.
+	// UpdateClusterStatus only update the component status in src.
+	// todo(yandongxiao): better to rename it, because it does not send update request to k8s
 	UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error
 }
 
