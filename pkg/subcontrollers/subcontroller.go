@@ -37,6 +37,7 @@ type ClusterSubController interface {
 	SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// ClearResources clear all resource about sub-component.
+	// todo(yandongxiao): rename to ClearCluster
 	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// GetControllerName return the controller name, beController, feController,cnController for log.

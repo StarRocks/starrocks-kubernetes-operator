@@ -17,7 +17,7 @@ package service
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
 func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort) *corev1.Service {
