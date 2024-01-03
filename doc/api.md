@@ -128,10 +128,10 @@ The possible value for component phase are: reconciling, failed, running.</p>
 </tr>
 </thead>
 <tbody><tr><td><p>&#34;failed&#34;</p></td>
-<td><p>ComponentFailed have at least one service failed.</p>
+<td><p>ComponentFailed the pod of component is failed</p>
 </td>
 </tr><tr><td><p>&#34;reconciling&#34;</p></td>
-<td><p>ComponentReconciling the starrocks have component in starting.</p>
+<td><p>ComponentReconciling the starrocks component is reconciling</p>
 </td>
 </tr><tr><td><p>&#34;running&#34;</p></td>
 <td><p>ComponentRunning all components runs available.</p>
@@ -390,14 +390,11 @@ The possible value for cluster phase are: running, failed, pending, deleting.</p
 <th>Description</th>
 </tr>
 </thead>
-<tbody><tr><td><p>&#34;deleting&#34;</p></td>
-<td><p>ClusterDeleting waiting all resource deleted</p>
-</td>
-</tr><tr><td><p>&#34;failed&#34;</p></td>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
 <td><p>ClusterFailed represents starrocks cluster failed.</p>
 </td>
-</tr><tr><td><p>&#34;pending&#34;</p></td>
-<td><p>ClusterPending represents the starrocks cluster is creating</p>
+</tr><tr><td><p>&#34;reconciling&#34;</p></td>
+<td><p>ClusterReconciling represents some component is reconciling</p>
 </td>
 </tr><tr><td><p>&#34;running&#34;</p></td>
 <td><p>ClusterRunning represents starrocks cluster is running.</p>
@@ -776,6 +773,17 @@ Phase
 </td>
 <td>
 <p>Represents the state of cluster. the possible value are: running, failed, pending</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Reason represents the errors when calling sub-controllers</p>
 </td>
 </tr>
 <tr>
@@ -1970,6 +1978,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
 Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: <code>512Mi</code>.</p>
 </td>
@@ -2062,5 +2071,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>c86f10d</code>.
+on git commit <code>b7b3c3f</code>.
 </em></p>
