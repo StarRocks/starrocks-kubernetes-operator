@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## [v1.9.0](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.0)
+
+Release Notes for starrocks-kubernetes-operator v1.9.0
+
+We are thrilled to announce the release of StarRocks Kubernetes Operator v1.9.0. This release introduces several
+enhancements, bug fixes, and documentation updates to improve the user experience of deploying and managing StarRocks
+clusters on Kubernetes.
+
+### What's New
+
+1. [Feature] Add StarRocksWarehouse CRD to support StarRocks Warehouse Feature (#323). Note: warehouse is an
+   enterprise feature for StarRocks.
+2. [Enhancement] Use StarRocksCluster State to log errors when subController apply failed (#359): We have improved error
+   logging by using the StarRocksCluster status.State when the subController apply operation fails.
+3. [Enhancement] Support to mount emptyDir in storageVolumes (#324): We have added support to mount emptyDir in
+   storageVolumes.
+
+### BugFix
+
+1. [BugFix] We have fixed an issue where the cluster status phase was not in sync with the component.(#380)
+2. [BugFix] We have fixed an issue where the HPA was not removed when the autoScalingPolicy was removed.(#379)
+3. [BugFix] We have fixed an issue where the HPA resource was not removed when the CN spec was removed.(#357)
+
+### Maintenance
+
+1. We have improved the setup of the Kubernetes environment for unit tests by using setup-envtest. (#347)
+2. We have added unit tests and ensured that the code coverage is at least 65%. (#354)
+3. We have updated the script to generate the API reference documentation.(#350)
+4. We have switched to using zap as the logger for better logging capabilities.(#341)
+
+We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
+welcome.
+
 ## [v1.8.8](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.8.8)
 
 Release Notes for starrocks-kubernetes-operator v1.8.8
