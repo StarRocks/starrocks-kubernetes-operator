@@ -33,6 +33,11 @@ function helm_package() {
     cd $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks
     # must be executed before helm index operation
     helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
+  elif [[ $chart_name = "warehouse" ]]; then
+    # helm package for warehouse
+    cd $HOME_PATH/helm-charts/charts/warehouse
+    # must be executed before helm index operation
+    helm package --sign --key 'yandongxiao' --keyring ~/.gnupg/secring.gpg .
   fi
 }
 
@@ -52,7 +57,7 @@ function get_package_name() {
     fi
     echo $package_name
   elif [[ $chart_name = "operator" ]]; then
-    # get the package name for kube-starrocks from Chart.yaml
+    # get the package name for operator from Chart.yaml
     chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
     # get the chart version from Chart.yaml
     chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
@@ -65,7 +70,7 @@ function get_package_name() {
     fi
     echo $package_name
   elif [[ $chart_name = "starrocks" ]]; then
-    # get the package name for kube-starrocks from Chart.yaml
+    # get the package name for starrocks from Chart.yaml
     chart_name=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
     # get the chart version from Chart.yaml
     chart_version=$(cat $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
@@ -73,6 +78,19 @@ function get_package_name() {
     package_name=${chart_name}-${chart_version}.tgz
     # make sure the package exists
     if [ ! -f $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name} ]; then
+      echo "package ${package_name} not found"
+      exit 1
+    fi
+    echo $package_name
+  elif [[ $chart_name = "warehouse" ]]; then
+    # get the package name for warehouse from Chart.yaml
+    chart_name=$(cat $HOME_PATH/helm-charts/charts/warehouse/Chart.yaml | grep '^name: ' | awk -F ': ' '{print $NF}')
+    # get the chart version from Chart.yaml
+    chart_version=$(cat $HOME_PATH/helm-charts/charts/warehouse/Chart.yaml | grep '^version: ' | awk -F ': ' '{print $NF}')
+    # make the package name
+    package_name=${chart_name}-${chart_version}.tgz
+    # make sure the package exists
+    if [ ! -f $HOME_PATH/helm-charts/charts/warehouse/${package_name} ]; then
       echo "package ${package_name} not found"
       exit 1
     fi
@@ -87,13 +105,13 @@ function helm_repo_index() {
   chart_name=$1
   release_tag=$RELEASE_TAG
   url=https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}
-  if [[ $chart_name = "kube-starrocks" ]]; then
+  if [[ $chart_name = "kube-starrocks" || $chart_name = "warehouse" ]]; then
     if [ -f $HOME_PATH/index.yaml ]; then
       helm repo index --merge $HOME_PATH/index.yaml --url $url $HOME_PATH/helm-charts/charts/$chart_name
     else
       helm repo index --url $url $HOME_PATH/helm-charts/charts/$chart_name
     fi
-    mv $HOME_PATH/helm-charts/charts/kube-starrocks/index.yaml $HOME_PATH/index.yaml
+    mv $HOME_PATH/helm-charts/charts/$chart_name/index.yaml $HOME_PATH/index.yaml
   else
     # for starrocks and operator
     if [ -f $HOME_PATH/index.yaml ]; then
@@ -147,6 +165,14 @@ helm_repo_index starrocks
 # move the package to artifacts
 mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name} $HOME_PATH/artifacts/${package_name}
 mv $HOME_PATH/helm-charts/charts/kube-starrocks/charts/starrocks/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
+
+echo "mkdir artifacts for warehouse chart"
+helm_package warehouse
+package_name=$(get_package_name warehouse)
+helm_repo_index warehouse
+# move the package to artifacts
+mv $HOME_PATH/helm-charts/charts/warehouse/${package_name} $HOME_PATH/artifacts/${package_name}
+mv $HOME_PATH/helm-charts/charts/warehouse/${package_name}.prov $HOME_PATH/artifacts/${package_name}.prov
 
 echo "copy yaml files for operator and crd"
 cp $HOME_PATH/deploy/*.yaml $HOME_PATH/artifacts/
