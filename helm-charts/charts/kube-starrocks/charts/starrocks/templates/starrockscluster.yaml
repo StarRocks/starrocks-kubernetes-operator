@@ -429,7 +429,7 @@ spec:
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
-    {{- if or .Values.starrocksCnSpec.storageSpec.namer .Values.starrocksCnSpec.emptyDirs }}
+    {{- if or .Values.starrocksCnSpec.storageSpec.name .Values.starrocksCnSpec.emptyDirs }}
     storageVolumes:
     {{- if .Values.starrocksCnSpec.storageSpec.name }}
     - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.data.suffix" . }}
