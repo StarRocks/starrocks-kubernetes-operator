@@ -145,9 +145,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	// build and deploy statefulset
 	podTemplateSpec, err := cc.buildPodTemplate(ctx, object, cnSpec, config)
 	if err != nil {
+		logger.Error(err, "build pod template failed")
 		return err
 	}
-	sts := statefulset.MakeStatefulset(object, cnSpec, *podTemplateSpec)
+
+	sts := statefulset.MakeStatefulset(object, cnSpec, podTemplateSpec)
 	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, true,
 		func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 			if expect.Spec.Replicas == nil {

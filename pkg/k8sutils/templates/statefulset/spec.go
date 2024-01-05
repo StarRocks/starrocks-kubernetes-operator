@@ -57,8 +57,8 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	return pvcs
 }
 
-// MakeStatefulset  statefulset
-func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) appv1.StatefulSet {
+// MakeStatefulset make statefulset
+func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appv1.StatefulSet {
 	const defaultRollingUpdateStartPod int32 = 0
 	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
@@ -81,7 +81,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 					Partition: rutils.GetInt32Pointer(defaultRollingUpdateStartPod),
 				},
 			},
-			Template:             podTemplateSpec,
+			Template:             *podTemplateSpec,
 			ServiceName:          service.SearchServiceName(object.AliasName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
 			PodManagementPolicy:  appv1.ParallelPodManagement,

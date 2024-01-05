@@ -394,3 +394,27 @@ func GetValueFromSecret(ctx context.Context, k8sClient client.Client, namespace 
 	}
 	return string(value), nil
 }
+
+func CheckVolumes(volumes []corev1.Volume, mounts []corev1.VolumeMount) error {
+	// check mount path first
+	mountPaths := make(map[string]bool)
+	for i := range mounts {
+		path := mounts[i].MountPath
+		if mountPaths[path] {
+			return fmt.Errorf("mount path %s is duplicated", path)
+		} else {
+			mountPaths[path] = true
+		}
+	}
+
+	volumeNames := make(map[string]bool)
+	for i := range volumes {
+		name := volumes[i].Name
+		if volumeNames[name] {
+			return fmt.Errorf("volume name %s is duplicated", name)
+		} else {
+			volumeNames[name] = true
+		}
+	}
+	return nil
+}
