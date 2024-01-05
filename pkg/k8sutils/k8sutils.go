@@ -62,7 +62,7 @@ func ApplyService(ctx context.Context, k8sClient client.Client, svc *corev1.Serv
 	}
 
 	svc.ResourceVersion = esvc.ResourceVersion
-	return UpdateClientObject(ctx, k8sClient, svc)
+	return k8sClient.Patch(ctx, svc, client.Merge)
 }
 
 func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1.Deployment) error {
@@ -174,15 +174,6 @@ func UpdateClientObject(ctx context.Context, k8sClient client.Client, object cli
 	if err := k8sClient.Update(ctx, object); err != nil {
 		return err
 	}
-	return nil
-}
-
-// PatchClientObject patch object when the object exist. if not return error.
-func PatchClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
-	if err := k8sClient.Patch(ctx, object, client.Merge); err != nil {
-		return err
-	}
-
 	return nil
 }
 
