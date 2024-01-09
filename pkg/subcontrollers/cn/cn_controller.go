@@ -148,8 +148,12 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 	sts := statefulset.MakeStatefulset(object, cnSpec, *podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, func(st1 *appv1.StatefulSet, st2 *appv1.StatefulSet) bool {
-		return rutils.StatefulSetDeepEqual(st1, st2, true)
+	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+		if expect.Spec.Replicas == nil {
+			return rutils.StatefulSetDeepEqual(expect, actual, true)
+		} else {
+			return rutils.StatefulSetDeepEqual(expect, actual, false)
+		}
 	}); err != nil {
 		return err
 	}
