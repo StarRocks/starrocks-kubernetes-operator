@@ -102,7 +102,7 @@ func Test_ClearResources(t *testing.T) {
 		Spec: corev1.ServiceSpec{},
 	}
 
-	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc))
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc), fake.GetEventRecorderFor(nil))
 	err := fc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
@@ -148,7 +148,7 @@ func Test_SyncDeploy(t *testing.T) {
 		},
 	}
 
-	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src))
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
 
 	err := fc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)

@@ -17,16 +17,17 @@ import (
 )
 
 func SetupClusterReconciler(mgr ctrl.Manager) error {
+	feController := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor)
+	beController := be.New(mgr.GetClient(), mgr.GetEventRecorderFor)
+	cnController := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)
+	feProxyController := feproxy.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	subcs := []subcontrollers.ClusterSubController{
-		fe.New(mgr.GetClient()),
-		be.New(mgr.GetClient()),
-		cn.New(mgr.GetClient()),
-		feproxy.New(mgr.GetClient()),
+		feController, beController, cnController, feProxyController,
 	}
 
 	reconciler := &StarRocksClusterReconciler{
 		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor(_controllerName),
+		Recorder: mgr.GetEventRecorderFor("starrockscluster-controller"),
 		Scs:      subcs,
 	}
 
@@ -61,8 +62,8 @@ func SetupWarehouseReconciler(ctx context.Context, mgr ctrl.Manager) error {
 
 	reconciler := &StarRocksWarehouseReconciler{
 		Client:         mgr.GetClient(),
-		recorder:       mgr.GetEventRecorderFor(_controllerName),
-		subControllers: []subcontrollers.WarehouseSubController{cn.New(mgr.GetClient())},
+		recorder:       mgr.GetEventRecorderFor("starrockswarehouse-controller"),
+		subControllers: []subcontrollers.WarehouseSubController{cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)},
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		return err

@@ -3,11 +3,13 @@ package fake
 import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
 
 type WithCRD func() *apiextensionsv1.CustomResourceDefinition
@@ -108,4 +110,14 @@ func NewManager(env *envtest.Environment) ctrl.Manager {
 		panic(err)
 	}
 	return mgr
+}
+
+func GetEventRecorderFor(recorder record.EventRecorder) subcontrollers.GetEventRecorderForFunc {
+	if recorder == nil {
+		bufferSize := 10
+		recorder = record.NewFakeRecorder(bufferSize)
+	}
+	return func(name string) record.EventRecorder {
+		return recorder
+	}
 }

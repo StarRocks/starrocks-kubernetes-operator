@@ -26,6 +26,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -43,15 +44,18 @@ import (
 
 type FeProxyController struct {
 	k8sClient client.Client
+	Recorder  record.EventRecorder
 }
 
 var _ subcontrollers.ClusterSubController = &FeProxyController{}
 
 // New construct a FeController.
-func New(k8sClient client.Client) *FeProxyController {
-	return &FeProxyController{
+func New(k8sClient client.Client, recorderFor subcontrollers.GetEventRecorderForFunc) *FeProxyController {
+	controller := &FeProxyController{
 		k8sClient: k8sClient,
 	}
+	controller.Recorder = recorderFor(controller.GetControllerName())
+	return controller
 }
 
 func (controller *FeProxyController) GetControllerName() string {
@@ -77,7 +81,16 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 		return nil
 	}
 
-	err := controller.SyncConfigMap(ctx, src)
+	var err error
+	defer func() {
+		if err != nil {
+			controller.Recorder.Event(src, corev1.EventTypeWarning, "SyncFeProxyFailed", err.Error())
+		} else {
+			controller.Recorder.Event(src, corev1.EventTypeNormal, "DeployFeProxySuccess", "deploy feProxy success")
+		}
+	}()
+
+	err = controller.SyncConfigMap(ctx, src)
 	if err != nil {
 		logger.Error(err, "sync fe proxy configmap failed", "StarRocksCluster", src)
 		return err

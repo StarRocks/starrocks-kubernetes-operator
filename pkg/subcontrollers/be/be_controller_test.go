@@ -91,7 +91,7 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &st, &svc, &ssvc))
+	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &st, &svc, &ssvc), fake.GetEventRecorderFor(nil))
 	err := bc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
@@ -150,7 +150,7 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &ep))
+	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &ep), fake.GetEventRecorderFor(nil))
 	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = bc.UpdateClusterStatus(context.Background(), src)

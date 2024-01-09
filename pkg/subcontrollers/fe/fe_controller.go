@@ -25,6 +25,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -40,14 +41,17 @@ import (
 )
 
 type FeController struct {
-	Client client.Client
+	Client   client.Client
+	Recorder record.EventRecorder
 }
 
 // New construct a FeController.
-func New(k8sClient client.Client) *FeController {
-	return &FeController{
+func New(k8sClient client.Client, recorderFor subcontrollers.GetEventRecorderForFunc) *FeController {
+	controller := &FeController{
 		Client: k8sClient,
 	}
+	controller.Recorder = recorderFor(controller.GetControllerName())
+	return controller
 }
 
 func (fc *FeController) GetControllerName() string {
@@ -62,6 +66,15 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		logger.Info("src.Spec.StarRocksFeSpec == nil, skip sync fe")
 		return nil
 	}
+
+	var err error
+	defer func() {
+		if err != nil {
+			fc.Recorder.Event(src, corev1.EventTypeWarning, "SyncFeFailed", err.Error())
+		} else {
+			fc.Recorder.Event(src, corev1.EventTypeNormal, "DeployFeSuccess", "deploy fe success")
+		}
+	}()
 
 	// get the fe configMap for resolve ports
 	feSpec := src.Spec.StarRocksFeSpec
@@ -106,6 +119,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return rutils.ServiceDeepEqual(new, esvc)
 	}); err != nil {
 		logger.Error(err, "deploy search service failed", "internalService", internalService)
+		fc.Recorder.Event(src, corev1.EventTypeWarning, "DeployFeFailed", err.Error())
 		return err
 	}
 

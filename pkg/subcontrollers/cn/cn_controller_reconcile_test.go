@@ -31,10 +31,10 @@ func newStarRocksClusterController(objects ...runtime.Object) *controllers.StarR
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
 	srcController.Scs = []subcontrollers.ClusterSubController{
-		fe.New(srcController.Client),
-		be.New(srcController.Client),
-		cn.New(srcController.Client),
-		feproxy.New(srcController.Client),
+		fe.New(srcController.Client, fake.GetEventRecorderFor(nil)),
+		be.New(srcController.Client, fake.GetEventRecorderFor(srcController.Recorder)),
+		cn.New(srcController.Client, fake.GetEventRecorderFor(nil)),
+		feproxy.New(srcController.Client, fake.GetEventRecorderFor(nil)),
 	}
 	return srcController
 }

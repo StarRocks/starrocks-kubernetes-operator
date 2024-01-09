@@ -29,7 +29,7 @@ func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWareho
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
 		subControllers: []subcontrollers.WarehouseSubController{
-			cn.New(client),
+			cn.New(client, fake.GetEventRecorderFor(nil)),
 		},
 	}
 	return warehouseController
