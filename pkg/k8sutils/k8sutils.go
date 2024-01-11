@@ -136,31 +136,41 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
-func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, sts *appv1.StatefulSet, equal StatefulSetEqual) error {
+func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv1.StatefulSet,
+	enableScaleTo1 bool, equal StatefulSetEqual) error {
 	logger := logr.FromContextOrDiscard(ctx)
-	logger.Info("create or update statefulset", "name", sts.Name)
+	logger.Info("create or update statefulset", "name", expect.Name)
 
 	var actual appv1.StatefulSet
-	err := k8sClient.Get(ctx, types.NamespacedName{Namespace: sts.Namespace, Name: sts.Name}, &actual)
+	err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual)
 	if err != nil && apierrors.IsNotFound(err) {
-		return CreateClientObject(ctx, k8sClient, sts)
+		return CreateClientObject(ctx, k8sClient, expect)
 	} else if err != nil {
 		return err
 	}
+
+	if !enableScaleTo1 {
+		if actual.Spec.Replicas != nil && *actual.Spec.Replicas > 1 {
+			if expect.Spec.Replicas == nil || *expect.Spec.Replicas == 1 {
+				return fmt.Errorf("the replicas of statefulset %s can not be scaled to 1", expect.Name)
+			}
+		}
+	}
+
 	// for compatible version <= v1.5, before v1.5 we use order policy to deploy pods.
 	// and use `xx-domain-search` for internal service. we should exclude the interference.
 	if actual.Spec.PodManagementPolicy == appv1.OrderedReadyPodManagement {
-		sts.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
+		expect.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
 	}
-	sts.Spec.ServiceName = actual.Spec.ServiceName
+	expect.Spec.ServiceName = actual.Spec.ServiceName
 
-	if equal(sts, &actual) {
+	if equal(expect, &actual) {
 		logger.Info("expectHash == actualHash, no need to update statefulset resource")
 		return nil
 	}
 
-	sts.ResourceVersion = actual.ResourceVersion
-	return UpdateClientObject(ctx, k8sClient, sts)
+	expect.ResourceVersion = actual.ResourceVersion
+	return UpdateClientObject(ctx, k8sClient, expect)
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {

@@ -95,7 +95,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	st := statefulset.MakeStatefulset(object.NewFromCluster(src), beSpec, podTemplateSpec)
 
 	// update the statefulset if feSpec be updated.
-	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 		return rutils.StatefulSetDeepEqual(new, actual, false)
 	}); err != nil {
 		logger.Error(err, "apply statefulset failed")

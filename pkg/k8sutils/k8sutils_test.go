@@ -500,10 +500,11 @@ func TestApplyConfigMap(t *testing.T) {
 
 func TestApplyStatefulSet(t *testing.T) {
 	type args struct {
-		ctx       context.Context
-		k8sClient client.Client
-		sts       *appsv1.StatefulSet
-		equal     k8sutils.StatefulSetEqual
+		ctx            context.Context
+		k8sClient      client.Client
+		sts            *appsv1.StatefulSet
+		enableScaleTo1 bool
+		equal          k8sutils.StatefulSetEqual
 	}
 	tests := []struct {
 		name    string
@@ -528,10 +529,12 @@ func TestApplyStatefulSet(t *testing.T) {
 						},
 					},
 				},
+				enableScaleTo1: true,
 				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
 					return rutils.StatefulSetDeepEqual(new, actual, false)
 				},
 			},
+			wantErr: false,
 		},
 		{
 			name: "test apply sts which has been created",
@@ -564,15 +567,61 @@ func TestApplyStatefulSet(t *testing.T) {
 						Replicas: func() *int32 { v := int32(1); return &v }(),
 					},
 				},
+				enableScaleTo1: true,
 				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
 					return rutils.StatefulSetDeepEqual(new, actual, false)
 				},
 			},
+			wantErr: false,
+		},
+		{
+			name: "scale sts replicas to 1",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-sts",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+					Spec: appsv1.StatefulSetSpec{Replicas: func() *int32 {
+						v := int32(2)
+						return &v
+					}()},
+				}),
+				sts: &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-sts",
+						Namespace: "default",
+						Annotations: map[string]string{
+							"test": "test",
+						},
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: func() *int32 { v := int32(1); return &v }(),
+					},
+				},
+				enableScaleTo1: false,
+				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
+					return rutils.StatefulSetDeepEqual(new, actual, false)
+				},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := k8sutils.ApplyStatefulSet(tt.args.ctx, tt.args.k8sClient, tt.args.sts, tt.args.equal); (err != nil) != tt.wantErr {
+			if err := k8sutils.ApplyStatefulSet(tt.args.ctx, tt.args.k8sClient, tt.args.sts, tt.args.enableScaleTo1, tt.args.equal); (err != nil) != tt.wantErr {
 				t.Errorf("ApplyStatefulSet() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			sts := &appsv1.StatefulSet{}
