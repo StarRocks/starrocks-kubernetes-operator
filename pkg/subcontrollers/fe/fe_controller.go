@@ -89,7 +89,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec := fc.buildPodTemplate(src, config)
 	st := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &st, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &st, false, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 		return rutils.StatefulSetDeepEqual(new, actual, false)
 	}); err != nil {
 		logger.Error(err, "deploy statefulset failed")
