@@ -1,6 +1,8 @@
 package pod
 
 import (
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -23,6 +25,9 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 	var volumeMounts []corev1.VolumeMount
 	vexist := make(map[string]bool)
 	for _, sv := range spec.GetStorageVolumes() {
+		if strings.HasPrefix(sv.StorageSize, "0") {
+			continue
+		}
 		vexist[sv.MountPath] = true
 		if IsSpecialStorageClass(sv.StorageClassName) {
 			volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)

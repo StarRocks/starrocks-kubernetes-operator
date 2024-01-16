@@ -15,6 +15,8 @@
 package statefulset
 
 import (
+	"strings"
+
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -34,6 +36,9 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range volumes {
 		if pod.IsSpecialStorageClass(vm.StorageClassName) {
+			continue
+		}
+		if strings.HasPrefix(vm.StorageSize, "0") {
 			continue
 		}
 		pvc := corev1.PersistentVolumeClaim{
