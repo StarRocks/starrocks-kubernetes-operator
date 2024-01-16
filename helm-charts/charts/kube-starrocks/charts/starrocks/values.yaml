@@ -104,11 +104,13 @@ starrocksFESpec:
     #   - "example.com"
   # schedulerName allows you to specify which scheduler will be used for your pods.
   schedulerName: ""
-  # Additional fe container environment variables
-  # You specify this manually like you would a raw deployment manifest.
-  # This means you can bind in environment variables from secrets.
-  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # Additional fe container environment variables.
+  # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
+  # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
+  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       You can only use one of slice and map to define environment variables.
   feEnvVars: []
+    # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
     #   value: "Hello from the environment"
@@ -262,11 +264,13 @@ starrocksCnSpec:
     #   - "example.com"
   # schedulerName allows you to specify which scheduler will be used for the pod
   schedulerName: ""
-  # Additional cn container environment variables
-  # You specify this manually like you would a raw deployment manifest.
-  # This means you can bind in environment variables from secrets.
-  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # Additional cn container environment variables.
+  # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
+  # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
+  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       You can only use one of slice and map to define environment variables.
   cnEnvVars: []
+    # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
     #   value: "Hello from the environment"
@@ -435,12 +439,13 @@ starrocksBeSpec:
     #   - "example.com"
   # schedulerName allows you to specify which scheduler will be used for the pod
   schedulerName: ""
-
-  # Additional be container environment variables
-  # You specify this manually like you would a raw deployment manifest.
-  # This means you can bind in environment variables from secrets.
-  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # Additional be container environment variables.
+  # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
+  # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
+  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       You can only use one of slice and map to define environment variables.
   beEnvVars: []
+    # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
     #   value: "Hello from the environment"

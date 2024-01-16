@@ -94,9 +94,21 @@ spec:
             key: password
       {{- end }}
       {{- if .Values.starrocksFESpec.feEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.starrocksFESpec.feEnvVars) "map" }}
+      {{- range $key, $value := .Values.starrocksFESpec.feEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
       {{- toYaml .Values.starrocksFESpec.feEnvVars | nindent 6 }}
       {{- end }}
-
+      {{- end }}
 {{- if .Values.starrocksFESpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksFESpec.affinity | indent 6 }}
@@ -239,9 +251,21 @@ spec:
             key: password
       {{- end }}
       {{- if .Values.starrocksBeSpec.beEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.starrocksBeSpec.beEnvVars) "map" }}
+      {{- range $key, $value := .Values.starrocksBeSpec.beEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
       {{- toYaml .Values.starrocksBeSpec.beEnvVars | nindent 6 }}
       {{- end }}
-
+      {{- end }}
 {{- if .Values.starrocksBeSpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksBeSpec.affinity | indent 6 }}
@@ -340,8 +364,22 @@ spec:
             key: password
       {{- end }}
       {{- if .Values.starrocksCnSpec.cnEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.starrocksCnSpec.cnEnvVars) "map" }}
+      {{- range $key, $value := .Values.starrocksCnSpec.cnEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
       {{- toYaml .Values.starrocksCnSpec.cnEnvVars | nindent 6 }}
       {{- end }}
+      {{- end }}
+
 {{- if .Values.starrocksCnSpec.affinity }}
     affinity:
 {{ toYaml .Values.starrocksCnSpec.affinity | indent 6 }}
