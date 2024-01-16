@@ -38,31 +38,31 @@ import (
 )
 
 // ServiceEqual judges two services equal or not in some fields. developer can custom the function.
-type ServiceEqual func(svc1 *corev1.Service, svc2 *corev1.Service) bool
+type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
-type StatefulSetEqual func(st1 *appv1.StatefulSet, st2 *appv1.StatefulSet) bool
+type StatefulSetEqual func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool
 
-func ApplyService(ctx context.Context, k8sClient client.Client, svc *corev1.Service, equal ServiceEqual) error {
+func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
 	logger := logr.FromContextOrDiscard(ctx)
-	logger.Info("create or update k8s service", "name", svc.Name)
+	logger.Info("create or update k8s service", "name", expectSvc.Name)
 
-	var esvc corev1.Service
-	err := k8sClient.Get(ctx, types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, &esvc)
+	var actualSvc corev1.Service
+	err := k8sClient.Get(ctx, types.NamespacedName{Name: expectSvc.Name, Namespace: expectSvc.Namespace}, &actualSvc)
 	if err != nil && apierrors.IsNotFound(err) {
-		return CreateClientObject(ctx, k8sClient, svc)
+		return CreateClientObject(ctx, k8sClient, expectSvc)
 	} else if err != nil {
 		return err
 	}
 
-	if equal(svc, &esvc) {
+	if equal(expectSvc, &actualSvc) {
 		logger.Info("expectHash == actualHash, no need to update service resource")
 		return nil
 	}
 
-	svc.ResourceVersion = esvc.ResourceVersion
-	return k8sClient.Patch(ctx, svc, client.Merge)
+	expectSvc.ResourceVersion = actualSvc.ResourceVersion
+	return k8sClient.Patch(ctx, expectSvc, client.Merge)
 }
 
 func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1.Deployment) error {

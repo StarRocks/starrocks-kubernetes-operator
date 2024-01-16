@@ -50,9 +50,8 @@ type hashService struct {
 	ports       []corev1.ServicePort
 	selector    map[string]string
 	serviceType corev1.ServiceType
-	// deal with external access load balancer.
-	// serviceType corev1.ServiceType
-	labels map[string]string
+	labels      map[string]string
+	annotations map[string]string
 }
 
 // BuildExternalService build the external service. not have selector
@@ -113,8 +112,7 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	// set Ports field before calculate resource hash
 	svc.Spec.Ports = ports
 
-	hso := serviceHashObject(&svc)
-	anno[srapi.ComponentResourceHash] = hash.HashObject(hso)
+	anno[srapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
 	svc.Annotations = anno
 	return svc
 }
@@ -218,22 +216,24 @@ func getServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
 	return map[string]string{}
 }
 
-func ServiceDeepEqual(nsvc, oldsvc *corev1.Service) bool {
-	var nhsvcValue, ohsvcValue string
-
-	nhsvc := serviceHashObject(nsvc)
-	if _, ok := nsvc.Annotations[srapi.ComponentResourceHash]; ok {
-		nhsvcValue = nsvc.Annotations[srapi.ComponentResourceHash]
+func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
+	var expectHashValue string
+	if _, ok := expectSvc.Annotations[srapi.ComponentResourceHash]; ok {
+		expectHashValue = expectSvc.Annotations[srapi.ComponentResourceHash]
 	} else {
-		nhsvcValue = hash.HashObject(nhsvc)
+		expectHashValue = hash.HashObject(serviceHashObject(expectSvc))
 	}
 
-	// calculate the old hash value from the old service, not from annotation.
-	ohsvc := serviceHashObject(oldsvc)
-	ohsvcValue = hash.HashObject(ohsvc)
+	// Because service annotations will be updated by k8s controller manager, so we should get hash value from
+	// srapi.ComponentResourceHash annotation.
+	var actualHashValue string
+	if _, ok := actualSvc.Annotations[srapi.ComponentResourceHash]; ok {
+		actualHashValue = actualSvc.Annotations[srapi.ComponentResourceHash]
+	} else {
+		actualHashValue = hash.HashObject(serviceHashObject(actualSvc))
+	}
 
-	return nhsvcValue == ohsvcValue &&
-		nsvc.Namespace == oldsvc.Namespace /*&& oldGeneration == oldsvc.Generation*/
+	return expectHashValue == actualHashValue && expectSvc.Namespace == actualSvc.Namespace
 }
 
 func serviceHashObject(svc *corev1.Service) hashService {
@@ -243,8 +243,9 @@ func serviceHashObject(svc *corev1.Service) hashService {
 		finalizers:  svc.Finalizers,
 		ports:       svc.Spec.Ports,
 		selector:    svc.Spec.Selector,
-		labels:      svc.Labels,
 		serviceType: svc.Spec.Type,
+		labels:      svc.Labels,
+		annotations: svc.Annotations,
 	}
 }
 
