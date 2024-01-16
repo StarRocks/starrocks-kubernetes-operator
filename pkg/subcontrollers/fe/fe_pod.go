@@ -22,6 +22,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
@@ -36,7 +37,7 @@ const (
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
+func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	metaName := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
@@ -53,6 +54,9 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, _feConfigPath)
 	vols, volMounts = pod.MountConfigMaps(vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
+	if err := k8sutils.CheckVolumes(vols, volMounts); err != nil {
+		return nil, err
+	}
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
 	envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
@@ -84,7 +88,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	podSpec := pod.Spec(feSpec, feContainer, vols)
 	annotations := pod.Annotations(feSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(feSpec)
-	return corev1.PodTemplateSpec{
+	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaName,
 			Namespace:   src.Namespace,
@@ -92,5 +96,5 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 			Labels:      pod.Labels(src.Name, src.Spec.StarRocksFeSpec),
 		},
 		Spec: podSpec,
-	}
+	}, nil
 }

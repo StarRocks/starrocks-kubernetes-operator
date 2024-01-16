@@ -91,7 +91,11 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	internalService := be.generateInternalService(ctx, src, &externalsvc, config)
 
 	// create be statefulset
-	podTemplateSpec := be.buildPodTemplate(src, config)
+	podTemplateSpec, err := be.buildPodTemplate(src, config)
+	if err != nil {
+		logger.Error(err, "build pod template failed")
+		return err
+	}
 	st := statefulset.MakeStatefulset(object.NewFromCluster(src), beSpec, podTemplateSpec)
 
 	// update the statefulset if feSpec be updated.

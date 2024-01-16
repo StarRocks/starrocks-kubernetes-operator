@@ -22,6 +22,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
@@ -36,7 +37,7 @@ const (
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
-func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) corev1.PodTemplateSpec {
+func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	metaName := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
@@ -53,6 +54,9 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, beSpec.ConfigMapInfo, _beConfigPath)
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, beSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, beSpec.Secrets)
+	if err := k8sutils.CheckVolumes(vols, volumeMounts); err != nil {
+		return nil, err
+	}
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
 	envs := pod.Envs(src.Spec.StarRocksBeSpec, config, feExternalServiceName, src.Namespace, beSpec.BeEnvVars)
@@ -84,7 +88,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	annotations := pod.Annotations(beSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(beSpec)
-	return corev1.PodTemplateSpec{
+	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        metaName,
 			Annotations: annotations,
@@ -92,5 +96,5 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 			Labels:      pod.Labels(src.Name, beSpec),
 		},
 		Spec: podSpec,
-	}
+	}, nil
 }

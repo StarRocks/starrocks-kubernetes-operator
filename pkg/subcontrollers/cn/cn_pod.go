@@ -30,6 +30,7 @@ import (
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
@@ -55,6 +56,9 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, cnSpec.ConfigMapInfo, _cnConfigPath)
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, cnSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, cnSpec.Secrets)
+	if err := k8sutils.CheckVolumes(vols, volumeMounts); err != nil {
+		return nil, err
+	}
 
 	feExternalServiceName := service.ExternalServiceName(object.ClusterName, (*srapi.StarRocksFeSpec)(nil))
 	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
