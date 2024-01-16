@@ -99,7 +99,7 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1
 		deploy.Annotations = map[string]string{}
 	}
 	deploy.Annotations[srapi.ComponentResourceHash] = expectHash
-	return UpdateClientObject(ctx, k8sClient, deploy)
+	return k8sClient.Patch(ctx, deploy, client.Merge)
 }
 
 func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *corev1.ConfigMap) error {
@@ -170,7 +170,7 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 	}
 
 	expect.ResourceVersion = actual.ResourceVersion
-	return UpdateClientObject(ctx, k8sClient, expect)
+	return k8sClient.Patch(ctx, expect, client.Merge)
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
