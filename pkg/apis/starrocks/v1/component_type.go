@@ -26,6 +26,11 @@ type StarRocksComponentSpec struct {
 	// default: nil
 	RunAsNonRoot *bool `json:"runAsNonRoot,omitempty"`
 
+	// refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container
+	// grant certain privileges to a process without granting all the privileges of the root user
+	// +optional
+	Capabilities *corev1.Capabilities `json:"capabilities,omitempty"`
+
 	// the reference for configMap which allow users to mount any files to container.
 	// +optional
 	ConfigMaps []ConfigMapReference `json:"configMaps,omitempty"`
@@ -124,4 +129,8 @@ func (spec *StarRocksComponentSpec) GetTerminationGracePeriodSeconds() *int64 {
 		return &defaultSeconds
 	}
 	return spec.TerminationGracePeriodSeconds
+}
+
+func (spec *StarRocksComponentSpec) GetCapabilities() *corev1.Capabilities {
+	return spec.Capabilities
 }

@@ -294,5 +294,7 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 		AllowPrivilegeEscalation: func() *bool { b := false; return &b }(),
 		// starrocks will create pid file, eg.g /opt/starrocks/fe/bin/fe.pid, so set it to false
 		ReadOnlyRootFilesystem: func() *bool { b := false; return &b }(),
+		// set additional Capabilities
+		Capabilities: spec.GetCapabilities(),
 	}
 }
