@@ -111,7 +111,7 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	}
 	// set Ports field before calculate resource hash
 	svc.Spec.Ports = ports
-
+	svc.Annotations = anno
 	anno[srapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
 	svc.Annotations = anno
 	return svc

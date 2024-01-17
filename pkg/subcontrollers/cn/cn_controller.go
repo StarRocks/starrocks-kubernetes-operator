@@ -240,7 +240,7 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	statefulSetName := load.Name(object.AliasName, cnSpec)
 	namespacedName := types.NamespacedName{Namespace: object.Namespace, Name: statefulSetName}
 	if err := cc.k8sClient.Get(ctx, namespacedName, &st); apierrors.IsNotFound(err) {
-		logger.Error(err, "get statefulset failed")
+		logger.Info("cn statefulset is not found")
 		return nil
 	}
 
