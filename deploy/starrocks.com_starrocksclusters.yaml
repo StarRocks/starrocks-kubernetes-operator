@@ -467,6 +467,17 @@ spec:
                       - name
                       type: object
                     type: array
+                  capabilities:
+                    properties:
+                      add:
+                        items:
+                          type: string
+                        type: array
+                      drop:
+                        items:
+                          type: string
+                        type: array
+                    type: object
                   configMapInfo:
                     properties:
                       configMapName:
@@ -1315,6 +1326,17 @@ spec:
                         type: string
                     required:
                     - maxReplicas
+                    type: object
+                  capabilities:
+                    properties:
+                      add:
+                        items:
+                          type: string
+                        type: array
+                      drop:
+                        items:
+                          type: string
+                        type: array
                     type: object
                   cnEnvVars:
                     items:
@@ -2381,6 +2403,17 @@ spec:
                   annotations:
                     additionalProperties:
                       type: string
+                    type: object
+                  capabilities:
+                    properties:
+                      add:
+                        items:
+                          type: string
+                        type: array
+                      drop:
+                        items:
+                          type: string
+                        type: array
                     type: object
                   configMapInfo:
                     properties:

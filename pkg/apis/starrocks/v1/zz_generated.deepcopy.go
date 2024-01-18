@@ -376,6 +376,11 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Capabilities != nil {
+		in, out := &in.Capabilities, &out.Capabilities
+		*out = new(corev1.Capabilities)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ConfigMaps != nil {
 		in, out := &in.ConfigMaps, &out.ConfigMaps
 		*out = make([]ConfigMapReference, len(*in))

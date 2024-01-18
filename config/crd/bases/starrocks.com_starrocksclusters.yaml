@@ -1035,6 +1035,24 @@ spec:
                       - name
                       type: object
                     type: array
+                  capabilities:
+                    description: refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container
+                      grant certain privileges to a process without granting all the
+                      privileges of the root user
+                    properties:
+                      add:
+                        description: Added capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
+                      drop:
+                        description: Removed capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
+                    type: object
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
@@ -2901,6 +2919,24 @@ spec:
                         type: string
                     required:
                     - maxReplicas
+                    type: object
+                  capabilities:
+                    description: refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container
+                      grant certain privileges to a process without granting all the
+                      privileges of the root user
+                    properties:
+                      add:
+                        description: Added capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
+                      drop:
+                        description: Removed capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
                     type: object
                   cnEnvVars:
                     description: cnEnvVars is a slice of environment variables that
@@ -5311,6 +5347,24 @@ spec:
                       type: string
                     description: annotation for pods. user can config monitor annotation
                       for collect to monitor system.
+                    type: object
+                  capabilities:
+                    description: refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container
+                      grant certain privileges to a process without granting all the
+                      privileges of the root user
+                    properties:
+                      add:
+                        description: Added capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
+                      drop:
+                        description: Removed capabilities
+                        items:
+                          description: Capability represent POSIX capabilities type
+                          type: string
+                        type: array
                     type: object
                   configMapInfo:
                     description: the reference for configMap which store the config

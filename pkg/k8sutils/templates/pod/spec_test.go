@@ -404,3 +404,75 @@ func TestAnnotations(t *testing.T) {
 		})
 	}
 }
+
+func TestContainerSecurityContext(t *testing.T) {
+	falseFlag := false
+	falseFlagPtr := &falseFlag
+	addCapabilities := corev1.Capabilities{
+		Add: []corev1.Capability{"SYS_PTRACE", "PERFMON"},
+	}
+	addDropCapabilities := corev1.Capabilities{
+		Add:  []corev1.Capability{"SYS_PTRACE", "PERFMON"},
+		Drop: []corev1.Capability{"SYS_ADMIN"},
+	}
+
+	type args struct {
+		spec v1.SpecInterface
+	}
+	tests := []struct {
+		name string
+		args args
+		want *corev1.SecurityContext
+	}{
+		{
+			name: "no capabilities",
+			args: args{
+				spec: &v1.StarRocksComponentSpec{
+					RunAsNonRoot: nil,
+					Capabilities: nil,
+				},
+			},
+			want: &corev1.SecurityContext{
+				ReadOnlyRootFilesystem:   falseFlagPtr,
+				AllowPrivilegeEscalation: falseFlagPtr,
+				Capabilities:             nil,
+			},
+		},
+		{
+			name: "add capabilities",
+			args: args{
+				spec: &v1.StarRocksComponentSpec{
+					RunAsNonRoot: nil,
+					Capabilities: &addCapabilities,
+				},
+			},
+			want: &corev1.SecurityContext{
+				ReadOnlyRootFilesystem:   falseFlagPtr,
+				AllowPrivilegeEscalation: falseFlagPtr,
+				Capabilities:             &addCapabilities,
+			},
+		},
+		{
+			name: "add/drop capabilities",
+			args: args{
+				spec: &v1.StarRocksComponentSpec{
+					RunAsNonRoot: nil,
+					Capabilities: &addDropCapabilities,
+				},
+			},
+			want: &corev1.SecurityContext{
+				ReadOnlyRootFilesystem:   falseFlagPtr,
+				AllowPrivilegeEscalation: falseFlagPtr,
+				Capabilities:             &addDropCapabilities,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainerSecurityContext(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ContainerSecurityContext() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
