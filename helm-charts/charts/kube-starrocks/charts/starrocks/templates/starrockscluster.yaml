@@ -221,6 +221,10 @@ spec:
     serviceAccount: {{ .Values.starrocksBeSpec.serviceAccount }}
 {{- end }}
     runAsNonRoot: {{ .Values.starrocksBeSpec.runAsNonRoot }}
+{{- if .Values.starrocksBeSpec.capabilities }}
+    capabilities:
+{{toYaml .Values.starrocksBeSpec.capabilities | indent 6 }}
+{{- end }}
 {{- if .Values.starrocksBeSpec.podLabels }}
     podLabels:
 {{toYaml .Values.starrocksBeSpec.podLabels | indent 6 }}

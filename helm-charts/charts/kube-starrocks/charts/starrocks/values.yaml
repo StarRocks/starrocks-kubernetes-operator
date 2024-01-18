@@ -404,6 +404,13 @@ starrocksBeSpec:
   # If runAsNonRoot is true, the container is run as non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
   runAsNonRoot: false
+  # add/drop capabilities for BE container, DataDog profiling lib relies on it for example.
+  capabilities: {}
+  #  add:
+  #    - PERFMON
+  #    - SYS_PTRACE
+  #  drop:
+  #    - SYS_ADMIN
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
