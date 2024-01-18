@@ -9,6 +9,7 @@ references, and tailor them as necessary to fit the requirement. It primarily co
 6. [Deploying a StarRocks cluster running in shared_data mode](./deploy_a_starrocks_cluster_running_in_shared_data_mode.yaml)
 7. [Deploying a StarRocks cluster with the FE Proxy component](./deploy_a_starrocks_cluster_with_fe_proxy.yaml)
 8. [Deploying a StarRocks cluster with all the above features](./deploy_a_starrocks_cluster_with_all_features.yaml)
+9. [Deploying a StarRocks cluster with BE capabilities](./deploy_a_starrocks_cluster_with_be_capabilities.yaml)
 
 > Note:
 >
