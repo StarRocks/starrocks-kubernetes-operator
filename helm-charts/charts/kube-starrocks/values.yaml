@@ -39,7 +39,7 @@ operator:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/operator
-      tag: v1.9.0
+      tag: v1.9.1
     imagePullPolicy: Always
     replicaCount: 1
     resources:
@@ -226,6 +226,7 @@ starrocks:
         cpu: 8
         memory: 8Gi
     # fe storageSpec for persistent metadata.
+    # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -234,7 +235,8 @@ starrocks:
       # the persistent volume size， default 10Gi.
       # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
-      # Setting this parameter can persist log storage
+      # Setting this parameter can persist log storage.
+      # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 5Gi
     # mount other volumes if necessary.
     # Note: please use storageSpec field for persistent metadata and log.
@@ -414,6 +416,7 @@ starrocks:
         cpu: 4
         memory: 8Gi
     # specify storageclass name and request size.
+    # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # the name of volume for mount. if not will use emptyDir.
       name: ""
@@ -423,6 +426,7 @@ starrocks:
       # the storage size of persistent volume for data.
       storageSize: 1Ti
       # the storage size of persistent volume for log.
+      # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 1Gi
     # mount other volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
@@ -568,6 +572,7 @@ starrocks:
         cpu: 8
         memory: 8Gi
     # be storageSpec for persistent storage.
+    # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # the name of volume for mount. if not will use emptyDir.
       name: ""
@@ -576,6 +581,7 @@ starrocks:
       storageClassName: ""
       storageSize: 1Ti
       # Setting this parameter can persist log storage
+      # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 1Gi
     # mount other volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
