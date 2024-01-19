@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## [v1.9.1](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.1)
+
+Release Notes for starrocks-kubernetes-operator v1.9.0
+
+We are thrilled to announce the release of StarRocks Kubernetes Operator v1.9.1. This release introduces several
+enhancements and bug fixes to improve the user experience of deploying and managing StarRocks
+clusters on Kubernetes.
+
+### What's New
+
+There are enhancements in this release.
+
+1. **[chart]** When you set logStorageSize to 0, the operator will not create PVC for log
+   storage [#398](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/398).
+2. **[operator]** Checked volumes and mount paths to avoid duplication
+   error [#388](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/388)
+3. **[operator]** Disabled FE scale to 1 [#394](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/394)
+4. **[operator]** Supported use of map to define feEnvVars/beEnvVars/cnEnvVars to merge on multiple values files (#396)
+5. **[operator]** exposed `spec.containers.securityContext.capabilities` for user to customize the capabilities of
+   containers. [#404](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/404)
+
+### BugFix
+
+1. **[operator]** Supported to update service annotations
+   fields [#402](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/402) [#399](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/399)
+2. **[operator]** Switched to using patch method instead of update method to modify statefulset and
+   deployment [#397](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/397).
+   This solves the problem that when CN + HPA is enabled, upgrading CN will cause all CN pods to be terminated and
+   restarted.
+3. **[operator]** Switched to using Patch method instead of Update to modify service
+   object [#387](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/387). This solves the
+   problem that when cloud provider is used, the service object will be modified by cloud provider, and the operator
+   will overwrite the modification.
+4. **[operator]** Considered Cn Replicas when calculating component
+   hash [#392](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/392)
+5. **[chart]** Corrected typo in storageSpec [#385](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/385)
+
 ## [v1.9.0](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.0)
 
 Release Notes for starrocks-kubernetes-operator v1.9.0
@@ -10,25 +47,36 @@ clusters on Kubernetes.
 
 ### What's New
 
-1. [Feature] Add StarRocksWarehouse CRD to support StarRocks Warehouse Feature (#323). Note: warehouse is an
+1. [Feature] Add StarRocksWarehouse CRD to support StarRocks Warehouse
+   Feature [#323](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/323). Note: warehouse is an
    enterprise feature for StarRocks.
-2. [Enhancement] Use StarRocksCluster State to log errors when subController apply failed (#359): We have improved error
+2. [Enhancement] Use StarRocksCluster State to log errors when subController apply
+   failed [#359](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/359): We have improved error
    logging by using the StarRocksCluster status.State when the subController apply operation fails.
-3. [Enhancement] Support to mount emptyDir in storageVolumes (#324): We have added support to mount emptyDir in
+3. [Enhancement] Support to mount emptyDir in
+   storageVolumes [#324](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/324): We have added support to
+   mount emptyDir in
    storageVolumes.
 
 ### BugFix
 
-1. [BugFix] We have fixed an issue where the cluster status phase was not in sync with the component.(#380)
-2. [BugFix] We have fixed an issue where the HPA was not removed when the autoScalingPolicy was removed.(#379)
-3. [BugFix] We have fixed an issue where the HPA resource was not removed when the CN spec was removed.(#357)
+1. [BugFix] We have fixed an issue where the cluster status phase was not in sync with the
+   component.[#380](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/380)
+2. [BugFix] We have fixed an issue where the HPA was not removed when the autoScalingPolicy was
+   removed.[#379](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/379)
+3. [BugFix] We have fixed an issue where the HPA resource was not removed when the CN spec was
+   removed.[#357](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/357)
 
 ### Maintenance
 
-1. We have improved the setup of the Kubernetes environment for unit tests by using setup-envtest. (#347)
-2. We have added unit tests and ensured that the code coverage is at least 65%. (#354)
-3. We have updated the script to generate the API reference documentation.(#350)
-4. We have switched to using zap as the logger for better logging capabilities.(#341)
+1. We have improved the setup of the Kubernetes environment for unit tests by using
+   setup-envtest. [#347](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/347)
+2. We have added unit tests and ensured that the code coverage is at least
+   65%. [#354](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/354)
+3. We have updated the script to generate the API reference
+   documentation.[#350](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/350)
+4. We have switched to using zap as the logger for better logging
+   capabilities.[#341](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/341)
 
 We encourage you to update to this new version and benefit from these improvements. As always, your feedback is very
 welcome.
@@ -82,7 +130,7 @@ and enhancements. Here are the key updates:
 ### Bug Fixes
 
 1. Fix the problem of nginx sending the request body to FE when redirecting the stream load request, which may cause
-   the stream load to fail. (#303)
+   the stream load to fail. [#303](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/303)
 
 ### Maintenance
 
