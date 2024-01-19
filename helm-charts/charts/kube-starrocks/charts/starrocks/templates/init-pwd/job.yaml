@@ -6,6 +6,14 @@ metadata:
   namespace: {{ template "starrockscluster.namespace" . }}
 spec:
   template:
+  {{- if .Values.starrocksFESpec.imagePullSecrets }}
+  imagePullSecrets:
+  {{- toYaml .Values.starrocksFESpec.imagePullSecrets | nindent 6 }}
+  {{- end }}
+  {{- if .Values.starrocksFESpec.affinity }}
+  affinity:
+  {{- toYaml .Values.starrocksFESpec.affinity | nindent 8 }}
+  {{- end }}
     spec:
       containers:
       - name: {{ template "starrockscluster.name" . }}-initpwd
