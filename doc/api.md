@@ -1003,6 +1003,21 @@ default: nil</p>
 </tr>
 <tr>
 <td>
+<code>capabilities</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#capabilities-v1-core">
+Kubernetes core/v1.Capabilities
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>refer to <a href="https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container">https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container</a>
+grant certain privileges to a process without granting all the privileges of the root user</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>configMaps</code><br/>
 <em>
 <a href="#starrocks.com/v1.ConfigMapReference">
@@ -2071,5 +2086,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>13a5c05</code>.
+on git commit <code>6bcf41a</code>.
 </em></p>

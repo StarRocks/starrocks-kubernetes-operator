@@ -2,7 +2,7 @@
 
 ## [v1.9.1](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.1)
 
-Release Notes for starrocks-kubernetes-operator v1.9.0
+Release Notes for starrocks-kubernetes-operator v1.9.1
 
 We are thrilled to announce the release of StarRocks Kubernetes Operator v1.9.1. This release introduces several
 enhancements and bug fixes to improve the user experience of deploying and managing StarRocks

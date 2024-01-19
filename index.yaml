@@ -3,9 +3,9 @@ entries:
   kube-starrocks:
   - apiVersion: v2
     appVersion: 3.2-latest
-    created: "2024-01-18T10:41:12.137421+08:00"
+    created: "2024-01-19T10:27:43.673358+08:00"
     description: kube-starrocks includes two subcharts, operator and starrocks
-    digest: 392d67e5b1902e6b566add19a7c39e2d3491aaf537d44ddac20f3b92fd212bbc
+    digest: 299aef33da4e804b75727b12a52f4baaf03b5c660e59457c0ef8ca8e1a9ed499
     home: https://github.com/StarRocks/starrocks-kubernetes-operator
     icon: https://avatars.githubusercontent.com/u/88238841
     keywords:
@@ -29,10 +29,10 @@ entries:
     - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.1/kube-starrocks-1.9.1.tgz
     version: 1.9.1
   - apiVersion: v2
-    appVersion: 3.1-latest
-    created: "2024-01-04T17:29:08.143527+08:00"
+    appVersion: 3.2-latest
+    created: "2024-01-19T10:27:43.671421+08:00"
     description: kube-starrocks includes two subcharts, operator and starrocks
-    digest: e1dc0f9a10d9c6f6516777a5f611ad15bd8cf459b9f1b05412f2cd48b9b09b79
+    digest: 0c8bf6b5d2872b766275b958ba953174ca5c9cd1f07352ab285e8b84b7c3e939
     home: https://github.com/StarRocks/starrocks-kubernetes-operator
     icon: https://avatars.githubusercontent.com/u/88238841
     keywords:
@@ -389,9 +389,9 @@ entries:
   operator:
   - apiVersion: v2
     appVersion: 1.9.1
-    created: "2024-01-18T10:41:14.409568+08:00"
+    created: "2024-01-19T10:27:45.821894+08:00"
     description: A Helm chart for StarRocks operator
-    digest: d1450a6c6ff1a4ee35e22cc5321d490ff8ff920f95a44f92195c746211e1daa4
+    digest: ffcb50fe4eeab4d1811fadef37e1cbb2ef7e10d16e214a540317c37ef27182d9
     home: https://github.com/StarRocks/starrocks-kubernetes-operator
     icon: https://avatars.githubusercontent.com/u/88238841
     keywords:
@@ -687,9 +687,9 @@ entries:
   starrocks:
   - apiVersion: v2
     appVersion: 3.2-latest
-    created: "2024-01-18T10:41:16.677917+08:00"
+    created: "2024-01-19T10:27:47.979369+08:00"
     description: A Helm chart for StarRocks cluster
-    digest: 84587e58b56adf435c8b0fbd40172e1abb39bc9629e9c75691bcf6c58e36da30
+    digest: 38f09bd957ff9ed7b125876210ace2a84dfc254a8d0118e9ab714c72d39c1f24
     home: https://github.com/StarRocks/starrocks-kubernetes-operator
     icon: https://avatars.githubusercontent.com/u/88238841
     keywords:
@@ -985,9 +985,9 @@ entries:
   warehouse:
   - apiVersion: v2
     appVersion: 3.2-latest
-    created: "2024-01-18T10:41:19.386772+08:00"
+    created: "2024-01-19T10:27:50.163148+08:00"
     description: Warehouse is currently a feature of the StarRocks Enterprise Edition.
-    digest: cead81aec6beb7b5a31944427fc8f592a04bf5332faa366e45e9bb3738edea14
+    digest: dddad71f9c795e36be3d88357adc44626df10dc763edfe7d3cfd2914928073ef
     home: https://github.com/StarRocks/starrocks-kubernetes-operator
     icon: https://avatars.githubusercontent.com/u/88238841
     keywords:
@@ -1035,4 +1035,4 @@ entries:
     urls:
     - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.0/warehouse-1.9.0.tgz
     version: 1.9.0
-generated: "2024-01-18T10:41:19.386213+08:00"
+generated: "2024-01-19T10:27:50.16265+08:00"
