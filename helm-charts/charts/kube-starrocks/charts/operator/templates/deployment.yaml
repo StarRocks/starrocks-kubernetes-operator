@@ -27,6 +27,10 @@ spec:
         version: {{ $.Chart.Version }}
     spec:
       automountServiceAccountToken: true
+    {{- if .Values.starrocksOperator.imagePullSecrets }}
+      imagePullSecrets:
+    {{- toYaml .Values.starrocksOperator.imagePullSecrets | nindent 6 }}
+    {{- end }}
       containers:
       - command:
         - /sroperator
@@ -70,6 +74,10 @@ spec:
       {{- if .Values.starrocksOperator.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.starrocksOperator.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksOperator.affinity }}
+      affinity:
+        {{- toYaml .Values.starrocksOperator.affinity | nindent 8 }}
       {{- end }}
       {{- if .Values.starrocksOperator.tolerations }}
       tolerations:

@@ -599,6 +599,9 @@ starrocksFeProxySpec:
       #   nodePort: 30080 # The range of valid ports is 30000-32767
       #   containerPort: 8080 # The port on the container to expose
       #   port: 8080 # The port to expose on the service
+  # imagePullSecrets allows you to use secrets for pulling images for your pods.
+  imagePullSecrets: [ ]
+  # - name: "image-pull-secret"
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
