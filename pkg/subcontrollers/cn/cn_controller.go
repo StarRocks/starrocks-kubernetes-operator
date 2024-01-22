@@ -29,6 +29,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -47,13 +48,16 @@ import (
 
 type CnController struct {
 	k8sClient          client.Client
+	Recorder           record.EventRecorder
 	addEnvForWarehouse bool
 }
 
-func New(k8sClient client.Client) *CnController {
-	return &CnController{
+func New(k8sClient client.Client, recorderFor subc.GetEventRecorderForFunc) *CnController {
+	controller := &CnController{
 		k8sClient: k8sClient,
 	}
+	controller.Recorder = recorderFor(controller.GetControllerName())
+	return controller
 }
 
 func (cc *CnController) GetControllerName() string {
@@ -115,7 +119,15 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	return cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec)
+	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec)
+	defer func() {
+		if err != nil {
+			cc.Recorder.Event(src, corev1.EventTypeWarning, "SyncCnFailed", err.Error())
+		} else {
+			cc.Recorder.Event(src, corev1.EventTypeNormal, "DeployCnSuccess", "deploy cn success")
+		}
+	}()
+	return err
 }
 
 func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec) error {
