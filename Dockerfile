@@ -3,7 +3,7 @@
 # Run the following command from the root dir of the git repo:
 #   > DOCKER_BUILDKIT=1 docker build -t starrocks/operator:tag .
 
-FROM golang:1.19 as build
+FROM golang:1.20 as build
 ARG LDFLAGS
 WORKDIR /go/src/app
 COPY . .
