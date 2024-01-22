@@ -24,6 +24,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -47,6 +48,8 @@ type ClusterSubController interface {
 	// todo(yandongxiao): better to rename it, because it does not send update request to k8s
 	UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error
 }
+
+type GetEventRecorderForFunc func(name string) record.EventRecorder
 
 type WarehouseSubController interface {
 	// ClearWarehouse will clear all resource about warehouse.

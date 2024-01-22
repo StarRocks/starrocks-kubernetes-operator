@@ -83,7 +83,7 @@ func Test_ClearResources(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	cc := New(fake.NewFakeClient(srapi.Scheme, &src, &st, &svc, &ssvc))
+	cc := New(fake.NewFakeClient(srapi.Scheme, &src, &st, &svc, &ssvc), fake.GetEventRecorderFor(nil))
 	err := cc.ClearResources(context.Background(), &src)
 	require.Equal(t, nil, err)
 
@@ -132,7 +132,7 @@ func Test_SyncCluster(t *testing.T) {
 		}},
 	}
 
-	cc := New(fake.NewFakeClient(srapi.Scheme, src, &ep))
+	cc := New(fake.NewFakeClient(srapi.Scheme, src, &ep), fake.GetEventRecorderFor(nil))
 	err := cc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = cc.UpdateClusterStatus(context.Background(), src)
@@ -230,7 +230,7 @@ func Test_SyncWarehouse(t *testing.T) {
 
 	srapi.Register()
 
-	cc := New(fake.NewFakeClient(srapi.Scheme, src, feConfigMap, warehouse, ep))
+	cc := New(fake.NewFakeClient(srapi.Scheme, src, feConfigMap, warehouse, ep), fake.GetEventRecorderFor(nil))
 	cc.addEnvForWarehouse = true
 
 	err := cc.SyncWarehouse(context.Background(), warehouse)

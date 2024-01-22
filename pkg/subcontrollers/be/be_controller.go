@@ -26,6 +26,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -42,13 +43,16 @@ import (
 )
 
 type BeController struct {
-	Client client.Client
+	Client   client.Client
+	Recorder record.EventRecorder
 }
 
-func New(k8sClient client.Client) *BeController {
-	return &BeController{
+func New(k8sClient client.Client, recorderFor subc.GetEventRecorderForFunc) *BeController {
+	controller := &BeController{
 		Client: k8sClient,
 	}
+	controller.Recorder = recorderFor(controller.GetControllerName())
+	return controller
 }
 
 func (be *BeController) GetControllerName() string {
@@ -67,6 +71,15 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 		return nil
 	}
+
+	var err error
+	defer func() {
+		if err != nil {
+			be.Recorder.Event(src, corev1.EventTypeWarning, "SyncBeFailed", err.Error())
+		} else {
+			be.Recorder.Event(src, corev1.EventTypeNormal, "DeployBeSuccess", "deploy be success")
+		}
+	}()
 
 	if !fe.CheckFEReady(ctx, be.Client, src.Namespace, src.Name) {
 		return nil

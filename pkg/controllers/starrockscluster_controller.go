@@ -38,10 +38,6 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
-const (
-	_controllerName = "starrockscluster-controller"
-)
-
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
