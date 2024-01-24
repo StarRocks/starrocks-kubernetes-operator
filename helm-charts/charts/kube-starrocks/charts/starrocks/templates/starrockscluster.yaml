@@ -498,6 +498,10 @@ spec:
     {{- if .Values.starrocksFeProxySpec.image.repository }}
     image: "{{ .Values.starrocksFeProxySpec.image.repository }}:{{ .Values.starrocksFeProxySpec.image.tag }}"
     {{- end }}
+    {{- if .Values.starrocksFeProxySpec.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml .Values.starrocksFeProxySpec.imagePullSecrets | nindent 4 }}
+    {{- end }}
     replicas: {{ .Values.starrocksFeProxySpec.replicas }}
     resolver: {{ .Values.starrocksFeProxySpec.resolver }}
     {{- if .Values.starrocksFeProxySpec.resources }}
