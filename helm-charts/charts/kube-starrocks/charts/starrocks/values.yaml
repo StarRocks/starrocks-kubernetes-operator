@@ -77,14 +77,13 @@ starrocksFESpec:
     # add annotations for fe service.
     annotations: {}
     # config the service port for fe service.
-    # if you want to use a dedicated port for fe service, you can config the port.
-    # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+    # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+    # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
+    # For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
     ports: []
-      # e.g. use a dedicated node port for fe service. The containerPort and port field can be commented out.
-      # - name: http  # fill the name from the fe service ports
-      #   nodePort: 30030 # The range of valid ports is 30000-32767
-      #   containerPort: 8030 # The port on the container to expose
-      #   port: 8030 # The port to expose on the service
+      # e.g. specify a dedicated node port for fe service by containerPort.
+      # - nodePort: 30030 # The range of valid ports is 30000-32767
+      #   containerPort: 8030 # The port exported on the container
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -241,14 +240,13 @@ starrocksCnSpec:
     # add annotations for cn service.
     annotations: {}
     # config the service port for cn service.
-    # if you want to use a dedicated port for cn service, you can config the port.
-    # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+    # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+    # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
+    # For cn, port name can be webserver, heartbeat, brpc, thrift, and their default container port is 8040, 9050, 8060, 9060.
     ports: []
-      # e.g. use a dedicated node port for cn service. The containerPort and port field can be commented out.
-      # - name: webserver # fill the name from the cn service ports
-      #   nodePort: 30040 # The range of valid ports is 30000-32767
+      # e.g. specify a dedicated node port for cn service by containerPort.
+      # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
-      #   port: 8040 # The port to expose on the service
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -425,14 +423,13 @@ starrocksBeSpec:
     # add annotations for be service.
     annotations: {}
     # config the service port for be service.
-    # if you want to use a dedicated port for be service, you can config the port.
-    # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+    # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+    # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
+    # For be, port name can be webserver, heartbeat, brpc, be, and their default container port is 8040, 9050, 8060, 9060.
     ports: []
-      # e.g. use a dedicated node port for be service. The containerPort and port field can be commented out.
-      # - name: webserver # fill the name from the be service ports
-      #   nodePort: 30040 # The range of valid ports is 30000-32767
+      # e.g. specify a dedicated node port for be service by containerPort.
+      # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
-      #   port: 8040 # The port to expose on the service
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -591,14 +588,13 @@ starrocksFeProxySpec:
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
     # config the service port for fe proxy service.
-    # if you want to use a dedicated port for fe proxy service, you can config the port.
-    # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+    # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+    # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
+    # For fe proxy, port name can be http-port, and its default container port is 8080.
     ports: []
-      # e.g. use a dedicated node port for fe proxy service. The containerPort and port field can be commented out.
-      # - name: http-port   # fill the name from the fe proxy service ports
-      #   nodePort: 30080 # The range of valid ports is 30000-32767
+      # e.g. specify a dedicated node port for fe proxy service by containerPort.
+      # - nodePort: 30080 # The range of valid ports is 30000-32767
       #   containerPort: 8080 # The port on the container to expose
-      #   port: 8080 # The port to expose on the service
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
   # - name: "image-pull-secret"

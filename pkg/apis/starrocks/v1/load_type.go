@@ -144,19 +144,31 @@ type StarRocksService struct {
 	Ports []StarRocksServicePort `json:"ports,omitempty"`
 }
 
+// StarRocksServicePort defines the port that will be exposed by this service.
+// To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+// containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
 type StarRocksServicePort struct {
-	// Name of the map about coming port and target port
-	Name string `json:"name"`
+	// Name of this port within the service.
+	// For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
+	// For be, port name can be webserver, heartbeat, brpc, be, and their default container port is 8040, 9050, 8060, 9060.
+	// For cn, port name can be webserver, heartbeat, brpc, thrift, and their default container port is 8040, 9050, 8060, 9060.
+	// For fe proxy, port name can be http-port, and its default container port is 8080.
+	// +optional
+	Name string `json:"name,omitempty"`
 
-	// Port the pod is exposed on service.
+	// Port that will be exposed by this service.
 	// +optional
 	Port int32 `json:"port,omitempty"`
 
-	// ContainerPort the service listen in pod.
+	// ContainerPort of the service port.
+	// For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
+	// For be, port name can be webserver, heartbeat, brpc, be, and their default container port is 8040, 9050, 8060, 9060.
+	// For cn, port name can be webserver, heartbeat, brpc, thrift, and their default container port is 8040, 9050, 8060, 9060.
+	// For fe proxy, port name can be http-port, and its default container port is 8080.
 	// +optional
 	ContainerPort int32 `json:"containerPort,omitempty"`
 
-	// The easiest way to expose fe, cn or be is to use a Service of type `NodePort`.
+	// NodePort is used to specify the port on each node on which the service is exposed.
 	// The range of valid ports is 30000-32767
 	// +optional
 	NodePort int32 `json:"nodePort,omitempty"`

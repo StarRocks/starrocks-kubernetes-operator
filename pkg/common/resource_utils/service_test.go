@@ -588,3 +588,111 @@ func Test_getCnServicePorts(t *testing.T) {
 		})
 	}
 }
+
+func Test_mergePort(t *testing.T) {
+	type args struct {
+		service     *srapi.StarRocksService
+		defaultPort srapi.StarRocksServicePort
+	}
+	tests := []struct {
+		name string
+		args args
+		want srapi.StarRocksServicePort
+	}{
+		{
+			name: "merge port by containerPort",
+			args: args{
+				service: &srapi.StarRocksService{
+					Ports: []srapi.StarRocksServicePort{
+						{
+							Port:          1,
+							NodePort:      1,
+							ContainerPort: 1,
+						},
+						{
+							NodePort:      2,
+							ContainerPort: 2,
+						},
+					},
+				},
+				defaultPort: srapi.StarRocksServicePort{
+					Name:          "port-x",
+					ContainerPort: 1,
+					NodePort:      3,
+				},
+			},
+			want: srapi.StarRocksServicePort{
+				Name:          "port-x",
+				ContainerPort: 1,
+				NodePort:      1,
+				Port:          1,
+			},
+		},
+		{
+			name: "merge port by Name",
+			args: args{
+				service: &srapi.StarRocksService{
+					Ports: []srapi.StarRocksServicePort{
+						{
+							Name:     "port-x",
+							NodePort: 1,
+							Port:     1,
+						},
+						{
+							Name:     "port-y",
+							NodePort: 2,
+						},
+					},
+				},
+				defaultPort: srapi.StarRocksServicePort{
+					Name:          "port-x",
+					ContainerPort: 1,
+					NodePort:      3,
+				},
+			},
+			want: srapi.StarRocksServicePort{
+				Name:          "port-x",
+				ContainerPort: 1,
+				NodePort:      1,
+				Port:          1,
+			},
+		},
+		{
+			name: "merge port by container and port",
+			args: args{
+				service: &srapi.StarRocksService{
+					Ports: []srapi.StarRocksServicePort{
+						{
+							ContainerPort: 1,
+							NodePort:      1,
+							Port:          1,
+						},
+						{
+							Name:     "port-x",
+							NodePort: 2,
+							Port:     2,
+						},
+					},
+				},
+				defaultPort: srapi.StarRocksServicePort{
+					Name:          "port-x",
+					ContainerPort: 1, // make sure containerPort has higher priority
+					NodePort:      3,
+				},
+			},
+			want: srapi.StarRocksServicePort{
+				Name:          "port-x",
+				ContainerPort: 1,
+				NodePort:      1,
+				Port:          1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := mergePort(tt.args.service, tt.args.defaultPort); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("mergePort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

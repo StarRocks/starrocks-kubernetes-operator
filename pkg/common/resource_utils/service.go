@@ -187,17 +187,30 @@ func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServi
 	if service == nil || service.Ports == nil {
 		return defaultPort
 	}
+
 	port := defaultPort
+
+	// If containerPort is match, use the nodePort
 	for _, sp := range service.Ports {
-		if sp.Name == defaultPort.Name {
+		if sp.ContainerPort == defaultPort.ContainerPort {
+			if sp.NodePort != 0 {
+				port.NodePort = sp.NodePort
+			}
 			if sp.Port != 0 {
 				port.Port = sp.Port
 			}
-			if sp.ContainerPort != 0 {
-				port.ContainerPort = sp.ContainerPort
-			}
+			return port
+		}
+	}
+
+	// If containerPort is not match, e.g. the value of containerPort is 0, use the name to match
+	for _, sp := range service.Ports {
+		if sp.Name == defaultPort.Name {
 			if sp.NodePort != 0 {
 				port.NodePort = sp.NodePort
+			}
+			if sp.Port != 0 {
+				port.Port = sp.Port
 			}
 			break
 		}
