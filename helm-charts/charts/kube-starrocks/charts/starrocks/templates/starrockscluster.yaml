@@ -13,6 +13,9 @@ metadata:
 spec:
   starRocksFeSpec:
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}"
+    {{- if .Values.starrocksFESpec.preStart }}
+    preStartScriptLocation: {{ .Values.starrocksFESpec.preStart.mountPath }}/{{template "starrockscluster.pre.start.script.name" .}}
+    {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
     {{- /*
     support both resources and resource for backward compatibility
@@ -53,6 +56,10 @@ spec:
       ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
+      {{- if .Values.starrocksFESpec.preStart }}
+      app.starrocks.io/fe-pre-start-hash: {{template "starrockscluster.fe.prestart.script.hash" . }}
+      {{- end }}
+
 {{- if .Values.starrocksFESpec.annotations }}
 {{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
 {{- end }}
@@ -135,14 +142,20 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
-{{- if .Values.starrocksFESpec.configMaps }}
+    {{- if or .Values.starrocksFESpec.configMaps .Values.starrocksFESpec.preStart }}
     configMaps:
+    {{- if .Values.starrocksFESpec.configMaps }}
     {{- range .Values.starrocksFESpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.preStart }}
+      - name: {{template "starrockscluster.fe.pre.start.configmap.name" .}}
+        mountPath: {{ .Values.starrocksFESpec.preStart.mountPath }}
+    {{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
@@ -170,6 +183,9 @@ spec:
 {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
+    {{- if .Values.starrocksBeSpec.preStart }}
+    preStartScriptLocation: {{ .Values.starrocksBeSpec.preStart.mountPath }}/{{ template "starrockscluster.pre.start.script.name" . }}
+    {{- end }}
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     {{- /*
     support both resources and resource for backward compatibility
@@ -210,6 +226,10 @@ spec:
       ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
+      {{- if .Values.starrocksBeSpec.preStart }}
+      app.starrocks.io/be-pre-start-hash: {{template "starrockscluster.be.prestart.script.hash" . }}
+      {{- end }}
+
 {{- if .Values.starrocksBeSpec.annotations }}
 {{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
 {{- end }}
@@ -296,14 +316,20 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
-{{- if .Values.starrocksBeSpec.configMaps }}
+    {{- if or .Values.starrocksBeSpec.configMaps .Values.starrocksBeSpec.preStart }}
     configMaps:
+    {{- if .Values.starrocksBeSpec.configMaps }}
     {{- range .Values.starrocksBeSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.preStart }}
+      - name: {{template "starrockscluster.be.pre.start.configmap.name" .}}
+        mountPath: {{ .Values.starrocksBeSpec.preStart.mountPath }}
+    {{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
@@ -331,6 +357,9 @@ spec:
 {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ .Values.starrocksCnSpec.image.tag }}"
+    {{- if .Values.starrocksCnSpec.preStart }}
+    preStartScriptLocation: {{ .Values.starrocksCnSpec.preStart.mountPath }}/{{template "starrockscluster.pre.start.script.name" .}}
+    {{- end }}
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
@@ -445,6 +474,10 @@ spec:
       ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
+      {{- if .Values.starrocksCnSpec.preStart }}
+      app.starrocks.io/cn-pre-start-hash: {{template "starrockscluster.cn.prestart.script.hash" . }}
+      {{- end }}
+
 {{- if .Values.starrocksCnSpec.annotations }}
 {{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}
 {{- end }}
@@ -460,14 +493,20 @@ spec:
       subPath: {{ .subPath }}
     {{- end }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.configMaps }}
+    {{- if or .Values.starrocksCnSpec.configMaps .Values.starrocksCnSpec.preStart }}
     configMaps:
+    {{- if .Values.starrocksCnSpec.configMaps }}
     {{- range .Values.starrocksCnSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.preStart }}
+      - name: {{template "starrockscluster.cn.pre.start.configmap.name" .}}
+        mountPath: {{ .Values.starrocksCnSpec.preStart.mountPath }}
+        {{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf

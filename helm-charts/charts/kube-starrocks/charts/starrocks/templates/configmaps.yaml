@@ -12,3 +12,39 @@ data:
   {{- end }}
 ---
 {{- end }}
+
+---
+
+{{- if .Values.starrocksFESpec.preStart }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockscluster.fe.pre.start.configmap.name" .}}
+data:
+  {{ template "starrockscluster.pre.start.script.name" .}}: |
+    {{- .Values.starrocksFESpec.preStart.script | nindent 4 }}
+{{- end }}
+
+---
+
+{{- if .Values.starrocksBeSpec.preStart }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockscluster.be.pre.start.configmap.name" .}}
+data:
+  {{ template "starrockscluster.pre.start.script.name" .}}: |
+    {{- .Values.starrocksBeSpec.preStart.script | nindent 4 }}
+{{- end }}
+
+---
+
+{{- if .Values.starrocksCnSpec.preStart }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockscluster.cn.pre.start.configmap.name" .}}
+data:
+  {{ template "starrockscluster.pre.start.script.name" .}}: |
+    {{- .Values.starrocksCnSpec.preStart.script | nindent 4 }}
+{{- end }}
