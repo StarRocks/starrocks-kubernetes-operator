@@ -906,8 +906,6 @@ spec:
                             port:
                               format: int32
                               type: integer
-                          required:
-                          - name
                           type: object
                         type: array
                       type:

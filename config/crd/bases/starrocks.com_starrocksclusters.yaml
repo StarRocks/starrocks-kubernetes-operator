@@ -1241,27 +1241,48 @@ spec:
                           can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
                           field.
                         items:
+                          description: StarRocksServicePort defines the port that
+                            will be exposed by this service. To assign a specific
+                            port or nodePort to a service, you should specify them
+                            by the corresponding name or containerPort in the service
+                            configuration. If both containerPort and name are specified,
+                            containerPort takes precedence.
                           properties:
                             containerPort:
-                              description: ContainerPort the service listen in pod.
+                              description: ContainerPort of the service port. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               format: int32
                               type: integer
                             name:
-                              description: Name of the map about coming port and target
-                                port
+                              description: Name of this port within the service. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               type: string
                             nodePort:
-                              description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`. The range
+                              description: NodePort is used to specify the port on
+                                each node on which the service is exposed. The range
                                 of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
-                              description: Port the pod is exposed on service.
+                              description: Port that will be exposed by this service.
                               format: int32
                               type: integer
-                          required:
-                          - name
                           type: object
                         type: array
                       type:
@@ -3237,27 +3258,48 @@ spec:
                           can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
                           field.
                         items:
+                          description: StarRocksServicePort defines the port that
+                            will be exposed by this service. To assign a specific
+                            port or nodePort to a service, you should specify them
+                            by the corresponding name or containerPort in the service
+                            configuration. If both containerPort and name are specified,
+                            containerPort takes precedence.
                           properties:
                             containerPort:
-                              description: ContainerPort the service listen in pod.
+                              description: ContainerPort of the service port. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               format: int32
                               type: integer
                             name:
-                              description: Name of the map about coming port and target
-                                port
+                              description: Name of this port within the service. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               type: string
                             nodePort:
-                              description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`. The range
+                              description: NodePort is used to specify the port on
+                                each node on which the service is exposed. The range
                                 of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
-                              description: Port the pod is exposed on service.
+                              description: Port that will be exposed by this service.
                               format: int32
                               type: integer
-                          required:
-                          - name
                           type: object
                         type: array
                       type:
@@ -4362,27 +4404,48 @@ spec:
                           can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
                           field.
                         items:
+                          description: StarRocksServicePort defines the port that
+                            will be exposed by this service. To assign a specific
+                            port or nodePort to a service, you should specify them
+                            by the corresponding name or containerPort in the service
+                            configuration. If both containerPort and name are specified,
+                            containerPort takes precedence.
                           properties:
                             containerPort:
-                              description: ContainerPort the service listen in pod.
+                              description: ContainerPort of the service port. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               format: int32
                               type: integer
                             name:
-                              description: Name of the map about coming port and target
-                                port
+                              description: Name of this port within the service. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               type: string
                             nodePort:
-                              description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`. The range
+                              description: NodePort is used to specify the port on
+                                each node on which the service is exposed. The range
                                 of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
-                              description: Port the pod is exposed on service.
+                              description: Port that will be exposed by this service.
                               format: int32
                               type: integer
-                          required:
-                          - name
                           type: object
                         type: array
                       type:
@@ -5665,27 +5728,48 @@ spec:
                           can just specify the StarRocksServicePort.Name and StarRocksServicePort.NodePort
                           field.
                         items:
+                          description: StarRocksServicePort defines the port that
+                            will be exposed by this service. To assign a specific
+                            port or nodePort to a service, you should specify them
+                            by the corresponding name or containerPort in the service
+                            configuration. If both containerPort and name are specified,
+                            containerPort takes precedence.
                           properties:
                             containerPort:
-                              description: ContainerPort the service listen in pod.
+                              description: ContainerPort of the service port. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               format: int32
                               type: integer
                             name:
-                              description: Name of the map about coming port and target
-                                port
+                              description: Name of this port within the service. For
+                                fe, port name can be http, query, rpc, edit-log, and
+                                their default container port is 8030, 9030, 9020,
+                                9010. For be, port name can be webserver, heartbeat,
+                                brpc, be, and their default container port is 8040,
+                                9050, 8060, 9060. For cn, port name can be webserver,
+                                heartbeat, brpc, thrift, and their default container
+                                port is 8040, 9050, 8060, 9060. For fe proxy, port
+                                name can be http-port, and its default container port
+                                is 8080.
                               type: string
                             nodePort:
-                              description: The easiest way to expose fe, cn or be
-                                is to use a Service of type `NodePort`. The range
+                              description: NodePort is used to specify the port on
+                                each node on which the service is exposed. The range
                                 of valid ports is 30000-32767
                               format: int32
                               type: integer
                             port:
-                              description: Port the pod is exposed on service.
+                              description: Port that will be exposed by this service.
                               format: int32
                               type: integer
-                          required:
-                          - name
                           type: object
                         type: array
                       type:
