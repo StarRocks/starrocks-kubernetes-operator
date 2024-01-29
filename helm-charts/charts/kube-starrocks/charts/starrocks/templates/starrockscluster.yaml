@@ -12,7 +12,7 @@ metadata:
 {{- end }}
 spec:
   starRocksFeSpec:
-    image: "{{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}"
+    image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
     replicas: {{ .Values.starrocksFESpec.replicas }}
     {{- /*
     support both resources and resource for backward compatibility
@@ -56,29 +56,29 @@ spec:
 {{- if .Values.starrocksFESpec.annotations }}
 {{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksFESpec.imagePullSecrets }}
+    {{- if or .Values.starrocksFESpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
-{{toYaml .Values.starrocksFESpec.imagePullSecrets | indent 4 }}
-{{- end }}
-{{- if .Values.starrocksFESpec.serviceAccount }}
-    serviceAccount: {{ .Values.starrocksFESpec.serviceAccount }}
-{{- end }}
-    runAsNonRoot: {{ .Values.starrocksFESpec.runAsNonRoot }}
-{{- if .Values.starrocksFESpec.nodeSelector }}
+      {{- include "starrockscluster.fe.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.serviceAccount .Values.starrocksCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "starrockscluster.fe.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "starrockscluster.fe.runAsNonRoot" . }}
+    {{- if or .Values.starrocksFESpec.nodeSelector .Values.starrocksCluster.componentValues.nodeSelector }}
     nodeSelector:
-{{ toYaml .Values.starrocksFESpec.nodeSelector | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksFESpec.podLabels }}
+      {{- include "starrockscluster.fe.nodeSelector" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
     podLabels:
-{{toYaml .Values.starrocksFESpec.podLabels | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksFESpec.hostAliases }}
+      {{- include "starrockscluster.fe.podLabels" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
-{{toYaml .Values.starrocksFESpec.hostAliases | indent 4 }}
-{{- end }}
-{{- if .Values.starrocksFESpec.schedulerName }}
-    schedulerName: {{ .Values.starrocksFESpec.schedulerName }}
-{{- end }}
+      {{- include "starrockscluster.fe.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.schedulerName .Values.starrocksCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "starrockscluster.fe.schedulerName" . }}
+    {{- end }}
     feEnvVars:
       - name: TZ
         value: {{ .Values.timeZone }}
@@ -109,14 +109,14 @@ spec:
       {{- toYaml .Values.starrocksFESpec.feEnvVars | nindent 6 }}
       {{- end }}
       {{- end }}
-{{- if .Values.starrocksFESpec.affinity }}
+    {{- if or .Values.starrocksFESpec.affinity .Values.starrocksCluster.componentValues.affinity }}
     affinity:
-{{ toYaml .Values.starrocksFESpec.affinity | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksFESpec.tolerations }}
+      {{- include "starrockscluster.fe.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
     tolerations:
-{{toYaml .Values.starrocksFESpec.tolerations | indent 4 }}
-{{- end }}
+      {{- include "starrockscluster.fe.tolerations" . | nindent 6 }}
+    {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksFESpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksFESpec.startupProbeFailureSeconds }}
     startupProbeFailureSeconds: {{ .Values.starrocksFESpec.startupProbeFailureSeconds }}
@@ -169,7 +169,7 @@ spec:
 
 {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
-    image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ .Values.starrocksBeSpec.image.tag }}"
+    image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     {{- /*
     support both resources and resource for backward compatibility
@@ -213,33 +213,33 @@ spec:
 {{- if .Values.starrocksBeSpec.annotations }}
 {{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksBeSpec.imagePullSecrets }}
+    {{- if or .Values.starrocksBeSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
-{{toYaml .Values.starrocksBeSpec.imagePullSecrets | indent 4 }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.serviceAccount }}
-    serviceAccount: {{ .Values.starrocksBeSpec.serviceAccount }}
-{{- end }}
-    runAsNonRoot: {{ .Values.starrocksBeSpec.runAsNonRoot }}
-{{- if .Values.starrocksBeSpec.capabilities }}
+      {{- include "starrockscluster.be.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.serviceAccount .Values.starrocksCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "starrockscluster.be.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "starrockscluster.be.runAsNonRoot" . }}
+    {{- if .Values.starrocksBeSpec.capabilities }}
     capabilities:
-{{toYaml .Values.starrocksBeSpec.capabilities | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.podLabels }}
+      {{- toYaml .Values.starrocksBeSpec.capabilities | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
     podLabels:
-{{toYaml .Values.starrocksBeSpec.podLabels | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.hostAliases }}
+      {{- include "starrockscluster.be.podLabels" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
-{{toYaml .Values.starrocksBeSpec.hostAliases | indent 4 }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.schedulerName }}
-    schedulerName: {{ .Values.starrocksBeSpec.schedulerName }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.nodeSelector }}
+      {{- include "starrockscluster.be.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.schedulerName .Values.starrocksCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "starrockscluster.be.schedulerName" . }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.nodeSelector .Values.starrocksCluster.componentValues.nodeSelector }}
     nodeSelector:
-{{ toYaml .Values.starrocksBeSpec.nodeSelector | indent 6 }}
-{{- end }}
+      {{- include "starrockscluster.be.nodeSelector" . | nindent 6 }}
+    {{- end }}
     beEnvVars:
       - name: TZ
         value: {{ .Values.timeZone }}
@@ -270,14 +270,14 @@ spec:
       {{- toYaml .Values.starrocksBeSpec.beEnvVars | nindent 6 }}
       {{- end }}
       {{- end }}
-{{- if .Values.starrocksBeSpec.affinity }}
+    {{- if or .Values.starrocksBeSpec.affinity .Values.starrocksCluster.componentValues.affinity }}
     affinity:
-{{ toYaml .Values.starrocksBeSpec.affinity | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.tolerations }}
+      {{- include "starrockscluster.be.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
     tolerations:
-{{toYaml .Values.starrocksBeSpec.tolerations | indent 4 }}
-{{- end }}
+      {{- include "starrockscluster.be.tolerations" . | nindent 6 }}
+    {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksBeSpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksBeSpec.startupProbeFailureSeconds }}
     startupProbeFailureSeconds: {{ .Values.starrocksBeSpec.startupProbeFailureSeconds }}
@@ -330,29 +330,29 @@ spec:
   {{- end }}
 {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
-    image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ .Values.starrocksCnSpec.image.tag }}"
+    image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
-{{- if .Values.starrocksCnSpec.serviceAccount }}
-    serviceAccount: {{ .Values.starrocksCnSpec.serviceAccount }}
-{{- end }}
-    runAsNonRoot: {{ .Values.starrocksCnSpec.runAsNonRoot }}
-{{- if .Values.starrocksCnSpec.podLabels }}
+    {{- if or .Values.starrocksCnSpec.serviceAccount .Values.starrocksCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "starrockscluster.cn.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "starrockscluster.cn.runAsNonRoot" . }}
+    {{- if or .Values.starrocksCnSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
     podLabels:
-{{toYaml .Values.starrocksCnSpec.podLabels | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksCnSpec.hostAliases }}
+      {{- include "starrockscluster.cn.podLabels" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
-{{toYaml .Values.starrocksCnSpec.hostAliases | indent 4 }}
-{{- end }}
-{{- if .Values.starrocksCnSpec.schedulerName }}
-    schedulerName: {{ .Values.starrocksCnSpec.schedulerName }}
-{{- end }}
-{{- if .Values.starrocksCnSpec.nodeSelector }}
+      {{- include "starrockscluster.cn.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.schedulerName .Values.starrocksCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "starrockscluster.cn.schedulerName" . }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.nodeSelector .Values.starrocksCluster.componentValues.nodeSelector }}
     nodeSelector:
-{{ toYaml .Values.starrocksCnSpec.nodeSelector | indent 6 }}
-{{- end }}
+      {{- include "starrockscluster.cn.nodeSelector" . | nindent 6 }}
+    {{- end }}
     cnEnvVars:
       - name: TZ
         value: {{ .Values.timeZone }}
@@ -384,14 +384,14 @@ spec:
       {{- end }}
       {{- end }}
 
-{{- if .Values.starrocksCnSpec.affinity }}
+    {{- if or .Values.starrocksCnSpec.affinity .Values.starrocksCluster.componentValues.affinity }}
     affinity:
-{{ toYaml .Values.starrocksCnSpec.affinity | indent 6 }}
-{{- end }}
-{{- if .Values.starrocksCnSpec.tolerations }}
+      {{- include "starrockscluster.cn.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
     tolerations:
-{{toYaml .Values.starrocksCnSpec.tolerations | indent 4 }}
-{{- end }}
+      {{- include "starrockscluster.cn.tolerations" . | nindent 6 }}
+    {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksCnSpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksCnSpec.startupProbeFailureSeconds }}
     startupProbeFailureSeconds: {{ .Values.starrocksCnSpec.startupProbeFailureSeconds }}
@@ -448,10 +448,10 @@ spec:
 {{- if .Values.starrocksCnSpec.annotations }}
 {{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}
 {{- end }}
-{{- if .Values.starrocksCnSpec.imagePullSecrets }}
+    {{- if or .Values.starrocksCnSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
-{{toYaml .Values.starrocksCnSpec.imagePullSecrets | indent 4 }}
-{{- end }}
+      {{- include "starrockscluster.cn.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
 {{- if .Values.starrocksCnSpec.secrets }}
     secrets:
     {{- range .Values.starrocksCnSpec.secrets }}
