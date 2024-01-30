@@ -146,6 +146,54 @@ starrocks:
     # specify the cn deploy or not.
     enabledBe: true
     enabledCn: false
+    # componentValues field is used to define values for all starrocks cluster components, including starrocksFESpec,
+    # starrocksBeSpec, starrocksCnSpec, not including starrocksFeProxySpec. So that you do not need to modify them in
+    # their own spec.
+    # Note:
+    #   1. the values in their own spec will take precedence over the values in this field.
+    #   2. the values in their own spec will replace all the values in this field, not merge.
+    componentValues:
+      image:
+        tag: "3.1-latest"
+      # hostAliases allows adding entries to /etc/hosts inside the containers.
+      hostAliases: []
+        # - ip: "127.0.0.1"
+        #   hostnames:
+        #   - "example.com"
+      # If runAsNonRoot is true, the container is run as non-root user.
+      # The userId will be set to 1000, and the groupID will be set to 1000.
+      runAsNonRoot: false
+      # schedulerName allows you to specify which scheduler will be used for your pods.
+      schedulerName: ""
+      # serviceAccount for access cloud service.
+      serviceAccount: ""
+      # imagePullSecrets allows you to use secrets to pull images for pods.
+      imagePullSecrets: []
+      # - name: "image-pull-secret"
+      # tolerations for pod scheduling to nodes with taints
+      # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+      tolerations: []
+        # - key: "key"
+        #   operator: "Equal|Exists"
+        #   value: "value"
+        #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+      # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+      # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+      nodeSelector: {}
+        # kubernetes.io/arch: amd64
+        # kubernetes.io/os: linux
+      # affinity for pod scheduling.
+      affinity: {}
+        # nodeAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #     nodeSelectorTerms:
+        #     - matchFields:
+        #       - key: metadata.name
+        #         operator: In
+        #         values:
+        #         - target-host-name
+      # the pod labels for user select or classify pods.
+      podLabels: {}
   
   # spec to deploy fe.
   starrocksFESpec:
@@ -154,7 +202,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/fe-ubuntu
-      tag: 3.1-latest
+      tag: ""
     # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
     annotations: {}
     # If runAsNonRoot is true, the container is run as non-root user.
@@ -316,7 +364,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/cn-ubuntu
-      tag: 3.1-latest
+      tag: ""
     # serviceAccount for cn access cloud service.
     serviceAccount: ""
     # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -493,7 +541,7 @@ starrocks:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/be-ubuntu
-      tag: 3.1-latest
+      tag: ""
     # serviceAccount for be access cloud service.
     serviceAccount: ""
     # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.

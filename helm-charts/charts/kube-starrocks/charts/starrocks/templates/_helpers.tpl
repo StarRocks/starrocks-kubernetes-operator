@@ -240,3 +240,332 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- end }}
 {{- end }}
 
+{{/*
+Get the value of the schedulerName field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.schedulerName" -}}
+{{- if .Values.starrocksFESpec.schedulerName -}}
+{{- .Values.starrocksFESpec.schedulerName -}}
+{{- else if .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the schedulerName field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.schedulerName" -}}
+{{- if .Values.starrocksBeSpec.schedulerName -}}
+{{- .Values.starrocksBeSpec.schedulerName -}}
+{{- else if .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the schedulerName field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.schedulerName" -}}
+{{- if .Values.starrocksCnSpec.schedulerName -}}
+{{- .Values.starrocksCnSpec.schedulerName -}}
+{{- else if .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- .Values.starrocksCluster.componentValues.schedulerName -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the serviceAccount field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.serviceAccount" -}}
+{{- if .Values.starrocksFESpec.serviceAccount -}}
+{{- .Values.starrocksFESpec.serviceAccount -}}
+{{- else if .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the serviceAccount field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.serviceAccount" -}}
+{{- if .Values.starrocksBeSpec.serviceAccount -}}
+{{- .Values.starrocksBeSpec.serviceAccount -}}
+{{- else if .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the serviceAccount field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.serviceAccount" -}}
+{{- if .Values.starrocksCnSpec.serviceAccount -}}
+{{- .Values.starrocksCnSpec.serviceAccount -}}
+{{- else if .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- .Values.starrocksCluster.componentValues.serviceAccount -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the imagePullSecrets field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.imagePullSecrets" -}}
+{{- if .Values.starrocksFESpec.imagePullSecrets -}}
+{{- toYaml .Values.starrocksFESpec.imagePullSecrets -}}
+{{- else if .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- toYaml .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the imagePullSecrets field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.imagePullSecrets" -}}
+{{- if .Values.starrocksBeSpec.imagePullSecrets -}}
+{{- toYaml .Values.starrocksBeSpec.imagePullSecrets -}}
+{{- else if .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- toYaml .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the imagePullSecrets field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.imagePullSecrets" -}}
+{{- if .Values.starrocksCnSpec.imagePullSecrets -}}
+{{- toYaml .Values.starrocksCnSpec.imagePullSecrets -}}
+{{- else if .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- toYaml .Values.starrocksCluster.componentValues.imagePullSecrets -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the tolerations field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.tolerations" -}}
+{{- if .Values.starrocksFESpec.tolerations -}}
+{{- toYaml .Values.starrocksFESpec.tolerations -}}
+{{- else if .Values.starrocksCluster.componentValues.tolerations -}}
+{{- toYaml .Values.starrocksCluster.componentValues.tolerations -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the tolerations field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.tolerations" -}}
+{{- if .Values.starrocksBeSpec.tolerations -}}
+{{- toYaml .Values.starrocksBeSpec.tolerations -}}
+{{- else if .Values.starrocksCluster.componentValues.tolerations -}}
+{{- toYaml .Values.starrocksCluster.componentValues.tolerations -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the tolerations field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.tolerations" -}}
+{{- if .Values.starrocksCnSpec.tolerations -}}
+{{- toYaml .Values.starrocksCnSpec.tolerations -}}
+{{- else if .Values.starrocksCluster.componentValues.tolerations -}}
+{{- toYaml .Values.starrocksCluster.componentValues.tolerations -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the nodeSelector field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.nodeSelector" -}}
+{{- if .Values.starrocksFESpec.nodeSelector -}}
+{{- toYaml .Values.starrocksFESpec.nodeSelector -}}
+{{- else if .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- toYaml .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the nodeSelector field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.nodeSelector" -}}
+{{- if .Values.starrocksBeSpec.nodeSelector -}}
+{{- toYaml .Values.starrocksBeSpec.nodeSelector -}}
+{{- else if .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- toYaml .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the nodeSelector field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.nodeSelector" -}}
+{{- if .Values.starrocksCnSpec.nodeSelector -}}
+{{- toYaml .Values.starrocksCnSpec.nodeSelector -}}
+{{- else if .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- toYaml .Values.starrocksCluster.componentValues.nodeSelector -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the affinity field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.affinity" -}}
+{{- if .Values.starrocksFESpec.affinity -}}
+{{- toYaml .Values.starrocksFESpec.affinity -}}
+{{- else if .Values.starrocksCluster.componentValues.affinity -}}
+{{- toYaml .Values.starrocksCluster.componentValues.affinity -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the affinity field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.affinity" -}}
+{{- if .Values.starrocksBeSpec.affinity -}}
+{{- toYaml .Values.starrocksBeSpec.affinity -}}
+{{- else if .Values.starrocksCluster.componentValues.affinity -}}
+{{- toYaml .Values.starrocksCluster.componentValues.affinity -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the affinity field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.affinity" -}}
+{{- if .Values.starrocksCnSpec.affinity -}}
+{{- toYaml .Values.starrocksCnSpec.affinity -}}
+{{- else if .Values.starrocksCluster.componentValues.affinity -}}
+{{- toYaml .Values.starrocksCluster.componentValues.affinity -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the runAsNonRoot field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.runAsNonRoot" -}}
+{{- if .Values.starrocksFESpec.runAsNonRoot -}}
+{{- .Values.starrocksFESpec.runAsNonRoot -}}
+{{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the runAsNonRoot field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.runAsNonRoot" -}}
+{{- if .Values.starrocksBeSpec.runAsNonRoot -}}
+{{- .Values.starrocksBeSpec.runAsNonRoot -}}
+{{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the runAsNonRoot field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.runAsNonRoot" -}}
+{{- if .Values.starrocksCnSpec.runAsNonRoot -}}
+{{- .Values.starrocksCnSpec.runAsNonRoot -}}
+{{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of hostAliases field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.hostAliases" -}}
+{{- if .Values.starrocksFESpec.hostAliases -}}
+{{- toYaml .Values.starrocksFESpec.hostAliases -}}
+{{- else if .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- toYaml .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of hostAliases field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.hostAliases" -}}
+{{- if .Values.starrocksBeSpec.hostAliases -}}
+{{- toYaml .Values.starrocksBeSpec.hostAliases -}}
+{{- else if .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- toYaml .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of hostAliases field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.hostAliases" -}}
+{{- if .Values.starrocksCnSpec.hostAliases -}}
+{{- toYaml .Values.starrocksCnSpec.hostAliases -}}
+{{- else if .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- toYaml .Values.starrocksCluster.componentValues.hostAliases -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of tag field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.image.tag" -}}
+{{- if .Values.starrocksFESpec.image.tag -}}
+{{- .Values.starrocksFESpec.image.tag -}}
+{{- else if .Values.starrocksCluster.componentValues.image.tag -}}
+{{- .Values.starrocksCluster.componentValues.image.tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of tag field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.image.tag" -}}
+{{- if .Values.starrocksBeSpec.image.tag -}}
+{{- .Values.starrocksBeSpec.image.tag -}}
+{{- else if .Values.starrocksCluster.componentValues.image.tag -}}
+{{- .Values.starrocksCluster.componentValues.image.tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of tag field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.image.tag" -}}
+{{- if .Values.starrocksCnSpec.image.tag -}}
+{{- .Values.starrocksCnSpec.image.tag -}}
+{{- else if .Values.starrocksCluster.componentValues.image.tag -}}
+{{- .Values.starrocksCluster.componentValues.image.tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of podLabels field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.podLabels" -}}
+{{- if .Values.starrocksFESpec.podLabels -}}
+{{- toYaml .Values.starrocksFESpec.podLabels -}}
+{{- else if .Values.starrocksCluster.componentValues.podLabels -}}
+{{- toYaml .Values.starrocksCluster.componentValues.podLabels -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of podLabels field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.podLabels" -}}
+{{- if .Values.starrocksBeSpec.podLabels -}}
+{{- toYaml .Values.starrocksBeSpec.podLabels -}}
+{{- else if .Values.starrocksCluster.componentValues.podLabels -}}
+{{- toYaml .Values.starrocksCluster.componentValues.podLabels -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of podLabels field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.podLabels" -}}
+{{- if .Values.starrocksCnSpec.podLabels -}}
+{{- toYaml .Values.starrocksCnSpec.podLabels -}}
+{{- else if .Values.starrocksCluster.componentValues.podLabels -}}
+{{- toYaml .Values.starrocksCluster.componentValues.podLabels -}}
+{{- end -}}
+{{- end -}}
