@@ -120,6 +120,51 @@ be.conf: |
 {{- end }}
 
 {{/*
+Define a function to handle resource limits for fe
+*/}}
+{{- define "starrockscluster.fe.resources" -}}
+resources:
+  requests:
+    {{- toYaml .Values.starrocksFESpec.resources.requests | nindent 4 }}
+  limits:
+  {{- range $key, $value := .Values.starrocksFESpec.resources.limits }}
+    {{- if ne (toString $value) "unlimited" }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Define a function to handle resource limits for be
+*/}}
+{{- define "starrockscluster.be.resources" -}}
+resources:
+  requests:
+    {{- toYaml .Values.starrocksBeSpec.resources.requests | nindent 4 }}
+  limits:
+  {{- range $key, $value := .Values.starrocksBeSpec.resources.limits }}
+    {{- if ne (toString $value) "unlimited" }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Define a function to handle resource limits for cn
+*/}}
+{{- define "starrockscluster.cn.resources" -}}
+resources:
+  requests:
+    {{- toYaml .Values.starrocksCnSpec.resources.requests | nindent 4 }}
+  limits:
+  {{- range $key, $value := .Values.starrocksCnSpec.resources.limits }}
+    {{- if ne (toString $value) "unlimited" }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 starrockscluster.fe.config.hash is used to calculate the hash value of the fe.conf, and due to the length limit, only
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
@@ -194,3 +239,4 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- print (index $configMap "webserver_port") }}
 {{- end }}
 {{- end }}
+
