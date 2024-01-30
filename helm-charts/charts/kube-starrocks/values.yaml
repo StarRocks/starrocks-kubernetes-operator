@@ -148,9 +148,10 @@ starrocks:
     enabledCn: false
     # componentValues field is used to define values for all starrocks cluster components, including starrocksFESpec,
     # starrocksBeSpec, starrocksCnSpec, not including starrocksFeProxySpec. So that you do not need to modify them in
-    # the following spec.
+    # their own spec.
     # Note:
-    #   1. the values in its own spec will take precedence over the values in this field.
+    #   1. the values in their own spec will take precedence over the values in this field.
+    #   2. the values in their own spec will replace all the values in this field, not merge.
     componentValues:
       image:
         tag: "3.1-latest"
