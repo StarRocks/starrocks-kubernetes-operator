@@ -123,45 +123,42 @@ be.conf: |
 Define a function to handle resource limits for fe
 */}}
 {{- define "starrockscluster.fe.resources" -}}
-resources:
-  requests:
-    {{- toYaml .Values.starrocksFESpec.resources.requests | nindent 4 }}
-  limits:
-  {{- range $key, $value := .Values.starrocksFESpec.resources.limits }}
-    {{- if ne (toString $value) "unlimited" }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
+requests:
+  {{- toYaml .Values.starrocksFESpec.resources.requests | nindent 2 }}
+limits:
+{{- range $key, $value := .Values.starrocksFESpec.resources.limits }}
+  {{- if ne (toString $value) "unlimited" }}
+  {{ $key }}: {{ $value }}
   {{- end }}
+{{- end }}
 {{- end -}}
 
 {{/*
 Define a function to handle resource limits for be
 */}}
 {{- define "starrockscluster.be.resources" -}}
-resources:
-  requests:
-    {{- toYaml .Values.starrocksBeSpec.resources.requests | nindent 4 }}
-  limits:
-  {{- range $key, $value := .Values.starrocksBeSpec.resources.limits }}
-    {{- if ne (toString $value) "unlimited" }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
+requests:
+  {{- toYaml .Values.starrocksBeSpec.resources.requests | nindent 2 }}
+limits:
+{{- range $key, $value := .Values.starrocksBeSpec.resources.limits }}
+  {{- if ne (toString $value) "unlimited" }}
+  {{ $key }}: {{ $value }}
   {{- end }}
+{{- end }}
 {{- end -}}
 
 {{/*
 Define a function to handle resource limits for cn
 */}}
 {{- define "starrockscluster.cn.resources" -}}
-resources:
-  requests:
-    {{- toYaml .Values.starrocksCnSpec.resources.requests | nindent 4 }}
-  limits:
-  {{- range $key, $value := .Values.starrocksCnSpec.resources.limits }}
-    {{- if ne (toString $value) "unlimited" }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
+requests:
+  {{- toYaml .Values.starrocksCnSpec.resources.requests | nindent 2 }}
+limits:
+{{- range $key, $value := .Values.starrocksCnSpec.resources.limits }}
+  {{- if ne (toString $value) "unlimited" }}
+  {{ $key }}: {{ $value }}
   {{- end }}
+{{- end }}
 {{- end -}}
 
 {{/*
