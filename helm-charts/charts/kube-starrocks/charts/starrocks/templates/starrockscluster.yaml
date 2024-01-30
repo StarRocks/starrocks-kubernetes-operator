@@ -18,7 +18,7 @@ spec:
     support both resources and resource for backward compatibility
     */}}
     {{- if .Values.starrocksFESpec.resources }}
-    {{- toYaml .Values.starrocksFESpec.resources | nindent 4 }}
+    {{- include "starrockscluster.fe.resources" . | nindent 4 }}
     {{- else if .Values.starrocksFESpec.resource }}
     {{- toYaml .Values.starrocksFESpec.resource | nindent 4 }}
     {{- end }}
@@ -175,7 +175,7 @@ spec:
     support both resources and resource for backward compatibility
     */}}
     {{- if .Values.starrocksBeSpec.resources }}
-    {{- toYaml .Values.starrocksBeSpec.resources | nindent 4 }}
+    {{- include "starrockscluster.be.resources" . | nindent 4 }}
     {{- else if .Values.starrocksBeSpec.resource }}
     {{- toYaml .Values.starrocksBeSpec.resource | nindent 4 }}
     {{- end }}
@@ -410,7 +410,7 @@ spec:
     support both resources and resource for backward compatibility
     */}}
     {{- if .Values.starrocksCnSpec.resources }}
-    {{- toYaml .Values.starrocksCnSpec.resources | nindent 4 }}
+    {{- include "starrockscluster.cn.resources" . | nindent 4 }}
     {{- else if .Values.starrocksCnSpec.resource }}
     {{- toYaml .Values.starrocksCnSpec.resource | nindent 4 }}
     {{- end }}

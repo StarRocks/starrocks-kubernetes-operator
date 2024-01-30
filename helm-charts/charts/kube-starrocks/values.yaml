@@ -234,6 +234,7 @@ starrocks:
       requests:
         cpu: 4
         memory: 4Gi
+      # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
       limits:
         cpu: 8
         memory: 8Gi
@@ -420,6 +421,7 @@ starrocks:
       #       selectPolicy: Disabled
     # define resources requests and limits for cn pods.
     resources:
+      # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
       limits:
         cpu: 8
         memory: 8Gi
@@ -578,6 +580,7 @@ starrocks:
       requests:
         cpu: 4
         memory: 4Gi
+      # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
       limits:
         cpu: 8
         memory: 8Gi
