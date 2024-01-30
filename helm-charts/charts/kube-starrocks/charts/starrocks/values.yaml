@@ -34,10 +34,12 @@ datadog:
     enabled: false
 
 # This configuration is used to integrate with external system Prometheus.
-# You can enable the integration by setting the enabled to true.
 metrics:
   serviceMonitor:
     # Enable a prometheus ServiceMonitor
+    # Note: make sure the prometheus operator is installed in your cluster.
+    # If prometheus is not installed by operator, you can add annotations on k8s service to expose metrics.
+    # see https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/doc/integration/integration-prometheus-grafana.md#51-turn-on-the-prometheus-metrics-scrape-by-adding-annotations for more details.
     enabled: false
     # Prometheus ServiceMonitor interval
     interval: 15s
