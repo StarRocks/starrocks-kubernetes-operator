@@ -4,6 +4,7 @@ Table Of Content
 
 - [API Reference](./api.md)
 - HOWTO
+    - [Least Permission to Deploy StarRocks](./least_permission_to_deploy_starrocks_howto.md)
     - [Deploy StarRocks With Operator](./deploy_starrocks_with_operator_howto.md)
     - [Deploy StarRocks With Helm](./deploy_starrocks_with_helm_howto.md)
     - [Install StarRocks Locally](./local_installation_how_to.md)
