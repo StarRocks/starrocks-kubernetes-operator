@@ -156,9 +156,10 @@ starrocksFESpec:
   # Additional fe container environment variables.
   # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
   # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
-  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       If you use map to define environment variables, the values in the values files will be merged.
   #       You can only use one of slice and map to define environment variables.
-  feEnvVars: []
+  # In order to avoid different type of feEnvVars, we do not define the default value of feEnvVars, e.g. feEnvVars: [] or feEnvVars: {}.
+  #feEnvVars:
     # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
@@ -318,9 +319,10 @@ starrocksCnSpec:
   # Additional cn container environment variables.
   # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
   # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
-  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       If you use map to define environment variables, the values in the values files will be merged.
   #       You can only use one of slice and map to define environment variables.
-  cnEnvVars: []
+  # In order to avoid different type of cnEnvVars, we do not define the default value of cnEnvVars, e.g. cnEnvVars: [] or cnEnvVars: {}.
+  # cnEnvVars:
     # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
@@ -502,9 +504,10 @@ starrocksBeSpec:
   # Additional be container environment variables.
   # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
   # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
-  #       If you use map to define environment variables, and if there are multiple values files, the values in the last values file will be merged.
+  #       If you use map to define environment variables, the values in the values files will be merged.
   #       You can only use one of slice and map to define environment variables.
-  beEnvVars: []
+  # In order to avoid different type of beEnvVars, we do not define the default value of beEnvVars, e.g. beEnvVars: [] or beEnvVars: {}.
+  # beEnvVars:
     # define environment variables by slice.
     # e.g. static environment variable:
     # - name: DEMO_GREETING
