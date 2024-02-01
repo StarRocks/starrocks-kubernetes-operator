@@ -99,7 +99,7 @@ spec:
             name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
       {{- end }}
-      {{- if .Values.datadog.profiling.be }}
+      {{- if .Values.datadog.profiling.fe }}
       - name: ENABLE_DATADOG_PROFILE
         value: "true"
       - name: DD_PROFILING_ENABLED
@@ -247,9 +247,26 @@ spec:
     serviceAccount: {{ include "starrockscluster.be.serviceAccount" . }}
     {{- end }}
     runAsNonRoot: {{ include "starrockscluster.be.runAsNonRoot" . }}
-    {{- if .Values.starrocksBeSpec.capabilities }}
+    {{- if or .Values.starrocksBeSpec.capabilities .Values.datadog.profiling.be }}
     capabilities:
-      {{- toYaml .Values.starrocksBeSpec.capabilities | nindent 6 }}
+      {{- if or .Values.starrocksBeSpec.capabilities.add .Values.datadog.profiling.be }}
+      add:
+        {{- if .Values.starrocksBeSpec.capabilities.add }}
+        {{- toYaml .Values.starrocksBeSpec.capabilities.add | nindent 8 }}
+        {{- end }}
+        {{- if .Values.datadog.profiling.be }}
+        {{- if and .Values.starrocksBeSpec.capabilities.add (has "PERFMON" .Values.starrocksBeSpec.capabilities.add) | not }}
+        - PERFMON
+        {{- end }}
+        {{- if and .Values.starrocksBeSpec.capabilities.add (has "SYS_PTRACE" .Values.starrocksBeSpec.capabilities.add) | not }}
+        - SYS_PTRACE
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.starrocksBeSpec.capabilities.drop }}
+      drop:
+        {{- toYaml .Values.starrocksBeSpec.capabilities.drop | nindent 8 }}
+      {{- end }}
     {{- end }}
     {{- if or .Values.starrocksBeSpec.podLabels .Values.starrocksCluster.componentValues.podLabels .Values.datadog.profiling.be }}
     podLabels:
@@ -260,12 +277,6 @@ spec:
       admission.datadoghq.com/config.mode: service
       admission.datadoghq.com/enabled: "true"
       {{- end }}
-    {{- end }}
-    {{- if .Values.datadog.profiling.be }}
-    capabilities:
-      add:
-        - PERFMON
-        - SYS_PTRACE
     {{- end }}
     {{- if or .Values.starrocksBeSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
