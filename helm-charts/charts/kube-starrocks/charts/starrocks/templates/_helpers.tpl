@@ -76,7 +76,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.fe.meta.path" -}}
+{{- if .Values.starrocksFESpec.storageSpec.storageMountPath }}
+{{- print .Values.starrocksFESpec.storageSpec.storageMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/fe/meta" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.fe.log.suffix" -}}
@@ -92,7 +96,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.be.data.path" -}}
+{{- if .Values.starrocksBeSpec.storageSpec.storageMountPath }}
+{{- print .Values.starrocksBeSpec.storageSpec.storageMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/be/storage" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.be.log.suffix" -}}
@@ -108,7 +116,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.cn.data.path" -}}
+{{- if .Values.starrocksCnSpec.storageSpec.storageMountPath }}
+{{- print .Values.starrocksCnSpec.storageSpec.storageMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/cn/storage" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.log.suffix" -}}
