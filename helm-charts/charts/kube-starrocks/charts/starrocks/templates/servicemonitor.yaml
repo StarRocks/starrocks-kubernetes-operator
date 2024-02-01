@@ -6,6 +6,9 @@ metadata:
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
+    {{- if .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml .Values.metrics.serviceMonitor.labels | nindent 4 }}
+    {{- end }}
 spec:
   endpoints:
     - port: http
@@ -35,6 +38,9 @@ metadata:
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
+    {{- if .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml .Values.metrics.serviceMonitor.labels | nindent 4 }}
+    {{- end }}
 spec:
   endpoints:
     - port: webserver
@@ -66,6 +72,9 @@ metadata:
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
+    {{- if .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml .Values.metrics.serviceMonitor.labels | nindent 4 }}
+    {{- end }}
 spec:
   endpoints:
     - port: webserver
