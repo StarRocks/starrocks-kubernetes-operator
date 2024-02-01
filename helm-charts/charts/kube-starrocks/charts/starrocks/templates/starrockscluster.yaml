@@ -68,9 +68,15 @@ spec:
     nodeSelector:
       {{- include "starrockscluster.fe.nodeSelector" . | nindent 6 }}
     {{- end }}
-    {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
+    {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabels .Values.datadog.profiling.fe }}
     podLabels:
+      {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabel }}
       {{- include "starrockscluster.fe.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.fe }}
+      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
     {{- end }}
     {{- if or .Values.starrocksFESpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
@@ -92,6 +98,26 @@ spec:
           secretKeyRef:
             name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.be }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: celostar-fe
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "starrockscluster.fe.image.tag" . }}"
+      - name: DD_PROFILING_DDPROF_ALLOC_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DDPROF_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DDPROF_LIVEHEAP_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DIRECTALLOCATION_ENABLED
+        value: "true"
       {{- end }}
       {{- if .Values.starrocksFESpec.feEnvVars }}
       {{- /* if it is a map, we use range to iterate to merge environment variables */}}
@@ -225,9 +251,21 @@ spec:
     capabilities:
       {{- toYaml .Values.starrocksBeSpec.capabilities | nindent 6 }}
     {{- end }}
-    {{- if or .Values.starrocksBeSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
+    {{- if or .Values.starrocksBeSpec.podLabels .Values.starrocksCluster.componentValues.podLabels .Values.datadog.profiling.be }}
     podLabels:
+      {{- if or .Values.starrocksBeSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
       {{- include "starrockscluster.be.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.be }}
+      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if .Values.datadog.profiling.be }}
+    capabilities:
+      add:
+        - PERFMON
+        - SYS_PTRACE
     {{- end }}
     {{- if or .Values.starrocksBeSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
@@ -253,6 +291,18 @@ spec:
           secretKeyRef:
             name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.be }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: celostar-be
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "starrockscluster.be.image.tag" . }}"
       {{- end }}
       {{- if .Values.starrocksBeSpec.beEnvVars }}
       {{- /* if it is a map, we use range to iterate to merge environment variables */}}

@@ -32,6 +32,10 @@ datadog:
     logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
   metrics:
     enabled: false
+  profiling:
+    fe: false # change to 'true' to enable profiling on FE pods;
+    be: false # change to 'true' to enable profiling on BE pods;
+    env: "starrocks-default" # the default value for DD_ENV;
 
 # This configuration is used to integrate with external system Prometheus.
 metrics:
