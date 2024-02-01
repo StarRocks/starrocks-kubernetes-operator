@@ -12,6 +12,9 @@ and Compute Node (CN) components within your Kubernetes environment. It also inc
 and configuration. With StarRocks Kubernetes Operator, you can easily manage the lifecycle of StarRocks clusters, such
 as installing, scaling, upgrading etc.
 
+> [!NOTE]  
+> The StarRocks k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
+
 ## Prerequisites
 
 1. Kubernetes version >= 1.18
