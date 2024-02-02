@@ -399,9 +399,36 @@ spec:
     serviceAccount: {{ include "starrockscluster.cn.serviceAccount" . }}
     {{- end }}
     runAsNonRoot: {{ include "starrockscluster.cn.runAsNonRoot" . }}
-    {{- if or .Values.starrocksCnSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
+    {{- if or .Values.starrocksCnSpec.capabilities .Values.datadog.profiling.cn }}
+    capabilities:
+      {{- if or .Values.starrocksCnSpec.capabilities.add .Values.datadog.profiling.cn }}
+      add:
+        {{- if .Values.starrocksCnSpec.capabilities.add }}
+        {{- toYaml .Values.starrocksCnSpec.capabilities.add | nindent 8 }}
+        {{- end }}
+        {{- if .Values.datadog.profiling.cn }}
+        {{- if and .Values.starrocksCnSpec.capabilities.add (has "PERFMON" .Values.starrocksCnSpec.capabilities.add) | not }}
+        - PERFMON
+        {{- end }}
+        {{- if and .Values.starrocksCnSpec.capabilities.add (has "SYS_PTRACE" .Values.starrocksCnSpec.capabilities.add) | not }}
+        - SYS_PTRACE
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.starrocksCnSpec.capabilities.drop }}
+      drop:
+        {{- toYaml .Values.starrocksCnSpec.capabilities.drop | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.podLabels .Values.starrocksCluster.componentValues.podLabels .Values.datadog.profiling.cn }}
     podLabels:
+      {{- if or .Values.starrocksCnSpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
       {{- include "starrockscluster.cn.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.cn }}
+      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
     {{- end }}
     {{- if or .Values.starrocksCnSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
@@ -427,6 +454,18 @@ spec:
           secretKeyRef:
             name: {{ template "starrockscluster.initpassword.secret.name" . }}
             key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.cn }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: starrocks-cn
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "starrockscluster.cn.image.tag" . }}"
       {{- end }}
       {{- if .Values.starrocksCnSpec.cnEnvVars }}
       {{- /* if it is a map, we use range to iterate to merge environment variables */}}
