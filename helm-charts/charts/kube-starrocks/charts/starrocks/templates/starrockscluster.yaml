@@ -105,7 +105,7 @@ spec:
       - name: DD_PROFILING_ENABLED
         value: "true"
       - name: DD_SERVICE
-        value: celostar-fe
+        value: starrocks-fe
       - name: DD_ENV
         value: "{{ .Values.datadog.profiling.env }}"
       - name: DD_VERSION
@@ -309,7 +309,7 @@ spec:
       - name: DD_PROFILING_ENABLED
         value: "true"
       - name: DD_SERVICE
-        value: celostar-be
+        value: starrocks-be
       - name: DD_ENV
         value: "{{ .Values.datadog.profiling.env }}"
       - name: DD_VERSION
