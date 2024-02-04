@@ -12,6 +12,9 @@ It includes the following parts:
     2. Upgrade StarRocks cluster
     3. Scale StarRocks cluster
     4. Using ConfigMap to configure your StarRocks cluster
+  
+> [!NOTE]  
+> The StarRocks k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
 
 ## Prerequisites
 
