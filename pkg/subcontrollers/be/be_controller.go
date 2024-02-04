@@ -74,10 +74,9 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	var err error
 	defer func() {
+		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
 			be.Recorder.Event(src, corev1.EventTypeWarning, "SyncBeFailed", err.Error())
-		} else {
-			be.Recorder.Event(src, corev1.EventTypeNormal, "DeployBeSuccess", "deploy be success")
 		}
 	}()
 

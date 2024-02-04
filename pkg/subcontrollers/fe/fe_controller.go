@@ -69,10 +69,9 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	var err error
 	defer func() {
+		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
 			fc.Recorder.Event(src, corev1.EventTypeWarning, "SyncFeFailed", err.Error())
-		} else {
-			fc.Recorder.Event(src, corev1.EventTypeNormal, "DeployFeSuccess", "deploy fe success")
 		}
 	}()
 

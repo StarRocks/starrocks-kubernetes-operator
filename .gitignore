@@ -32,3 +32,5 @@ artifacts
 migrate-chart-value
 gen-crd-api-reference-docs-master/
 *.tgz
+
+temp/

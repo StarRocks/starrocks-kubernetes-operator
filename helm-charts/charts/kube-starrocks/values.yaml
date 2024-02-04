@@ -386,7 +386,7 @@ starrocks:
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
     # add/drop capabilities for CN container.
-    capabilities: { }
+    capabilities: {}
     #  add:
     #    - PERFMON
     #    - SYS_PTRACE

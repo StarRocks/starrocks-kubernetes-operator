@@ -121,10 +121,9 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec)
 	defer func() {
+		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
 			cc.Recorder.Event(src, corev1.EventTypeWarning, "SyncCnFailed", err.Error())
-		} else {
-			cc.Recorder.Event(src, corev1.EventTypeNormal, "DeployCnSuccess", "deploy cn success")
 		}
 	}()
 	return err
