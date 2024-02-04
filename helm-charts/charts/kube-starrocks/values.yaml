@@ -125,6 +125,11 @@ starrocks:
       logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
     metrics:
       enabled: false
+    profiling:
+      fe: false # change to 'true' to enable profiling on FE pods;
+      be: false # change to 'true' to enable profiling on BE pods;
+      cn: false # change to 'true' to enable profiling on CN pods;
+      env: "starrocks-default" # the default value for DD_ENV;
   
   # This configuration is used to integrate with external system Prometheus.
   metrics:
@@ -380,6 +385,13 @@ starrocks:
     # If runAsNonRoot is true, the container is run as non-root user.
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
+    # add/drop capabilities for CN container.
+    capabilities: { }
+    #  add:
+    #    - PERFMON
+    #    - SYS_PTRACE
+    #  drop:
+    #    - SYS_ADMIN
     # specify the service name and port config and serviceType
     # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     service:
@@ -560,7 +572,7 @@ starrocks:
     # If runAsNonRoot is true, the container is run as non-root user.
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
-    # add/drop capabilities for BE container, DataDog profiling lib relies on it for example.
+    # add/drop capabilities for BE container.
     capabilities: {}
     #  add:
     #    - PERFMON
