@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## [v1.9.2](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.2)
+
+Release Notes for starrocks-kubernetes-operator v1.9.2
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.2. This version brings a mix of new
+features, enhancements, documentation updates, and bug fixes to further improve the deployment and management of
+StarRocks clusters on Kubernetes environments.
+
+### What's New
+
+- **[chart]** Add Datadog profiling to SR Helm to enhance monitoring
+  capabilities. [#437](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/437)
+- **[chart]** Add `starrocksCluster.componentValues` to define some values uniformly to streamline configurations. [#425](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/425)
+- **[operator]** Add k8s event information during the Operator reconciliation for better debugging and operational
+  insights. [#391](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/391)
+
+### Enhancements
+
+- **[operator]** Prefer to use containerPort to export service node
+  port. [#421](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/421)
+- **[chart]** Upgrade ServiceMonitor
+    1. In order to
+       support [StarRocks Grafana Dashboard](https://github.com/StarRocks/starrocks/blob/main/extra/grafana/kubernetes/StarRocks-Overview-kubernetes-3.0.json),
+       `app_starrocks_ownerreference_name` or `app_kubernetes_io_component labels` were added to `up` metrics by
+       ServiceMonitor. [#433](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/433)
+    2. Users can now add labels on ServiceMonitor for more flexible monitoring
+       configuration. [#432](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/432)
+- **[chart]** Allow users to specify mount paths, providing more customization options for
+  deployments. [#428](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/428)
+- **[chart]** Eliminate Helm warnings caused by differing types of feEnvVars, beEnvVars, and cnEnvVars, improving
+  the deployment
+  experience. [#434](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/434) [#396](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/396)
+- **[chart]** Complete imagePullSecrets and affinity fields for helm charts to enhance deployment flexibility and
+  scheduling. [#417](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/417)
+
+### Bug Fixes
+
+- **[chart]** Allowed to remove some resources limit, like CPU, providing more flexibility in resource
+  management. [#426](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/426)
+- **[chart]** Upgraded the version of Golang and libraries to fix some vulnerabilities, improving
+  security. [#415](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/415)
+
+### Documentation
+
+- Added `doc/least_permission_to_deploy_starrocks_howto.md` to help users deploy with minimal
+  permissions. [#431](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/431)
+- Added more details about Prometheus integration for better monitoring
+  setup. [#427](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/427)
+- Removed the 1.7.0 and 1.6.x version in
+  index.yaml. [#435](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/435)
+- Documentation improvements including moving and adding pull request templates for better contribution
+  guidelines. [#410](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/410) [#409](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/409)
+
+We thank our community for their contributions and feedback. For a detailed list of changes and updates, please refer to
+the GitHub repository. Happy deploying!
+
 ## [v1.9.1](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.1)
 
 Release Notes for starrocks-kubernetes-operator v1.9.1
@@ -17,7 +73,8 @@ There are enhancements in this release.
 2. **[operator]** Checked volumes and mount paths to avoid duplication
    error [#388](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/388)
 3. **[operator]** Disabled FE scale to 1 [#394](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/394)
-4. **[operator]** Supported use of map to define feEnvVars/beEnvVars/cnEnvVars to merge on multiple values files (#396)
+4. **[operator]** Supported use of map to define feEnvVars/beEnvVars/cnEnvVars to merge on multiple values
+   files [#396](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/396)
 5. **[operator]** exposed `spec.containers.securityContext.capabilities` for user to customize the capabilities of
    containers. [#404](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/404)
 
