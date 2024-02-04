@@ -7,17 +7,17 @@ metadata:
 spec:
   template:
     spec:
-      {{- if .Values.starrocksFESpec.imagePullSecrets }}
+      {{- if or .Values.starrocksFESpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.starrocksFESpec.imagePullSecrets | nindent 6 }}
+        {{- include "starrockscluster.fe.imagePullSecrets" . | nindent 6 }}
       {{- end }}
-      {{- if .Values.starrocksFESpec.affinity }}
+      {{- if or .Values.starrocksFESpec.affinity .Values.starrocksCluster.componentValues.affinity }}
       affinity:
-        {{- toYaml .Values.starrocksFESpec.affinity | nindent 8 }}
+        {{- include "starrockscluster.fe.affinity" . | nindent 8 }}
       {{- end }}
       containers:
       - name: {{ template "starrockscluster.name" . }}-initpwd
-        image: {{ .Values.starrocksFESpec.image.repository }}:{{ .Values.starrocksFESpec.image.tag }}
+        image: {{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}
         imagePullPolicy: IfNotPresent
         command:
         - /bin/bash

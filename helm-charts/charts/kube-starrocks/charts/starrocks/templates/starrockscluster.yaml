@@ -70,7 +70,7 @@ spec:
     {{- end }}
     {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabels .Values.datadog.profiling.fe }}
     podLabels:
-      {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabel }}
+      {{- if or .Values.starrocksFESpec.podLabels .Values.starrocksCluster.componentValues.podLabels }}
       {{- include "starrockscluster.fe.podLabels" . | nindent 6 }}
       {{- end }}
       {{- if .Values.datadog.profiling.fe }}
