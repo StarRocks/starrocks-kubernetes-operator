@@ -247,11 +247,10 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 	return k8sClient.Delete(ctx, &cm)
 }
 
-func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string, version srapi.AutoScalerVersion) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("delete autoscaler from kubernetes", "name", name)
 
-	var version srapi.AutoScalerVersion
 	hpaObject := version.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION)
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hpaObject); apierrors.IsNotFound(err) {
 		return nil

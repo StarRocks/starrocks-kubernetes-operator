@@ -101,7 +101,7 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return FeNotReadyError
 	}
 
-	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec())
+	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec(), warehouse.Status.WarehouseComponentStatus)
 }
 
 func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
@@ -119,7 +119,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec)
+	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
 	defer func() {
 		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
@@ -129,7 +129,8 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	return err
 }
 
-func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec) error {
+func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
+	cnStatus *srapi.StarRocksCnStatus) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	if err := cc.mutating(cnSpec); err != nil {
@@ -204,7 +205,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &sts)
 	} else {
 		// If the HPA policy is nil, delete the HPA resource.
-		return cc.deleteAutoScaler(ctx, object)
+		if cnStatus != nil {
+			return cc.deleteAutoScaler(ctx, object, cnStatus.HorizontalScaler.Version)
+		} else {
+			return cc.deleteAutoScaler(ctx, object, "")
+		}
 	}
 }
 
@@ -366,11 +371,13 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, object object.Star
 }
 
 // deleteAutoScaler delete the autoscaler.
-func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.StarRocksObject) error {
+func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.StarRocksObject,
+	autoScalerVersion srapi.AutoScalerVersion) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	autoScalerName := cc.generateAutoScalerName(object.AliasName, (*srapi.StarRocksCnSpec)(nil))
-	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, object.Namespace, autoScalerName); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, object.Namespace, autoScalerName,
+		autoScalerVersion); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
 		return err
 	}
@@ -406,7 +413,11 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return err
 	}
 
-	if err := cc.deleteAutoScaler(ctx, object.NewFromCluster(src)); err != nil && !apierrors.IsNotFound(err) {
+	var version srapi.AutoScalerVersion
+	if src.Status.StarRocksCnStatus != nil {
+		version = src.Status.StarRocksCnStatus.HorizontalScaler.Version
+	}
+	if err := cc.deleteAutoScaler(ctx, object.NewFromCluster(src), version); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
 		return err
 	}
