@@ -11,8 +11,10 @@ operator:
   
   global:
     rbac:
-      # if set true, the clusterrole, clusterrolebinding, role, rolebinding, serviceaccount resources will be created for
+      # if set true, the clusterrole, clusterrolebinding, serviceaccount resources will be created for
       # operator. If changed to false later, these resources will be deleted.
+      # Note: By default the operator will watch all namespaces, so it needs clusterrole, clusterrolebinding to access resources.
+      #       If .Values.starrocksOperator.watchNamespace is set, the role and rolebinding will be created for the specified namespace.
       create: true
       serviceAccount:
         name: "starrocks"
@@ -32,6 +34,8 @@ operator:
   nameOverride: "kube-starrocks"
   
   starrocksOperator:
+    # If enabled, the operator releated resources will be created, including the operator deployment, service account,
+    # clusterrole, clusterrolebinding, and service account.
     enabled: true
     # annotations for starrocks operator.
     annotations: {}
