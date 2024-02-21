@@ -426,6 +426,10 @@ starrocksCnSpec:
     # - name: tmp-data
     #   mountPath: /tmp
   # the config start for cn, the base information as follows.
+  # From StarRocks 3.1, the official documentation use:
+  #   1. be_port instead of thrift_port, but the thrift_port is still supported.
+  #   2. be_http_port instead of webserver_port, but the webserver_port is still supported.
+  # In order to avoid the impact of the change on the user's deployment, we still use the old configuration.
   config: |
     sys_log_level = INFO
     # ports for admin, web, heartbeat service
@@ -585,6 +589,9 @@ starrocksBeSpec:
     # - name: tmp-data
     #   mountPath: /tmp
   # the config for start be. the base information as follows.
+  # From StarRocks 3.1, the official documentation use:
+  #   1. be_http_port instead of webserver_port, but the webserver_port is still supported.
+  # In order to avoid the impact of the change on the user's deployment, we still use the old configuration.
   config: |
     be_port = 9060
     webserver_port = 8040
