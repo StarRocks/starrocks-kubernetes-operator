@@ -80,11 +80,14 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	}()
 
+	beSpec := src.Spec.StarRocksBeSpec
+	if err = be.validating(beSpec); err != nil {
+		return err
+	}
+
 	if !fe.CheckFEReady(ctx, be.Client, src.Namespace, src.Name) {
 		return nil
 	}
-
-	beSpec := src.Spec.StarRocksBeSpec
 
 	logger.V(log.DebugLevel).Info("get be/fe config to resolve ports", "ConfigMapInfo", beSpec.ConfigMapInfo)
 	config, err := be.GetConfig(ctx, &beSpec.ConfigMapInfo, src.Namespace)
@@ -257,5 +260,14 @@ func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return err
 	}
 
+	return nil
+}
+
+func (be *BeController) validating(beSpec *srapi.StarRocksBeSpec) error {
+	for i := range beSpec.StorageVolumes {
+		if err := beSpec.StorageVolumes[i].Validate(); err != nil {
+			return err
+		}
+	}
 	return nil
 }

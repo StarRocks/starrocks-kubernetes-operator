@@ -75,8 +75,12 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	}()
 
-	// get the fe configMap for resolve ports
 	feSpec := src.Spec.StarRocksFeSpec
+	if err = fc.validating(feSpec); err != nil {
+		return err
+	}
+
+	// get the fe configMap for resolve ports
 	logger.V(log.DebugLevel).Info("get fe configMap to resolve ports", "ConfigMapInfo", feSpec.ConfigMapInfo)
 	config, err := GetFeConfig(ctx, fc.Client, &feSpec.ConfigMapInfo, src.Namespace)
 	if err != nil {
@@ -218,6 +222,15 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 		return err
 	}
 
+	return nil
+}
+
+func (fc *FeController) validating(feSpec *srapi.StarRocksFeSpec) error {
+	for i := range feSpec.StorageVolumes {
+		if err := feSpec.StorageVolumes[i].Validate(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

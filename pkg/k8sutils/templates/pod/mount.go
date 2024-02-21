@@ -10,12 +10,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 )
 
-const (
-	EmptyDir = "emptyDir"
-)
-
 func IsSpecialStorageClass(storageClassName *string) bool {
-	return storageClassName != nil && (common.EqualsIgnoreCase(*storageClassName, EmptyDir))
+	return storageClassName != nil && (common.EqualsIgnoreCase(*storageClassName, v1.EmptyDir) ||
+		common.EqualsIgnoreCase(*storageClassName, v1.HostPath))
 }
 
 // MountStorageVolumes parse StorageVolumes from spec and mount them to pod.
@@ -30,7 +27,12 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 		}
 		vexist[sv.MountPath] = true
 		if IsSpecialStorageClass(sv.StorageClassName) {
-			volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+			switch *sv.StorageClassName {
+			case v1.EmptyDir:
+				volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+			case v1.HostPath:
+				volumes, volumeMounts = MountHostPathVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.HostPath)
+			}
 		} else {
 			volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
 		}
@@ -62,6 +64,24 @@ func MountEmptyDirVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMo
 		Name: volumeName,
 		VolumeSource: corev1.VolumeSource{
 			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		},
+	})
+	volumeMounts = append(
+		volumeMounts, corev1.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			SubPath:   subPath,
+		})
+	return volumes, volumeMounts
+}
+
+func MountHostPathVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	volumeName string, mountPath string, subPath string,
+	hostPath *corev1.HostPathVolumeSource) ([]corev1.Volume, []corev1.VolumeMount) {
+	volumes = append(volumes, corev1.Volume{
+		Name: volumeName,
+		VolumeSource: corev1.VolumeSource{
+			HostPath: hostPath,
 		},
 	})
 	volumeMounts = append(
