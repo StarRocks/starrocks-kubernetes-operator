@@ -91,10 +91,12 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 // GetPort get ports from config file.
 func GetPort(config map[string]interface{}, key string) int32 {
 	if v, ok := config[key]; ok {
-		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
+		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil && port != 0 {
 			return int32(port)
 		}
-	} else if key == THRIFT_PORT {
+	}
+
+	if key == THRIFT_PORT {
 		// from StarRocks 3.1, the name of thrift_port is changed to be_port.
 		// If both be_port and thrift_port are set, the thrift_port will be used in StarRocks.
 		// see https://github.com/StarRocks/starrocks/pull/31747
@@ -104,5 +106,6 @@ func GetPort(config map[string]interface{}, key string) int32 {
 		// todo(yandongxiao): Call GetPort(config, BE_HTTP_PORT) not GetPort(config, WEBSERVER_PORT).
 		return GetPort(config, BE_HTTP_PORT)
 	}
+
 	return DefMap[key]
 }
