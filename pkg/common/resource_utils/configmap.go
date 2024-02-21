@@ -34,9 +34,18 @@ const (
 
 // the cn or be ports key
 const (
-	THRIFT_PORT            = "thrift_port"
-	BE_PORT                = "be_port"
-	WEBSERVER_PORT         = "webserver_port"
+	// THRIFT_PORT is the old name in CN.
+	// From StarRocks 3.1, both CN and BE use the same port name be_port.
+	THRIFT_PORT = "thrift_port"
+	BE_PORT     = "be_port"
+
+	// WEBSERVER_PORT and BE_HTTP_PORT
+	// From StarRocks 3.0, the name of HTTP port is changed to be_http_port in BE and CN.
+	WEBSERVER_PORT = "webserver_port"
+	BE_HTTP_PORT   = "be_http_port"
+
+	// HEARTBEAT_SERVICE_PORT and BRPC_PORT
+	// both BE and CN have the these ports
 	HEARTBEAT_SERVICE_PORT = "heartbeat_service_port"
 	BRPC_PORT              = "brpc_port"
 )
@@ -56,6 +65,7 @@ var DefMap = map[string]int32{
 	THRIFT_PORT:            9060,
 	BE_PORT:                9060,
 	WEBSERVER_PORT:         8040,
+	BE_HTTP_PORT:           8040,
 	HEARTBEAT_SERVICE_PORT: 9050,
 	BRPC_PORT:              8060,
 }
@@ -84,6 +94,15 @@ func GetPort(config map[string]interface{}, key string) int32 {
 		if port, err := strconv.ParseInt(v.(string), 10, 32); err == nil {
 			return int32(port)
 		}
+	} else if key == THRIFT_PORT {
+		// from StarRocks 3.1, the name of thrift_port is changed to be_port.
+		// If both be_port and thrift_port are set, the thrift_port will be used in StarRocks.
+		// see https://github.com/StarRocks/starrocks/pull/31747
+		return GetPort(config, BE_PORT)
+	} else if key == WEBSERVER_PORT {
+		// If both webserver_port and be_http_port are set, the be_http_port will be used in StarRocks.
+		// todo(yandongxiao): Call GetPort(config, BE_HTTP_PORT) not GetPort(config, WEBSERVER_PORT).
+		return GetPort(config, BE_HTTP_PORT)
 	}
 	return DefMap[key]
 }
