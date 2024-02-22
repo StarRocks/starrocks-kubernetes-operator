@@ -17,6 +17,11 @@ initPassword:
   password: ""
   # The secret name that contains password, the key of the secret is "password", and you should create it first.
   passwordSecret: ""
+  # The image of the initPassword job, if it is not set, the FE image will be used.
+  # see https://github.com/StarRocks/starrocks-kubernetes-operator/issues/453 for why we need to set the image.
+  image: ""
+  # The annotations for the initPassword job.
+  annotations: {}
 
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
