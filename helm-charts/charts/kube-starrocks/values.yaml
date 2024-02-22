@@ -813,3 +813,27 @@ starrocks:
         # e.g. mount an emptyDir volume to /tmp
         # - name: tmp-data
         #   mountPath: /tmp
+  
+  # We allow users to customize the hook function to the greatest extent possible.
+  # Currently, Helm does not have a built-in way to asynchronously execute hooks because the design intention
+  # of hooks is to synchronously perform specific tasks in specific lifecycle events.
+  # So, if you execute a hook, the Helm will wait for the hook to complete before continuing to the next step.
+  hooks:
+    postStartHook:
+      enabled: false
+      annotations:
+        # This annotation defines the hook type of the Job.
+        "helm.sh/hook": "post-install,post-upgrade"
+        # This annotation defines the execution order of hooks. Hooks with lower weights will be executed first.
+        "helm.sh/hook-weight": "1"
+        # After the hook is successfully executed, this Job will be deleted.
+        "helm.sh/hook-delete-policy": "hook-succeeded"
+      labels: {}
+      spec:
+        template:
+          spec:
+            containers:
+            - name: custom-hook
+              image: alpine
+              command: ["/bin/sh", "-c", "echo Hello from custom hook"]
+            restartPolicy: Never

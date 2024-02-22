@@ -1,0 +1,15 @@
+{{- if .Values.hooks.postStartHook.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "starrockscluster.name" . }}-post-start-hook
+  annotations:
+    {{- toYaml .Values.hooks.postStartHook.annotations | nindent 4 }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+    {{- if .Values.hooks.postStartHook.labels }}
+    {{- toYaml .Values.hooks.postStartHook.labels | nindent 4 }}
+    {{- end }}
+spec:
+  {{- toYaml .Values.hooks.postStartHook.spec | nindent 2 }}
+{{- end }}
