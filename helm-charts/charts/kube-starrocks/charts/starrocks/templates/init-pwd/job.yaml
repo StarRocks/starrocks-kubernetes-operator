@@ -4,6 +4,10 @@ kind: Job
 metadata:
   name: starrocks-initpwd
   namespace: {{ template "starrockscluster.namespace" . }}
+  {{- if .Values.initPassword.annotations }}
+  annotations:
+    {{- toYaml .Values.initPassword.annotations | nindent 4 }}
+  {{- end }}
 spec:
   template:
     spec:
@@ -17,7 +21,11 @@ spec:
       {{- end }}
       containers:
       - name: {{ template "starrockscluster.name" . }}-initpwd
+        {{- if .Values.initPassword.image }}
+        image: {{ .Values.initPassword.image }}
+        {{- else }}
         image: {{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}
+        {{- end }}
         imagePullPolicy: IfNotPresent
         command:
         - /bin/bash
