@@ -31,13 +31,26 @@ const (
 )
 
 // LifeCycle returns a lifecycle.
-func LifeCycle(preStopScriptPath string) *corev1.Lifecycle {
-	return &corev1.Lifecycle{
-		PreStop: &corev1.LifecycleHandler{
-			Exec: &corev1.ExecAction{
-				Command: []string{preStopScriptPath},
-			},
+func LifeCycle(lifeCycle *corev1.Lifecycle, preStopScriptPath string) *corev1.Lifecycle {
+	defaultPreStop := &corev1.LifecycleHandler{
+		Exec: &corev1.ExecAction{
+			Command: []string{preStopScriptPath},
 		},
+	}
+
+	if lifeCycle == nil {
+		return &corev1.Lifecycle{
+			PreStop: defaultPreStop,
+		}
+	}
+
+	preStop := lifeCycle.PreStop
+	if preStop == nil {
+		preStop = defaultPreStop
+	}
+	return &corev1.Lifecycle{
+		PreStop:   preStop,
+		PostStart: lifeCycle.PostStart,
 	}
 }
 

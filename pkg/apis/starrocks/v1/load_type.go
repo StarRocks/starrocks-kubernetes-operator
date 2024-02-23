@@ -112,6 +112,13 @@ type StarRocksLoadSpec struct {
 	// can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
 	// +optional
 	ReadinessProbeFailureSeconds *int32 `json:"readinessProbeFailureSeconds,omitempty"`
+
+	// Lifecycle describes actions that the management system should take in response to container lifecycle events.
+	// By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
+	// script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
+	// and for the CN Component is /opt/starrocks/cn_prestop.sh.
+	// +optional
+	Lifecycle *corev1.Lifecycle `json:"lifecycle,omitempty"`
 }
 
 // StarRocksService defines external service for starrocks component.
@@ -243,4 +250,8 @@ func (spec *StarRocksLoadSpec) GetLivenessProbeFailureSeconds() *int32 {
 
 func (spec *StarRocksLoadSpec) GetReadinessProbeFailureSeconds() *int32 {
 	return spec.ReadinessProbeFailureSeconds
+}
+
+func (spec *StarRocksLoadSpec) GetLifecycle() *corev1.Lifecycle {
+	return spec.Lifecycle
 }

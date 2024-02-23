@@ -153,6 +153,10 @@ spec:
     {{- if .Values.starrocksFESpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksFESpec.readinessProbeFailureSeconds }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
+    {{- end }}
 {{- if .Values.starrocksFESpec.secrets }}
     secrets:
     {{- range .Values.starrocksFESpec.secrets }}
@@ -349,6 +353,10 @@ spec:
     {{- if .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     {{- end }}
+    {{- if .Values.starrocksBeSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
+    {{- end }}
 {{- if .Values.starrocksBeSpec.secrets }}
     secrets:
     {{- range .Values.starrocksBeSpec.secrets }}
@@ -502,10 +510,14 @@ spec:
     {{- if .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
     {{- end }}
-{{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
+    {{- if .Values.starrocksCnSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
     autoScalingPolicy:
-{{ toYaml .Values.starrocksCnSpec.autoScalingPolicy | indent 6 }}
-{{- end }}
+      {{- toYaml .Values.starrocksCnSpec.autoScalingPolicy | nindent 6 }}
+    {{- end }}
     {{- /*
     support both resources and resource for backward compatibility
     */}}

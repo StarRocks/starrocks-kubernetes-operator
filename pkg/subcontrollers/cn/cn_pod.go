@@ -89,7 +89,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(cnSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle("/opt/starrocks/cn_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), "/opt/starrocks/cn_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
 	}
 
