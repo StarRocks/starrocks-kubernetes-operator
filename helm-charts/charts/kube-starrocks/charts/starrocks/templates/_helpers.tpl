@@ -213,6 +213,20 @@ the first 8 digits are taken, which will be used as the annotations for pods.
   {{- end }}
 {{- end }}
 
+{{- define "starrockscluster.fe.query.port" -}}
+{{- $config := index .Values.starrocksFESpec.config  -}}
+{{- $configMap := dict -}}
+{{- range $line := splitList "\n" $config -}}
+{{- $pair := splitList "=" $line -}}
+{{- if eq (len $pair) 2 -}}
+{{- $_ := set $configMap (trim (index $pair 0)) (trim (index $pair 1)) -}}
+{{- end -}}
+{{- end -}}
+{{- if (index $configMap "query_port") -}}
+{{- print (index $configMap "query_port") }}
+{{- end }}
+{{- end }}
+
 {{- define "starrockscluster.fe.http.port" -}}
 {{- $config := index .Values.starrocksFESpec.config  -}}
 {{- $configMap := dict -}}

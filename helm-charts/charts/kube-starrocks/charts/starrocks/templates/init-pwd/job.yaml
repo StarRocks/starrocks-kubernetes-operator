@@ -24,7 +24,7 @@ spec:
         args:
         - /opt/starrocks/fe_initpwd.sh
         - {{ template "starrockscluster.name" . }}-fe-0.{{ template "starrockscluster.name" . }}-fe-search
-        - "9030"
+        - "{{- default 9030 (include "starrockscluster.fe.query.port" .) }}"
         env:
         - name: INIT_PWD
           valueFrom:
