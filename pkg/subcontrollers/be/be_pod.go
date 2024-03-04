@@ -74,7 +74,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		StartupProbe:    pod.StartupProbe(beSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(beSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(beSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle("/opt/starrocks/be_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(beSpec.GetLifecycle(), "/opt/starrocks/be_prestop.sh"),
 		SecurityContext: pod.ContainerSecurityContext(beSpec),
 	}
 	if beSpec.ConfigMapInfo.ConfigMapName != "" && beSpec.ConfigMapInfo.ResolveKey != "" {

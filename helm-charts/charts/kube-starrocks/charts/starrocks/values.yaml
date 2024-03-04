@@ -282,6 +282,18 @@ starrocksFESpec:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
   readinessProbeFailureSeconds:
+  # Lifecycle describes actions that the management system should take in response to container lifecycle events.
+  # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
+  # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
+  # and for the CN Component is /opt/starrocks/cn_prestop.sh.
+  # You can just set postStart hook.
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command:
+    #     - /bin/sh
+    #     - -c
+    #     - echo "Hello, world!"
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -490,6 +502,18 @@ starrocksCnSpec:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
   readinessProbeFailureSeconds:
+  # Lifecycle describes actions that the management system should take in response to container lifecycle events.
+  # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
+  # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
+  # and for the CN Component is /opt/starrocks/cn_prestop.sh.
+  # You can just set postStart hook.
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command:
+    #     - /bin/sh
+    #     - -c
+    #     - echo "Hello, world!"
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -661,6 +685,18 @@ starrocksBeSpec:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
   readinessProbeFailureSeconds:
+  # Lifecycle describes actions that the management system should take in response to container lifecycle events.
+  # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
+  # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
+  # and for the CN Component is /opt/starrocks/cn_prestop.sh.
+  # You can just set postStart hook.
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command:
+    #     - /bin/sh
+    #     - -c
+    #     - echo "Hello, world!"
 
 # create secrets if necessary.
 secrets: []

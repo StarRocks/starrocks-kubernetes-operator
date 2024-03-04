@@ -29,6 +29,7 @@ import (
 
 func TestMakeLifeCycle(t *testing.T) {
 	type args struct {
+		lifeCycle         *corev1.Lifecycle
 		preStopScriptPath string
 	}
 	tests := []struct {
@@ -37,8 +38,9 @@ func TestMakeLifeCycle(t *testing.T) {
 		want *corev1.Lifecycle
 	}{
 		{
-			name: "test",
+			name: "test without lifecycle",
 			args: args{
+				lifeCycle:         nil,
 				preStopScriptPath: "/scripts/pre-stop.sh",
 			},
 			want: &corev1.Lifecycle{
@@ -49,10 +51,65 @@ func TestMakeLifeCycle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "test with lifecycle",
+			args: args{
+				lifeCycle: &corev1.Lifecycle{
+					PreStop: &corev1.LifecycleHandler{
+						Exec: &corev1.ExecAction{
+							Command: []string{"/scripts/my-pre-stop.sh"},
+						},
+					},
+					PostStart: &corev1.LifecycleHandler{
+						Exec: &corev1.ExecAction{
+							Command: []string{"/scripts/my-post-start.sh"},
+						},
+					},
+				},
+				preStopScriptPath: "/scripts/pre-stop.sh",
+			},
+			want: &corev1.Lifecycle{
+				PreStop: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/scripts/my-pre-stop.sh"},
+					},
+				},
+				PostStart: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/scripts/my-post-start.sh"},
+					},
+				},
+			},
+		},
+		{
+			name: "test with lifecycle without prestop",
+			args: args{
+				lifeCycle: &corev1.Lifecycle{
+					PostStart: &corev1.LifecycleHandler{
+						Exec: &corev1.ExecAction{
+							Command: []string{"/scripts/my-post-start.sh"},
+						},
+					},
+				},
+				preStopScriptPath: "/scripts/pre-stop.sh",
+			},
+			want: &corev1.Lifecycle{
+				PreStop: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/scripts/pre-stop.sh"},
+					},
+				},
+				PostStart: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/scripts/my-post-start.sh"},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := LifeCycle(tt.args.preStopScriptPath)
+			actual := LifeCycle(tt.args.lifeCycle, tt.args.preStopScriptPath)
 			if !reflect.DeepEqual(actual, tt.want) {
 				t.Errorf("LifeCycle() = %v, want %v", actual, tt.want)
 			}
