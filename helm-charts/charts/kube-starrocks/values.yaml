@@ -321,11 +321,20 @@ starrocks:
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/fe/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 5Gi
-    # mount other volumes if necessary.
+    # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent metadata and log.
     emptyDirs: []
       # e.g. mount an emptyDir volume to /tmp
       # - name: tmp-data
+      #   mountPath: /tmp
+    # mount hostPath volumes if necessary.
+    # Note: please use storageSpec field for persistent storage data and log.
+    hostPaths: []
+      # e.g. mount a hostPath volume to /tmp
+      # - name: tmp-data
+      #   hostPath:
+      #     path: /tmp
+      #     type: Directory
       #   mountPath: /tmp
     # the config for start fe. the base information as follows.
     config: |
@@ -521,11 +530,20 @@ starrocks:
       # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 1Gi
-    # mount other volumes if necessary.
+    # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []
       # e.g. mount an emptyDir volume to /tmp
       # - name: tmp-data
+      #   mountPath: /tmp
+    # mount hostPath volumes if necessary.
+    # Note: please use storageSpec field for persistent storage data and log.
+    hostPaths: []
+      # e.g. mount a hostPath volume to /tmp
+      # - name: tmp-data
+      #   hostPath:
+      #     path: /tmp
+      #     type: Directory
       #   mountPath: /tmp
     # the config start for cn, the base information as follows.
     # From StarRocks 3.1, the official documentation use:
@@ -684,11 +702,20 @@ starrocks:
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 1Gi
-    # mount other volumes if necessary.
+    # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []
       # e.g. mount an emptyDir volume to /tmp
       # - name: tmp-data
+      #   mountPath: /tmp
+    # mount hostPath volumes if necessary.
+    # Note: please use storageSpec field for persistent storage data and log.
+    hostPaths: []
+      # e.g. mount a hostPath volume to /tmp
+      # - name: tmp-data
+      #   hostPath:
+      #     path: /tmp
+      #     type: Directory
       #   mountPath: /tmp
     # the config for start be. the base information as follows.
     # From StarRocks 3.1, the official documentation use:

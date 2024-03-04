@@ -1728,6 +1728,9 @@ StarRocksServicePort.NodePort field.</p>
 (<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksService">StarRocksService</a>)
 </p>
 <div>
+<p>StarRocksServicePort defines the port that will be exposed by this service.
+To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.</p>
 </div>
 <table>
 <thead>
@@ -1745,7 +1748,12 @@ string
 </em>
 </td>
 <td>
-<p>Name of the map about coming port and target port</p>
+<em>(Optional)</em>
+<p>Name of this port within the service.
+For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
+For be, port name can be webserver, heartbeat, brpc, be, and their default container port is 8040, 9050, 8060, 9060.
+For cn, port name can be webserver, heartbeat, brpc, thrift, and their default container port is 8040, 9050, 8060, 9060.
+For fe proxy, port name can be http-port, and its default container port is 8080.</p>
 </td>
 </tr>
 <tr>
@@ -1757,7 +1765,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>Port the pod is exposed on service.</p>
+<p>Port that will be exposed by this service.</p>
 </td>
 </tr>
 <tr>
@@ -1769,7 +1777,11 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>ContainerPort the service listen in pod.</p>
+<p>ContainerPort of the service port.
+For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
+For be, port name can be webserver, heartbeat, brpc, be, and their default container port is 8040, 9050, 8060, 9060.
+For cn, port name can be webserver, heartbeat, brpc, thrift, and their default container port is 8040, 9050, 8060, 9060.
+For fe proxy, port name can be http-port, and its default container port is 8080.</p>
 </td>
 </tr>
 <tr>
@@ -1781,7 +1793,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>The easiest way to expose fe, cn or be is to use a Service of type <code>NodePort</code>.
+<p>NodePort is used to specify the port on each node on which the service is exposed.
 The range of valid ports is 30000-32767</p>
 </td>
 </tr>
@@ -1951,7 +1963,7 @@ StarRocksCnStatus
 (<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
 </p>
 <div>
-<p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC</p>
+<p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC.</p>
 </div>
 <table>
 <thead>
@@ -1982,6 +1994,8 @@ string
 <td>
 <em>(Optional)</em>
 <p>storageClassName is the name of the StorageClass required by the claim.
+If storageClassName is empty, the default StorageClass of kubernetes will be used.
+there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
 More info: <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1">https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1</a></p>
 </td>
 </tr>
@@ -1995,7 +2009,23 @@ string
 <td>
 <em>(Optional)</em>
 <p>StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
-Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: <code>512Mi</code>.</p>
+Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: <code>512Mi</code>.
+It will take effect only when storageClassName is real storage class, not emptyDir or hostPath.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hostPath</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#hostpathvolumesource-v1-core">
+Kubernetes core/v1.HostPathVolumeSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HostPath Represents a host path mapped into a pod.
+If StorageClassName is hostPath, HostPath is required.</p>
 </td>
 </tr>
 <tr>
@@ -2086,5 +2116,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>6bcf41a</code>.
+on git commit <code>0157a02</code>.
 </em></p>

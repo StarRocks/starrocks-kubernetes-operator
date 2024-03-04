@@ -485,6 +485,13 @@ func (cc *CnController) validating(cnSpec *srapi.StarRocksCnSpec) error {
 			return fmt.Errorf("the MaxReplicas must not be smaller than MinReplicas")
 		}
 	}
+
+	for i := range cnSpec.StorageVolumes {
+		if err := cnSpec.StorageVolumes[i].Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

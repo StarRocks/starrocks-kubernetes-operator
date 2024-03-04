@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"errors"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -266,22 +268,35 @@ type StarRocksCluster struct {
 	Status StarRocksClusterStatus `json:"status,omitempty"`
 }
 
-// StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC
+const (
+	EmptyDir = "emptyDir"
+	HostPath = "hostPath"
+)
+
+// StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC.
 type StorageVolume struct {
 	// name of a storage volume.
 	// +kubebuilder:validation:Pattern=[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 	Name string `json:"name"`
 
 	// storageClassName is the name of the StorageClass required by the claim.
+	// If storageClassName is empty, the default StorageClass of kubernetes will be used.
+	// there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
 	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// StorageSize is a valid memory size type based on powers-of-2, so 1Mi is 1024Ki.
 	// Supported units:Mi, Gi, GiB, Ti, Ti, Pi, Ei, Ex: `512Mi`.
+	// It will take effect only when storageClassName is real storage class, not emptyDir or hostPath.
 	// +kubebuilder:validation:Pattern:="(^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$"
 	// +optional
 	StorageSize string `json:"storageSize,omitempty"`
+
+	// HostPath Represents a host path mapped into a pod.
+	// If StorageClassName is hostPath, HostPath is required.
+	// +optional
+	HostPath *corev1.HostPathVolumeSource `json:"hostPath,omitempty"`
 
 	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath"`
@@ -289,6 +304,22 @@ type StorageVolume struct {
 	// SubPath within the volume from which the container's volume should be mounted.
 	// Defaults to "" (volume's root).
 	SubPath string `json:"subPath,omitempty"`
+}
+
+var ErrHostPathRequired = errors.New("if storageClassName is hostPath, hostPath and hostPath.path is required")
+
+func (storageVolume *StorageVolume) Validate() error {
+	if storageVolume.StorageClassName != nil {
+		if *storageVolume.StorageClassName == HostPath {
+			if storageVolume.HostPath == nil {
+				return ErrHostPathRequired
+			}
+			if storageVolume.HostPath.Path == "" {
+				return ErrHostPathRequired
+			}
+		}
+	}
+	return nil
 }
 
 // StarRocksClusterList contains a list of StarRocksCluster

@@ -919,6 +919,15 @@ spec:
                   storageVolumes:
                     items:
                       properties:
+                        hostPath:
+                          properties:
+                            path:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - path
+                          type: object
                         mountPath:
                           type: string
                         name:
