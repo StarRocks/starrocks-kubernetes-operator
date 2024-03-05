@@ -57,26 +57,12 @@ rules:
   - list
   - watch
 - apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - clusterrolebindings
-  - rolebindings
-  verbs:
-  - '*'
-- apiGroups:
   - starrocks.com
   resources:
   - starrocksclusters
   - starrockswarehouses
   verbs:
   - '*'
-- apiGroups:
-  - starrocks.com
-  resources:
-  - starrocksclusters/finalizers
-  - starrockswarehouses/finalizers
-  verbs:
-  - update
 - apiGroups:
   - starrocks.com
   resources:
@@ -174,7 +160,7 @@ spec:
         kubectl.kubernetes.io/default-container: manager
       labels:
         app: kube-starrocks-operator
-        version: 1.9.2
+        version: 1.9.3
     spec:
       automountServiceAccountToken: true
       containers:
@@ -187,7 +173,7 @@ spec:
         env:
         - name: TZ
           value: Asia/Shanghai
-        image: "starrocks/operator:v1.9.2"
+        image: "starrocks/operator:v1.9.3"
         imagePullPolicy: Always
         name: manager
         securityContext:

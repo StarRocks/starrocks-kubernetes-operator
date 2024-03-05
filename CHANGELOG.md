@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## [v1.9.3](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.3)
+
+Release Notes for starrocks-kubernetes-operator v1.9.3
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.3. This version brings a mix of
+enhancements and bug fixes to further improve the deployment and management of StarRocks clusters on Kubernetes
+environments.
+
+### Enhancements
+
+- [Operator] Enhanced Lifecycle Management: Users can now define postStart and preStop lifecycle hooks for
+  StarRocksCluster, enabling more control over the cluster's lifecycle events.
+  PR [#456](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/456)
+- [Operator] HostPath Support: This version introduces support for hostPath, allowing users to mount local directories
+  to the StarRocksCluster. PR [#451](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/451)
+- [Chart] Scoped Permissions: The operator's permissions can now be restricted to a single namespace, enhancing security
+  by limiting the operator's scope to deploying StarRocks within a designated namespace.
+  PR [#446](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/446)
+- [Chart] Init-Password Job Enhancements: Support for annotations and specifying the image field for the init-password
+  job has been added, allowing for greater customization.
+  PR [#454](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/454)
+- [Operator] Configuration Flexibility: The operator now supports be_http_port and be_port in the configuration.
+  PR [#450](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/450)
+
+### Bug Fixes
+
+- [Operator] HPA Deletion Issue Resolved: A bug where the Horizontal Pod Autoscaler (HPA) was not properly deleted when
+  the autoScalingPolicy field was removed has been fixed, ensuring clean and accurate scaling operations.
+  PR [#444](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/444)
+- [Chart] Init-Password Job Port Configuration: The query port can now be configured in the init-password job,
+  addressing previous limitations and enhancing setup flexibility.
+  PR [#455](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/455)
+
 ## [v1.9.2](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.2)
 
 Release Notes for starrocks-kubernetes-operator v1.9.2
@@ -12,7 +45,8 @@ StarRocks clusters on Kubernetes environments.
 
 - **[chart]** Add Datadog profiling to SR Helm to enhance monitoring
   capabilities. [#437](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/437)
-- **[chart]** Add `starrocksCluster.componentValues` to define some values uniformly to streamline configurations. [#425](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/425)
+- **[chart]** Add `starrocksCluster.componentValues` to define some values uniformly to streamline
+  configurations. [#425](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/425)
 - **[operator]** Add k8s event information during the Operator reconciliation for better debugging and operational
   insights. [#391](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/391)
 
