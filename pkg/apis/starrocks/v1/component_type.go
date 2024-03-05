@@ -54,6 +54,12 @@ type StarRocksComponentSpec struct {
 	// Defaults to 120 seconds.
 	// +optional
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+
+	// Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+	// You can use this field to launch helper containers that provide additional functionality to the main container.
+	// See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
+	// +optional
+	Sidecars []corev1.Container `json:"sidecars,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -133,4 +139,8 @@ func (spec *StarRocksComponentSpec) GetTerminationGracePeriodSeconds() *int64 {
 
 func (spec *StarRocksComponentSpec) GetCapabilities() *corev1.Capabilities {
 	return spec.Capabilities
+}
+
+func (spec *StarRocksComponentSpec) GetSidecars() []corev1.Container {
+	return spec.Sidecars
 }

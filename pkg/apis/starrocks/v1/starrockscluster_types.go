@@ -75,6 +75,7 @@ type SpecInterface interface {
 	GetRunAsNonRoot() (*int64, *int64)
 	GetTerminationGracePeriodSeconds() *int64
 	GetCapabilities() *corev1.Capabilities
+	GetSidecars() []corev1.Container
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -195,8 +196,15 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 	return nil
 }
 
+// GetCapabilities
 // fe proxy does not have field Capabilities
 func (spec *StarRocksFeProxySpec) GetCapabilities() *corev1.Capabilities { return nil }
+
+// GetSidecars
+// fe proxy does not have field Sidecars
+func (spec *StarRocksFeProxySpec) GetSidecars() []corev1.Container {
+	return nil
+}
 
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
