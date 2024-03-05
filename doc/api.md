@@ -1587,6 +1587,23 @@ the total time of seconds before pods becomes not ready. If ReadinessProbeFailur
 can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>lifecycle</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#lifecycle-v1-core">
+Kubernetes core/v1.Lifecycle
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Lifecycle describes actions that the management system should take in response to container lifecycle events.
+By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
+script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
+and for the CN Component is /opt/starrocks/cn_prestop.sh.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
@@ -2116,5 +2133,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>0157a02</code>.
+on git commit <code>cd02ea3</code>.
 </em></p>

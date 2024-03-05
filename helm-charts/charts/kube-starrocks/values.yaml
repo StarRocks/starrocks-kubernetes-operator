@@ -43,7 +43,7 @@ operator:
     image:
       # image sliced by "repository:tag"
       repository: starrocks/operator
-      tag: v1.9.2
+      tag: v1.9.3
     imagePullPolicy: Always
     replicaCount: 1
     resources:
@@ -117,7 +117,7 @@ starrocks:
     # The image of the initPassword job, if it is not set, the FE image will be used.
     # see https://github.com/StarRocks/starrocks-kubernetes-operator/issues/453 for why we need to set the image.
     image: ""
-    # The annotations for the initPassword job.
+    # The annotations for the Job, not including the annotations for the pod.
     annotations: {}
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
