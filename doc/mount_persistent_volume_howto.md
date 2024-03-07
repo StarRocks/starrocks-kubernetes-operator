@@ -28,7 +28,7 @@ metadata:
     cluster: kube-starrocks
 spec:
   starRocksFeSpec:
-    image: "starrocks/fe-ubuntu:3.1-latest"
+    image: "starrocks/fe-ubuntu:3.2-latest"
     replicas: 1
     storageVolumes:
     - name: fe-storage-meta
@@ -41,7 +41,7 @@ spec:
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
   starRocksBeSpec:
-    image: "starrocks/be-ubuntu:3.1-latest"
+    image: "starrocks/be-ubuntu:3.2-latest"
     replicas: 1
     storageVolumes:
     - name: be-storage-data

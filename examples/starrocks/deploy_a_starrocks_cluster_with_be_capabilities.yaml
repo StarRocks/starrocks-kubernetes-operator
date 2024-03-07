@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 spec:
   starRocksFeSpec:
-    image: "starrocks/fe-ubuntu:3.1-latest"
+    image: "starrocks/fe-ubuntu:3.2-latest"
     replicas: 1
     limits:
       cpu: 8
@@ -30,7 +30,7 @@ spec:
       configMapName: kube-starrocks-fe-cm
       resolveKey: fe.conf
   starRocksBeSpec:
-    image: "starrocks/be-ubuntu:3.1-latest"
+    image: "starrocks/be-ubuntu:3.2-latest"
     replicas: 1
     limits:
       cpu: 8
