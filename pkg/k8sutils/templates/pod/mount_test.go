@@ -4,8 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	corev1 "k8s.io/api/core/v1"
+
+	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
 func TestMountConfigMapInfo(t *testing.T) {
@@ -211,7 +212,6 @@ func TestMountStorageVolumes(t *testing.T) {
 		args  args
 		want  []corev1.Volume
 		want1 []corev1.VolumeMount
-		want2 map[string]bool
 	}{
 		{
 			name: "test mount storage volumes",
@@ -247,22 +247,16 @@ func TestMountStorageVolumes(t *testing.T) {
 					MountPath: "/pkg/mounts/volumes1",
 				},
 			},
-			want2: map[string]bool{
-				"/pkg/mounts/volumes1": true,
-			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2 := MountStorageVolumes(tt.args.spec)
+			got, got1 := MountStorageVolumes(tt.args.spec)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MountStorageVolumes() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("MountStorageVolumes() got1 = %v, want %v", got1, tt.want1)
-			}
-			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("MountStorageVolumes() got2 = %v, want %v", got2, tt.want2)
 			}
 		})
 	}

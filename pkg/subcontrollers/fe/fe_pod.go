@@ -41,12 +41,12 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	metaName := src.Name + "-" + srapi.DEFAULT_FE
 	feSpec := src.Spec.StarRocksFeSpec
 
-	vols, volMounts, vexist := pod.MountStorageVolumes(feSpec)
+	vols, volMounts := pod.MountStorageVolumes(feSpec)
 	// add default volume about log, meta if not configure.
-	if _, ok := vexist[_metaPath]; !ok {
+	if !k8sutils.HasVolume(vols, _metaName) && !k8sutils.HasMountPath(volMounts, _metaPath) {
 		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, _metaPath, "")
 	}
-	if _, ok := vexist[_logPath]; !ok {
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volMounts, _logPath) {
 		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, _logPath, "")
 	}
 

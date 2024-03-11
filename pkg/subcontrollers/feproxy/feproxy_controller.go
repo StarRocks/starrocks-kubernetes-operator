@@ -195,7 +195,7 @@ func (controller *FeProxyController) ClearResources(ctx context.Context, src *sr
 
 func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
 	feProxySpec := src.Spec.StarRocksFeProxySpec
-	vols, volumeMounts, _ := pod.MountStorageVolumes(feProxySpec)
+	vols, volumeMounts := pod.MountStorageVolumes(feProxySpec)
 
 	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, []srapi.ConfigMapReference{
 		{

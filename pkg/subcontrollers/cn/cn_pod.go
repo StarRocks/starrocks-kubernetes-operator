@@ -46,9 +46,9 @@ const (
 // buildPodTemplate construct the podTemplate for deploy cn.
 func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
-	vols, volumeMounts, vexist := pod.MountStorageVolumes(cnSpec)
-	// add default volume about log
-	if _, ok := vexist[_logPath]; !ok {
+	vols, volumeMounts := pod.MountStorageVolumes(cnSpec)
+
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, _logPath) {
 		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
 	}
 

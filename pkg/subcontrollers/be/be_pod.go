@@ -32,6 +32,7 @@ const (
 	_logName         = "be-log"
 	_beConfigPath    = "/etc/starrocks/be/conf"
 	_storageName     = "be-storage"
+	_storageName2    = "be-data" // helm chart use this format
 	_storagePath     = "/opt/starrocks/be/storage"
 	_envBeConfigPath = "CONFIGMAP_MOUNT_PATH"
 )
@@ -41,13 +42,14 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	metaName := src.Name + "-" + srapi.DEFAULT_BE
 	beSpec := src.Spec.StarRocksBeSpec
 
-	vols, volumeMounts, vexist := pod.MountStorageVolumes(beSpec)
-	// add default volume about log, if meta not configure.
-	if _, ok := vexist[_logPath]; !ok {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
-	}
-	if _, ok := vexist[_storagePath]; !ok {
+	vols, volumeMounts := pod.MountStorageVolumes(beSpec)
+
+	if !k8sutils.HasVolume(vols, _storageName) && !k8sutils.HasVolume(vols, _storageName2) &&
+		!k8sutils.HasMountPath(volumeMounts, _storagePath) {
 		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName, _storagePath, "")
+	}
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, _logPath) {
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
 	}
 
 	// mount configmap, secrets to pod if needed
