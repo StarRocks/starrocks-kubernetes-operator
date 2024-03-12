@@ -17,15 +17,13 @@ func IsSpecialStorageClass(storageClassName *string) bool {
 
 // MountStorageVolumes parse StorageVolumes from spec and mount them to pod.
 // If StorageClassName is EmptyDir, mount an emptyDir volume to pod.
-func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.VolumeMount, map[string]bool) {
+func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.VolumeMount) {
 	var volumes []corev1.Volume
 	var volumeMounts []corev1.VolumeMount
-	vexist := make(map[string]bool)
 	for _, sv := range spec.GetStorageVolumes() {
 		if strings.HasPrefix(sv.StorageSize, "0") {
 			continue
 		}
-		vexist[sv.MountPath] = true
 		if IsSpecialStorageClass(sv.StorageClassName) {
 			switch *sv.StorageClassName {
 			case v1.EmptyDir:
@@ -37,7 +35,7 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 			volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
 		}
 	}
-	return volumes, volumeMounts, vexist
+	return volumes, volumeMounts
 }
 
 func MountPersistentVolumeClaim(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,

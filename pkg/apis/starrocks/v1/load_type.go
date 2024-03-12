@@ -77,7 +77,27 @@ type StarRocksLoadSpec struct {
 	// +optional
 	Service *StarRocksService `json:"service,omitempty"`
 
-	// StorageVolumes defines the additional storage for meta storage.
+	// StorageVolumes defines the additional storage for FE meta or BE/CN storage.
+	//
+	// For FE component
+	//	If the storage volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,
+	//	then it will be recognized as storing the FE meta.
+	//	If the storage volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,
+	//	then it will be recognized as storing the FE log.
+	//
+	// For BE component
+	// 	If the storage volume name is be-storage(or be-data) or the volume mount path is /opt/starrocks/be/storage,
+	// 	then it will be recognized as storing the BE data.
+	// 	If the storage volume name is be-log or the volume mount path is /opt/starrocks/be/log,
+	// 	then it will be recognized as storing the BE log.
+	//
+	// For CN component
+	// 	If the storage volume name is cn-log or the volume mount path is /opt/starrocks/cn/log,
+	// 	then it will be recognized as storing the cn log.
+	//
+	// If operator can't find the above storage volume names or the volume mount paths, it will create
+	// default storage volumes by using emptyDir.
+	//
 	// +optional
 	StorageVolumes []StorageVolume `json:"storageVolumes,omitempty"`
 

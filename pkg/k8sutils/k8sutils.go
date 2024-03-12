@@ -394,6 +394,24 @@ func GetValueFromSecret(ctx context.Context, k8sClient client.Client, namespace 
 	return string(value), nil
 }
 
+func HasVolume(volumes []corev1.Volume, newVolumeName string) bool {
+	for _, v := range volumes {
+		if v.Name == newVolumeName {
+			return true
+		}
+	}
+	return false
+}
+
+func HasMountPath(mounts []corev1.VolumeMount, newMountPath string) bool {
+	for _, v := range mounts {
+		if v.Name == newMountPath {
+			return true
+		}
+	}
+	return false
+}
+
 func CheckVolumes(volumes []corev1.Volume, mounts []corev1.VolumeMount) error {
 	// check mount path first
 	mountPaths := make(map[string]bool)
