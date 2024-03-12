@@ -281,6 +281,7 @@ starrocks:
       #       name: mysecret
       #       key: username
     # affinity for fe pod scheduling.
+    # Note: It will affect the scheduling of the init-password job.
     affinity: {}
       # nodeAffinity:
       #   requiredDuringSchedulingIgnoredDuringExecution:
@@ -292,6 +293,7 @@ starrocks:
       #         - target-host-name
     # Node tolerations for fe pod scheduling to nodes with taints
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    # Note: It will affect the scheduling of the init-password job.
     tolerations: []
       # - key: "key"
       #   operator: "Equal|Exists"

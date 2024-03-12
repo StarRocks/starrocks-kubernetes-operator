@@ -19,6 +19,10 @@ spec:
       affinity:
         {{- include "starrockscluster.fe.affinity" . | nindent 8 }}
       {{- end }}
+      {{- if or .Values.starrocksFESpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
+      tolerations:
+        {{- include "starrockscluster.fe.tolerations" . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ template "starrockscluster.name" . }}-initpwd
         {{- if .Values.initPassword.image }}
