@@ -20,8 +20,12 @@ import (
 	"context"
 	"flag"
 	"os"
+	"path/filepath"
 	"time"
 
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -93,6 +97,21 @@ func main() {
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		logger.Error(err, "unable to set up ready check")
 		os.Exit(1)
+	}
+
+	var configPath string
+	home := homedir.HomeDir()
+	if home != "" {
+		configPath = filepath.Join(home, ".kube", "config")
+	}
+	config, err := clientcmd.BuildConfigFromFlags("", configPath)
+	if err != nil {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			logger.Error(err, "unable to build kubernetes config, continue to start manager")
+		}
+	} else {
+		k8sutils.GetKubernetesVersion(config)
 	}
 
 	if err := k8sutils.GetKubernetesVersion(); err != nil {

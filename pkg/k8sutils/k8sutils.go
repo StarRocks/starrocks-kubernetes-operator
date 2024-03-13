@@ -19,18 +19,15 @@ package k8sutils
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"github.com/go-logr/logr"
+	"k8s.io/client-go/rest"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -288,27 +285,17 @@ func GetConfigMap(ctx context.Context, k8scient client.Client, namespace, name s
 	return &configMap, nil
 }
 
-var (
-	KUBE_MAJOR_VERSION string
-	KUBE_MINOR_VERSION string
-)
+type KubernetesInfo struct {
+	KubeMajorVersion string
+	KubeMinorVersion string
+	HPAVersion       []string
+}
 
-// GetKubernetesVersion get kubernetes version. It should not be executed concurrently.
+var _KubeInfo = &KubernetesInfo{}
+
+// SetKubernetesVersion get kubernetes version. It should not be executed concurrently.
 // The global variable KUBE_MAJOR_VERSION and KUBE_MINOR_VERSION will be set.
-func GetKubernetesVersion() error {
-	var configPath string
-	home := homedir.HomeDir()
-	if home != "" {
-		configPath = filepath.Join(home, ".kube", "config")
-	}
-	config, err := clientcmd.BuildConfigFromFlags("", configPath)
-	if err != nil {
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			return err
-		}
-	}
-
+func (kubeInfo *KubernetesInfo) setKubernetesVersion(config *rest.Config) error {
 	// create a discovery.DiscoveryClient object to query the metadata of the API server
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
@@ -321,8 +308,40 @@ func GetKubernetesVersion() error {
 		return err
 	}
 
-	KUBE_MAJOR_VERSION = version.Major
-	KUBE_MINOR_VERSION = version.Minor
+	kubeInfo.KubeMajorVersion = version.Major
+	kubeInfo.KubeMinorVersion = version.Minor
+	return nil
+}
+
+func (kubeInfo *KubernetesInfo) SetHPAVersions(config *rest.Config) error {
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	apiGroupList, err := discoveryClient.ServerGroups()
+	if err != nil {
+		return err
+	}
+
+	for _, apiGroup := range apiGroupList.Groups {
+		if apiGroup.Name == "autoscaling" {
+			for _, version := range apiGroup.Versions {
+				kubeInfo.HPAVersion = append(kubeInfo.HPAVersion, version.GroupVersion)
+			}
+		}
+	}
+	return nil
+}
+
+func (kubeInfo *KubernetesInfo) SetKubernetesInfo(config *rest.Config) error {
+	if err := kubeInfo.setKubernetesVersion(config); err != nil {
+		return err
+	}
+	if err := kubeInfo.SetHPAVersions(config); err != nil {
+		return err
+	}
+
 	return nil
 }
 
