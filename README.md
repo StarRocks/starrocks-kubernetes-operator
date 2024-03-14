@@ -93,6 +93,14 @@ template to start a 3 FE and 3 BE StarRocks cluster.
 kubectl apply -f starrocks-fe-and-be.yaml
 ```
 
+### 4. Delete the StarRocks cluster
+
+To delete/stop the StarRocks cluster, just execute the delete command.
+
+```console
+kubectl delete -f starrocks-fe-and-be.yaml
+```
+
 ## Installation by Helm Chart
 
 Please see [kube-starrocks](./helm-charts/charts/kube-starrocks/README.md) for how to install both operator and
