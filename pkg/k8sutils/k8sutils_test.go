@@ -642,3 +642,36 @@ func TestApplyStatefulSet(t *testing.T) {
 		})
 	}
 }
+
+func Test_cleanMinorVersion(t *testing.T) {
+	type args struct {
+		version string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "clean minor version",
+			args: args{
+				version: "20",
+			},
+			want: "20",
+		},
+		{
+			name: "clean minor version with non-digit character",
+			args: args{
+				version: "20+",
+			},
+			want: "20",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := k8sutils.CleanMinorVersion(tt.args.version); got != tt.want {
+				t.Errorf("cleanMinorVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

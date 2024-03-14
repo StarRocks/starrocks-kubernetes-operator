@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
+	"unicode"
 
 	"github.com/go-logr/logr"
 
@@ -322,8 +324,20 @@ func GetKubernetesVersion() error {
 	}
 
 	KUBE_MAJOR_VERSION = version.Major
-	KUBE_MINOR_VERSION = version.Minor
+	// KUBE_MINOR_VERSION is the minor version of the kubernetes cluster, but in cloud provider, the minor version may
+	// be like "28+" from alibaba cloud. So we need to remove the non-digit characters.
+	KUBE_MINOR_VERSION = CleanMinorVersion(version.Minor)
 	return nil
+}
+
+// cleanMinorVersion removes non-digit characters from a Kubernetes minor version string.
+func CleanMinorVersion(version string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return -1 // Drop non-digit characters
+	}, version)
 }
 
 // GetEnvVarValue returns the value of an environment variable. It handles both Value and ValueFrom cases.
