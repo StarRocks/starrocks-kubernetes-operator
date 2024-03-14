@@ -257,7 +257,27 @@ func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, n
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hpaObject); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
-		return err
+		logger := logr.FromContextOrDiscard(ctx)
+		logger.Info("error when get HPA object", "error", err)
+		// If we mistakenly determine the type of HPA, we will receive an error message similar
+		// to "no matches for kind 'HorizontalPodAutoscaler' in version 'autoscaling/v2beta2'".
+		// This error cannot be identified through apierrors, and using string comparison to
+		// determine if it is this error is not a good approach.
+		// Therefore, our temporary solution is to always switch to another version of HPA for deletion.
+		wrongVersion := version
+		if wrongVersion == srapi.AutoScalerV2Beta2 {
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace},
+				srapi.AutoScalerV2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
+		} else { // HPA v2 exists in higher version of k8s
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace},
+				srapi.AutoScalerV2Beta2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
+		}
+		if apierrors.IsNotFound(err) {
+			return nil
+		} else if err != nil {
+			logger.Error(err, "error again when get HPA object")
+			return err
+		}
 	}
 
 	return k8sClient.Delete(ctx, hpaObject)
@@ -330,7 +350,7 @@ func GetKubernetesVersion() error {
 	return nil
 }
 
-// cleanMinorVersion removes non-digit characters from a Kubernetes minor version string.
+// CleanMinorVersion removes non-digit characters from a Kubernetes minor version string.
 func CleanMinorVersion(version string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsDigit(r) {
