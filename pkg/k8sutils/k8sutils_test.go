@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -643,7 +644,7 @@ func TestApplyStatefulSet(t *testing.T) {
 	}
 }
 
-func Test_cleanMinorVersion(t *testing.T) {
+func TestCleanMinorVersion(t *testing.T) {
 	type args struct {
 		version string
 	}
@@ -670,7 +671,110 @@ func Test_cleanMinorVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := k8sutils.CleanMinorVersion(tt.args.version); got != tt.want {
-				t.Errorf("cleanMinorVersion() = %v, want %v", got, tt.want)
+				t.Errorf("CleanMinorVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDeleteAutoscaler(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		k8sClient client.Client
+		namespace string
+		name      string
+		version   srapi.AutoScalerVersion
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "delete autoscaler",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "autoscaling",
+						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-hpa",
+						Namespace: "default",
+					},
+				}),
+				namespace: "default",
+				name:      "my-hpa",
+				version:   srapi.AutoScalerV2,
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete autoscaler which not exist",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "autoscaling",
+						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-hpa-not-exist",
+						Namespace: "default",
+					},
+				}),
+				namespace: "default",
+				name:      "my-hpa",
+				version:   srapi.AutoScalerV2,
+			},
+			wantErr: false, // "not found" means the resource has not been created, so it is not an error
+		},
+		{
+			name: "delete autoscaler with wrong version",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "autoscaling",
+						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-hpa",
+						Namespace: "default",
+					},
+				}),
+				namespace: "default",
+				name:      "my-hpa",
+				version:   "v3", // wrong version
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete autoscaler with wrong version and name",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "autoscaling",
+						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-hpa",
+						Namespace: "default",
+					},
+				}),
+				namespace: "default",
+				name:      "my-hpa-not-exist", // wrong name
+				version:   "v3",               // wrong version
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := k8sutils.DeleteAutoscaler(tt.args.ctx, tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.version); (err != nil) != tt.wantErr {
+				t.Errorf("DeleteAutoscaler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
