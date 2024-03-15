@@ -45,7 +45,7 @@ spec:
       {{- end }}
     {{- end }}
     annotations:
-      app.starrocks.io/fe-config-hash: {{template "starrockscluster.fe.config.hash" . }}
+      app.starrocks.io/fe-config-hash: "{{template "starrockscluster.fe.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
       {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
       ad.datadoghq.com/fe.logs: '[{"service":"starrocks","source":"fe"}]'
@@ -241,7 +241,7 @@ spec:
       {{- end }}
     {{- end }}
     annotations:
-      app.starrocks.io/be-config-hash: {{template "starrockscluster.be.config.hash" . }}
+      app.starrocks.io/be-config-hash: "{{template "starrockscluster.be.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
       {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
       ad.datadoghq.com/be.logs: '[{"service":"starrocks","source":"be"}]'
@@ -567,7 +567,7 @@ spec:
       {{- end }}
     {{- end }}
     annotations:
-      app.starrocks.io/cn-config-hash: {{template "starrockscluster.cn.config.hash" . }}
+      app.starrocks.io/cn-config-hash: "{{template "starrockscluster.cn.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
       {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
       ad.datadoghq.com/cn.logs: '[{"service":"starrocks","source":"cn"}]'
