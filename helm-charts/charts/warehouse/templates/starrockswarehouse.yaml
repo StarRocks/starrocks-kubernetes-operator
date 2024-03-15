@@ -80,7 +80,7 @@ spec:
       {{- end }}
     {{- end }}
     annotations:
-      app.starrocks.io/cn-config-hash: {{template "starrockswarehouse.config.hash" . }}
+      app.starrocks.io/cn-config-hash: "{{template "starrockswarehouse.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
       {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
       ad.datadoghq.com/warehouse.logs: '[{"service":"warehouse"}]'
