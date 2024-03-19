@@ -139,6 +139,7 @@ starrocks:
       be: false # change to 'true' to enable profiling on BE pods;
       cn: false # change to 'true' to enable profiling on CN pods;
       env: "starrocks-default" # the default value for DD_ENV;
+      configMode: "service" # see https://docs.datadoghq.com/containers/cluster_agent/admission_controller/?tab=operator#configure-apm-and-dogstatsd-communication-mode
   
   # This configuration is used to integrate with external system Prometheus.
   metrics:
