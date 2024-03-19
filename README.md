@@ -89,9 +89,111 @@ yaml file following this deployment documentation.
 For demonstration purpose, we use the [starrocks-fe-and-be.yaml](./examples/starrocks/starrocks-fe-and-be.yaml) example
 template to start a 3 FE and 3 BE StarRocks cluster.
 
+Here's an example yaml for Docker Desktop with local desktop access with StarRocks 3.2.1 so you can upgrade in later steps.
+```
+atwong@Albert-CelerData sroperatortest % cat starrocks-fe-and-be.yaml
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 16Gi
+    service:            
+      type: LoadBalancer
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+```
+
 ```console
 kubectl apply -f starrocks-fe-and-be.yaml
 ```
+
+### 4. Connect the StarRocks cluster
+
+To connect, just use the mysql client and connect to the StarRocks cluster port 9030.  An example of a connection is shown below. 
+
+> [!NOTE]  
+>  If you want to connect remotely or through your desktop, you will need to enable the k8s Load Balander.
+
+```
+atwong@Albert-CelerData sroperatortest % kubectl -n starrocks get svc
+NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                       AGE
+starrockscluster-sample-be-search    ClusterIP      None            <none>        9050/TCP                                                      5m2s
+starrockscluster-sample-be-service   ClusterIP      10.103.248.52   <none>        9060/TCP,8040/TCP,9050/TCP,8060/TCP                           5m2s
+starrockscluster-sample-fe-search    ClusterIP      None            <none>        9030/TCP                                                      6m22s
+starrockscluster-sample-fe-service   LoadBalancer   10.99.14.222    localhost     8030:32326/TCP,9020:32578/TCP,9030:30774/TCP,9010:32505/TCP   6m22s
+atwong@Albert-CelerData sroperatortest % mysql -h 127.0.0.1 -P 9030 -uroot
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3
+Server version: 5.1.0 3.2.1-79ee91d
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+```
+
+### 5. Upgrade the StarRocks cluster
+
+To upgrade, just patch the StarRocks cluster. 
+
+```console
+kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksFeSpec":{"image":"starrocks/fe-ubuntu:latest"}}}'
+kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"image":"starrocks/be-ubuntu:latest"}}}'
+```
+
+### 6. Resize the StarRocks cluster
+
+To resize, just patch the StarRocks cluster. 
+
+> [!IMPORTANT]  
+>  Once you deploy with 3 FE nodes, you are in HA mode.  Do not resize FE nodes below 3 since that will affect cluster quorum.  This rule doesn't apply to CN nodes.
+
+```console
+kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"replicas":9}}}'
+```
+
+### 7. Delete/stop the StarRocks cluster
+
+To delete/stop the StarRocks cluster, just execute the delete command.
+
+```console
+kubectl delete -f starrocks-fe-and-be.yaml
+```
+or
+```console
+kubectl delete starrockscluster starrockscluster-sample -n starrocks
+```
+
+### 8. Delete/stop the StarRocks Operator
+
+To delete/stop the StarRocks Operate, just execute the delete command.
+
+```console
+kubectl delete -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
+```
+
 
 ## Installation by Helm Chart
 
@@ -106,3 +208,4 @@ using [starrocks](./helm-charts/charts/kube-starrocks/charts/starrocks) Helm Cha
 
 - In [doc](./doc) directory, you can find more documents about how to use StarRocks Operator.
 - In [examples](./examples/starrocks) directory, you can find more examples about how to write StarRocksCluster CR.
+- [Documentation on docs.starrocks.io](https://docs.starrocks.io/docs/deployment/sr_operator/)
