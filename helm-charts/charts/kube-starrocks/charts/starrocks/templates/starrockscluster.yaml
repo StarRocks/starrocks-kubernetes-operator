@@ -74,7 +74,7 @@ spec:
       {{- include "starrockscluster.fe.podLabels" . | nindent 6 }}
       {{- end }}
       {{- if .Values.datadog.profiling.fe }}
-      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
       admission.datadoghq.com/enabled: "true"
       {{- end }}
     {{- end }}
@@ -287,7 +287,7 @@ spec:
       {{- include "starrockscluster.be.podLabels" . | nindent 6 }}
       {{- end }}
       {{- if .Values.datadog.profiling.be }}
-      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
       admission.datadoghq.com/enabled: "true"
       {{- end }}
     {{- end }}
@@ -452,7 +452,7 @@ spec:
       {{- include "starrockscluster.cn.podLabels" . | nindent 6 }}
       {{- end }}
       {{- if .Values.datadog.profiling.cn }}
-      admission.datadoghq.com/config.mode: service
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
       admission.datadoghq.com/enabled: "true"
       {{- end }}
     {{- end }}
