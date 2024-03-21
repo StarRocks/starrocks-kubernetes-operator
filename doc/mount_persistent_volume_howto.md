@@ -75,8 +75,7 @@ The following is a snippet of the values.yaml file:
 
 ```yaml
 starrocks:
-  starrocksFESpec:
-    # fe storageSpec for persistent metadata.
+  starrocksFESpec: # fe storageSpec for persistent metadata.
     storageSpec:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -88,10 +87,8 @@ starrocks:
       # Setting this parameter can persist log storage
       logStorageSize: 5Gi
 
-  starrocksBeSpec:
-    # specify storageclass name and request size.
-    storageSpec:
-      # the name of volume for mount. if not will use emptyDir.
+  starrocksBeSpec: # specify storageclass name and request size.
+    storageSpec: # the name of volume for mount. if not will use emptyDir.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
       # you must set name when you set storageClassName
@@ -124,3 +121,23 @@ starrocks:
 
 See [Install StarRocks by kube-starrocks chart](../helm-charts/charts/kube-starrocks/README.md) to learn how to deploy
 StarRocks Operator and Cluster
+
+## 3. Some Special storageClassName
+
+Normally, the `storageClassName` is the name of the StorageClass that you want to use for the PersistentVolumeClaim.
+We have also provided some special `storageClassName` for you to use:
+
+1. `emptyDir`. It is a good choice when you want mount a volume to a special directory in the container, e.g. /tmp.
+2. `hostPath`. It is a good choice when you want to use local storage on the node. And you should specify the `hostPath`
+   field.
+   e.g.:
+    ```yaml
+        storageVolumes:
+        - name: cn-cache
+          storageClassName: "hostPath"
+          hostPath:
+            path: /storage
+          mountPath: /storage   
+    ```
+
+> Note: In both cases, the `storageSize` field will be ignored.
