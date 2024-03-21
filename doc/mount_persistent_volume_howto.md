@@ -127,7 +127,7 @@ StarRocks Operator and Cluster
 Normally, the `storageClassName` is the name of the StorageClass that you want to use for the PersistentVolumeClaim.
 We have also provided some special `storageClassName` for you to use:
 
-1. `emptyDir`. It is a good choice when you want mount a volume to a special directory in the container, e.g. /tmp.
+1. `emptyDir`. It is a good choice when you want to mount a volume into the container for temporary usage, e.g. /tmp. Be aware that the files and directories written to the volume will be completely lost upon container restarting.
 2. `hostPath`. It is a good choice when you want to use local storage on the node. And you should specify the `hostPath`
    field.
    e.g.:
