@@ -32,24 +32,24 @@ spec:
     replicas: 1
     storageVolumes:
     - name: fe-storage-meta
-      storageClassName: data-storage
+      storageClassName: standard-rwo  # standard-rwo is the default storageClassName in gke.
       # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta
     - name: fe-storage-log
-      storageClassName: data-storage
+      storageClassName: standard-rwo
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
   starRocksBeSpec:
     image: "starrocks/be-ubuntu:3.2-latest"
-    replicas: 1
+    replicas: 3
     storageVolumes:
     - name: be-storage-data
-      storageClassName: data-storage
+      storageClassName: standard-rwo
       storageSize: 1Ti
       mountPath: /opt/starrocks/be/storage
     - name: be-storage-log
-      storageClassName: data-storage
+      storageClassName: standard-rwo
       storageSize: 1Gi
       mountPath: /opt/starrocks/be/log
 ```
@@ -98,23 +98,31 @@ starrocks:
       logStorageSize: 1Gi
 ```
 
-### 2.2. Configure a YAML File for Custom Settings.
+### 2.2. Configure a YAML File with storageSpec settings
 
-You can configure the following parameters in the YAML file:
+The following is an example of a custom values.yaml with storageSpec settings:
 
 ```yaml
 starrocks:
-  starrocksFESpec:
-    storageSpec:
-      name: ""
-      storageSize: 10Gi
-      logStorageSize: 5Gi
-
-  starrocksBeSpec:
-    storageSpec:
-      name: ""
-      storageSize: 1Ti
-      logStorageSize: 5Gi
+   starrocksFESpec:
+      image:
+         repository: starrocks/fe-ubuntu
+         tag: 3.2-latest
+      storageSpec:
+         name: fe-storage
+         storageClassName: standard-rwo   # standard-rwo is the default storageClassName in gke.
+         logStorageSize: 10Gi
+         storageSize: 100Gi
+   starrocksBeSpec:
+      image:
+         repository: starrocks/be-ubuntu
+         tag: 3.2-latest
+      replicas: 3
+      storageSpec:
+         name: be-storage
+         storageClassName: standard-rwo
+         logStorageSize: 10Gi
+         storageSize: 500Gi
 ```
 
 ### 2.3. Deploy StarRocks Operator and Cluster
