@@ -157,6 +157,10 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.sidecars }}
+    sidecars:
+      {{- toYaml .Values.starrocksFESpec.sidecars | nindent 6 }}
+    {{- end }}
 {{- if .Values.starrocksFESpec.secrets }}
     secrets:
     {{- range .Values.starrocksFESpec.secrets }}
@@ -366,6 +370,10 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
     {{- end }}
+    {{- if .Values.starrocksBeSpec.sidecars }}
+    sidecars:
+      {{- toYaml .Values.starrocksBeSpec.sidecars | nindent 6 }}
+    {{- end }}
 {{- if .Values.starrocksBeSpec.secrets }}
     secrets:
     {{- range .Values.starrocksBeSpec.secrets }}
@@ -531,6 +539,10 @@ spec:
     {{- if .Values.starrocksCnSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.sidecars }}
+    sidecars:
+      {{- toYaml .Values.starrocksCnSpec.sidecars | nindent 6 }}
     {{- end }}
     {{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
     autoScalingPolicy:

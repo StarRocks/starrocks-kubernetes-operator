@@ -300,6 +300,10 @@ starrocksFESpec:
     #     - /bin/sh
     #     - -c
     #     - echo "Hello, world!"
+  # Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+  # You can use this field to launch helper containers that provide additional functionality to the main container.
+  # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
+  sidecars: []
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -522,6 +526,10 @@ starrocksCnSpec:
     #     - /bin/sh
     #     - -c
     #     - echo "Hello, world!"
+  # Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+  # You can use this field to launch helper containers that provide additional functionality to the main container.
+  # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
+  sidecars: []
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -707,6 +715,10 @@ starrocksBeSpec:
     #     - /bin/sh
     #     - -c
     #     - echo "Hello, world!"
+  # Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+  # You can use this field to launch helper containers that provide additional functionality to the main container.
+  # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
+  sidecars: []
 
 # create secrets if necessary.
 secrets: []
