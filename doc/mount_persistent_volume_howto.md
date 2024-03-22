@@ -32,7 +32,7 @@ spec:
     replicas: 1
     storageVolumes:
     - name: fe-storage-meta
-      storageClassName: standard-rwo  # standard-rwo is the default storageClassName in gke.
+      storageClassName: standard-rwo  # standard-rwo is the default storageClassName in GKE.
       # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta
@@ -80,7 +80,7 @@ starrocks:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
       # you must set name when you set storageClassName
-      storageClassName: ""
+      # storageClassName: ""
       # the persistent volume size， default 10Gi.
       # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
@@ -110,7 +110,7 @@ starrocks:
          tag: 3.2-latest
       storageSpec:
          name: fe-storage
-         storageClassName: standard-rwo   # standard-rwo is the default storageClassName in gke.
+         storageClassName: standard-rwo   # standard-rwo is the default storageClassName in GKE.
          logStorageSize: 10Gi
          storageSize: 100Gi
    starrocksBeSpec:

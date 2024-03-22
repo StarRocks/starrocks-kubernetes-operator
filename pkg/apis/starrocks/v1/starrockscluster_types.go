@@ -280,7 +280,7 @@ type StorageVolume struct {
 	Name string `json:"name"`
 
 	// storageClassName is the name of the StorageClass required by the claim.
-	// If storageClassName is empty, the default StorageClass of kubernetes will be used.
+	// If storageClassName is not set, the default StorageClass of kubernetes will be used.
 	// there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
 	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
 	// +optional

@@ -34,7 +34,7 @@ spec:
       - mountPath: /opt/starrocks/fe/log
         name: fe-storage-log
         storageSize: 10Gi
-        storageClassName: ""
+        # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
 ```
 
 `storageClassName` 如果为空，Kubernetes 将使用默认的存储卷类型。你也可以通过 `kubectl get storageclass` 查看 Kubernetes
@@ -55,7 +55,7 @@ starrocks:
       name: "fe-storage"
       storageSize: 10Gi
       logStorageSize: 10Gi
-      storageClassName: ""
+      # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
 ```
 
 针对 starrocks Helm Chart，可以这样配置：
@@ -66,7 +66,7 @@ starrocksFESpec:
     name: "fe-storage"
     storageSize: 10Gi
     logStorageSize: 10Gi
-    storageClassName: ""
+    # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
 ```
 
 > 注意
