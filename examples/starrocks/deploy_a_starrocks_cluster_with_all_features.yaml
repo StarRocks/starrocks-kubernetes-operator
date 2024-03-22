@@ -26,14 +26,14 @@ spec:
     storageVolumes:
       - name: fe-storage-meta
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-        storageClassName: ""
+        # storageClassName: ""
         # the persistent volume size. FE container stop running if the disk free space which the
         # fe meta directory residents, is less than 5Gi.
         storageSize: 10Gi
         # the mount path for FE meta.
         mountPath: /opt/starrocks/fe/meta
       - name: fe-storage-log
-        storageClassName: ""
+        # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
         # the mount path for FE log.
@@ -141,13 +141,13 @@ spec:
     storageVolumes:
       - name: be-storage-data
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-        storageClassName: ""
+        # storageClassName: ""
         # the size of storage volume for data
         storageSize: 10Gi
         # the mount path for BE data.
         mountPath: /opt/starrocks/be/storage
       - name: be-storage-log
-        storageClassName: ""
+        # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
         # the mount path for BE log.
@@ -248,13 +248,13 @@ spec:
     storageVolumes:
       - name: cn-storage-data
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-        storageClassName: ""
+        # storageClassName: ""
         # the size of storage volume for data
         storageSize: 10Gi
         # the mount path of CN data
         mountPath: /opt/starrocks/cn/storage
       - name: cn-storage-log
-        storageClassName: ""
+        # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
         # the mount path of CN log

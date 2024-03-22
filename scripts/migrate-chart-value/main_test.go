@@ -81,7 +81,6 @@ starrocksFESpec:
       memory: 8Gi
   storageSpec:
     name: ""
-    storageClassName: ""
     storageSize: 1Gi
     logStorageSize: 1Gi
   config: |
@@ -159,7 +158,6 @@ starrocksBeSpec:
       memory: 8Gi
   storageSpec:
     name: ""
-    storageClassName: ""
     storageSize: 1Ti
     logStorageSize: 1Gi
   config: |
@@ -243,7 +241,6 @@ starrocks:
         memory: 8Gi
     storageSpec:
       name: ""
-      storageClassName: ""
       storageSize: 1Gi
       logStorageSize: 1Gi
     config: |
@@ -321,7 +318,6 @@ starrocks:
         memory: 8Gi
     storageSpec:
       name: ""
-      storageClassName: ""
       storageSize: 1Ti
       logStorageSize: 1Gi
     config: |
