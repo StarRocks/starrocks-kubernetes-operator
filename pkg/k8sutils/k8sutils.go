@@ -439,7 +439,7 @@ func HasVolume(volumes []corev1.Volume, newVolumeName string) bool {
 
 func HasMountPath(mounts []corev1.VolumeMount, newMountPath string) bool {
 	for _, v := range mounts {
-		if v.Name == newMountPath {
+		if v.MountPath == newMountPath {
 			return true
 		}
 	}
