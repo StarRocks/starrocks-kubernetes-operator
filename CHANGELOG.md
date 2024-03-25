@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [v1.9.4](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.4)
+
+Release Notes for starrocks-kubernetes-operator v1.9.4
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.4. This version brings a mix of
+enhancements and bug fixes to further improve the deployment and management of StarRocks clusters on Kubernetes
+environments.
+
+### Enhancements
+
+- [Operator] We've refined the logic for detecting Kubernetes versions, enhancing compatibility.
+  PR [#469](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/469)
+- [Operator] Operator: Added checks for volume name and mount path when a default emptyDir volume is incorporated.
+  PR [#464](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/464)
+- [Chart] Helm chart allows the exposure of the DataDog `config.mode`.
+  PR [#482](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/482)
+
+### Bug Fixes
+
+- [Operator] Addressed an issue by attempting to use a different version for deleting HPA (Horizontal Pod Autoscaler)
+  again, aiming for a more reliable deletion process.
+  PR [#468](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/468)
+- [Chart] Make sure xx-config-hash is a valid string.
+  PR [#480](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/480)
+- [Chart] Introduced support for tolerations in the init-password job.
+  PR [#463](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/463)
+
 ## [v1.9.3](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.3)
 
 Release Notes for starrocks-kubernetes-operator v1.9.3

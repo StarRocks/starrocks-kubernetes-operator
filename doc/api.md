@@ -1510,7 +1510,22 @@ StarRocksService
 </td>
 <td>
 <em>(Optional)</em>
-<p>StorageVolumes defines the additional storage for meta storage.</p>
+<p>StorageVolumes defines the additional storage for FE meta or BE/CN storage.</p>
+<p>For FE component
+If the storage volume name is fe-meta or the volume mount path is /opt/starrocks/fe/meta,
+then it will be recognized as storing the FE meta.
+If the storage volume name is fe-log or the volume mount path is /opt/starrocks/fe/log,
+then it will be recognized as storing the FE log.</p>
+<p>For BE component
+If the storage volume name is be-storage(or be-data) or the volume mount path is /opt/starrocks/be/storage,
+then it will be recognized as storing the BE data.
+If the storage volume name is be-log or the volume mount path is /opt/starrocks/be/log,
+then it will be recognized as storing the BE log.</p>
+<p>For CN component
+If the storage volume name is cn-log or the volume mount path is /opt/starrocks/cn/log,
+then it will be recognized as storing the cn log.</p>
+<p>If operator can&rsquo;t find the above storage volume names or the volume mount paths, it will create
+default storage volumes by using emptyDir.</p>
 </td>
 </tr>
 <tr>
@@ -2011,7 +2026,7 @@ string
 <td>
 <em>(Optional)</em>
 <p>storageClassName is the name of the StorageClass required by the claim.
-If storageClassName is empty, the default StorageClass of kubernetes will be used.
+If storageClassName is not set, the default StorageClass of kubernetes will be used.
 there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
 More info: <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1">https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1</a></p>
 </td>
@@ -2133,5 +2148,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>cd02ea3</code>.
+on git commit <code>e4e8cae</code>.
 </em></p>
