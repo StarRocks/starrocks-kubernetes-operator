@@ -67,7 +67,7 @@ spec:
     # that the files and directories written to the volume will be completely lost upon container restarting.
     storageVolumes:
     - name: cn-cache-data
-      # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
+      storageClassName: "hostPath"  # If storageClassName is not set, Kubernetes will use the default storage class.
       hostPath:
         path: /storage
       storageSize: 1Ti
