@@ -779,3 +779,103 @@ func TestDeleteAutoscaler(t *testing.T) {
 		})
 	}
 }
+
+func TestHasMountPath(t *testing.T) {
+	type args struct {
+		mounts       []corev1.VolumeMount
+		newMountPath string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "test has mount path",
+			args: args{
+				mounts: []corev1.VolumeMount{
+					{
+						Name:      "fe-meta-storage",
+						MountPath: "/opt/starrocks/fe/fe-meta",
+					},
+				},
+				newMountPath: "/opt/starrocks/fe/fe-meta",
+			},
+			want: true,
+		},
+		{
+			name: "test has mount path 2",
+			args: args{
+				mounts: []corev1.VolumeMount{
+					{
+						Name:      "fe-meta-storage",
+						MountPath: "/opt/starrocks/fe/fe-meta",
+					},
+				},
+				newMountPath: "/opt/starrocks/fe/fe-meta2",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := k8sutils.HasMountPath(tt.args.mounts, tt.args.newMountPath); got != tt.want {
+				t.Errorf("HasMountPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasVolume(t *testing.T) {
+	type args struct {
+		volumes       []corev1.Volume
+		newVolumeName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "test has volume",
+			args: args{
+				volumes: []corev1.Volume{
+					{
+						Name: "fe-meta",
+						VolumeSource: corev1.VolumeSource{
+							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "fe-meta",
+							},
+						},
+					},
+				},
+				newVolumeName: "fe-meta",
+			},
+			want: true,
+		},
+		{
+			name: "test has volume",
+			args: args{
+				volumes: []corev1.Volume{
+					{
+						Name: "fe-meta",
+						VolumeSource: corev1.VolumeSource{
+							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "fe-meta",
+							},
+						},
+					},
+				},
+				newVolumeName: "fe-meta2",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := k8sutils.HasVolume(tt.args.volumes, tt.args.newVolumeName); got != tt.want {
+				t.Errorf("HasVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

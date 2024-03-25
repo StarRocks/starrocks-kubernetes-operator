@@ -290,3 +290,56 @@ func Test_getVolumeName(t *testing.T) {
 		})
 	}
 }
+
+func TestMountPersistentVolumeClaim(t *testing.T) {
+	type args struct {
+		volumes      []corev1.Volume
+		volumeMounts []corev1.VolumeMount
+		volumeName   string
+		mountPath    string
+		subPath      string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  []corev1.Volume
+		want1 []corev1.VolumeMount
+	}{
+		{
+			name: "test mount persistent volume claim",
+			args: args{
+				volumes:      []corev1.Volume{},
+				volumeMounts: []corev1.VolumeMount{},
+				volumeName:   "fe-meta",
+				mountPath:    "/opt/starrocks/fe/fe-meta",
+			},
+			want: []corev1.Volume{
+				{
+					Name: "fe-meta",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "fe-meta",
+						},
+					},
+				},
+			},
+			want1: []corev1.VolumeMount{
+				{
+					Name:      "fe-meta",
+					MountPath: "/opt/starrocks/fe/fe-meta",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := MountPersistentVolumeClaim(tt.args.volumes, tt.args.volumeMounts, tt.args.volumeName, tt.args.mountPath, tt.args.subPath)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MountPersistentVolumeClaim() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("MountPersistentVolumeClaim() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
