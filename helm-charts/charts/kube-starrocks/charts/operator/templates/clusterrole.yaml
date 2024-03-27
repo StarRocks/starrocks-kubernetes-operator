@@ -51,6 +51,14 @@ rules:
   - starrockswarehouses
   verbs:
   - '*'
+# when deploying to OpenShift, the following permission is also necessary
+- apiGroups:
+  - starrocks.com
+  resources:
+  - starrocksclusters/finalizers
+  - starrockswarehouses/finalizers
+  verbs:
+  - update
 - apiGroups:
   - starrocks.com
   resources:
