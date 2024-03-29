@@ -2,8 +2,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: starrocks-initpwd
+  name: {{ template "starrockscluster.name" . }}-initpwd
   namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
   {{- if .Values.initPassword.annotations }}
   annotations:
     {{- toYaml .Values.initPassword.annotations | nindent 4 }}
