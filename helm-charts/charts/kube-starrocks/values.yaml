@@ -412,6 +412,13 @@ starrocks:
     # You can use this field to launch helper containers that provide additional functionality to the main container.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
     sidecars: []
+    # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
+    # You can use this to launch helper containers that run before the main container starts.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
+    initContainers: []
+      # - name: init-container
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo hello from the init container']
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
@@ -636,8 +643,15 @@ starrocks:
       #     - echo "Hello, world!"
     # Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
     # You can use this field to launch helper containers that provide additional functionality to the main container.
-    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
     sidecars: []
+    # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
+    # You can use this to launch helper containers that run before the main container starts.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
+    initContainers: []
+      # - name: init-container
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo hello from the init container']
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -827,6 +841,13 @@ starrocks:
     # You can use this field to launch helper containers that provide additional functionality to the main container.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
     sidecars: []
+    # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
+    # You can use this to launch helper containers that run before the main container starts.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
+    initContainers: []
+      # - name: init-container
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo hello from the init container']
   
   # create secrets if necessary.
   secrets: []

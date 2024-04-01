@@ -76,6 +76,7 @@ type SpecInterface interface {
 	GetTerminationGracePeriodSeconds() *int64
 	GetCapabilities() *corev1.Capabilities
 	GetSidecars() []corev1.Container
+	GetInitContainers() []corev1.Container
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -203,6 +204,12 @@ func (spec *StarRocksFeProxySpec) GetCapabilities() *corev1.Capabilities { retur
 // GetSidecars
 // fe proxy does not have field Sidecars
 func (spec *StarRocksFeProxySpec) GetSidecars() []corev1.Container {
+	return nil
+}
+
+// GetInitContainers
+// fe proxy does not have field InitContainers
+func (spec *StarRocksFeProxySpec) GetInitContainers() []corev1.Container {
 	return nil
 }
 
