@@ -1078,6 +1078,22 @@ Set this value longer than the expected cleanup time for your process.
 Defaults to 120 seconds.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>sidecars</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#container-v1-core">
+[]Kubernetes core/v1.Container
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+You can use this field to launch helper containers that provide additional functionality to the main container.
+See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for more details.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus

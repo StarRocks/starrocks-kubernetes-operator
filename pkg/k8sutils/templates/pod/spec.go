@@ -254,8 +254,12 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 }
 
 func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Volume) corev1.PodSpec {
+	containers := []corev1.Container{container}
+	if len(spec.GetSidecars()) > 0 {
+		containers = append(containers, spec.GetSidecars()...)
+	}
 	podSpec := corev1.PodSpec{
-		Containers:                    []corev1.Container{container},
+		Containers:                    containers,
 		Volumes:                       volumes,
 		ServiceAccountName:            spec.GetServiceAccount(),
 		TerminationGracePeriodSeconds: spec.GetTerminationGracePeriodSeconds(),
