@@ -49,10 +49,10 @@ spec:
         image: "{{ .Values.starrocksOperator.image.repository }}:{{ .Values.starrocksOperator.image.tag }}"
         imagePullPolicy: {{ .Values.starrocksOperator.imagePullPolicy }}
         name: manager
+        {{- if .Values.starrocksOperator.securityContext }}
         securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
+          {{- toYaml .Values.starrocksOperator.securityContext | nindent 10 }}
+        {{- end }}
         livenessProbe:
           httpGet:
             path: /healthz
