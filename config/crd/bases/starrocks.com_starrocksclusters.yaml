@@ -998,7 +998,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
@@ -3008,7 +3010,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   cnEnvVars:
                     description: cnEnvVars is a slice of environment variables that
                       are added to the pods, the default is empty.
@@ -4493,7 +4497,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
@@ -5804,7 +5810,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.

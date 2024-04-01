@@ -501,7 +501,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     properties:
                       configMapName:
@@ -1496,7 +1498,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   cnEnvVars:
                     items:
                       properties:
@@ -2213,7 +2217,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     properties:
                       configMapName:
@@ -2841,7 +2847,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     properties:
                       configMapName:

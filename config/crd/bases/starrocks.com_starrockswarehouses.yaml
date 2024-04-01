@@ -1494,7 +1494,9 @@ spec:
                       - name
                       type: object
                     type: array
-                    x-kubernetes-list-type: set
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
