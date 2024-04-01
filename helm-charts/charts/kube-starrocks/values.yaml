@@ -823,6 +823,14 @@ starrocks:
     #       this is the content of the configmap
     #       when mounted, key will be the name of the file
   
+  # If you needs to deploy other resources, e.g. serviceAccount, you can add them here.
+  resources: []
+    # - apiVersion: v1
+    #   kind: ServiceAccount
+    #   metadata:
+    #     name: sa-for-starrocks
+    #     namespace: starrocks
+  
   # specify the fe proxy deploy or not.
   starrocksFeProxySpec:
     # specify the fe proxy deploy or not.
