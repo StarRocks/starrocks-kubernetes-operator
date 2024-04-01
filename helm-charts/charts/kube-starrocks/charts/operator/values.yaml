@@ -46,6 +46,17 @@ starrocksOperator:
     requests:
       cpu: 500m
       memory: 400Mi
+  # By default, the operator will only set runAsNonRoot to true, allowPrivilegeEscalation to false, readOnlyRootFilesystem to true.
+  # You can customize the securityContext for operator pod, e.g. drop capabilities, seccompProfile, etc.
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    #capabilities:
+    #  drop:
+    #  - ALL
+    #seccompProfile:
+    #  type: "RuntimeDefault"
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
   # - name: "image-pull-secret"
