@@ -89,7 +89,7 @@ spec:
       {{- end }}
       {{- end }}
       {{- if .Values.spec.annotations }}
-      {{ toYaml .Values.spec.annotations | indent 6 }}
+      {{- toYaml .Values.spec.annotations | nindent 6 }}
       {{- end }}
     {{- if .Values.spec.imagePullSecrets }}
     imagePullSecrets:

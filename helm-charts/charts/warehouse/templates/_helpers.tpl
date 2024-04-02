@@ -17,8 +17,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 {{- define "starrockswarehouse.config" -}}
 cn.conf: |
-{{- if .Values.spec.config | indent 2 }}
-{{ .Values.spec.config | indent 2 }}
+{{- if .Values.spec.config }}
+{{- .Values.spec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 

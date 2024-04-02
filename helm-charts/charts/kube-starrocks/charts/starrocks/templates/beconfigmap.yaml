@@ -8,7 +8,7 @@ metadata:
     cluster: {{ template "starrockscluster.name" . }}
     app: "be"
 data:
-{{ include "starrocksclster.be.config" . | indent 2 }}
+  {{- include "starrocksclster.be.config" . | nindent 2 }}
 
 {{- end }}
 

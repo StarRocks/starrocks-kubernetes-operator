@@ -53,21 +53,21 @@ starrockscluster
 {{- define "starrockscluster.fe.config" -}}
 fe.conf: |
 {{- if .Values.starrocksFESpec.config }}
-{{ .Values.starrocksFESpec.config | indent 2 }}
+{{- .Values.starrocksFESpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.config" -}}
 cn.conf: |
-{{- if .Values.starrocksCnSpec.config | indent 2 }}
-{{ .Values.starrocksCnSpec.config | indent 2 }}
+{{- if .Values.starrocksCnSpec.config }}
+{{- .Values.starrocksCnSpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrocksclster.be.config" -}}
 be.conf: |
-{{- if .Values.starrocksBeSpec.config | indent 2 }}
-{{ .Values.starrocksBeSpec.config | indent 2 }}
+{{- if .Values.starrocksBeSpec.config }}
+{{- .Values.starrocksBeSpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
