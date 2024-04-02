@@ -1122,7 +1122,9 @@ spec:
                                 - name
                                 type: object
                               type: array
-                              x-kubernetes-list-type: set
+                              x-kubernetes-list-map-keys:
+                              - name
+                              x-kubernetes-list-type: map
                             limits:
                               additionalProperties:
                                 anyOf:
@@ -2786,7 +2788,9 @@ spec:
                                 - name
                                 type: object
                               type: array
-                              x-kubernetes-list-type: set
+                              x-kubernetes-list-map-keys:
+                              - name
+                              x-kubernetes-list-type: map
                             limits:
                               additionalProperties:
                                 anyOf:
@@ -4738,7 +4742,9 @@ spec:
                                 - name
                                 type: object
                               type: array
-                              x-kubernetes-list-type: set
+                              x-kubernetes-list-map-keys:
+                              - name
+                              x-kubernetes-list-type: map
                             limits:
                               additionalProperties:
                                 anyOf:
