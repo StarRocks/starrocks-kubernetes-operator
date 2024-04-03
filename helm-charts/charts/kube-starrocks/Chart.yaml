@@ -41,6 +41,14 @@ keywords:
   - database
   - olap
 
+dependencies:
+  - name: operator
+    version: 1.9.4
+    repository: "file://charts/operator"
+  - name: starrocks
+    version: 1.9.4
+    repository: "file://charts/starrocks"
+
 sources:
   - https://github.com/StarRocks/starrocks
 
