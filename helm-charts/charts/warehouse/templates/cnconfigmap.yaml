@@ -8,6 +8,6 @@ metadata:
     warehouse: {{ template "starrockswarehouse.name" . }}
     app: "warehouse"
 data:
-{{ include "starrockswarehouse.config" . | indent 2 }}
+  {{- include "starrockswarehouse.config" . | nindent 2 }}
 
 {{- end }}

@@ -5,11 +5,11 @@ metadata:
   namespace: {{ template "starrockscluster.namespace" . }}
   labels:
     cluster: {{ template "starrockscluster.name" . }}
-{{- include "starrockscluster.labels" . | nindent 4 }}
-{{- if .Values.starrocksCluster.annotations }}
+  {{- include "starrockscluster.labels" . | nindent 4 }}
+  {{- if .Values.starrocksCluster.annotations }}
   annotations:
-    {{ toYaml .Values.starrocksCluster.annotations | nindent 4 }}
-{{- end }}
+    {{- toYaml .Values.starrocksCluster.annotations | nindent 4 }}
+  {{- end }}
 spec:
   starRocksFeSpec:
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
@@ -53,9 +53,9 @@ spec:
       ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
-{{- if .Values.starrocksFESpec.annotations }}
-{{ toYaml .Values.starrocksFESpec.annotations | indent 6 }}
-{{- end }}
+      {{- if .Values.starrocksFESpec.annotations }}
+      {{- toYaml .Values.starrocksFESpec.annotations | nindent 6 }}
+      {{- end }}
     {{- if or .Values.starrocksFESpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
       {{- include "starrockscluster.fe.imagePullSecrets" . | nindent 6 }}
@@ -161,22 +161,22 @@ spec:
     sidecars:
       {{- toYaml .Values.starrocksFESpec.sidecars | nindent 6 }}
     {{- end }}
-{{- if .Values.starrocksFESpec.secrets }}
+    {{- if .Values.starrocksFESpec.secrets }}
     secrets:
     {{- range .Values.starrocksFESpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
-{{- if .Values.starrocksFESpec.configMaps }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.configMaps }}
     configMaps:
     {{- range .Values.starrocksFESpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
@@ -210,7 +210,7 @@ spec:
     {{- end }}
     {{- end }}
 
-{{- if .Values.starrocksCluster.enabledBe }}
+  {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
@@ -253,9 +253,9 @@ spec:
       ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
-{{- if .Values.starrocksBeSpec.annotations }}
-{{ toYaml .Values.starrocksBeSpec.annotations | indent 6 }}
-{{- end }}
+      {{- if .Values.starrocksBeSpec.annotations }}
+      {{- toYaml .Values.starrocksBeSpec.annotations | nindent 6 }}
+      {{- end }}
     {{- if or .Values.starrocksBeSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
       {{- include "starrockscluster.be.imagePullSecrets" . | nindent 6 }}
@@ -374,22 +374,22 @@ spec:
     sidecars:
       {{- toYaml .Values.starrocksBeSpec.sidecars | nindent 6 }}
     {{- end }}
-{{- if .Values.starrocksBeSpec.secrets }}
+    {{- if .Values.starrocksBeSpec.secrets }}
     secrets:
     {{- range .Values.starrocksBeSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
-{{- if .Values.starrocksBeSpec.configMaps }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.configMaps }}
     configMaps:
     {{- range .Values.starrocksBeSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
@@ -423,7 +423,7 @@ spec:
     {{- end }}
     {{- end }}
   {{- end }}
-{{- if .Values.starrocksCluster.enabledCn }}
+  {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
     {{- if .Values.starrocksCnSpec.replicas }}
@@ -587,29 +587,29 @@ spec:
       ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"starrocks\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
       {{- end }}
       {{- end }}
-{{- if .Values.starrocksCnSpec.annotations }}
-{{ toYaml .Values.starrocksCnSpec.annotations | indent 6 }}
-{{- end }}
+      {{- if .Values.starrocksCnSpec.annotations }}
+      {{- toYaml .Values.starrocksCnSpec.annotations | nindent 6 }}
+      {{- end }}
     {{- if or .Values.starrocksCnSpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
     imagePullSecrets:
       {{- include "starrockscluster.cn.imagePullSecrets" . | nindent 6 }}
     {{- end }}
-{{- if .Values.starrocksCnSpec.secrets }}
+    {{- if .Values.starrocksCnSpec.secrets }}
     secrets:
     {{- range .Values.starrocksCnSpec.secrets }}
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
-{{- if .Values.starrocksCnSpec.configMaps }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.configMaps }}
     configMaps:
     {{- range .Values.starrocksCnSpec.configMaps }}
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
         subPath: {{ .subPath }}
     {{- end }}
-{{- end }}
+    {{- end }}
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
