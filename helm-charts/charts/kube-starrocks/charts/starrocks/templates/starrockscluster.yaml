@@ -12,6 +12,10 @@ metadata:
   {{- end }}
 spec:
   starRocksFeSpec:
+    {{- if .Values.starrocksFESpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
+    {{- end }}
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
     replicas: {{ .Values.starrocksFESpec.replicas }}
     {{- /*
@@ -212,6 +216,10 @@ spec:
 
   {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
+    {{- if .Values.starrocksBeSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.starrocksBeSpec.initContainers | nindent 6 }}
+    {{- end }}
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     {{- /*
@@ -425,6 +433,10 @@ spec:
   {{- end }}
   {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
+    {{- if .Values.starrocksCnSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.starrocksCnSpec.initContainers | nindent 6 }}
+    {{- end }}
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}

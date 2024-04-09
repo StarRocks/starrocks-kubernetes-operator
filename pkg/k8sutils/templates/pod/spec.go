@@ -259,6 +259,7 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 		containers = append(containers, spec.GetSidecars()...)
 	}
 	podSpec := corev1.PodSpec{
+		InitContainers:                spec.GetInitContainers(),
 		Containers:                    containers,
 		Volumes:                       volumes,
 		ServiceAccountName:            spec.GetServiceAccount(),
