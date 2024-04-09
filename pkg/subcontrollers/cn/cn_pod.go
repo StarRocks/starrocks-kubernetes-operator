@@ -64,7 +64,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		url := fmt.Sprintf("http://%v:%v/api/v2/feature", feExternalServiceName, rutils.GetPort(config, rutils.HTTP_PORT))
+		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature", feExternalServiceName, object.Namespace, rutils.GetPort(config, rutils.HTTP_PORT))
 		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
