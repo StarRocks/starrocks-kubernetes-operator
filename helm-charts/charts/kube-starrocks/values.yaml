@@ -412,13 +412,24 @@ starrocks:
     # You can use this field to launch helper containers that provide additional functionality to the main container.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
     sidecars: []
+      # - name: sidecar-container
+      #   image: busybox
+      #   # If starrocksFESpec.storageSpec.name is fe or not set, you can mount the volume of meta like this.
+      #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/fe/meta/sidecar-data.txt && sleep 3600']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/fe/meta
+      #     name: fe-meta   # append -meta to the end of the name of the starrocksFESpec.storageSpec.name
     # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
     # You can use this to launch helper containers that run before the main container starts.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
     initContainers: []
       # - name: init-container
       #   image: busybox
-      #   command: ['sh', '-c', 'echo hello from the init container']
+      #   # If starrocksFESpec.storageSpec.name is fe or not set, you can mount the volume of meta like this.
+      #   command: ['sh', '-c', 'echo "hello from the init container" >/opt/starrocks/fe/meta/init-data.txt']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/fe/meta
+      #     name: fe-meta   # append -meta to the end of the name of the starrocksFESpec.storageSpec.name
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
@@ -558,8 +569,8 @@ starrocks:
     # specify storageclass name and request size.
     # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
-      # Specifies the name prefix of the volumes to mount. If left unspecified, `emptyDir` volumes will be used by default, which
-      # are ephemeral and data will be lost on pod restart. For persistent storage, it is recommended to specify a volume name prefix.
+      # Specifies the name prefix of the volumes to mount. If left unspecified, `emptyDir` volumes will be used by default, and only for log, which
+      # are ephemeral and logs will be lost on pod restart. For persistent storage, it is recommended to specify a volume name prefix.
       # For example, using `cn` as the name prefix would be appropriate.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -645,13 +656,26 @@ starrocks:
     # You can use this field to launch helper containers that provide additional functionality to the main container.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
     sidecars: []
+      # - name: sidecar-container
+      #   image: busybox
+      #   # If starrocksCnSpec.storageSpec.name is cn, you can mount the volume of cache data like this.
+      #   # If starrocksCnSpec.storageSpec.name is not set, no default volume will be created, so you can not mount the volume of cache data like this.
+      #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/cn/storage/sidecar-data.txt && sleep 3600']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/cn/storage
+      #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
     # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
     # You can use this to launch helper containers that run before the main container starts.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
     initContainers: []
       # - name: init-container
       #   image: busybox
-      #   command: ['sh', '-c', 'echo hello from the init container']
+      #   # If starrocksCnSpec.storageSpec.name is cn, you can mount the volume of cache data like this.
+      #   # If starrocksCnSpec.storageSpec.name is not set, no default volume will be created, so you can not mount the volume of cache data like this.
+      #   command: ['sh', '-c', 'echo "hello from the init container" >/opt/starrocks/cn/storage/init-data.txt']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/cn/storage
+      #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -841,13 +865,24 @@ starrocks:
     # You can use this field to launch helper containers that provide additional functionality to the main container.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
     sidecars: []
+      # - name: sidecar-container
+      #   image: busybox
+      #   # If your starrocksBeSpec.storageSpec.name is be or not set, you can mount the volume of data like this.
+      #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/be/storage/sidecar-data.txt && sleep 3600']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/be/storage
+      #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
     # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
     # You can use this to launch helper containers that run before the main container starts.
     # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
     initContainers: []
       # - name: init-container
       #   image: busybox
-      #   command: ['sh', '-c', 'echo hello from the init container']
+      #   # If your starrocksBeSpec.storageSpec.name is be or not set, you can mount the volume of data like this.
+      #   command: ['sh', '-c', 'echo "hello from the init container" >/opt/starrocks/be/storage/init-data.txt']
+      #   volumeMounts:
+      #   - mountPath: /opt/starrocks/be/storage
+      #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
   
   # create secrets if necessary.
   secrets: []
@@ -868,6 +903,7 @@ starrocks:
     #       when mounted, key will be the name of the file
   
   # If you needs to deploy other resources, e.g. serviceAccount, you can add them here.
+  # You can even deploy resources to different namespaces
   resources: []
     # - apiVersion: v1
     #   kind: ServiceAccount
