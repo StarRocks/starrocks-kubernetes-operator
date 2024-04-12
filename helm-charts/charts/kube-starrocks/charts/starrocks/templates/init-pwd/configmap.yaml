@@ -12,7 +12,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: init-pwd-shell
+  name: {{ template "starrockscluster.name" . }}-initpwd-shell
   namespace: {{ template "starrockscluster.namespace" . }}
 data:
   fe_initpwd.sh: |-

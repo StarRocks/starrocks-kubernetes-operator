@@ -47,7 +47,7 @@ spec:
               name: {{ template "starrockscluster.initpassword.secret.name" . }}
         volumeMounts:
         - mountPath: /opt/starrocks/fe_initpwd.sh
-          name: fe-initpwd-shell
+          name: {{ template "starrockscluster.name" . }}-initpwd-shell
           subPath: fe_initpwd.sh
       volumes:
       - configMap:
@@ -55,9 +55,9 @@ spec:
           items:
             - key: fe_initpwd.sh
               path: fe_initpwd.sh
-          name: init-pwd-shell
+          name: {{ template "starrockscluster.name" . }}-initpwd-shell
           optional: false
-        name: fe-initpwd-shell
+        name: {{ template "starrockscluster.name" . }}-initpwd-shell
       restartPolicy: OnFailure
   backoffLimit: 10
 {{- end }}
