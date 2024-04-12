@@ -1091,7 +1091,22 @@ Defaults to 120 seconds.</p>
 <em>(Optional)</em>
 <p>Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
 You can use this field to launch helper containers that provide additional functionality to the main container.
-See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for more details.</p>
+See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for how to configure a container.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>initContainers</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#container-v1-core">
+[]Kubernetes core/v1.Container
+</a>
+</em>
+</td>
+<td>
+<p>InitContainers is an optional list of containers that are run in the same pod as the starrocks component.
+You can use this field to launch helper containers that run before the main container starts.
+See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for how to configure a container.</p>
 </td>
 </tr>
 </tbody>
@@ -2164,5 +2179,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>e4e8cae</code>.
+on git commit <code>53f728f</code>.
 </em></p>

@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## [v1.9.5](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.5)
+
+Release Notes for starrocks-kubernetes-operator v1.9.5
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.5. This version brings a mix of
+features and enhancements to further improve the deployment and management of StarRocks clusters on Kubernetes
+environments.
+
+### Feature
+
+- [Feature] Support init Containers. User can add a k8s pod format initContainers.
+  PR [#499](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/499) [#508](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/508)
+- [Feature] Support sidecars. User can add a k8s pod format sidecars.
+  PR [#461](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/461)
+- [Feature] Support deploy multiple StarRocks clusters in one namespace.
+  PR [#493](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/493) [#509](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/509)
+
+### Enhancements
+
+- [Enhancement] Support users to apply their own resources.
+  PR [#496](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/496)
+- [Enhancement] Support to customize securityContext for Operator Chart.
+  PR [#495](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/495)
+- [Enhancement] Support warehouse to be deployed in different namespace with StarRocks cluster.
+  PR [#505](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/505)
+
+### Maintenance
+
+[Chore] This PR aims to standardize the format of YAML files in templates directory.
+PR [#501](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/501)
+[Chore] Upgrade Golang version to 1.22, and `sigs.k8s.io/controller-runtime` to v0.14.0.
+PR [#497](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/497)
+
 ## [v1.9.4](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.4)
 
 Release Notes for starrocks-kubernetes-operator v1.9.4

@@ -3,6 +3,40 @@ entries:
   kube-starrocks:
   - apiVersion: v2
     appVersion: 3.2-latest
+    created: "2024-04-12T14:43:02.644054+08:00"
+    dependencies:
+    - name: operator
+      repository: file://charts/operator
+      version: 1.9.5
+    - name: starrocks
+      repository: file://charts/starrocks
+      version: 1.9.5
+    description: kube-starrocks includes two subcharts, operator and starrocks
+    digest: 449b40da6834b54544f00966bce9e63d7c0934951b17cd9ce03b33557203c114
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: kube-starrocks
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.5/kube-starrocks-1.9.5.tgz
+    version: 1.9.5
+  - apiVersion: v2
+    appVersion: 3.2-latest
     created: "2024-03-25T11:43:08.284798+08:00"
     description: kube-starrocks includes two subcharts, operator and starrocks
     digest: 84e98ac5a2b21bfc18da08004c2588239c8857c28f0ecdf23ae9571b56cba2a7
@@ -410,6 +444,33 @@ entries:
     version: 1.7.1
   operator:
   - apiVersion: v2
+    appVersion: 1.9.5
+    created: "2024-04-12T14:43:05.141454+08:00"
+    description: A Helm chart for StarRocks operator
+    digest: fcc1e0877e7f66c29d539315deb05a3ac9fba05d39f3d72116ffc24a65e33068
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: operator
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.5/operator-1.9.5.tgz
+    version: 1.9.5
+  - apiVersion: v2
     appVersion: 1.9.4
     created: "2024-03-25T11:43:10.552202+08:00"
     description: A Helm chart for StarRocks operator
@@ -813,6 +874,33 @@ entries:
     - https://github.com/StarRocks/starrocks
     type: application
     urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.5/starrocks-1.9.5.tgz
+    version: 1.9.5
+  - apiVersion: v2
+    appVersion: 3.2-latest
+    created: "2024-04-12T14:43:02.646285+08:00"
+    description: A Helm chart for StarRocks cluster
+    digest: 189dd388b10c17df81fafbe2f052dff2efb25bc4b2944fb05b35d692fd05cedb
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: shensida@starrocks.com
+      name: SidaShen
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: starrocks
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
     - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.4/starrocks-1.9.4.tgz
     version: 1.9.4
   - apiVersion: v2
@@ -1169,6 +1257,32 @@ entries:
   warehouse:
   - apiVersion: v2
     appVersion: 3.2-latest
+    created: "2024-04-12T14:43:10.120059+08:00"
+    description: Warehouse is currently a feature of the StarRocks Enterprise Edition.
+    digest: b855d832681280308bea8d5e3561ab96617625b9090aeac5fd1b8e66d535f729
+    home: https://github.com/StarRocks/starrocks-kubernetes-operator
+    icon: https://avatars.githubusercontent.com/u/88238841
+    keywords:
+    - operator
+    - starrocks
+    - database
+    - olap
+    - multi-warehouse
+    kubeVersion: '>=1.18.3-0'
+    maintainers:
+    - email: caixiaohua@starrocks.com
+      name: Kevin Cai
+    - email: yandongxiao@starrocks.com
+      name: Dongxiao Yan
+    name: warehouse
+    sources:
+    - https://github.com/StarRocks/starrocks
+    type: application
+    urls:
+    - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.5/warehouse-1.9.5.tgz
+    version: 1.9.5
+  - apiVersion: v2
+    appVersion: 3.2-latest
     created: "2024-03-25T11:43:15.205066+08:00"
     description: Warehouse is currently a feature of the StarRocks Enterprise Edition.
     digest: 90a25d6c8e4210d7bbfe1df851f4e908ae607d9ca4eee61de775d4b42ecb0d6b
@@ -1297,4 +1411,4 @@ entries:
     urls:
     - https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.0/warehouse-1.9.0.tgz
     version: 1.9.0
-generated: "2024-03-25T11:43:15.20444+08:00"
+generated: "2024-04-12T14:43:10.119534+08:00"
