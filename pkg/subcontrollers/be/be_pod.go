@@ -46,7 +46,10 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	if !k8sutils.HasVolume(vols, _storageName) && !k8sutils.HasVolume(vols, _storageName2) &&
 		!k8sutils.HasMountPath(volumeMounts, _storagePath) {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName, _storagePath, "")
+		// Changing the volume name to _storageName2 is fine, it will only affect users who did not persist data.
+		// The reason why we need to change the volume name is that the helm chart uses the format _storageName2
+		// Keeping the same suffix will make user easy to use feature, like init-containers and sidecars.
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName2, _storagePath, "")
 	}
 	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, _logPath) {
 		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
