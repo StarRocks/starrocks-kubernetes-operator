@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
@@ -50,9 +51,18 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func SetupWarehouseReconciler(ctx context.Context, mgr ctrl.Manager) error {
+// SetupWarehouseReconciler
+// Why do we need a namespace parameter?
+//  1. Warehouse CRD is an optional feature, and user may not install it.
+//  2. We try to use list Warehouses operation to check if Warehouse CRD exists or not.
+//  3. By Default, It needs the cluster scope permission.
+func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
+	var listOpts []client.ListOption
+	if namespace != "" {
+		listOpts = append(listOpts, client.InNamespace(namespace))
+	}
 	// check StarRocksWarehouse CRD exists or not
-	if err := mgr.GetAPIReader().List(ctx, &srapi.StarRocksWarehouseList{}); err != nil {
+	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}, listOpts...); err != nil {
 		if meta.IsNoMatchError(err) {
 			// StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler
 			return nil
