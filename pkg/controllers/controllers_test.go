@@ -60,8 +60,8 @@ func TestSetupWarehouseReconciler(t *testing.T) {
 	}()
 
 	type args struct {
-		mgr controllerruntime.Manager
-		ctx context.Context
+		mgr       controllerruntime.Manager
+		namespace string
 	}
 	tests := []struct {
 		name    string
@@ -75,7 +75,7 @@ func TestSetupWarehouseReconciler(t *testing.T) {
 					env1 = fake.NewEnvironment(fake.WithClusterCRD())
 					return fake.NewManager(env1)
 				}(),
-				ctx: context.Background(),
+				namespace: "",
 			},
 			wantErr: false,
 		},
@@ -85,7 +85,7 @@ func TestSetupWarehouseReconciler(t *testing.T) {
 				mgr: func() controllerruntime.Manager {
 					return fake.NewManager(env2)
 				}(),
-				ctx: context.Background(),
+				namespace: "",
 			},
 			wantErr: false,
 		},
@@ -95,7 +95,7 @@ func TestSetupWarehouseReconciler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetupWarehouseReconciler(tt.args.ctx, tt.args.mgr); (err != nil) != tt.wantErr {
+			if err := SetupWarehouseReconciler(tt.args.mgr, tt.args.namespace); (err != nil) != tt.wantErr {
 				t.Errorf("SetupWarehouseReconciler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

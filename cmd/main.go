@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 	"time"
@@ -79,7 +78,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := controllers.SetupWarehouseReconciler(context.Background(), mgr); err != nil {
+	if err := controllers.SetupWarehouseReconciler(mgr, _namespace); err != nil {
 		logger.Error(err, "unable to set up warehouse reconciler")
 		os.Exit(1)
 	}
