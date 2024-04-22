@@ -74,7 +74,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		Ports:           pod.Ports(beSpec, config),
 		Env:             envs,
 		Resources:       beSpec.ResourceRequirements,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: beSpec.GetImagePullPolicy(),
 		VolumeMounts:    volumeMounts,
 		StartupProbe:    pod.StartupProbe(beSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(beSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),

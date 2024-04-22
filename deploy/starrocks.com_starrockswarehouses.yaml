@@ -857,6 +857,8 @@ spec:
                     type: array
                   image:
                     type: string
+                  imagePullPolicy:
+                    type: string
                   imagePullSecrets:
                     items:
                       properties:

@@ -84,7 +84,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		Ports:           pod.Ports(cnSpec, config),
 		Env:             envs,
 		Resources:       cnSpec.ResourceRequirements,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: cnSpec.GetImagePullPolicy(),
 		VolumeMounts:    volumeMounts,
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
