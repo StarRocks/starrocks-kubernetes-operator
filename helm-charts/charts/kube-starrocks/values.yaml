@@ -234,6 +234,7 @@ starrocks:
       # image sliced by "repository:tag"
       repository: starrocks/fe-ubuntu
       tag: ""
+    imagePullPolicy: IfNotPresent
     # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
     annotations: {}
     # If runAsNonRoot is true, the container is run as non-root user.
@@ -447,6 +448,7 @@ starrocks:
       # image sliced by "repository:tag"
       repository: starrocks/cn-ubuntu
       tag: ""
+    imagePullPolicy: IfNotPresent
     # serviceAccount for cn access cloud service.
     serviceAccount: ""
     # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -685,6 +687,7 @@ starrocks:
       # image sliced by "repository:tag"
       repository: starrocks/be-ubuntu
       tag: ""
+    imagePullPolicy: IfNotPresent
     # serviceAccount for be access cloud service.
     serviceAccount: ""
     # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -916,6 +919,7 @@ starrocks:
     # specify the fe proxy deploy or not.
     enabled: false
     replicas: 1
+    imagePullPolicy: IfNotPresent
     # default nginx:1.24.0
     image:
       repository: ""

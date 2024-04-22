@@ -20,6 +20,7 @@ type loadInterface interface {
 
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
+	GetImagePullPolicy() corev1.PullPolicy
 }
 
 type StarRocksLoadSpec struct {
@@ -47,6 +48,13 @@ type StarRocksLoadSpec struct {
 	// Image for a starrocks deployment.
 	// +optional
 	Image string `json:"image"`
+
+	// Image pull policy.
+	// One of Always, Never, IfNotPresent.
+	// Defaults to IfNotPresent for compatibility.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#updating-images
+	// +optional
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the
 	// images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for
@@ -274,4 +282,11 @@ func (spec *StarRocksLoadSpec) GetReadinessProbeFailureSeconds() *int32 {
 
 func (spec *StarRocksLoadSpec) GetLifecycle() *corev1.Lifecycle {
 	return spec.Lifecycle
+}
+
+func (spec *StarRocksLoadSpec) GetImagePullPolicy() corev1.PullPolicy {
+	if spec.ImagePullPolicy == "" {
+		return corev1.PullIfNotPresent
+	}
+	return spec.ImagePullPolicy
 }

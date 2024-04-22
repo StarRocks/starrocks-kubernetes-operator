@@ -18,6 +18,7 @@ spec:
     {{- end }}
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
     replicas: {{ .Values.starrocksFESpec.replicas }}
+    imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
     {{- /*
     support both resources and resource for backward compatibility
     */}}
@@ -222,6 +223,7 @@ spec:
     {{- end }}
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
     replicas: {{ .Values.starrocksBeSpec.replicas }}
+    imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
     {{- /*
     support both resources and resource for backward compatibility
     */}}
@@ -441,6 +443,7 @@ spec:
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
+    imagePullPolicy: {{ .Values.starrocksCnSpec.imagePullPolicy }}
     {{- if or .Values.starrocksCnSpec.serviceAccount .Values.starrocksCluster.componentValues.serviceAccount }}
     serviceAccount: {{ include "starrockscluster.cn.serviceAccount" . }}
     {{- end }}
@@ -666,6 +669,7 @@ spec:
       {{- toYaml .Values.starrocksFeProxySpec.imagePullSecrets | nindent 4 }}
     {{- end }}
     replicas: {{ .Values.starrocksFeProxySpec.replicas }}
+    imagePullPolicy: {{ .Values.starrocksFeProxySpec.imagePullPolicy }}
     resolver: {{ .Values.starrocksFeProxySpec.resolver }}
     {{- if .Values.starrocksFeProxySpec.resources }}
       {{- toYaml .Values.starrocksFeProxySpec.resources | nindent 4 }}

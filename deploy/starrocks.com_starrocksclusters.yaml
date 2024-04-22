@@ -535,6 +535,8 @@ spec:
                     type: array
                   image:
                     type: string
+                  imagePullPolicy:
+                    type: string
                   imagePullSecrets:
                     items:
                       properties:
@@ -2806,6 +2808,8 @@ spec:
                     type: array
                   image:
                     type: string
+                  imagePullPolicy:
+                    type: string
                   imagePullSecrets:
                     items:
                       properties:
@@ -4649,6 +4653,8 @@ spec:
                     type: object
                   image:
                     type: string
+                  imagePullPolicy:
+                    type: string
                   imagePullSecrets:
                     items:
                       properties:
@@ -5364,6 +5370,8 @@ spec:
                       type: object
                     type: array
                   image:
+                    type: string
+                  imagePullPolicy:
                     type: string
                   imagePullSecrets:
                     items:
