@@ -135,6 +135,10 @@ be.conf: |
 {{- print "entrypoint.sh" }}
 {{- end }}
 
+{{- define "starrockscluster.entrypoint.mount.path" -}}
+{{- print "/etc/starrocks" }}
+{{- end }}
+
 {{- define "starrockscluster.fe.entrypoint.script.configmap.name" -}}
 {{- print (include "starrockscluster.name" .) "-fe-entrypoint-script" }}
 {{- end }}

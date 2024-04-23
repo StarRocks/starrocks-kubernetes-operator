@@ -20,7 +20,7 @@ spec:
     {{- if .Values.starrocksFESpec.entrypoint }}
     command: ["bash", "-c"]
     args:
-      - {{ .Values.starrocksFESpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+      - {{template "starrockscluster.entrypoint.mount.path" .}}/{{template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
@@ -193,7 +193,7 @@ spec:
     {{- end }}
     {{- if .Values.starrocksFESpec.entrypoint }}
       - name: {{template "starrockscluster.fe.entrypoint.script.configmap.name" .}}
-        mountPath: {{ .Values.starrocksFESpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        mountPath: {{template "starrockscluster.entrypoint.mount.path" .}}/{{ template "starrockscluster.entrypoint.script.name" .}}
         subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
@@ -240,7 +240,7 @@ spec:
     {{- if .Values.starrocksBeSpec.entrypoint }}
     command: ["bash", "-c"]
     args:
-      - {{ .Values.starrocksBeSpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+      - {{template "starrockscluster.entrypoint.mount.path" .}}/{{template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
@@ -426,7 +426,7 @@ spec:
     {{- end }}
     {{- if .Values.starrocksBeSpec.entrypoint }}
       - name: {{template "starrockscluster.be.entrypoint.script.configmap.name" .}}
-        mountPath: {{ .Values.starrocksBeSpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        mountPath: {{template "starrockscluster.entrypoint.mount.path" .}}/{{ template "starrockscluster.entrypoint.script.name" .}}
         subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
@@ -473,7 +473,7 @@ spec:
     {{- if .Values.starrocksCnSpec.entrypoint }}
     command: ["bash", "-c"]
     args:
-      - {{ .Values.starrocksCnSpec.entrypoint.mountPath }}/{{template "starrockscluster.entrypoint.script.name" .}}
+      - {{template "starrockscluster.entrypoint.mount.path" .}}/{{template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- if .Values.starrocksCnSpec.replicas }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
@@ -666,7 +666,7 @@ spec:
     {{- end }}
     {{- if .Values.starrocksCnSpec.entrypoint }}
       - name: {{template "starrockscluster.cn.entrypoint.script.configmap.name" .}}
-        mountPath: {{ .Values.starrocksCnSpec.entrypoint.mountPath }}/{{ template "starrockscluster.entrypoint.script.name" .}}
+        mountPath: {{template "starrockscluster.entrypoint.mount.path" .}}/{{ template "starrockscluster.entrypoint.script.name" .}}
         subPath: {{ template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     {{- end }}
