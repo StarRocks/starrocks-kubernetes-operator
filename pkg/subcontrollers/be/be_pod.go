@@ -57,7 +57,7 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	// mount configmap, secrets to pod if needed
 	vols, volumeMounts = pod.MountConfigMapInfo(vols, volumeMounts, beSpec.ConfigMapInfo, _beConfigPath)
-	vols, volumeMounts = pod.MountConfigMaps(vols, volumeMounts, beSpec.ConfigMaps)
+	vols, volumeMounts = pod.MountConfigMaps(beSpec, vols, volumeMounts, beSpec.ConfigMaps)
 	vols, volumeMounts = pod.MountSecrets(vols, volumeMounts, beSpec.Secrets)
 	if err := k8sutils.CheckVolumes(vols, volumeMounts); err != nil {
 		return nil, err
@@ -69,8 +69,8 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	beContainer := corev1.Container{
 		Name:            srapi.DEFAULT_BE,
 		Image:           beSpec.Image,
-		Command:         []string{"/opt/starrocks/be_entrypoint.sh"},
-		Args:            []string{"$(FE_SERVICE_NAME)"},
+		Command:         pod.ContainerCommand(beSpec),
+		Args:            pod.ContainerArgs(beSpec),
 		Ports:           pod.Ports(beSpec, config),
 		Env:             envs,
 		Resources:       beSpec.ResourceRequirements,

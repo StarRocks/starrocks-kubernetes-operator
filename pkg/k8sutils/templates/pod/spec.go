@@ -316,3 +316,32 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 		Capabilities: spec.GetCapabilities(),
 	}
 }
+
+func getDefaultEntrypointScript(spec v1.SpecInterface) string {
+	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return "/opt/starrocks/fe_entrypoint.sh"
+	case *v1.StarRocksBeSpec:
+		return "/opt/starrocks/be_entrypoint.sh"
+	case *v1.StarRocksCnSpec:
+		return "/opt/starrocks/cn_entrypoint.sh"
+	}
+	return ""
+}
+
+func ContainerCommand(spec v1.SpecInterface) []string {
+	if spec.GetCommand() != nil {
+		return spec.GetCommand()
+	}
+
+	script := getDefaultEntrypointScript(spec)
+	return []string{script}
+}
+
+func ContainerArgs(spec v1.SpecInterface) []string {
+	if spec.GetArgs() != nil {
+		return spec.GetArgs()
+	}
+
+	return []string{"$(FE_SERVICE_NAME)"}
+}

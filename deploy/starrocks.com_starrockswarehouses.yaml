@@ -408,6 +408,10 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  args:
+                    items:
+                      type: string
+                    type: array
                   autoScalingPolicy:
                     properties:
                       hpaPolicy:
@@ -762,6 +766,10 @@ spec:
                     x-kubernetes-list-map-keys:
                     - name
                     x-kubernetes-list-type: map
+                  command:
+                    items:
+                      type: string
+                    type: array
                   configMapInfo:
                     properties:
                       configMapName:

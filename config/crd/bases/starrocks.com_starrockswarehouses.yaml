@@ -831,6 +831,19 @@ spec:
                     description: annotation for pods. user can config monitor annotation
                       for collect to monitor system.
                     type: object
+                  args:
+                    description: |-
+                      Arguments to the entrypoint.
+                      If this is not provided, it will use $(FE_SERVICE_NAME) for all components.
+                      Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
+                      cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
+                      to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                      produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless
+                      of whether the variable exists or not. Cannot be updated.
+                      More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
+                    items:
+                      type: string
+                    type: array
                   autoScalingPolicy:
                     description: AutoScalingPolicy defines auto scaling policy
                     properties:
@@ -1497,6 +1510,16 @@ spec:
                     x-kubernetes-list-map-keys:
                     - name
                     x-kubernetes-list-type: map
+                  command:
+                    description: "Entrypoint array. Not executed within a shell.\nIf
+                      this is not provided, it will use default entrypoint for different
+                      components:\n\t1. For FE, it will use /opt/starrocks/fe_entrypoint.sh
+                      as the entrypoint.\n 2. For BE, it will use /opt/starrocks/be_entrypoint.sh
+                      as the entrypoint.\n 3. For CN, it will use /opt/starrocks/cn_entrypoint.sh
+                      as the entrypoint.\nMore info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell"
+                    items:
+                      type: string
+                    type: array
                   configMapInfo:
                     description: the reference for configMap which store the config
                       info to start starrocks. e.g. be.conf, fe.conf, cn.conf.
@@ -1512,6 +1535,15 @@ spec:
                     description: the reference for configMap which allow users to
                       mount any files to container.
                     items:
+                      description: |-
+                        MountInfo
+                        The reason why we do not support defaultMode is that we use hash.HashObject to
+                        calculate the actual volume name. This volume name is used in pod template of statefulset,
+                        and if this MountInfo type has been changed, the volume name will be changed too, and
+                        that will make pods restart.
+                        The default mode is 0644, and in order to support to set permission information for a configMap
+                        or secret, we add should specify the subPath and specify a command or args in the container.
+                        And It will be set 0755.
                       properties:
                         mountPath:
                           description: |-
@@ -3241,6 +3273,15 @@ spec:
                   secrets:
                     description: the reference for secrets.
                     items:
+                      description: |-
+                        MountInfo
+                        The reason why we do not support defaultMode is that we use hash.HashObject to
+                        calculate the actual volume name. This volume name is used in pod template of statefulset,
+                        and if this MountInfo type has been changed, the volume name will be changed too, and
+                        that will make pods restart.
+                        The default mode is 0644, and in order to support to set permission information for a configMap
+                        or secret, we add should specify the subPath and specify a command or args in the container.
+                        And It will be set 0755.
                       properties:
                         mountPath:
                           description: |-

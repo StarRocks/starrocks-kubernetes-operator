@@ -127,6 +127,16 @@ starrocksFESpec:
     repository: starrocks/fe-ubuntu
     tag: ""
   imagePullPolicy: IfNotPresent
+  # Specify the entrypoint for FE.
+  # By default, operator will use '/opt/starrocks/fe_entrypoint.sh' as command, and use '$(FE_SERVICE_NAME)' as args in container spec.
+  # If entrypoint is set, the command will be ["bash", "-c"], and the args will be filename of the entrypoint script.
+  # A configmap with name $cluster-fe-entrypoint-script will be created, and the script will be mounted to /etc/starrocks/entrypoint.sh
+  # Pod will be restarted if the entrypoint script is updated.
+  entrypoint: {}
+    # script: |
+    #   #! /bin/bash
+    #   echo "do something before start fe"
+    #   exec /opt/starrocks/fe_entrypoint.sh $FE_SERVICE_NAME
   # add annotations for fe pods. For example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # If runAsNonRoot is true, the container is run as non-root user.
@@ -341,6 +351,16 @@ starrocksCnSpec:
     repository: starrocks/cn-ubuntu
     tag: ""
   imagePullPolicy: IfNotPresent
+  # Specify the entrypoint for CN.
+  # By default, operator will use '/opt/starrocks/cn_entrypoint.sh' as command, and use '$(FE_SERVICE_NAME)' as args in container spec.
+  # If entrypoint is set, the command will be ["bash", "-c"], and the args will be filename of the entrypoint script.
+  # A configmap with name $cluster-cn-entrypoint-script will be created, and the script will be mounted to /etc/starrocks/entrypoint.sh
+  # Pod will be restarted if the entrypoint script is updated.
+  entrypoint: {}
+    # script: |
+    #   #! /bin/bash
+    #   echo "do something before start cn"
+    #   exec /opt/starrocks/cn_entrypoint.sh $FE_SERVICE_NAME
   # serviceAccount for cn access cloud service.
   serviceAccount: ""
   # add annotations for cn pods. example, if you want to config monitor for datadog, you can config the annotations.
@@ -580,6 +600,16 @@ starrocksBeSpec:
     repository: starrocks/be-ubuntu
     tag: ""
   imagePullPolicy: IfNotPresent
+  # Specify the entrypoint for BE.
+  # By default, operator will use '/opt/starrocks/be_entrypoint.sh' as command, and use '$(FE_SERVICE_NAME)' as args in container spec.
+  # If entrypoint is set, the command will be ["bash", "-c"], and the args will be filename of the entrypoint script.
+  # A configmap with name $cluster-be-entrypoint-script will be created, and the script will be mounted to /etc/starrocks/entrypoint.sh
+  # Pod will be restarted if the entrypoint script is updated.
+  entrypoint: {}
+    # script: |
+    #   #! /bin/bash
+    #   echo "do something before start BE"
+    #   exec /opt/starrocks/be_entrypoint.sh $FE_SERVICE_NAME
   # serviceAccount for be access cloud service.
   serviceAccount: ""
   # add annotations for be pods. example, if you want to config monitor for datadog, you can config the annotations.
