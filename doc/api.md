@@ -224,6 +224,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
 Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </td>
@@ -325,6 +326,14 @@ AutoScalerVersion
 <h3 id="starrocks.com/v1.MountInfo">MountInfo
 </h3>
 <div>
+<p>MountInfo
+The reason why we do not support defaultMode is that we use hash.HashObject to
+calculate the actual volume name. This volume name is used in pod template of statefulset,
+and if this MountInfo type has been changed, the volume name will be changed too, and
+that will make pods restart.
+The default mode is 0644, and in order to support to set permission information for a configMap
+or secret, we add should specify the subPath and specify a command or args in the container.
+And It will be set 0755.</p>
 </div>
 <table>
 <thead>
@@ -366,6 +375,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
 Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </td>
@@ -448,6 +458,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
 Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </td>
@@ -1109,6 +1120,42 @@ You can use this field to launch helper containers that run before the main cont
 See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for how to configure a container.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>command</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Entrypoint array. Not executed within a shell.
+If this is not provided, it will use default entrypoint for different components:
+1. For FE, it will use /opt/starrocks/fe_entrypoint.sh as the entrypoint.
+2. For BE, it will use /opt/starrocks/be_entrypoint.sh as the entrypoint.
+3. For CN, it will use /opt/starrocks/cn_entrypoint.sh as the entrypoint.
+More info: <a href="https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell">https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>args</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Arguments to the entrypoint.
+If this is not provided, it will use $(FE_SERVICE_NAME) for all components.
+Variable references $(VAR_NAME) are expanded using the container&rsquo;s environment. If a variable
+cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. &ldquo;$$(VAR_NAME)&rdquo; will
+produce the string literal &ldquo;$(VAR_NAME)&rdquo;. Escaped references will never be expanded, regardless
+of whether the variable exists or not. Cannot be updated.
+More info: <a href="https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell">https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell</a></p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -1445,6 +1492,23 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image for a starrocks deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullPolicy</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#pullpolicy-v1-core">
+Kubernetes core/v1.PullPolicy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image pull policy.
+One of Always, Never, IfNotPresent.
+Defaults to IfNotPresent for compatibility.
+More info: <a href="https://kubernetes.io/docs/concepts/containers/images#updating-images">https://kubernetes.io/docs/concepts/containers/images#updating-images</a></p>
 </td>
 </tr>
 <tr>
@@ -2179,5 +2243,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>53f728f</code>.
+on git commit <code>78759be</code>.
 </em></p>

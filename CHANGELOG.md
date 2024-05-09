@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [v1.9.6](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.6)
+
+Release Notes for starrocks-kubernetes-operator v1.9.6
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.6. This version has the following enhancements:
+
+1. Support command and args(#516) in StarRocksCluster spec. You can easily customize the command and args if you are using helm chart.
+   Below is a code snippet from values.yaml for your reference:
+   ```yaml
+    entrypoint:
+      script: |
+        #! /bin/bash
+        echo "do something before start cn"
+        exec /opt/starrocks/cn_entrypoint.sh $FE_SERVICE_NAME
+   ```
+2. Support ImagePullPolicy in StarRocksCluster spec(#514).
+3. Support to use namespaced scope permission to deploy warehouses(#513).
+
 ## [v1.9.5](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.5)
 
 Release Notes for starrocks-kubernetes-operator v1.9.5
