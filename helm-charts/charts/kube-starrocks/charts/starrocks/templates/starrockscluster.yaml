@@ -225,7 +225,7 @@ spec:
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
       hostPath:
-        {{- toYaml .hostPath | nindent 10 }}
+        {{- toYaml .hostPath | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -458,7 +458,7 @@ spec:
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
       hostPath:
-        {{- toYaml .hostPath | nindent 10 }}
+        {{- toYaml .hostPath | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -698,7 +698,7 @@ spec:
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
       hostPath:
-        {{- toYaml .hostPath | nindent 10 }}
+        {{- toYaml .hostPath | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
