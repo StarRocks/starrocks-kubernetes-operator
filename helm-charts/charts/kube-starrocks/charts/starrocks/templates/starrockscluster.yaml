@@ -434,8 +434,8 @@ spec:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
     {{- if or .Values.starrocksBeSpec.storageSpec.name .Values.starrocksBeSpec.emptyDirs .Values.starrocksBeSpec.hostPaths }}
-    {{- if .Values.starrocksBeSpec.storageSpec.name }}
     storageVolumes:
+    {{- if .Values.starrocksBeSpec.storageSpec.name }}
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.data.suffix" . }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksBeSpec.storageSpec.storageSize }}"
