@@ -13,7 +13,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 - [Install StarRocks operator](../kube-starrocks/charts/operator/README.md).
 - [Install StarRocks cluster](../kube-starrocks/charts/starrocks/README.md).
 
-## Install starrocks Chart
+## Install Warehouse Chart
 
 1. Add the StarRocks Helm repository.
 
@@ -28,7 +28,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
     starrocks-community/warehouse           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
     ```
 
-2. Install the starrocks Chart.
+2. Install the warehouse Chart.
 
     ```bash
     helm install warehouse starrocks-community/warehouse
@@ -36,7 +36,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 
    Please see [values.yaml](./values.yaml) for more details.
 
-## Uninstall starrocks Chart
+## Uninstall Warehouse
 
 ```bash
 helm uninstall warehouse
