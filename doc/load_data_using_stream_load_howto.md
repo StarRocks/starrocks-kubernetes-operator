@@ -7,7 +7,8 @@ FE Proxy is a reverse proxy that can be used to solve this problem. It is a ngin
 proxies the HTTP request to FE and BE, including the HTTP 307 redirection.
 > You need to switch the traffic, that is, the request sent to FE HTTP Port (8030) is sent to FE Proxy HTTP Port (8080).
 
-**Note: The FE Proxy only resolves the domain name resolution problem for Stream Load Request.**
+**Note: FE proxy solves the data transfer link through HTTP protocol, non-HTTP traffic can't be proxied by the FE proxy
+such as the spark connector reading data directly from BE nodes through thrift protocol.**
 
 The following solutions for other read and write data scenarios are listed (will continue to be supplemented):
 
