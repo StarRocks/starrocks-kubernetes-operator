@@ -7,6 +7,15 @@ FE Proxy is a reverse proxy that can be used to solve this problem. It is a ngin
 proxies the HTTP request to FE and BE, including the HTTP 307 redirection.
 > You need to switch the traffic, that is, the request sent to FE HTTP Port (8030) is sent to FE Proxy HTTP Port (8080).
 
+**Note: FE proxy solves the data transfer link through HTTP protocol, non-HTTP traffic can't be proxied by the FE proxy
+such as the spark connector reading data directly from BE nodes through thrift protocol.**
+
+The following solutions for other read and write data scenarios are listed (will continue to be supplemented):
+
+1. If you are unloading (reading) the data with the spark connector outside of k8s, a workaround
+   is [INSERT INTO FILES](https://docs.starrocks.io/docs/unloading/unload_using_insert_into_files/), and then use spark
+   to load data from the exported files.
+
 ## Deploy Fe Proxy Using Helm
 
 If you install StarRocks with Helm, you can add the following configuration to the `values.yaml` file:
