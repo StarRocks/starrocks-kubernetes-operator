@@ -20,6 +20,9 @@ You can choose one of the following methods to deploy a warehouse:
 1. Deploy Warehouse by YAML Manifest
 2. Deploy Warehouse by Helm Chart
 
+> If you deploy StarRocks Cluster with BE and CN nodes, they are added to the `default_warehouse` in StarRocks by
+> default. You can also define a Warehouse CR named `default-warehouse` to add more BE and CN nodes to the warehouse.
+
 ### 2.1 Deploy Warehouse by YAML Manifest
 
 First, we need to install StarRocksWarehouse CRD and restart the StarRocks operator to make it aware of the new CRD.
@@ -136,11 +139,13 @@ kubectl -n starrocks patch warehouse wh1 --type='merge' -p '{"spec":{"template":
 ### 3.4 Delete the Warehouse
 
 If you deployed the warehouse by YAML manifest, you can delete it by running the following command:
+
 ```bash
 kubectl delete -f warehouse.yaml
 ```
 
 If you deployed the warehouse by Helm chart, you can delete it by running the following command:
+
 ```bash
 helm -n starrocks uninstall wh1
 ```

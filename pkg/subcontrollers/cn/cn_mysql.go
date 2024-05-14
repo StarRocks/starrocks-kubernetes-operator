@@ -20,9 +20,10 @@ import (
 // Component CN needs to connect to mysql and execute sql statements. E.g.: When StarRocksWarehouse is deleted, the
 // related 'DROP WAREHOUSE <name>' statement needs to be executed.
 type SQLExecutor struct {
-	RootPassword  string
-	FeServiceName string
-	FeServicePort string
+	RootPassword       string
+	FeServiceName      string
+	FeServiceNamespace string
+	FeServicePort      string
 }
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
@@ -66,9 +67,10 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 	}
 
 	return &SQLExecutor{
-		RootPassword:  rootPassword,
-		FeServiceName: feServiceName,
-		FeServicePort: feServicePort,
+		RootPassword:       rootPassword,
+		FeServiceName:      feServiceName,
+		FeServiceNamespace: namespace,
+		FeServicePort:      feServicePort,
 	}, nil
 }
 
@@ -77,8 +79,8 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 func (executor *SQLExecutor) Execute(ctx context.Context, db *sql.DB, statements string) error {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServicePort))
+		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
+			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
 		if err != nil {
 			return err
 		}
