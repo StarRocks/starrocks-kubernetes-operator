@@ -83,9 +83,10 @@ func TestNewSQLExecutor(t *testing.T) {
 				name:      "my-sts",
 			},
 			want: &SQLExecutor{
-				RootPassword:  "123456",
-				FeServiceName: "fe",
-				FeServicePort: "9030",
+				RootPassword:       "123456",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
 			},
 			wantErr: assert.NoError,
 		},
