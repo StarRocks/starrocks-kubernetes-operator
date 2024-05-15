@@ -335,7 +335,7 @@ starrocks:
     # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # Specifies the name prefix of the volumes to mount. If left unspecified, `emptyDir` volumes will be used by default, which
-      # are ephemeral and data will be lost on pod restart. For persistent storage, it is recommended to specify a volume name prefix.
+      # are ephemeral and data will be lost on pod restart. For persistent storage, specify a volume name prefix.
       # For example, using `fe` as the name prefix would be appropriate.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -592,7 +592,7 @@ starrocks:
     # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # Specifies the name prefix of the volumes to mount. If left unspecified, `emptyDir` volumes will be used by default, and only for log, which
-      # are ephemeral and logs will be lost on pod restart. For persistent storage, it is recommended to specify a volume name prefix.
+      # are ephemeral and logs will be lost on pod restart. For persistent storage, specify a volume name prefix.
       # For example, using `cn` as the name prefix would be appropriate.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -813,7 +813,7 @@ starrocks:
     # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # Specifies the name prefix of the volumes to mount. If left unspecified, `emptyDir` volumes will be used by default, which
-      # are ephemeral and data will be lost on pod restart. For persistent storage, it is recommended to specify a volume name prefix.
+      # are ephemeral and data will be lost on pod restart. For persistent storage, specify a volume name prefix.
       # For example, using `be` as the name prefix would be appropriate.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
