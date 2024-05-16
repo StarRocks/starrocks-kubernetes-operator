@@ -1,6 +1,3 @@
-# The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
-nameOverride: "wh1"
-
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 

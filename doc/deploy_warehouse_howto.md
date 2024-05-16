@@ -84,8 +84,6 @@ First, prepare a values.yaml file for Warehouse chart.
 
 ```yaml
 # wh1-values.yaml
-# The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
-nameOverride: "wh1"
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
   # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
@@ -180,8 +178,6 @@ For example, upgrade the image version:
 
 ```yaml
 # wh1-values.yaml
-# The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
-nameOverride: "wh1"
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
   # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
