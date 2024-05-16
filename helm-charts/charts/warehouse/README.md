@@ -13,6 +13,8 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 - [Install StarRocks operator](../kube-starrocks/charts/operator/README.md).
 - [Install StarRocks cluster](../kube-starrocks/charts/starrocks/README.md).
 
+> Note: Warehouse is an enterprise feature for StarRocks.
+
 ## Install Warehouse Chart
 
 1. Add the StarRocks Helm repository.
@@ -28,10 +30,34 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
     starrocks-community/warehouse           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
     ```
 
-2. Install the warehouse Chart.
+2. Prepare the values.yaml file.
+
+   ```yaml
+   # The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
+   nameOverride: "wh1"
+   spec:
+     # Make sure the StarRocks cluster exists in the same namespace.
+     # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
+     starRocksClusterName: kube-starrocks
+     replicas: 1
+     image: your-enterprise-image-version-for-cn
+     resources:
+       limits:
+         cpu: 8
+         memory: 8Gi
+       requests:
+         cpu: 8
+         memory: 8Gi
+   ```
+
+3. Install the warehouse Chart.
 
     ```bash
-    helm install warehouse starrocks-community/warehouse
+    # Use the above values.yaml to deploy a warehouse in namespace starrocks
+    helm -n starrocks install warehouse starrocks-community/warehouse -f values.yaml
+
+    # Restart the StarRocks operator to make it aware of the new CRD
+    kubectl -n starrocks rollout restart deployment kube-starrocks-operator
     ```
 
    Please see [values.yaml](./values.yaml) for more details.

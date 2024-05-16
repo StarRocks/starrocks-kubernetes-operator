@@ -38,6 +38,7 @@ kubectl rollout restart deployment kube-starrocks-operator
 Then, we need to deploy a warehouse by the following YAML manifest.
 
 ```yaml
+# wh1.yaml
 apiVersion: starrocks.com/v1
 kind: StarRocksWarehouse
 metadata:
@@ -47,13 +48,13 @@ metadata:
 
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksCluster: kube-starrocks
   template:
     envVars:
       - name: TZ
         value: Asia/Shanghai
-    image: your-enterprise-image-version-for-cn
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:3.2.6-ee
     replicas: 1
     limits:
       cpu: 8
@@ -63,30 +64,34 @@ spec:
       memory: 8Gi
 ```
 
-Apply the YAML manifest:
-
-```bash
-kubectl -n starrocks apply -f warehouse.yaml
-```
-
-You can see [./api.md](api.md) for more details about the StarRocksWarehouse CRD fields. The spec part is very similar
+You can see [api.md](./api.md) for more details about the StarRocksWarehouse CRD fields. The spec part is very similar
 to the StarRocksCnSpec of StarRocksCluster, so
 see [deploy_a_starrocks_cluster_with_cn.yaml](../examples/starrocks/deploy_a_starrocks_cluster_with_cn.yaml) for more
 fields.
 
+Apply the YAML manifest:
+
+```bash
+kubectl -n starrocks apply -f wh1.yaml
+```
+
 ### 2.2. Deploy Warehouse by Helm Chart
 
 We also support deploying a warehouse by Helm chart.
-See [Warehouse Chart](../helm-charts/charts/warehouse/README.md) for how to deploy it.
+You can also see [Warehouse Chart](../helm-charts/charts/warehouse/README.md) for how to deploy it.
 
-Here is a values.yaml file example:
+First, prepare a values.yaml file for Warehouse chart.
 
 ```yaml
-spec: # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+# wh1-values.yaml
+spec:
+  # Make sure the StarRocks cluster exists in the same namespace.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksClusterName: kube-starrocks
   replicas: 1
-  image: your-enterprise-image-version-for-cn
+  image:
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
+    tag: "3.2.6-ee"
   resources:
     limits:
       cpu: 8
@@ -98,8 +103,12 @@ spec: # Make sure the StarRocks cluster exists in the same namespace.
 
 Then deploy a warehouse by the following command:
 
-```bash
-helm -n starrocks install wh1 starrocks-community/warehouse -f values.yaml
+```console
+# Use the above values.yaml to deploy a warehouse in namespace starrocks
+helm -n starrocks install wh1 starrocks-community/warehouse -f wh1-values.yaml
+
+# Restart the StarRocks operator to make it aware of the new CRD
+kubectl -n starrocks rollout restart deployment kube-starrocks-operator
 ```
 
 ## 3. Manage Warehouse
@@ -108,44 +117,100 @@ helm -n starrocks install wh1 starrocks-community/warehouse -f values.yaml
 
 If you have deployed the above warehouse, you can see it by using the following SQL command:
 
-```bash
+```console
 # A warehouse has been created with the name `wh1`.
 mysql> show warehouses;
 +-------+-------------------+-----------+-----------+---------------------+-----------------+-----------------+------------+-----------+-----------+---------------------+---------------------+----------------------------------------------+
 | Id    | Name              | State     | NodeCount | CurrentClusterCount | MaxClusterCount | StartedClusters | RunningSql | QueuedSql | CreatedOn | ResumedOn           | UpdatedOn           | Comment                                      |
 +-------+-------------------+-----------+-----------+---------------------+-----------------+-----------------+------------+-----------+-----------+---------------------+---------------------+----------------------------------------------+
 | 0     | default_warehouse | AVAILABLE | 0         | 1                   | 1               | 1               | 0          | 0         | NULL      | 2024-05-11 16:49:37 | 2024-05-11 17:53:30 | An internal warehouse init after FE is ready |
-| 35030 | wh1               | AVAILABLE | 0         | 1                   | 1               | 1               | 0          | 0         | NULL      | NULL                | NULL                | NULL                                         |
+| 35030 | wh1               | AVAILABLE | 1         | 1                   | 1               | 1               | 0          | 0         | NULL      | NULL                | NULL                | NULL                                         |
 +-------+-------------------+-----------+-----------+---------------------+-----------------+-----------------+------------+-----------+-----------+---------------------+---------------------+----------------------------------------------+
 2 rows in set (0.00 sec)
 ```
 
-### 3.2. Upgrade CN nodes
+### 3.2 Upgrade Deployment
 
-Run the following command to specify a new CN image file, such as `starrocks-enterprise/cn-ubuntu:latest`:
+We strongly recommend you to upgrade deployment by modifying the YAML Manifest file or values.yaml file. For example,
+you can update any fields in the file, e.g. the image version, replicas, and resources.
 
-```bash
-kubectl -n starrocks patch warehouse wh1 --type='merge' -p '{"spec":{"template":{"image":"starrocks-enterprise/cn-ubuntu:latest"}}}'
+> We don't suggest you to modify the deployment of warehouse by `kubectl edit`.
+
+#### 3.2.1 Update the YAML manifest
+
+For example, upgrade the image version:
+
+```yaml
+apiVersion: starrocks.com/v1
+kind: StarRocksWarehouse
+metadata:
+  # A warehouse will be created with this name in StarRocks Cluster. If you are using dash(-) in the name, the warehouse
+  # name created by StarRocks will be replaced with underscore(_).
+  name: wh1
+
+spec:
+  # Make sure the StarRocks cluster exists in the same namespace.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
+  starRocksCluster: kube-starrocks
+  template:
+    envVars:
+      - name: TZ
+        value: Asia/Shanghai
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:3.2.7-ee  # this line is updated
+    replicas: 1
+    limits:
+      cpu: 8
+      memory: 8Gi
+    requests:
+      cpu: 8
+      memory: 8Gi
 ```
 
-### 3.3. Scale out warehouse
+Apply the updated YAML manifest:
 
-Run the following command to scale out the warehouse to 9 nodes:
-
-```bash
-kubectl -n starrocks patch warehouse wh1 --type='merge' -p '{"spec":{"template":{"replicas":9}}}'
+```console
+kubectl -n starrocks apply -f wh1.yaml
 ```
 
-### 3.4 Delete the Warehouse
+### 3.2.2 Update values.yaml for Helm chart
+
+For example, upgrade the image version:
+
+```yaml
+# wh1-values.yaml
+spec:
+  # Make sure the StarRocks cluster exists in the same namespace.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
+  starRocksClusterName: kube-starrocks
+  replicas: 1
+  image:
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
+    tag: "3.2.7-ee" # this line is updated
+  resources:
+    limits:
+      cpu: 8
+      memory: 8Gi
+    requests:
+      cpu: 8
+      memory: 8Gi
+```
+
+Then upgrade the warehouse by the following command:
+
+```console
+helm -n starrocks upgrade wh1 starrocks-community/warehouse -f wh1-values.yaml
+```
+
+## 4. Delete the Warehouse
 
 If you deployed the warehouse by YAML manifest, you can delete it by running the following command:
 
-```bash
-kubectl delete -f warehouse.yaml
+```console
+kubectl delete -f wh1.yaml
 ```
 
 If you deployed the warehouse by Helm chart, you can delete it by running the following command:
 
-```bash
+```console
 helm -n starrocks uninstall wh1
 ```

@@ -1,5 +1,5 @@
 {{- define "starrockswarehouse.name" -}}
-{{- default .Chart.Name .Values.nameOverride -}}
+{{ .Release.Name }}
 {{- end }}
 
 {{- define "starrockswarehouse.namespace" -}}
