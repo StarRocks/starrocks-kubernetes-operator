@@ -595,7 +595,7 @@ starrocks:
     # Note: Once set, the following fields will not be allowed to be modified.
     storageSpec:
       # Specifies the name prefix of the volumes to mount. If left unspecified,
-      # `emptyDir` volumes will be used by default and only for log.
+      # `emptyDir` volumes will be used, which are ephemeral, and only for log.
       # The logs will be lost on pod restart when using emptyDir volumes.
       #
       # For persistent storage, specify a volume name prefix.
