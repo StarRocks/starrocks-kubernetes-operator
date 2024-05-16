@@ -37,7 +37,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
    nameOverride: "wh1"
    spec:
      # Make sure the StarRocks cluster exists in the same namespace.
-     # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+     # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
      starRocksClusterName: kube-starrocks
      replicas: 1
      image: your-enterprise-image-version-for-cn

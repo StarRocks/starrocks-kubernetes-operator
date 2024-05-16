@@ -48,7 +48,7 @@ metadata:
 
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksCluster: kube-starrocks
   template:
     envVars:
@@ -86,7 +86,7 @@ First, prepare a values.yaml file for Warehouse chart.
 # wh1-values.yaml
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksClusterName: kube-starrocks
   replicas: 1
   image:
@@ -150,7 +150,7 @@ metadata:
 
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksCluster: kube-starrocks
   template:
     envVars:
@@ -180,7 +180,7 @@ For example, upgrade the image version:
 # wh1-values.yaml
 spec:
   # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
   starRocksClusterName: kube-starrocks
   replicas: 1
   image:
