@@ -82,24 +82,31 @@ See [Warehouse Chart](../helm-charts/charts/warehouse/README.md) for how to depl
 Here is a values.yaml file example:
 
 ```yaml
-spec: # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
-  starRocksClusterName: kube-starrocks
-  replicas: 1
-  image: your-enterprise-image-version-for-cn
-  resources:
-    limits:
-      cpu: 8
-      memory: 8Gi
-    requests:
-      cpu: 8
-      memory: 8Gi
+# The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
+nameOverride: "wh1"
+spec:
+   # Make sure the StarRocks cluster exists in the same namespace.
+   # You can check it by running `kubectl get starrocksclusters.starrocks.com`.
+   starRocksClusterName: kube-starrocks
+   replicas: 1
+   image: your-enterprise-image-version-for-cn
+   resources:
+      limits:
+         cpu: 8
+         memory: 8Gi
+      requests:
+         cpu: 8
+         memory: 8Gi
 ```
 
 Then deploy a warehouse by the following command:
 
 ```bash
-helm -n starrocks install wh1 starrocks-community/warehouse -f values.yaml
+# Use the above values.yaml to deploy a warehouse in namespace starrocks
+helm -n starrocks install warehouse starrocks-community/warehouse -f values.yaml
+
+# Restart the StarRocks operator to make it aware of the new CRD
+kubectl -n starrocks rollout restart deployment kube-starrocks-operator
 ```
 
 ## 3. Manage Warehouse
