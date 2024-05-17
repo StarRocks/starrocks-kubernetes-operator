@@ -123,4 +123,4 @@ starrocksFESpec:
 
 ## 5. Collecting Logs into Datadog
 
-Refer to: [Datadog](../integration/integration-with-datadog.md).
+Refer to: [Datadog](./integration/integration-with-datadog.md).
