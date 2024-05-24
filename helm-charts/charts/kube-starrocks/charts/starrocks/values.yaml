@@ -15,6 +15,10 @@ initPassword:
   # The secret name that contains password, the key of the secret is "password", and you should create it first.
   passwordSecret: ""
 
+# imagePullSecrets allows you to use secrets to pull images for pods.
+imagePullSecrets: []
+  # - name: "image-pull-secret"
+
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 
