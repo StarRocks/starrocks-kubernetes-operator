@@ -6,4 +6,4 @@ ERROR: Installation of the ServiceMonitor CR for the Prometheus operator failed.
 
 Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} starrocks chart. Please wait for a few minutes for the cluster to be ready.
 
-Please see the values.yaml for more operation information: https://github.com/yandongxiao/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml
+Please see the values.yaml for more operation information: https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml
