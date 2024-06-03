@@ -447,15 +447,11 @@ starrocks:
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
-    # number of replicas to deploy for cn component.
-    # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the starrocksCnSpec
-    # field, the replicas field of the cn statefulset created by the operator will be set to null. This ensures that the replicas
-    # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to CN, then the pods
-    # of Cn will not be recreated.
-    # Why should the replicas field in this values.yaml be set to null? This is the default replicas. When the user removes
-    # the autoScalingPolicy fields from the starrocksCnSpec, the corresponding HPA object will be deleted. And when the replicas
-    # field is set, the number of pods will immediately revert to the replicas count, even though the user did not specify
-    # the replicas count in their own values.yaml.
+    # number of replicas to deploy for CN component.
+    #
+    # When autoscaling of the CN statefulset is used the `replicas` field is set to null
+    # by the operator, and autoscaling is controlled by Horizontal Pod Autoscaling (HPA).
+    # You should only uncomment and set the `replicas` field if autoscaling is disabled.
     # replicas: 1
     image:
       # image sliced by "repository:tag"
@@ -584,12 +580,12 @@ starrocks:
       #       selectPolicy: Disabled
     # define resources requests and limits for cn pods.
     resources:
+      requests:
+        cpu: 4
+        memory: 8Gi
       # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
       limits:
         cpu: 8
-        memory: 8Gi
-      requests:
-        cpu: 4
         memory: 8Gi
     # specify storageclass name and request size.
     # Note: Once set, the following fields will not be allowed to be modified.
@@ -964,10 +960,10 @@ starrocks:
       repository: ""
       tag: ""
     resources:
-      limits:
+      requests:
         cpu: 1
         memory: 2Gi
-      requests:
+      limits:
         cpu: 1
         memory: 2Gi
     # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
