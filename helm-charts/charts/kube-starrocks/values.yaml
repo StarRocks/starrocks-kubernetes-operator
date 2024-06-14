@@ -223,6 +223,17 @@ starrocks:
         #         operator: In
         #         values:
         #         - target-host-name
+        # podAntiAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #   - labelSelector:
+        #       matchExpressions:
+        #       - key: app.kubernetes.io/component
+        #         operator: In
+        #         values:
+        #         - fe
+        #         - be
+        #         - cn
+        #     topologyKey: "kubernetes.io/hostname"
       # the pod labels for user select or classify pods.
       podLabels: {}
   
@@ -314,6 +325,15 @@ starrocks:
       #         operator: In
       #         values:
       #         - target-host-name
+      # podAntiAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #   - labelSelector:
+      #       matchExpressions:
+      #       - key: app.kubernetes.io/component
+      #         operator: In
+      #         values:
+      #         - fe
+      #     topologyKey: "kubernetes.io/hostname"
     # Node tolerations for fe pod scheduling to nodes with taints
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
     # Note: It will affect the scheduling of the init-password job.
@@ -541,6 +561,15 @@ starrocks:
       #             operator: In
       #             values:
       #               - target-host-name
+      # podAntiAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #   - labelSelector:
+      #       matchExpressions:
+      #       - key: app.kubernetes.io/component
+      #         operator: In
+      #         values:
+      #         - cn
+      #     topologyKey: "kubernetes.io/hostname"
     # Node tolerations for cn pod scheduling to nodes with taints
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
     tolerations: []
@@ -793,6 +822,15 @@ starrocks:
       #         operator: In
       #         values:
       #         - target-host-name
+      # podAntiAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #   - labelSelector:
+      #       matchExpressions:
+      #       - key: app.kubernetes.io/component
+      #         operator: In
+      #         values:
+      #         - be
+      #     topologyKey: "kubernetes.io/hostname"
     # Node tolerations for be pod scheduling to nodes with taints
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
     tolerations: []
@@ -998,6 +1036,15 @@ starrocks:
       #         operator: In
       #         values:
       #         - target-host-name
+      # podAntiAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #   - labelSelector:
+      #       matchExpressions:
+      #       - key: app.kubernetes.io/component
+      #         operator: In
+      #         values:
+      #         - fe-proxy
+      #     topologyKey: "kubernetes.io/hostname"
     # Node tolerations for fe proxy pod scheduling to nodes with taints
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
     tolerations: []
