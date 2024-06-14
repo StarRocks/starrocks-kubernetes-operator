@@ -12,6 +12,7 @@ type loadInterface interface {
 	GetSchedulerName() string
 	GetNodeSelector() map[string]string
 	GetAffinity() *corev1.Affinity
+	GetTopologySpreadConstraints() []corev1.TopologySpreadConstraint
 	GetTolerations() []corev1.Toleration
 	GetStartupProbeFailureSeconds() *int32
 	GetLivenessProbeFailureSeconds() *int32
@@ -82,6 +83,11 @@ type StarRocksLoadSpec struct {
 	// (Optional) Tolerations for scheduling pods onto some dedicated nodes
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// (Optional) TopologySpreadConstraints for spreading pods across failure-domains
+	// More info: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+	// +optional
+	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
 
 	// Service defines the template for the associated Kubernetes Service object.
 	// +optional
@@ -244,6 +250,10 @@ func (spec *StarRocksLoadSpec) GetServiceAccount() string {
 
 func (spec *StarRocksLoadSpec) GetAffinity() *corev1.Affinity {
 	return spec.Affinity
+}
+
+func (spec *StarRocksLoadSpec) GetTopologySpreadConstraints() []corev1.TopologySpreadConstraint {
+	return spec.TopologySpreadConstraints
 }
 
 func (spec *StarRocksLoadSpec) GetTolerations() []corev1.Toleration {

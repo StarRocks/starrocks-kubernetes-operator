@@ -265,6 +265,7 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 		ServiceAccountName:            spec.GetServiceAccount(),
 		TerminationGracePeriodSeconds: spec.GetTerminationGracePeriodSeconds(),
 		Affinity:                      spec.GetAffinity(),
+		TopologySpreadConstraints:     spec.GetTopologySpreadConstraints(),
 		Tolerations:                   spec.GetTolerations(),
 		ImagePullSecrets:              spec.GetImagePullSecrets(),
 		NodeSelector:                  spec.GetNodeSelector(),

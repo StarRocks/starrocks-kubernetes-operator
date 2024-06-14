@@ -208,6 +208,15 @@ starrocks:
         #   operator: "Equal|Exists"
         #   value: "value"
         #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+      # topologySpreadConstraints for scheduling pods across failure-domains.
+      # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+      topologySpreadConstraints: []
+        # - maxSkew: 1
+        #   topologyKey: topology.kubernetes.io/zone
+        #   whenUnsatisfiable: DoNotSchedule|ScheduleAnyway
+        #   labelSelector:
+        #     matchLabels:
+        #       foo: bar
       # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
       # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
       nodeSelector: {}
@@ -342,6 +351,15 @@ starrocks:
       #   operator: "Equal|Exists"
       #   value: "value"
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # topologySpreadConstraints for scheduling pods across failure-domains.
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+    topologySpreadConstraints: []
+      # - maxSkew: 1
+      #   topologyKey: topology.kubernetes.io/zone
+      #   whenUnsatisfiable: DoNotSchedule|ScheduleAnyway
+      #   labelSelector:
+      #     matchLabels:
+      #       foo: bar
     # resources for fe pod.
     resources:
       requests:
@@ -577,6 +595,15 @@ starrocks:
       #   operator: "Equal|Exists"
       #   value: "value"
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # topologySpreadConstraints for scheduling pods across failure-domains.
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+    topologySpreadConstraints: []
+      # - maxSkew: 1
+      #   topologyKey: topology.kubernetes.io/zone
+      #   whenUnsatisfiable: DoNotSchedule|ScheduleAnyway
+      #   labelSelector:
+      #     matchLabels:
+      #       foo: bar
     autoScalingPolicy: {}
       # you can select different versions of HPA (Horizontal Pod Autoscaler) based on the Kubernetes version you are
       # using to ensure compatibility and adaptability. the default version is v2beta2.
@@ -838,6 +865,15 @@ starrocks:
       #   operator: "Equal|Exists"
       #   value: "value"
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # topologySpreadConstraints for scheduling pods across failure-domains.
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+    topologySpreadConstraints: []
+      # - maxSkew: 1
+      #   topologyKey: topology.kubernetes.io/zone
+      #   whenUnsatisfiable: DoNotSchedule|ScheduleAnyway
+      #   labelSelector:
+      #     matchLabels:
+      #       foo: bar
     # resources for be pod.
     resources:
       requests:

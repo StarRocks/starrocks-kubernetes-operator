@@ -591,6 +591,13 @@ func (in *StarRocksLoadSpec) DeepCopyInto(out *StarRocksLoadSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.TopologySpreadConstraints != nil {
+		in, out := &in.TopologySpreadConstraints, &out.TopologySpreadConstraints
+		*out = make([]corev1.TopologySpreadConstraint, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.Service != nil {
 		in, out := &in.Service, &out.Service
 		*out = new(StarRocksService)

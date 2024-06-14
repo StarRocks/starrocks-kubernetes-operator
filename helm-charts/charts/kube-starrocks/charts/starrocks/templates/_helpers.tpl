@@ -509,6 +509,39 @@ Get the value of the affinity field in the starrocksCnSpec
 {{- end -}}
 
 {{/*
+Get the value of the topologySpreadConstraints field in the starrocksFESpec
+*/}}
+{{- define "starrockscluster.fe.topologySpreadConstraints" -}}
+{{- if .Values.starrocksFESpec.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksFESpec.topologySpreadConstraints -}}
+{{- else if .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the topologySpreadConstraints field in the starrocksBeSpec
+*/}}
+{{- define "starrockscluster.be.topologySpreadConstraints" -}}
+{{- if .Values.starrocksBeSpec.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksBeSpec.topologySpreadConstraints -}}
+{{- else if .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the value of the topologySpreadConstraints field in the starrocksCnSpec
+*/}}
+{{- define "starrockscluster.cn.topologySpreadConstraints" -}}
+{{- if .Values.starrocksCnSpec.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksCnSpec.topologySpreadConstraints -}}
+{{- else if .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- toYaml .Values.starrocksCluster.componentValues.topologySpreadConstraints -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Get the value of the runAsNonRoot field in the starrocksFESpec
 */}}
 {{- define "starrockscluster.fe.runAsNonRoot" -}}
