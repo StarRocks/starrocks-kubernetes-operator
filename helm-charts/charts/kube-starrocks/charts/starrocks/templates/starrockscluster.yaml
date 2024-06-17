@@ -156,6 +156,10 @@ spec:
     tolerations:
       {{- include "starrockscluster.fe.tolerations" . | nindent 6 }}
     {{- end }}
+    {{- if or .Values.starrocksFESpec.topologySpreadConstraints .Values.starrocksCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "starrockscluster.fe.topologySpreadConstraints" . | nindent 6 }}
+    {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksFESpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksFESpec.startupProbeFailureSeconds }}
     startupProbeFailureSeconds: {{ .Values.starrocksFESpec.startupProbeFailureSeconds }}
@@ -389,6 +393,10 @@ spec:
     tolerations:
       {{- include "starrockscluster.be.tolerations" . | nindent 6 }}
     {{- end }}
+    {{- if or .Values.starrocksBeSpec.topologySpreadConstraints .Values.starrocksCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "starrockscluster.be.topologySpreadConstraints" . | nindent 6 }}
+    {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksBeSpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksBeSpec.startupProbeFailureSeconds }}
     startupProbeFailureSeconds: {{ .Values.starrocksBeSpec.startupProbeFailureSeconds }}
@@ -575,6 +583,10 @@ spec:
     {{- if or .Values.starrocksCnSpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
     tolerations:
       {{- include "starrockscluster.cn.tolerations" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.topologySpreadConstraints .Values.starrocksCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "starrockscluster.cn.topologySpreadConstraints" . | nindent 6 }}
     {{- end }}
     terminationGracePeriodSeconds: {{ .Values.starrocksCnSpec.terminationGracePeriodSeconds }}
     {{- if .Values.starrocksCnSpec.startupProbeFailureSeconds }}
