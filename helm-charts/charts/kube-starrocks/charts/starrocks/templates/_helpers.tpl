@@ -111,6 +111,14 @@ be.conf: |
 {{- print "/opt/starrocks/be/log" }}
 {{- end }}
 
+{{- define "starrockscluster.be.spill.suffix" -}}
+{{- print "-spill" }}
+{{- end }}
+
+{{- define "starrockscluster.be.spill.path" -}}
+{{- print "/opt/starrocks/be/spill" }}
+{{- end }}
+
 {{- define "starrockscluster.cn.data.suffix" -}}
 {{- print "-data" }}
 {{- end }}
@@ -129,6 +137,14 @@ be.conf: |
 
 {{- define "starrockscluster.cn.log.path" -}}
 {{- print "/opt/starrocks/cn/log" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.spill.suffix" -}}
+{{- print "-spill" }}
+{{- end }}
+
+{{- define "starrockscluster.cn.spill.path" -}}
+{{- print "/opt/starrocks/cn/spill" }}
 {{- end }}
 
 {{- define "starrockscluster.entrypoint.script.name" -}}

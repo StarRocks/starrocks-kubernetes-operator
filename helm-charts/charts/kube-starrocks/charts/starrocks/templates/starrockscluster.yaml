@@ -452,6 +452,10 @@ spec:
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksBeSpec.storageSpec.logStorageSize }}"
       mountPath: {{template "starrockscluster.be.log.path" . }}
+    - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.spill.suffix" . }}
+      storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
+      storageSize: "{{ .Values.starrocksBeSpec.storageSpec.spillStorageSize}}"
+      mountPath: {{template "starrockscluster.be.spill.path" . }}
     {{- end }}
     {{- if .Values.starrocksBeSpec.emptyDirs }}
     {{- range .Values.starrocksBeSpec.emptyDirs }}
@@ -696,6 +700,10 @@ spec:
       storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksCnSpec.storageSpec.logStorageSize }}"
       mountPath: {{template "starrockscluster.cn.log.path" . }}
+    - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.spill.suffix" . }}
+      storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
+      storageSize: "{{ .Values.starrocksCnSpec.storageSpec.spillStorageSize}}"
+      mountPath: {{template "starrockscluster.cn.spill.path" . }}
     {{- end }}
     {{- if .Values.starrocksCnSpec.emptyDirs }}
     {{- range .Values.starrocksCnSpec.emptyDirs }}

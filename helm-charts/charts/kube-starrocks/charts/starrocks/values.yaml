@@ -553,6 +553,10 @@ starrocksCnSpec:
     # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
     logStorageSize: 1Gi
+    # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/cn/spill.
+    # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
+    # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/cn/spill.
+    spillStorageSize: 0Gi
   # mount emptyDir volumes if necessary.
   # Note: please use storageSpec field for persistent storage data and log.
   emptyDirs: []
@@ -795,6 +799,10 @@ starrocksBeSpec:
     # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
     logStorageSize: 1Gi
+    # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/be/spill.
+    # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
+    # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/be/spill.
+    spillStorageSize: 0Gi
   # mount emptyDir volumes if necessary.
   # Note: please use storageSpec field for persistent storage data and log.
   emptyDirs: []
