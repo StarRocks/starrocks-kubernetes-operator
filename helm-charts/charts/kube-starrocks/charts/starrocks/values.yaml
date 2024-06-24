@@ -179,6 +179,9 @@ starrocksFESpec:
       # e.g. specify a dedicated node port for fe service by containerPort.
       # - nodePort: 30030 # The range of valid ports is 30000-32767
       #   containerPort: 8030 # The port exported on the container
+    # specify the source IP ranges for the load balancer when the type=LoadBalancer.
+    loadBalancerSourceRanges: []
+      # - 10.0.0.0/8
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -427,6 +430,9 @@ starrocksCnSpec:
       # e.g. specify a dedicated node port for cn service by containerPort.
       # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
+    # specify the source IP ranges for the load balancer when the type=LoadBalancer.
+    loadBalancerSourceRanges: []
+      # - 10.0.0.0/8
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -701,6 +707,9 @@ starrocksBeSpec:
       # e.g. specify a dedicated node port for be service by containerPort.
       # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
+    # specify the source IP ranges for the load balancer when the type=LoadBalancer.
+    loadBalancerSourceRanges: []
+      # - 10.0.0.0/8
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -954,6 +963,9 @@ starrocksFeProxySpec:
       # e.g. specify a dedicated node port for fe proxy service by containerPort.
       # - nodePort: 30080 # The range of valid ports is 30000-32767
       #   containerPort: 8080 # The port on the container to expose
+    # specify the source IP ranges for the load balancer when the type=LoadBalancer.
+    loadBalancerSourceRanges: []
+      # - 10.0.0.0/8
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
   # - name: "image-pull-secret"

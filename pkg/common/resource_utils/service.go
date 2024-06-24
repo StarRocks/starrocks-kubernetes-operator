@@ -44,14 +44,15 @@ const (
 
 // HashService service hash components
 type hashService struct {
-	name        string
-	namespace   string
-	finalizers  []string
-	ports       []corev1.ServicePort
-	selector    map[string]string
-	serviceType corev1.ServiceType
-	labels      map[string]string
-	annotations map[string]string
+	name                     string
+	namespace                string
+	finalizers               []string
+	ports                    []corev1.ServicePort
+	selector                 map[string]string
+	serviceType              corev1.ServiceType
+	labels                   map[string]string
+	annotations              map[string]string
+	loadBalancerSourceRanges []string
 }
 
 // BuildExternalService build the external service. not have selector
@@ -70,18 +71,19 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 		},
 	}
 
-	setServiceType(spec.GetService(), &svc)
-	anno := getServiceAnnotations(spec.GetService())
+	starRocksService := spec.GetService()
+	setServiceType(starRocksService, &svc)
+	anno := getServiceAnnotations(starRocksService)
 	switch spec.(type) {
 	case *srapi.StarRocksFeSpec:
-		srPorts = getFeServicePorts(config, spec.GetService())
+		srPorts = getFeServicePorts(config, starRocksService)
 	case *srapi.StarRocksBeSpec:
-		srPorts = getBeServicePorts(config, spec.GetService())
+		srPorts = getBeServicePorts(config, starRocksService)
 	case *srapi.StarRocksCnSpec:
-		srPorts = getCnServicePorts(config, spec.GetService())
+		srPorts = getCnServicePorts(config, starRocksService)
 	case *srapi.StarRocksFeProxySpec:
 		srPorts = []srapi.StarRocksServicePort{
-			mergePort(spec.GetService(), srapi.StarRocksServicePort{
+			mergePort(starRocksService, srapi.StarRocksServicePort{
 				Name:          FE_PORXY_HTTP_PORT_NAME,
 				Port:          FE_PROXY_HTTP_PORT,
 				ContainerPort: FE_PROXY_HTTP_PORT,
@@ -114,6 +116,10 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	svc.Annotations = anno
 	anno[srapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
 	svc.Annotations = anno
+
+	if starRocksService != nil && starRocksService.LoadBalancerSourceRanges != nil {
+		svc.Spec.LoadBalancerSourceRanges = starRocksService.LoadBalancerSourceRanges
+	}
 	return svc
 }
 
@@ -251,14 +257,15 @@ func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
 
 func serviceHashObject(svc *corev1.Service) hashService {
 	return hashService{
-		name:        svc.Name,
-		namespace:   svc.Namespace,
-		finalizers:  svc.Finalizers,
-		ports:       svc.Spec.Ports,
-		selector:    svc.Spec.Selector,
-		serviceType: svc.Spec.Type,
-		labels:      svc.Labels,
-		annotations: svc.Annotations,
+		name:                     svc.Name,
+		namespace:                svc.Namespace,
+		finalizers:               svc.Finalizers,
+		ports:                    svc.Spec.Ports,
+		loadBalancerSourceRanges: svc.Spec.LoadBalancerSourceRanges,
+		selector:                 svc.Spec.Selector,
+		serviceType:              svc.Spec.Type,
+		labels:                   svc.Labels,
+		annotations:              svc.Annotations,
 	}
 }
 
