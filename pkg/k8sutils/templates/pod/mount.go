@@ -10,9 +10,23 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 )
 
-func IsSpecialStorageClass(storageClassName *string) bool {
-	return storageClassName != nil && (common.EqualsIgnoreCase(*storageClassName, v1.EmptyDir) ||
-		common.EqualsIgnoreCase(*storageClassName, v1.HostPath))
+// SpecialStorageClassName returns the special storage class name of the storage volume, else return "".
+// Now we support HostPath and EmptyDir as special storage class.
+func SpecialStorageClassName(sv v1.StorageVolume) string {
+	if sv.HostPath != nil {
+		return v1.HostPath
+	}
+
+	storageClassName := sv.StorageClassName
+	if storageClassName != nil {
+		if common.EqualsIgnoreCase(*storageClassName, v1.EmptyDir) {
+			return v1.EmptyDir
+		} else if common.EqualsIgnoreCase(*storageClassName, v1.HostPath) {
+			return v1.HostPath
+		}
+	}
+
+	return ""
 }
 
 // MountStorageVolumes parse StorageVolumes from spec and mount them to pod.
@@ -24,14 +38,12 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 		if strings.HasPrefix(sv.StorageSize, "0") {
 			continue
 		}
-		if IsSpecialStorageClass(sv.StorageClassName) {
-			switch *sv.StorageClassName {
-			case v1.EmptyDir:
-				volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
-			case v1.HostPath:
-				volumes, volumeMounts = MountHostPathVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.HostPath)
-			}
-		} else {
+		switch name := SpecialStorageClassName(sv); name {
+		case v1.EmptyDir:
+			volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+		case v1.HostPath:
+			volumes, volumeMounts = MountHostPathVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.HostPath)
+		default:
 			volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
 		}
 	}
