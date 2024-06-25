@@ -1319,6 +1319,10 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
+                      loadBalancerSourceRanges:
+                        items:
+                          type: string
+                        type: array
                       ports:
                         items:
                           properties:
@@ -3652,6 +3656,10 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
+                      loadBalancerSourceRanges:
+                        items:
+                          type: string
+                        type: array
                       ports:
                         items:
                           properties:
@@ -4933,6 +4941,10 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
+                      loadBalancerSourceRanges:
+                        items:
+                          type: string
+                        type: array
                       ports:
                         items:
                           properties:
@@ -6327,6 +6339,10 @@ spec:
                         type: object
                       loadBalancerIP:
                         type: string
+                      loadBalancerSourceRanges:
+                        items:
+                          type: string
+                        type: array
                       ports:
                         items:
                           properties:

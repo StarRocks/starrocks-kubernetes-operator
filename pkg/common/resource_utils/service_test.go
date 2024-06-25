@@ -103,7 +103,7 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 					Name:      "test-warehouse-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "1671283410",
+						srapi.ComponentResourceHash: "2811429284",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(warehouse, warehouse.GroupVersionKind())
@@ -218,7 +218,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "237701170",
+						srapi.ComponentResourceHash: "1826250052",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -254,7 +254,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-be-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "1565507602",
+						srapi.ComponentResourceHash: "2188319972",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -287,7 +287,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2848177640",
+						srapi.ComponentResourceHash: "4058356074",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
