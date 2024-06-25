@@ -13,10 +13,6 @@ import (
 // SpecialStorageClassName returns the special storage class name of the storage volume, else return "".
 // Now we support HostPath and EmptyDir as special storage class.
 func SpecialStorageClassName(sv v1.StorageVolume) string {
-	if sv.HostPath != nil {
-		return v1.HostPath
-	}
-
 	storageClassName := sv.StorageClassName
 	if storageClassName != nil {
 		if common.EqualsIgnoreCase(*storageClassName, v1.EmptyDir) {
@@ -24,6 +20,11 @@ func SpecialStorageClassName(sv v1.StorageVolume) string {
 		} else if common.EqualsIgnoreCase(*storageClassName, v1.HostPath) {
 			return v1.HostPath
 		}
+		return ""
+	}
+
+	if sv.HostPath != nil {
+		return v1.HostPath
 	}
 
 	return ""

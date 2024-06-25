@@ -343,3 +343,74 @@ func TestMountPersistentVolumeClaim(t *testing.T) {
 		})
 	}
 }
+
+func TestSpecialStorageClassName(t *testing.T) {
+	type args struct {
+		sv v1.StorageVolume
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test storage volume with empty dir",
+			args: args{
+				sv: v1.StorageVolume{
+					StorageClassName: func() *string { s := v1.EmptyDir; return &s }(),
+				},
+			},
+			want: v1.EmptyDir,
+		},
+		{
+			name: "test storage volume with host path",
+			args: args{
+				sv: v1.StorageVolume{
+					StorageClassName: func() *string { s := v1.HostPath; return &s }(),
+				},
+			},
+			want: v1.HostPath,
+		},
+		{
+			name: "test storage volume with persistent volume claim",
+			args: args{
+				sv: v1.StorageVolume{
+					StorageClassName: func() *string { s := "pvc"; return &s }(),
+				},
+			},
+			want: "",
+		},
+		{
+			name: "test storage volume with host path",
+			args: args{
+				sv: v1.StorageVolume{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: "",
+						Type: nil,
+					},
+				},
+			},
+			want: v1.HostPath,
+		},
+		{
+			name: "test storage volume with host path and pvc name",
+			args: args{
+				sv: v1.StorageVolume{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: "",
+						Type: nil,
+					},
+					StorageClassName: func() *string { s := "pvc"; return &s }(),
+				},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SpecialStorageClassName(tt.args.sv); got != tt.want {
+				t.Errorf("SpecialStorageClassName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
