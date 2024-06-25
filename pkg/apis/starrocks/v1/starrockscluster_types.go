@@ -350,6 +350,10 @@ func (storageVolume *StorageVolume) Validate() error {
 				return ErrHostPathRequired
 			}
 		}
+	} else if storageVolume.HostPath != nil {
+		if storageVolume.HostPath.Path == "" {
+			return ErrHostPathRequired
+		}
 	}
 	return nil
 }

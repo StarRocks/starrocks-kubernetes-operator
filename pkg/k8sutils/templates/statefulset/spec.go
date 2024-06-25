@@ -35,7 +35,7 @@ const STARROCKS_WAREHOUSE_FINALIZER = "starrocks.com.starrockswarehouse/protecti
 func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range volumes {
-		if pod.IsSpecialStorageClass(vm.StorageClassName) {
+		if name := pod.SpecialStorageClassName(vm); name != "" {
 			continue
 		}
 		if strings.HasPrefix(vm.StorageSize, "0") {

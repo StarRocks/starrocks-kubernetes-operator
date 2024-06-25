@@ -274,8 +274,9 @@ starrocksFESpec:
     # For persistent storage, specify a volume name prefix.
     # For example, using `fe` as the name prefix would be appropriate.
     name: ""
-    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-    # you must set name when you set storageClassName
+    # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+    # You must set name when you set storageClassName.
+    # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
     # the persistent volume size， default 10Gi.
     # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
@@ -549,8 +550,9 @@ starrocksCnSpec:
     # For persistent storage, specify a volume name prefix.
     # For example, using `cn` as the name prefix would be appropriate.
     name: ""
-    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-    # you must set name when you set storageClassName
+    # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+    # You must set name when you set storageClassName
+    # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
     # the storage size of persistent volume for data.
     storageSize: 1Ti
@@ -570,7 +572,10 @@ starrocksCnSpec:
     # - name: tmp-data
     #   mountPath: /tmp
   # mount hostPath volumes if necessary.
-  # Note: please use storageSpec field for persistent storage data and log.
+  # Note:
+  #   1. please use storageSpec field for persistent storage data and log.
+  #   2. please use podAntiAffinity to avoid the pods are scheduled on the same node.
+  #   3. If you use hostPath to mount the volume of cache data, cache will be lost when the pod is restarted.
   hostPaths: []
     # e.g. mount a hostPath volume to /tmp
     # - name: tmp-data
@@ -798,8 +803,9 @@ starrocksBeSpec:
     # For persistent storage, specify a volume name prefix.
     # For example, using `be` as the name prefix would be appropriate.
     name: ""
-    # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
-    # you must set name when you set storageClassName
+    # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+    # You must set name when you set storageClassName
+    # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
     # the storage size of persistent volume for data.
     storageSize: 1Ti
