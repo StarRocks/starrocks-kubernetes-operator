@@ -1582,6 +1582,21 @@ Kubernetes core/v1.Affinity
 </tr>
 <tr>
 <td>
+<code>topologySpreadConstraints</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#topologyspreadconstraint-v1-core">
+[]Kubernetes core/v1.TopologySpreadConstraint
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>(Optional) TopologySpreadConstraints for spreading pods across failure-domains
+More info: <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/</a></p>
+</td>
+</tr>
+<tr>
+<td>
 <code>service</code><br/>
 <em>
 <a href="#starrocks.com/v1.StarRocksService">
@@ -1845,6 +1860,21 @@ This field may be removed in a future API version.</p>
 You can override the default port information by specifying the same StarRocksServicePort.Name in the ports list.
 e.g. if you want to use a dedicated node port, you can just specify the StarRocksServicePort.Name and
 StarRocksServicePort.NodePort field.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>loadBalancerSourceRanges</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>If specified and supported by the platform, this will restrict traffic through the cloud-provider
+load-balancer will be restricted to the specified client IPs. This field will be ignored if the
+cloud-provider does not support the feature.
+More info: <a href="https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/">https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/</a></p>
 </td>
 </tr>
 </tbody>
@@ -2243,5 +2273,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>78759be</code>.
+on git commit <code>35451e5</code>.
 </em></p>

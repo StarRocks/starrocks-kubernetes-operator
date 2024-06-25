@@ -1,12 +1,43 @@
 # CHANGELOG
 
+## [v1.9.7](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.7)
+
+Release Notes for starrocks-kubernetes-operator v1.9.7
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.7. This version has the following
+enhancements and bug fixes:
+
+1. [Operator] Fix the problem that FE proxy will fail when FE external service is
+   recreated [#557](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/557).
+2. [Operator] Add loadBalancerSourceRanges field to support setting the source IP range for the load
+   balancer [#551](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/551).
+3. [Operator] Add topologySpreadConstraints field to support setting the topology spread constraints for
+   pods [#546](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/546).
+4. [Operator] Add CRD version information to CRD
+   annotations [#544](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/544)
+5. [Operator] Make it easy to configure the hostPath
+   volume [#552](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/552)
+6. [Chart] Add spill storage volume for BE and
+   CN [#547](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/547)
+7. [Chart] Remove JAVA_OPTS_FOR_JDK_9 and JAVA_OPTS_FOR_JDK_11 env from fe config, **this will cause the pods of FE to
+   restart if you are using the default config of FE in values.yaml**
+   [#542](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/542)
+8. [Documentation] We have added or updated some documents to help users deploy and manage StarRocks clusters on
+   Kubernetes. [#524](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/524) [#525](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/525) [#527](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/527) [#530](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/530) [#531](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/531) [#532](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/532) [#536](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/536) [#538](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/538).
+
+We thank our community for their contributions and feedback. For a detailed list of changes and updates, please refer to
+the GitHub repository. Happy deploying!
+
 ## [v1.9.6](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.6)
 
 Release Notes for starrocks-kubernetes-operator v1.9.6
 
-We are excited to announce the release of StarRocks Kubernetes Operator v1.9.6. This version has the following enhancements:
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.6. This version has the following
+enhancements:
 
-1. Support command and args(#516) in StarRocksCluster spec. You can easily customize the command and args if you are using helm chart.
+1. Support command and args[#516](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/516) in
+   StarRocksCluster spec. You can easily customize the command and args if you are
+   using helm chart.
    Below is a code snippet from values.yaml for your reference:
    ```yaml
     entrypoint:
@@ -15,8 +46,10 @@ We are excited to announce the release of StarRocks Kubernetes Operator v1.9.6. 
         echo "do something before start cn"
         exec /opt/starrocks/cn_entrypoint.sh $FE_SERVICE_NAME
    ```
-2. Support ImagePullPolicy in StarRocksCluster spec(#514).
-3. Support to use namespaced scope permission to deploy warehouses(#513).
+2. Support ImagePullPolicy in StarRocksCluster
+   spec[#514](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/514).
+3. Support to use namespaced scope permission to deploy
+   warehouses[#513](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/513).
 
 ## [v1.9.5](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.5)
 
