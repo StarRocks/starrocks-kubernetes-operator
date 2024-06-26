@@ -27,7 +27,7 @@ func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *sra
 
 	feSearchServiceName := service.SearchServiceName(src.Name, feSpec)
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	proxyPass := fmt.Sprintf("http://%s:%d", feExternalServiceName, httpPort)
+	proxyPass := fmt.Sprintf("http://%s.%s.%s:%d", feExternalServiceName, src.GetNamespace(), "svc.cluster.local", httpPort)
 
 	resolver := feProxySpec.Resolver
 	if resolver == "" {
@@ -72,7 +72,7 @@ http {
 
   server {
     listen 8080;
-    resolver %[1]s;
+    resolver %[1]s valid=10s;
     proxy_intercept_errors on;
     recursive_error_pages on;
 
@@ -82,7 +82,9 @@ http {
     }
 
     location / {
-      proxy_pass %[2]s;
+      # see https://serverfault.com/questions/240476/how-to-force-nginx-to-resolve-dns-of-a-dynamic-hostname-everytime-when-doing-p/593003#593003 for why we use set
+      set $fe_service "%[2]s";
+      proxy_pass $fe_service;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -91,7 +93,8 @@ http {
     }
 
     location /api/transaction/load {
-      proxy_pass %[2]s;
+      set $fe_service "%[2]s";
+      proxy_pass $fe_service;
       proxy_pass_request_body off;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
@@ -101,7 +104,8 @@ http {
     }
 
     location ~ ^/api/.*/.*/_stream_load$ {
-      proxy_pass %[2]s;
+      set $fe_service "%[2]s";
+      proxy_pass $fe_service;
       proxy_pass_request_body off;
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
