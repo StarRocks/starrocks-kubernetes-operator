@@ -73,5 +73,5 @@ for more details about how to configure `starRocksFeProxySpec`.
 
 ## Deploy Fe Proxy Using StarRocksCluster CR
 
-If you install StarRocks with StarRocksCluster CR yaml, please see [deploy_a_starrocks_cluster_with_fe_proxy.md](
-../examples/starrocks/deploy_a_starrocks_cluster_with_fe_proxy.yaml)
+If you install StarRocks with StarRocksCluster CR yaml, please see
+[deploy_a_starrocks_cluster_with_fe_proxy.md](../examples/starrocks/deploy_a_starrocks_cluster_with_fe_proxy.yaml)

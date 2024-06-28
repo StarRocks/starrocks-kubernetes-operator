@@ -3,7 +3,7 @@
 # leader, and the other two are the followers.
 # the number of BEs required depends on the default `replication_num` which is `3` by default.
 # StarRocks cluster.
-# The requests and limits of FE and BE are set based on https://docs.starrocks.io/en-us/latest/deployment/plan_cluster
+# The requests and limits of FE and BE are set based on https://docs.starrocks.io/docs/deployment/plan_cluster/
 
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
