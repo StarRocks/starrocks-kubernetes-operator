@@ -8,7 +8,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 
 ## Before you begin
 
-- [Create a Kubernetes cluster](https://docs.starrocks.io/en-us/latest/deployment/sr_operator#create-kubernetes-cluster).
+- [Create a Kubernetes cluster](https://kubernetes.io/).
 - [Install Helm](https://helm.sh/docs/intro/quickstart/).
 - [Install StarRocks operator](../kube-starrocks/charts/operator/README.md).
 - [Install StarRocks cluster](../kube-starrocks/charts/starrocks/README.md).

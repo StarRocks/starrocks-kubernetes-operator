@@ -19,7 +19,7 @@ For operator, please complete the following checklist:
 
 For helm chart, please complete the following checklist:
 
-- [ ] make sure you have updated the [values.yaml](../../helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml)
+- [ ] make sure you have updated the [values.yaml](../helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml)
   file of starrocks chart.
 - [ ] In `scripts` directory, run `bash create-parent-chart-values.sh` to update the values.yaml file of the parent
   chart( kube-starrocks chart).

@@ -2,7 +2,7 @@
 # To load data from outside the Kubernetes cluster into StarRocks deployed within the Kubernetes
 # cluster, you can deploy the FE Proxy component. So that External data import tools, like flink,
 # can use the STREAM LOAD syntax to import data into StarRocks clusters.
-# see https://docs.starrocks.io/en-us/latest/loading/Flink-connector-starrocks for more information
+# see https://docs.starrocks.io/docs/loading/Flink-connector-starrocks/ for more information
 # about how to use flink to import data into StarRocks.
 
 apiVersion: starrocks.com/v1

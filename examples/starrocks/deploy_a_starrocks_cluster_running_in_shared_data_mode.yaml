@@ -4,7 +4,7 @@
 # You will have to download and edit this YAML file to specify the details for your shared storage. See the 
 # examples in the docs, and add your customizations to the ConfigMap `starrockscluster-sample-fe-cm` at the 
 # bottom of this file.
-# https://docs.starrocks.io/en-us/latest/deployment/deploy_shared_data#configure-fe-nodes-for-shared-data-starrocks
+# https://docs.starrocks.io/docs/deployment/shared_data/s3/#configure-fe-nodes-for-shared-data-starrocks
 
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
