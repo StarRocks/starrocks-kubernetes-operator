@@ -506,20 +506,20 @@ To upgrade from a previous version of StarRocks Kubernetes Operator, please foll
 2. Migrate your values.yaml file by
    running: `migrate-chart-value --input values.yaml --target-version v1.8.0 --output ./values-v1.8.0.yaml`
 3. Upgrade your Helm release by
-   running: `helm repo update; helm upgrade <release-name> starrocks-community/kube-starrocks -f values-v1.8.0.yaml`
+   running: `helm repo update; helm upgrade <release-name> starrocks/kube-starrocks -f values-v1.8.0.yaml`
 
 ### How to Install
 
 To install StarRocks Kubernetes Operator for the first time, please follow these steps:
 
 1. Add the StarRocks Helm repository by
-   running: `helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator`, then
+   running: `helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator`, then
    execute `helm repo update`.
 2. Install the kube-starrocks chart by
-   running: `helm install <release-name> starrocks-community/kube-starrocks -f values.yaml`
+   running: `helm install <release-name> starrocks/kube-starrocks -f values.yaml`
 3. Alternatively, you can install the operator and starrocks subcharts separately by running. Install
-   operator: `helm install <release-name> starrocks-community/operator -f operator-values.yaml`. Install
-   starrocks: `helm install <starrocks-release-name> starrocks-community/starrocks -f starrocks-values.yaml`
+   operator: `helm install <release-name> starrocks/operator -f operator-values.yaml`. Install
+   starrocks: `helm install <starrocks-release-name> starrocks/starrocks -f starrocks-values.yaml`
 
 ## [v1.7.1](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.7.1)
 

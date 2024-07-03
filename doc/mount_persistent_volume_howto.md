@@ -61,14 +61,14 @@ BE data.
 ## 2. Mounting Persistent Volumes by Helm Chart
 
 See [helm_repo_add_howto](./add_helm_repo_howto.md) to learn how to add the Helm Chart Repo for StarRocks. In this
-guide, we will use `starrocks-community/kube-starrocks` chart to deploy both StarRocks operator and cluster.
+guide, we will use `starrocks/kube-starrocks` chart to deploy both StarRocks operator and cluster.
 
 ### 2.1. Download the values.yaml file for the kube-starrocks chart
 
 The values.yaml file contains the default configurations for the StarRocks Operator and the StarRocks cluster.
 
 ```Bash
-helm show values starrocks-community/kube-starrocks > values.yaml
+helm show values starrocks/kube-starrocks > values.yaml
 ```
 
 The following is a snippet of the values.yaml file:

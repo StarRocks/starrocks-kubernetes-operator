@@ -165,8 +165,8 @@ nodes:
 # install installs kube-starrocks helm chart
 function install() {
   echo "Installing kube-starrocks helm chart"
-  helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-  helm repo update starrocks-community
+  helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+  helm repo update starrocks
 
   cat <<EOF >/tmp/local-install-values.yaml
 operator:

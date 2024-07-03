@@ -15,19 +15,19 @@
 1. Add the StarRocks Helm repository.
 
     ```bash
-    $ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-    $ helm repo update starrocks-community
-    $ helm search repo starrocks-community
+    $ helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+    $ helm repo update starrocks
+    $ helm search repo starrocks
     NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
-    starrocks-community/kube-starrocks      1.8.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
-    starrocks-community/operator            1.8.0            1.8.0        A Helm chart for StarRocks operator
-    starrocks-community/starrocks           1.8.0            3.1-latest   A Helm chart for StarRocks cluster
+    starrocks/kube-starrocks      1.8.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
+    starrocks/operator            1.8.0            1.8.0        A Helm chart for StarRocks operator
+    starrocks/starrocks           1.8.0            3.1-latest   A Helm chart for StarRocks cluster
     ```
 
 2. Install the starrocks Chart.
 
     ```bash
-    helm install starrocks starrocks-community/starrocks
+    helm install starrocks starrocks/starrocks
     ```
 
     Please see [values.yaml](./values.yaml) for more details.

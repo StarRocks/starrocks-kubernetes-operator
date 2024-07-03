@@ -204,14 +204,14 @@ local-path-storage   local-path-provisioner-5ddd94ff66-9l2km           1/1     R
 
 ```shell
 # Add the Helm Chart Repo
-helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
+helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
 
 # update the repo
-helm repo update starrocks-community
+helm repo update starrocks
 
 # View the Helm Chart Repo that you added.
 # There are three charts in the repo, and kube-starrocks will be used to install StarRocks Operator and StarRocks cluster.
-helm search repo starrocks-community
+helm search repo starrocks
 ```
 
 这里有 [kube-starrocks](../../helm-charts/charts/kube-starrocks/README.md) Helm Chart 的更多信息。
@@ -274,7 +274,7 @@ EOF
 
 # install starrocks
 # 如果你因为网络问题无法安装，可参见后面的操作
-helm install -n starrocks starrocks -f values.yaml starrocks-community/kube-starrocks --create-namespace
+helm install -n starrocks starrocks -f values.yaml starrocks/kube-starrocks --create-namespace
 
 ############## 如果你因为网络问题无法直接安装(helm instal)，可以先下载再安装 ##############
 # 如果无法下载可以使用下面的 URL
