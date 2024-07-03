@@ -146,9 +146,9 @@ spec:
 Run the following commands to deploy StarRocks operator and StarRocks cluster,
 
 ```shell
-helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update starrocks-community
-helm install starrocks -f sr-values.yaml starrocks-community/kube-starrocks
+helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+helm repo update starrocks
+helm install starrocks -f sr-values.yaml starrocks/kube-starrocks
 ```
 
 ### 2.2 Turn on the prometheus metrics scrape by using ServiceMonitor CRD

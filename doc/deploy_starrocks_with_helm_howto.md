@@ -11,16 +11,16 @@ separately.
 There are three charts in this repository:
 
 ```bash
-$ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-$ helm repo update starrocks-community
-$ helm search repo starrocks-community
+$ helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+$ helm repo update starrocks
+$ helm search repo starrocks
 NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
 # install both operator and starrocks
-starrocks-community/kube-starrocks      1.8.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
+starrocks/kube-starrocks      1.8.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
 # install operator only
-starrocks-community/operator            1.8.0            1.8.0        A Helm chart for StarRocks operator
+starrocks/operator            1.8.0            1.8.0        A Helm chart for StarRocks operator
 # install starrocks only
-starrocks-community/starrocks           1.8.0            3.1-latest   A Helm chart for StarRocks cluster
+starrocks/starrocks           1.8.0            3.1-latest   A Helm chart for StarRocks cluster
 ```
 
 1. `kube-starrocks` includes two subcharts, `operator` and `starrocks`.

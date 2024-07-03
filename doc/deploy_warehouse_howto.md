@@ -105,7 +105,7 @@ Then deploy a warehouse by the following command:
 
 ```console
 # Use the above values.yaml to deploy a warehouse in namespace starrocks
-helm -n starrocks install wh1 starrocks-community/warehouse -f wh1-values.yaml
+helm -n starrocks install wh1 starrocks/warehouse -f wh1-values.yaml
 
 # Restart the StarRocks operator to make it aware of the new CRD
 kubectl -n starrocks rollout restart deployment kube-starrocks-operator
@@ -198,7 +198,7 @@ spec:
 Then upgrade the warehouse by the following command:
 
 ```console
-helm -n starrocks upgrade wh1 starrocks-community/warehouse -f wh1-values.yaml
+helm -n starrocks upgrade wh1 starrocks/warehouse -f wh1-values.yaml
 ```
 
 ## 4. Delete the Warehouse

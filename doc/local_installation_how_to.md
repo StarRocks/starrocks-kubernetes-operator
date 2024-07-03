@@ -184,14 +184,14 @@ in https://github.com/StarRocks/starrocks-kubernetes-operator/releases.
 
 ```shell
 # Add the Helm Chart Repo
-helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
+helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
 
 # update the repo
-helm repo update starrocks-community
+helm repo update starrocks
 
 # View the Helm Chart Repo that you added.
 # There are three charts in the repo, and kube-starrocks will be used to install StarRocks Operator and StarRocks cluster.
-helm search repo starrocks-community
+helm search repo starrocks
 ```
 
 see [kube-starrocks](../helm-charts/charts/kube-starrocks/README.md) chart for more details.
@@ -253,7 +253,7 @@ starrocks:
 EOF
 
 # install starrocks
-helm install -n starrocks -f values.yaml starrocks starrocks-community/kube-starrocks --create-namespace
+helm install -n starrocks -f values.yaml starrocks starrocks/kube-starrocks --create-namespace
 
 # set alias for kubectl
 alias k='kubectl -n starrocks'

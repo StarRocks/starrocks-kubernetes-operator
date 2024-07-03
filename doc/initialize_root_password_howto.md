@@ -12,14 +12,14 @@ This guide delineates the process to establish a root password when a new instal
 - Ensure the helm chart repo for StarRocks is added.
   See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
 
-In this guide, we will use `starrocks-community/kube-starrocks` chart to deploy both StarRocks operator and cluster.
+In this guide, we will use `starrocks/kube-starrocks` chart to deploy both StarRocks operator and cluster.
 
 ## 1. Download the values.yaml file for the kube-starrocks chart
 
 The values.yaml file contains the default configurations for the StarRocks Operator and the StarRocks cluster.
 
 ```Bash
-helm show values starrocks-community/kube-starrocks > values.yaml
+helm show values starrocks/kube-starrocks > values.yaml
 ```
 
 The following is a snippet of the values.yaml file:
@@ -81,7 +81,7 @@ Execute Deployment with Custom Specifications. Run the subsequent command to dep
 StarRocks cluster.
 
 ```shell
-helm install -f my-values.yaml starrocks starrocks-community/kube-starrocks
+helm install -f my-values.yaml starrocks starrocks/kube-starrocks
 ```
 
 ## 4. Access Your Cluster

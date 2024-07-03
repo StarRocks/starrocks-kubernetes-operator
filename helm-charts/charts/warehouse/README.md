@@ -20,14 +20,14 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 1. Add the StarRocks Helm repository.
 
     ```bash
-    $ helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
+    $ helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
     $ helm repo update
-    $ helm search repo starrocks-community
+    $ helm search repo starrocks
     NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
-    starrocks-community/kube-starrocks      1.9.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
-    starrocks-community/operator            1.9.0            1.9.0        A Helm chart for StarRocks operator
-    starrocks-community/starrocks           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
-    starrocks-community/warehouse           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
+    starrocks/kube-starrocks      1.9.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
+    starrocks/operator            1.9.0            1.9.0        A Helm chart for StarRocks operator
+    starrocks/starrocks           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
+    starrocks/warehouse           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
     ```
 
 2. Prepare the values.yaml file.
@@ -54,7 +54,7 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 
     ```bash
     # Use the above values.yaml to deploy a warehouse in namespace starrocks
-    helm -n starrocks install warehouse starrocks-community/warehouse -f values.yaml
+    helm -n starrocks install warehouse starrocks/warehouse -f values.yaml
 
     # Restart the StarRocks operator to make it aware of the new CRD
     kubectl -n starrocks rollout restart deployment kube-starrocks-operator

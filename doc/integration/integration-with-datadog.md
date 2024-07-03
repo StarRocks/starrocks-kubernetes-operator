@@ -45,8 +45,8 @@ helm install datadog-agent  -f datadog-values.yaml datadog/datadog
 If this is a fresh install, add the Helm StarRocks Operator repo
 
 ```bash
-helm repo add starrocks-community https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update starrocks-community
+helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+helm repo update starrocks
 ```
 
 **Add** the following configuration to your `sr-values.yaml` file:
@@ -64,10 +64,10 @@ Install or upgrade your starrocks cluster:
 
 ```bash
 # install
-helm install -n starrocks starrocks -f sr-values.yaml starrocks-community/kube-starrocks
+helm install -n starrocks starrocks -f sr-values.yaml starrocks/kube-starrocks
 
 # upgrade
-helm upgrade -n starrocks starrocks -f sr-values.yaml starrocks-community/kube-starrocks
+helm upgrade -n starrocks starrocks -f sr-values.yaml starrocks/kube-starrocks
 ```
 
 When you execute `helm install` or `helm upgrade` command, the rendered configuration will be passed to the starrocks
