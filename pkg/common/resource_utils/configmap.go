@@ -17,11 +17,7 @@ limitations under the License.
 package resource_utils
 
 import (
-	"bytes"
 	"strconv"
-
-	"github.com/spf13/viper"
-	corev1 "k8s.io/api/core/v1"
 )
 
 // the fe ports key
@@ -68,24 +64,6 @@ var DefMap = map[string]int32{
 	BE_HTTP_PORT:           8040,
 	HEARTBEAT_SERVICE_PORT: 9050,
 	BRPC_PORT:              8060,
-}
-
-func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]interface{}, error) {
-	res := make(map[string]interface{})
-	data := configMap.Data
-	if _, ok := data[key]; !ok {
-		return res, nil
-	}
-	value := data[key]
-
-	// We use a new viper instance, not the global one, in order to avoid concurrency problems: concurrent map iteration
-	// and map write,
-	v := viper.New()
-	v.SetConfigType("properties")
-	if err := v.ReadConfig(bytes.NewBuffer([]byte(value))); err != nil {
-		return nil, err
-	}
-	return v.AllSettings(), nil
 }
 
 // GetPort get ports from config file.

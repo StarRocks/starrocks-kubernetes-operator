@@ -41,6 +41,9 @@ const (
 	_logName         = "cn-log"
 	_cnConfigPath    = "/etc/starrocks/cn/conf"
 	_envCnConfigPath = "CONFIGMAP_MOUNT_PATH"
+
+	_cnConfDirPath = "/opt/starrocks/cn/conf"
+	_cnConfigKey   = "cn.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.

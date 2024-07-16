@@ -28,12 +28,15 @@ import (
 )
 
 const (
-	_metaPath        = "/opt/starrocks/fe/meta"
-	_metaName        = "fe-meta"
-	_logPath         = "/opt/starrocks/fe/log"
-	_logName         = "fe-log"
-	_feConfigPath    = "/etc/starrocks/fe/conf"
-	_envFeConfigPath = "CONFIGMAP_MOUNT_PATH"
+	_metaPath             = "/opt/starrocks/fe/meta"
+	_metaName             = "fe-meta"
+	_logPath              = "/opt/starrocks/fe/log"
+	_logName              = "fe-log"
+	_feConfigMountPath    = "/etc/starrocks/fe/conf"
+	_envFeConfigMountPath = "CONFIGMAP_MOUNT_PATH"
+
+	_feConfDirPath = "/opt/starrocks/fe/conf"
+	_feKey         = "fe.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
@@ -51,7 +54,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, _feConfigPath)
+	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, feSpec.ConfigMapInfo, _feConfigMountPath)
 	vols, volMounts = pod.MountConfigMaps(feSpec, vols, volMounts, feSpec.ConfigMaps)
 	vols, volMounts = pod.MountSecrets(vols, volMounts, feSpec.Secrets)
 	if err := k8sutils.CheckVolumes(vols, volMounts); err != nil {
@@ -80,8 +83,8 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {
 		feContainer.Env = append(feContainer.Env, corev1.EnvVar{
-			Name:  _envFeConfigPath,
-			Value: _feConfigPath,
+			Name:  _envFeConfigMountPath,
+			Value: _feConfigMountPath,
 		})
 	}
 

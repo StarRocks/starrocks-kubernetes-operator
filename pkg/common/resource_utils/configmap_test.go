@@ -15,23 +15,3 @@ limitations under the License.
 */
 
 package resource_utils
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-	corev1 "k8s.io/api/core/v1"
-)
-
-func TestResolveConfigMap(t *testing.T) {
-	configMap := corev1.ConfigMap{
-		Data: map[string]string{
-			"fe.conf": "http_port = 8030",
-		},
-	}
-	res, err := ResolveConfigMap(&configMap, "fe.conf")
-	require.NoError(t, err)
-
-	_, ok := res["http_port"]
-	require.Equal(t, true, ok)
-}

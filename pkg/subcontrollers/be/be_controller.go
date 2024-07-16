@@ -90,13 +90,13 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 
 	logger.V(log.DebugLevel).Info("get be/fe config to resolve ports", "ConfigMapInfo", beSpec.ConfigMapInfo)
-	config, err := be.GetConfig(ctx, &beSpec.ConfigMapInfo, src.Namespace)
+	config, err := be.GetBeConfig(ctx, beSpec, src.Namespace)
 	if err != nil {
 		logger.Error(err, "get be config failed", "ConfigMapInfo", beSpec.ConfigMapInfo)
 		return err
 	}
 
-	feconfig, _ := be.getFeConfig(ctx, &src.Spec.StarRocksFeSpec.ConfigMapInfo, src.Namespace)
+	feconfig, _ := fe.GetFEConfig(ctx, be.Client, src.Spec.StarRocksFeSpec, src.Namespace)
 	// add query port from fe config.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
 	// generate new be external service.
@@ -207,29 +207,11 @@ func (be *BeController) generateInternalService(ctx context.Context,
 	return searchSvc
 }
 
-func (be *BeController) GetConfig(ctx context.Context,
-	configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	configMap, err := k8sutils.GetConfigMap(ctx, be.Client, namespace, configMapInfo.ConfigMapName)
-	if err != nil && apierrors.IsNotFound(err) {
-		return make(map[string]interface{}), nil
-	} else if err != nil {
-		return make(map[string]interface{}), err
-	}
-
-	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
-	return res, err
-}
-
-func (be *BeController) getFeConfig(ctx context.Context,
-	feconfigMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	feconfigMap, err := k8sutils.GetConfigMap(ctx, be.Client, namespace, feconfigMapInfo.ConfigMapName)
-	if err != nil && apierrors.IsNotFound(err) {
-		return make(map[string]interface{}), nil
-	} else if err != nil {
-		return make(map[string]interface{}), err
-	}
-	res, err := rutils.ResolveConfigMap(feconfigMap, feconfigMapInfo.ResolveKey)
-	return res, err
+// GetBeConfig get the config of BE from configmap.
+func (be *BeController) GetBeConfig(ctx context.Context,
+	beSpec *srapi.StarRocksBeSpec, namespace string) (map[string]interface{}, error) {
+	return k8sutils.GetConfig(ctx, be.Client, beSpec.ConfigMapInfo,
+		beSpec.ConfigMaps, _beConfDirPath, _beConfigKey, namespace)
 }
 
 func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
