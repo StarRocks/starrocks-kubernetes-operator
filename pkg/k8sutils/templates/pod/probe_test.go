@@ -44,6 +44,15 @@ func TestMakeLivenessProbe(t *testing.T) {
 				ProbeHandler:     getProbe(8080, "/api/health2"),
 			},
 		},
+		{
+			name: "disable liveness probe",
+			args: args{
+				seconds: func() *int32 { s := int32(0); return &s }(),
+				port:    8080,
+				path:    "/api/health2",
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,6 +99,15 @@ func TestMakeReadinessProbe(t *testing.T) {
 				ProbeHandler:     getProbe(8080, "/api/health2"),
 			},
 		},
+		{
+			name: "disable readiness probe",
+			args: args{
+				seconds: func() *int32 { s := int32(0); return &s }(),
+				port:    8080,
+				path:    "/api/health2",
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -102,8 +120,9 @@ func TestMakeReadinessProbe(t *testing.T) {
 
 func TestMakeStartupProbe(t *testing.T) {
 	type args struct {
-		port int32
-		path string
+		seconds *int32
+		port    int32
+		path    string
 	}
 	tests := []struct {
 		name string
@@ -113,8 +132,9 @@ func TestMakeStartupProbe(t *testing.T) {
 		{
 			name: "test",
 			args: args{
-				port: 8080,
-				path: "/api/health2",
+				seconds: nil,
+				port:    8080,
+				path:    "/api/health2",
 			},
 			want: &corev1.Probe{
 				FailureThreshold: 60,
@@ -122,10 +142,19 @@ func TestMakeStartupProbe(t *testing.T) {
 				ProbeHandler:     getProbe(8080, "/api/health2"),
 			},
 		},
+		{
+			name: "disable startup probe",
+			args: args{
+				seconds: func() *int32 { s := int32(0); return &s }(),
+				port:    8080,
+				path:    "/api/health2",
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := StartupProbe(nil, tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			if got := StartupProbe(tt.args.seconds, tt.args.port, tt.args.path); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StartupProbe() = %v, want %v", got, tt.want)
 			}
 		})
@@ -216,11 +245,7 @@ func Test_completeProbe(t *testing.T) {
 				defaultPeriodSeconds:    5,
 				probeHandler:            corev1.ProbeHandler{},
 			},
-			want: &corev1.Probe{
-				ProbeHandler:     corev1.ProbeHandler{},
-				FailureThreshold: 60,
-				PeriodSeconds:    5,
-			},
+			want: nil,
 		},
 		{
 			name: "test complete probe 4",
