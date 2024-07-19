@@ -119,6 +119,7 @@ spec:
     # the total time of seconds before startupProbe give up and fail the container start.
     # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
     # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
     startupProbeFailureSeconds: 300
 
   # the spec for starrocks BE.

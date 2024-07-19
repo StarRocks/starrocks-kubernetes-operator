@@ -130,6 +130,7 @@ type StarRocksLoadSpec struct {
 	// the total time of seconds before startupProbe give up and fail the container start.
 	// If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
 	// will be rounded up.
+	// Note: you can set it to 0 to disable the startup probe.
 	// +optional
 	StartupProbeFailureSeconds *int32 `json:"startupProbeFailureSeconds,omitempty"`
 
@@ -138,6 +139,7 @@ type StarRocksLoadSpec struct {
 	// will fail if the pod can't respond in 15 seconds. Your LivenessProbeFailureSeconds is
 	// the total time of seconds before the container restart. If LivenessProbeFailureSeconds
 	// can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+	// Note: you can set it to 0 to disable the liveness probe.
 	// +optional
 	LivenessProbeFailureSeconds *int32 `json:"livenessProbeFailureSeconds,omitempty"`
 
@@ -146,6 +148,7 @@ type StarRocksLoadSpec struct {
 	// will fail if the pod can't respond in 15 seconds. Your ReadinessProbeFailureSeconds is
 	// the total time of seconds before pods becomes not ready. If ReadinessProbeFailureSeconds
 	// can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+	// Note: you can set it to 0 to disable the readiness probe.
 	// +optional
 	ReadinessProbeFailureSeconds *int32 `json:"readinessProbeFailureSeconds,omitempty"`
 

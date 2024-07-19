@@ -26,10 +26,15 @@ func ReadinessProbe(readinessProbeFailureSeconds *int32, port int32, path string
 	return completeProbe(readinessProbeFailureSeconds, defaultFailureThreshold, defaultPeriodSeconds, getProbe(port, path))
 }
 
+// completeProbe completes the probe. If user specifies the failureSeconds, but its value is 0, it will return nil,
+// which means the probe is disabled.
 func completeProbe(failureSeconds *int32, defaultFailureThreshold int32, defaultPeriodSeconds int32,
 	probeHandler corev1.ProbeHandler) *corev1.Probe {
 	probe := &corev1.Probe{}
-	if failureSeconds != nil && *failureSeconds > 0 {
+	if failureSeconds != nil {
+		if *failureSeconds == 0 {
+			return nil
+		}
 		probe.FailureThreshold = (*failureSeconds + defaultPeriodSeconds - 1) / defaultPeriodSeconds
 	} else {
 		probe.FailureThreshold = defaultFailureThreshold
