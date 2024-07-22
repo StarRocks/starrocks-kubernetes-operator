@@ -6,6 +6,9 @@ metadata:
   namespace: {{ template "operator.namespace" . }}
   labels:
     app: {{ template "operator.name" . }}-operator
+    {{- if .Values.starrocksOperator.labels }}
+      {{- toYaml .Values.starrocksOperator.labels | nindent 4 }}
+    {{- end }}
   {{- if .Values.starrocksOperator.annotations }}
   annotations:
     {{- toYaml .Values.starrocksOperator.annotations | nindent 4 }}

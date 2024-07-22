@@ -30,6 +30,8 @@ starrocksOperator:
   # If enabled, the operator releated resources will be created, including the operator deployment, service account,
   # clusterrole, clusterrolebinding, and service account.
   enabled: true
+  # labels for starrocks operator.
+  labels: {}
   # annotations for starrocks operator.
   annotations: {}
   namespaceOverride: ""
