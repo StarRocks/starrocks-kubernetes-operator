@@ -754,6 +754,10 @@ spec:
     {{- if .Values.starrocksFeProxySpec.service.type }}
     service:
       type: {{ .Values.starrocksFeProxySpec.service.type }}
+      {{- if .Values.starrocksFeProxySpec.service.annotations }}
+      annotations:
+        {{- toYaml .Values.starrocksFeProxySpec.service.annotations | nindent 8 }}
+      {{- end }}
       {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       {{- end }}
