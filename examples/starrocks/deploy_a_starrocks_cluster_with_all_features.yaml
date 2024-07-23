@@ -121,6 +121,14 @@ spec:
     # will be rounded up
     # Note: you can set it to 0 to disable the probe.
     startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
 
   # the spec for starrocks BE.
   starRocksBeSpec: # the image for starrocks BE.
@@ -228,6 +236,22 @@ spec:
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
       #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
+    startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
 
   # the spec for starrocks CN.
   starRocksCnSpec: # the image for starrocks CN.
@@ -375,6 +399,22 @@ spec:
       # - name: my-configmap
       #   mountPath: /etc/my-configmap
       #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
+    startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
 
   # the spec for starrocks FE proxy.
   starRocksFeProxySpec:
@@ -393,6 +433,14 @@ spec:
           nodePort: 30180   # The range of valid ports is 30000-32767
     # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
     resolver: "kube-dns.kube-system.svc.cluster.local"
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
 
 ---
 
