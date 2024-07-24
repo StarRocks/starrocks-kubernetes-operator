@@ -1078,6 +1078,8 @@ starrocks:
       type: ClusterIP
       # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
       loadbalancerIP: ""
+      # add annotations for fe service.
+      annotations: {}
       # config the service port for fe proxy service.
       # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
       # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
