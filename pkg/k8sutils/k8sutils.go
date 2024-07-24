@@ -17,6 +17,7 @@ limitations under the License.
 package k8sutils
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -24,6 +25,7 @@ import (
 	"unicode"
 
 	"github.com/go-logr/logr"
+	"github.com/spf13/viper"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -468,4 +470,85 @@ func CheckVolumes(volumes []corev1.Volume, mounts []corev1.VolumeMount) error {
 		}
 	}
 	return nil
+}
+
+// GetConfig get the config of component.
+// First, It tries to read the config from the ConfigMapInfo, which has the configMap name and key.
+// Second, if the ConfigMapInfo is empty, it will try to read the config from the ConfigMaps.
+// Last, If the fe ConfigMapInfo is empty and the configMaps is nil, it will return an empty map.
+func GetConfig(ctx context.Context, k8sClient client.Client,
+	configMapInfo srapi.ConfigMapInfo,
+	configMaps []srapi.ConfigMapReference, expectMountPath, expectKey string,
+	namespace string) (map[string]interface{}, error) {
+	if configMapInfo.ConfigMapName != "" || configMapInfo.ResolveKey != "" {
+		if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
+			return make(map[string]interface{}), nil
+		}
+		configMap, err := GetConfigMap(ctx, k8sClient, namespace, configMapInfo.ConfigMapName)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return make(map[string]interface{}), nil
+			}
+			return nil, err
+		}
+
+		res, err := ResolveConfigMap(configMap, configMapInfo.ResolveKey)
+		return res, err
+	}
+	return getConfigFromConfigMaps(ctx, k8sClient, configMaps, expectMountPath, expectKey, namespace)
+}
+
+func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]interface{}, error) {
+	res := make(map[string]interface{})
+	data := configMap.Data
+	if _, ok := data[key]; !ok {
+		return res, nil
+	}
+	value := data[key]
+
+	// We use a new viper instance, not the global one, in order to avoid concurrency problems: concurrent map iteration
+	// and map write,
+	v := viper.New()
+	v.SetConfigType("properties")
+	if err := v.ReadConfig(bytes.NewBuffer([]byte(value))); err != nil {
+		return nil, err
+	}
+	return v.AllSettings(), nil
+}
+
+// getConfigFromConfigMaps try to read the config from the configMaps. The strategy is to match
+// the mountPath with expectMountPath.
+//   - if subpath is empty, the mount path should equal to expectMountPath. And it will use expectKey as the key.
+//   - if subpath is not empty, it should equal to expectKey, and the mount path should be expectMountPath/expectKey.
+func getConfigFromConfigMaps(ctx context.Context, k8sClient client.Client,
+	configMaps []srapi.ConfigMapReference, expectMountPath, expectKey string,
+	namespace string) (map[string]interface{}, error) {
+	configMapName := ""
+	for i := range configMaps {
+		subPath := configMaps[i].SubPath
+		if subPath == "" {
+			if configMaps[i].MountPath == expectMountPath {
+				configMapName = configMaps[i].Name
+				// don't break here, we need to use the ConfigMapReference with the subPath first.
+			}
+		} else {
+			if configMaps[i].MountPath == filepath.Join(expectMountPath, expectKey) && expectKey == subPath {
+				configMapName = configMaps[i].Name
+				break
+			}
+		}
+	}
+	if configMapName == "" {
+		return make(map[string]interface{}), nil
+	}
+
+	configMap, err := GetConfigMap(ctx, k8sClient, namespace, configMapName)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return make(map[string]interface{}), nil
+		}
+		return nil, err
+	}
+	res, err := ResolveConfigMap(configMap, expectKey)
+	return res, err
 }

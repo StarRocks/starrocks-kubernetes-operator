@@ -16,6 +16,7 @@ package be_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -172,4 +174,157 @@ func Test_Sync(t *testing.T) {
 	require.NoError(t, bc.Client.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
+}
+
+func TestBeController_GetBeConfig(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		beSpec    *srapi.StarRocksBeSpec
+		namespace string
+	}
+	type fields struct {
+		k8sClient client.Client
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{
+			name: "get BE config from ConfigMapInfo",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "be-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"be.conf": "aa = bb",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				beSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							ConfigMapInfo: srapi.ConfigMapInfo{
+								ConfigMapName: "be-configMap",
+								ResolveKey:    "be.conf",
+							},
+						},
+						ConfigMaps: nil,
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"aa": "bb",
+			},
+		},
+		{
+			name: "get BE config from configMaps, with matching subpath",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "be-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"be.conf": "cc = dd",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				beSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "be-configMap",
+								MountPath: "/opt/starrocks/be/conf/be.conf",
+								SubPath:   "be.conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get BE config from configMap 2, without subpath",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "be-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"be.conf": "cc = dd",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				beSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "be-configMap",
+								MountPath: "/opt/starrocks/be/conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get BE empty config",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:       context.Background(),
+				beSpec:    &srapi.StarRocksBeSpec{},
+				namespace: "default",
+			},
+			want: map[string]interface{}{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			be := &be.BeController{
+				Client: tt.fields.k8sClient,
+			}
+			got, err := be.GetBeConfig(tt.args.ctx, tt.args.beSpec, tt.args.namespace)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBeConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBeConfig() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

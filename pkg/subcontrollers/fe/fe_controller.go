@@ -82,7 +82,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	// get the fe configMap for resolve ports
 	logger.V(log.DebugLevel).Info("get fe configMap to resolve ports", "ConfigMapInfo", feSpec.ConfigMapInfo)
-	config, err := GetFeConfig(ctx, fc.Client, &feSpec.ConfigMapInfo, src.Namespace)
+	config, err := GetFEConfig(ctx, fc.Client, feSpec, src.Namespace)
 	if err != nil {
 		logger.Error(err, "get fe config failed", "ConfigMapInfo", feSpec.ConfigMapInfo)
 		return err
@@ -171,24 +171,6 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 	return nil
 }
 
-// GetFeConfig get the fe start config.
-func GetFeConfig(ctx context.Context,
-	k8sClient client.Client, configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
-		return make(map[string]interface{}), nil
-	}
-	configMap, err := k8sutils.GetConfigMap(ctx, k8sClient, namespace, configMapInfo.ConfigMapName)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return make(map[string]interface{}), nil
-		}
-		return nil, err
-	}
-
-	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
-	return res, err
-}
-
 // ClearResources clear resource about fe.
 func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionClearResources)
@@ -232,6 +214,15 @@ func (fc *FeController) validating(feSpec *srapi.StarRocksFeSpec) error {
 		}
 	}
 	return nil
+}
+
+// GetFEConfig get the fe config from configMap.
+// It is not a method of FeController, but BE/CN controller also need to get the config from configMap.
+func GetFEConfig(ctx context.Context, client client.Client,
+	feSpec *srapi.StarRocksFeSpec, namespace string) (map[string]interface{}, error) {
+	return k8sutils.GetConfig(ctx, client, feSpec.ConfigMapInfo,
+		feSpec.ConfigMaps, _feConfDirPath, _feKey,
+		namespace)
 }
 
 // CheckFEReady check the fe cluster is ok.

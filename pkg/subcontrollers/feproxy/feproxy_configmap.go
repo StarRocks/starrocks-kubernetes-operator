@@ -19,7 +19,7 @@ func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *sra
 	feProxySpec := src.Spec.StarRocksFeProxySpec
 
 	feSpec := src.Spec.StarRocksFeSpec
-	config, err := fe.GetFeConfig(ctx, controller.k8sClient, &feSpec.ConfigMapInfo, src.Namespace)
+	config, err := fe.GetFEConfig(ctx, controller.k8sClient, feSpec, src.Namespace)
 	if err != nil {
 		return err
 	}

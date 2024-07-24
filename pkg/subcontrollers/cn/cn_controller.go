@@ -142,7 +142,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	}
 
 	logger.V(log.DebugLevel).Info("get cn config to resolve ports", "ConfigMapInfo", cnSpec.ConfigMapInfo)
-	config, err := cc.GetConfig(ctx, &cnSpec.ConfigMapInfo, object.Namespace)
+	config, err := cc.GetCnConfig(ctx, cnSpec, object.Namespace)
 	if err != nil {
 		return err
 	}
@@ -425,17 +425,11 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return nil
 }
 
-func (cc *CnController) GetConfig(ctx context.Context,
-	configMapInfo *srapi.ConfigMapInfo, namespace string) (map[string]interface{}, error) {
-	configMap, err := k8sutils.GetConfigMap(ctx, cc.k8sClient, namespace, configMapInfo.ConfigMapName)
-	if err != nil && apierrors.IsNotFound(err) {
-		return make(map[string]interface{}), nil
-	} else if err != nil {
-		return make(map[string]interface{}), err
-	}
-
-	res, err := rutils.ResolveConfigMap(configMap, configMapInfo.ResolveKey)
-	return res, err
+func (cc *CnController) GetCnConfig(ctx context.Context,
+	cnSpec *srapi.StarRocksCnSpec, namespace string) (map[string]interface{}, error) {
+	return k8sutils.GetConfig(ctx, cc.k8sClient, cnSpec.ConfigMapInfo,
+		cnSpec.ConfigMaps, _cnConfDirPath, _cnConfigKey,
+		namespace)
 }
 
 func (cc *CnController) getFeConfig(ctx context.Context,
@@ -444,16 +438,7 @@ func (cc *CnController) getFeConfig(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	feconfigMapInfo := &src.Spec.StarRocksFeSpec.ConfigMapInfo
-
-	feconfigMap, err := k8sutils.GetConfigMap(ctx, cc.k8sClient, clusterNamespace, feconfigMapInfo.ConfigMapName)
-	if err != nil && apierrors.IsNotFound(err) {
-		return make(map[string]interface{}), nil
-	} else if err != nil {
-		return make(map[string]interface{}), err
-	}
-	res, err := rutils.ResolveConfigMap(feconfigMap, feconfigMapInfo.ResolveKey)
-	return res, err
+	return fe.GetFEConfig(ctx, cc.k8sClient, src.Spec.StarRocksFeSpec, src.Namespace)
 }
 
 func (cc *CnController) mutating(cnSpec *srapi.StarRocksCnSpec) error {

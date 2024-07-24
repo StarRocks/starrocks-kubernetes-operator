@@ -16,6 +16,7 @@ package cn
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -374,6 +375,159 @@ func TestCnController_generateAutoScalerName(t *testing.T) {
 			}
 			if got := cc.generateAutoScalerName(tt.args.srcName, tt.args.cnSpec); got != tt.want {
 				t.Errorf("generateAutoScalerName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCnController_GetCnConfig(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		cnSpec    *srapi.StarRocksCnSpec
+		namespace string
+	}
+	type fields struct {
+		k8sClient client.Client
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{
+			name: "get CN config from ConfigMapInfo",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cn-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"cn.conf": "aa = bb",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				cnSpec: &srapi.StarRocksCnSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							ConfigMapInfo: srapi.ConfigMapInfo{
+								ConfigMapName: "cn-configMap",
+								ResolveKey:    "cn.conf",
+							},
+						},
+						ConfigMaps: nil,
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"aa": "bb",
+			},
+		},
+		{
+			name: "get CN config from configMaps, with matching subpath",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cn-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"cn.conf": "cc = dd",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				cnSpec: &srapi.StarRocksCnSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "cn-configMap",
+								MountPath: "/opt/starrocks/cn/conf/cn.conf",
+								SubPath:   "cn.conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get CN config from configMap 2, without subpath",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cn-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"cn.conf": "cc = dd",
+					},
+				}),
+			},
+			args: args{
+				ctx: context.Background(),
+				cnSpec: &srapi.StarRocksCnSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "cn-configMap",
+								MountPath: "/opt/starrocks/cn/conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get CN empty config",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:       context.Background(),
+				cnSpec:    &srapi.StarRocksCnSpec{},
+				namespace: "default",
+			},
+			want: map[string]interface{}{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc := &CnController{
+				k8sClient: tt.fields.k8sClient,
+			}
+			got, err := cc.GetCnConfig(tt.args.ctx, tt.args.cnSpec, tt.args.namespace)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCnConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetCnConfig() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

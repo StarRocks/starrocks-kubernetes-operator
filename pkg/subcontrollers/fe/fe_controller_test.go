@@ -246,10 +246,10 @@ func TestCheckFEReady(t *testing.T) {
 
 func TestGetFeConfig(t *testing.T) {
 	type args struct {
-		ctx           context.Context
-		k8sClient     client.Client
-		configMapInfo *srapi.ConfigMapInfo
-		namespace     string
+		ctx       context.Context
+		k8sClient client.Client
+		feSpec    srapi.StarRocksFeSpec
+		namespace string
 	}
 	tests := []struct {
 		name    string
@@ -258,7 +258,7 @@ func TestGetFeConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test get FE config",
+			name: "get FE config from fe ConfigMapInfo",
 			args: args{
 				ctx: context.Background(),
 				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
@@ -271,12 +271,19 @@ func TestGetFeConfig(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string]string{
-						"fe.config": "aa = bb",
+						"fe.conf": "aa = bb",
 					},
 				}),
-				configMapInfo: &srapi.ConfigMapInfo{
-					ConfigMapName: "fe-configMap",
-					ResolveKey:    "fe.config",
+				feSpec: srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							ConfigMapInfo: srapi.ConfigMapInfo{
+								ConfigMapName: "fe-configMap",
+								ResolveKey:    "fe.conf",
+							},
+						},
+						ConfigMaps: nil,
+					},
 				},
 				namespace: "default",
 			},
@@ -284,16 +291,93 @@ func TestGetFeConfig(t *testing.T) {
 				"aa": "bb",
 			},
 		},
+		{
+			name: "get FE config from configMaps, with matching subpath",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "fe-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"fe.conf": "cc = dd",
+					},
+				}),
+				feSpec: srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "fe-configMap",
+								MountPath: "/opt/starrocks/fe/conf/fe.conf",
+								SubPath:   "fe.conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get FE config from configMap 1, without subpath",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "fe-configMap",
+						Namespace: "default",
+					},
+					Data: map[string]string{
+						"fe.conf": "cc = dd",
+					},
+				}),
+				feSpec: srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						ConfigMaps: []srapi.ConfigMapReference{
+							{
+								Name:      "fe-configMap",
+								MountPath: "/opt/starrocks/fe/conf",
+							},
+						},
+					},
+				},
+				namespace: "default",
+			},
+			want: map[string]interface{}{
+				"cc": "dd",
+			},
+		},
+		{
+			name: "get FE empty config",
+			args: args{
+				ctx:       context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				feSpec:    srapi.StarRocksFeSpec{},
+				namespace: "default",
+			},
+			want: map[string]interface{}{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := fe.GetFeConfig(tt.args.ctx, tt.args.k8sClient, tt.args.configMapInfo, tt.args.namespace)
+			got, err := fe.GetFEConfig(tt.args.ctx, tt.args.k8sClient, &tt.args.feSpec, tt.args.namespace)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetFeConfig() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetFEConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetFeConfig() got = %v, want %v", got, tt.want)
+				t.Errorf("GetFEConfig() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -18,6 +18,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -878,4 +879,17 @@ func TestHasVolume(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestResolveConfigMap(t *testing.T) {
+	configMap := corev1.ConfigMap{
+		Data: map[string]string{
+			"fe.conf": "http_port = 8030",
+		},
+	}
+	res, err := k8sutils.ResolveConfigMap(&configMap, "fe.conf")
+	require.NoError(t, err)
+
+	_, ok := res["http_port"]
+	require.Equal(t, true, ok)
 }

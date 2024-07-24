@@ -35,6 +35,9 @@ const (
 	_storageName2    = "be-data" // helm chart use this format
 	_storagePath     = "/opt/starrocks/be/storage"
 	_envBeConfigPath = "CONFIGMAP_MOUNT_PATH"
+
+	_beConfDirPath = "/opt/starrocks/be/conf"
+	_beConfigKey   = "be.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
