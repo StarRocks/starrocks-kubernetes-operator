@@ -130,6 +130,15 @@ starrocks:
     image: ""
     # The annotations for the Job, not including the annotations for the pod.
     annotations: {}
+    # resources for init_job pod.
+    resources: {}
+    #resources:
+    #  requests:
+    #    cpu: 500m
+    #    memory: 400Mi
+    #  limits:
+    #    cpu: 500m
+    #    memory: 800Mi
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
