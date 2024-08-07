@@ -33,6 +33,9 @@ spec:
         image: {{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}
         {{- end }}
         imagePullPolicy: IfNotPresent
+        {{- if .Values.initPassword.resources }}
+        resources: {{- toYaml .Values.initPassword.resources | nindent 10 }}
+        {{- end }}
         command:
         - /bin/bash
         args:
