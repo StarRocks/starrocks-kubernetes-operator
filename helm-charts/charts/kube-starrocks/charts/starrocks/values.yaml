@@ -557,8 +557,14 @@ starrocksCnSpec:
     # You must set name when you set storageClassName
     # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
-    # the storage size of persistent volume for data.
+    # the storage size of per persistent volume for data.
     storageSize: 1Ti
+    # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/cn/storage.
+    # the number of persistent volumes for data.
+    # if its value is greater than 1:
+    #   1. the storageMountPath will follow the format, e.g. /opt/starrocks/cn/storage0, /opt/starrocks/cn/storage1, ...
+    #   2. You must add in config the following configuration: storage_root_path = /opt/starrocks/cn/storage0;/opt/starrocks/cn/storage1;...
+    storageCount: 1
     # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/cn/storage.
     storageMountPath: ""
     # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
@@ -813,8 +819,13 @@ starrocksBeSpec:
     # You must set name when you set storageClassName
     # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
-    # the storage size of persistent volume for data.
+    # the storage size of per persistent volume for data.
     storageSize: 1Ti
+    # the number of persistent volumes for data.
+    # if its value is greater than 1:
+    #   1. the storageMountPath will follow the format, e.g. /opt/starrocks/be/storage0, /opt/starrocks/be/storage1, ...
+    #   2. You must add in config the following configuration: storage_root_path = /opt/starrocks/be/storage0;/opt/starrocks/be/storage1;...
+    storageCount: 1
     # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/be/storage.
     storageMountPath: ""
     # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
