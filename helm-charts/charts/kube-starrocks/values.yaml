@@ -420,17 +420,9 @@ starrocks:
       edit_log_port = 9010
       mysql_service_nio_enabled = true
       sys_log_level = INFO
-    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
-    configyaml:
-      LOG_DIR:  ${STARROCKS_HOME}/log
-      DATE: '"$(date +%Y%m%d-%H%M%S)"'
-      JAVA_OPTS: '"-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseG1GC -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"'
-      http_port: 8030
-      rpc_port: 9020
-      query_port: 9030
-      edit_log_port: 9010
-      mysql_service_nio_enabled: true
-      sys_log_level: INFO
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -717,14 +709,9 @@ starrocks:
       webserver_port = 8040
       heartbeat_service_port = 9050
       brpc_port = 8060
-    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
-    configyaml:
-      sys_log_level: INFO
-      # ports for admin, web, heartbeat service
-      thrift_port: 9060
-      webserver_port: 8040
-      heartbeat_service_port: 9050
-      brpc_port: 8060
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -977,14 +964,9 @@ starrocks:
       brpc_port = 8060
       sys_log_level = INFO
       default_rowset_type = beta
-    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
-    configyaml:
-      be_port: 9060
-      webserver_port: 8040
-      heartbeat_service_port: 9050
-      brpc_port: 8060
-      sys_log_level: INFO
-      default_rowset_type: beta
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
