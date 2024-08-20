@@ -52,22 +52,40 @@ starrockscluster
 
 {{- define "starrockscluster.fe.config" -}}
 fe.conf: |
-{{- if .Values.starrocksFESpec.config }}
-{{- .Values.starrocksFESpec.config | nindent 2 }}
+{{- if and .Values.starrocksFESpec.configyaml (kindIs "map" .Values.starrocksFESpec.configyaml) }}
+  {{- range $key, $value := .Values.starrocksFESpec.configyaml }}
+    {{ $key }} = {{ $value }}
+  {{- end }}
+{{- else if .Values.starrocksFESpec.configyaml }}
+  {{ fail "configyaml must be a map" }}
+{{- else }}
+  {{- .Values.starrocksFESpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.config" -}}
 cn.conf: |
-{{- if .Values.starrocksCnSpec.config }}
-{{- .Values.starrocksCnSpec.config | nindent 2 }}
+{{- if and .Values.starrocksCnSpec.configyaml (kindIs "map" .Values.starrocksCnSpec.configyaml) }}
+  {{- range $key, $value := .Values.starrocksCnSpec.configyaml }}
+    {{ $key }} = {{ $value }}
+  {{- end }}
+{{- else if .Values.starrocksCnSpec.configyaml }}
+  {{ fail "configyaml must be a map" }}
+{{- else }}
+  {{- .Values.starrocksCnSpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
 {{- define "starrocksclster.be.config" -}}
 be.conf: |
-{{- if .Values.starrocksBeSpec.config }}
-{{- .Values.starrocksBeSpec.config | nindent 2 }}
+{{- if and .Values.starrocksBeSpec.configyaml (kindIs "map" .Values.starrocksBeSpec.configyaml) }}
+  {{- range $key, $value := .Values.starrocksBeSpec.configyaml }}
+    {{ $key }} = {{ $value }}
+  {{- end }}
+{{- else if .Values.starrocksBeSpec.configyaml }}
+  {{ fail "configyaml must be a map" }}
+{{- else }}
+  {{- .Values.starrocksBeSpec.config | nindent 2 }}
 {{- end }}
 {{- end }}
 
@@ -214,7 +232,12 @@ starrockscluster.fe.config.hash is used to calculate the hash value of the fe.co
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
 {{- define "starrockscluster.fe.config.hash" }}
-  {{- if .Values.starrocksFESpec.config }}
+  {{- if and .Values.starrocksFESpec.configyaml (kindIs "map" .Values.starrocksFESpec.configyaml) }}
+    {{- $hash := toJson .Values.starrocksFESpec.configyaml | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else if .Values.starrocksFESpec.configyaml }}
+    {{ fail "configyaml must be a map" }}
+  {{- else if .Values.starrocksFESpec.config }}
     {{- $hash := toJson .Values.starrocksFESpec.config | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
   {{- else }}
@@ -228,7 +251,12 @@ starrockscluster.be.config.hash is used to calculate the hash value of the be.co
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
 {{- define "starrockscluster.be.config.hash" }}
-  {{- if .Values.starrocksBeSpec.config }}
+  {{- if and .Values.starrocksBeSpec.configyaml (kindIs "map" .Values.starrocksBeSpec.configyaml) }}
+    {{- $hash := toJson .Values.starrocksBeSpec.configyaml | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else if .Values.starrocksBeSpec.configyaml }}
+    {{ fail "configyaml must be a map" }}
+  {{- else if .Values.starrocksBeSpec.config }}
     {{- $hash := toJson .Values.starrocksBeSpec.config | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
   {{- else }}
@@ -241,7 +269,12 @@ starrockscluster.cn.config.hash is used to calculate the hash value of the cn.co
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
 {{- define "starrockscluster.cn.config.hash" }}
-  {{- if .Values.starrocksCnSpec.config }}
+  {{- if and .Values.starrocksCnSpec.configyaml (kindIs "map" .Values.starrocksCnSpec.configyaml) }}
+    {{- $hash := toJson .Values.starrocksCnSpec.configyaml | sha256sum | trunc 8 }}
+    {{- printf "%s" $hash }}
+  {{- else if .Values.starrocksCnSpec.configyaml }}
+    {{ fail "configyaml must be a map" }}
+  {{- else if .Values.starrocksCnSpec.config }}
     {{- $hash := toJson .Values.starrocksCnSpec.config | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
   {{- else }}
