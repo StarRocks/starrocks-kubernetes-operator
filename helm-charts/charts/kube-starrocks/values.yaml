@@ -8,7 +8,7 @@ operator:
   # Default values for operator.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-  
+
   global:
     rbac:
       # if set true, the clusterrole, clusterrolebinding, serviceaccount resources will be created for
@@ -22,17 +22,17 @@ operator:
         annotations: {}
         # Optional labels to add to serviceaccount manifest
         labels: {}
-  
+
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
-  
+
   # set the nameOverride values for creating the same resources with parent chart.
   # In version v1.7.1 or before, there is only one chart called kube-starrocks, and the chart name is the prefix
   # of some resources created by the chart.
   # In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
   # nameOverride is used to set the prefix of the resources created by operator chart.
   nameOverride: "kube-starrocks"
-  
+
   starrocksOperator:
     # If enabled, the operator releated resources will be created, including the operator deployment, service account,
     # clusterrole, clusterrolebinding, and service account.
@@ -112,7 +112,7 @@ starrocks:
   # In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
   # nameOverride is used to set the prefix of the resources created by starrocks chart.
   nameOverride: "kube-starrocks"
-  
+
   # This configuration is used to modify the root password during initial deployment.
   # After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
   # It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
@@ -130,10 +130,10 @@ starrocks:
     image: ""
     # The annotations for the Job, not including the annotations for the pod.
     annotations: {}
-  
+
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
-  
+
   # This configuration is used to integrate with external system DataDog.
   # You can enable the integration by setting the enabled to true, e.g. datalog.log.enabled=true will enable datadog agent
   # to collect the log.
@@ -151,7 +151,7 @@ starrocks:
       cn: false # change to 'true' to enable profiling on CN pods;
       env: "starrocks-default" # the default value for DD_ENV;
       configMode: "service" # see https://docs.datadoghq.com/containers/cluster_agent/admission_controller/?tab=operator#configure-apm-and-dogstatsd-communication-mode
-  
+
   # This configuration is used to integrate with external system Prometheus.
   metrics:
     serviceMonitor:
@@ -165,7 +165,7 @@ starrocks:
         # scraper: prometheus-operator
       # Prometheus ServiceMonitor interval
       interval: 15s
-  
+
   # deploy a starrocks cluster
   starrocksCluster:
     # the name of starrockscluster cluster, if not set, the value of nameOverride fields will be used.
@@ -245,7 +245,7 @@ starrocks:
         #     topologyKey: "kubernetes.io/hostname"
       # the pod labels for user select or classify pods.
       podLabels: {}
-  
+
   # spec to deploy fe.
   starrocksFESpec:
     # number of replicas to deploy for a fe statefulset.
@@ -420,6 +420,8 @@ starrocks:
       edit_log_port = 9010
       mysql_service_nio_enabled = true
       sys_log_level = INFO
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -437,10 +439,10 @@ starrocks:
     # terminationGracePeriodSeconds defines duration in seconds the FE pod needs to terminate gracefully.
     # default value is 120 seconds
     terminationGracePeriodSeconds: 120
-  
+
     # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
     # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-  
+
     # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
     # default value is 300 seconds
     # You can set it to 0 to disable the probe.
@@ -487,7 +489,7 @@ starrocks:
       #   volumeMounts:
       #   - mountPath: /opt/starrocks/fe/meta
       #     name: fe-meta   # append -meta to the end of the name of the starrocksFESpec.storageSpec.name
-  
+
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
     # number of replicas to deploy for CN component.
@@ -706,6 +708,8 @@ starrocks:
       webserver_port = 8040
       heartbeat_service_port = 9050
       brpc_port = 8060
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -723,10 +727,10 @@ starrocks:
     # terminationGracePeriodSeconds defines duration in seconds the CN pod needs to terminate gracefully.
     # default value is 120 seconds
     terminationGracePeriodSeconds: 120
-  
+
     # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
     # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-  
+
     # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
     # default value is 300 seconds
     # You can set it to 0 to disable the probe.
@@ -775,7 +779,7 @@ starrocks:
       #   volumeMounts:
       #   - mountPath: /opt/starrocks/cn/storage
       #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
-  
+
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
     # number of replicas to deploy.
@@ -958,6 +962,8 @@ starrocks:
       brpc_port = 8060
       sys_log_level = INFO
       default_rowset_type = beta
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -975,10 +981,10 @@ starrocks:
     # terminationGracePeriodSeconds defines duration in seconds the BE pod needs to terminate gracefully.
     # default value is 120 seconds
     terminationGracePeriodSeconds: 120
-  
+
     # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
     # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
-  
+
     # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
     # default value is 300 seconds
     # You can set it to 0 to disable the probe.
@@ -1025,7 +1031,7 @@ starrocks:
       #   volumeMounts:
       #   - mountPath: /opt/starrocks/be/storage
       #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
-  
+
   # create secrets if necessary.
   secrets: []
     # e.g. create my-secret
@@ -1034,7 +1040,7 @@ starrocks:
     #     key: |
     #       this is the content of the secret
     #       when mounted, key will be the name of the file
-  
+
   # create configmaps if necessary.
   configMaps: []
     # e.g. create my-configmap
@@ -1043,7 +1049,7 @@ starrocks:
     #     key: |
     #       this is the content of the configmap
     #       when mounted, key will be the name of the file
-  
+
   # If you needs to deploy other resources, e.g. serviceAccount, you can add them here.
   # You can even deploy resources to different namespaces
   resources: []
@@ -1052,7 +1058,7 @@ starrocks:
     #   metadata:
     #     name: sa-for-starrocks
     #     namespace: starrocks
-  
+
   # specify the fe proxy deploy or not.
   starrocksFeProxySpec:
     # specify the fe proxy deploy or not.
@@ -1125,10 +1131,10 @@ starrocks:
       #   operator: "Equal|Exists"
       #   value: "value"
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
-  
+
     # Please upgrade the CRD with v1.8.7 released version, if you want to use the following configuration.
     # including: livenessProbeFailureSeconds, readinessProbeFailureSeconds
-  
+
     # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
     # default value is 15 seconds
     # You can set it to 0 to disable the probe.
