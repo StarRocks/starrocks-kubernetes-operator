@@ -278,7 +278,7 @@ starrocksFESpec:
     # You must set name when you set storageClassName.
     # Note: Because hostPath field is not supported here, hostPath is not allowed to be set in storageClassName.
     storageClassName: ""
-    # the persistent volume size， default 10Gi.
+    # the persistent volume size for data.
     # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
     storageSize: 10Gi
     # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/fe/meta.
@@ -566,7 +566,7 @@ starrocksCnSpec:
     storageMountPath: ""
     # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
-    logStorageSize: 1Gi
+    logStorageSize: 20Gi
     # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/cn/spill.
     # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
     # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/cn/spill.
@@ -825,7 +825,7 @@ starrocksBeSpec:
     storageMountPath: ""
     # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
-    logStorageSize: 1Gi
+    logStorageSize: 20Gi
     # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/be/spill.
     # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
     # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/be/spill.
