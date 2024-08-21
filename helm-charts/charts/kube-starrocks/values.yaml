@@ -667,13 +667,17 @@ starrocks:
       storageClassName: ""
       # the storage size of per persistent volume for data.
       storageSize: 1Ti
-      # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/cn/storage.
       # the number of persistent volumes for data.
-      # if its value is greater than 1:
-      #   1. the storageMountPath will follow the format, e.g. /opt/starrocks/cn/storage0, /opt/starrocks/cn/storage1, ...
-      #   2. You must add in config the following configuration: storage_root_path = /opt/starrocks/cn/storage0;/opt/starrocks/cn/storage1;...
+      # if storageCount == 1
+      #   the storageMountPath field is used to specify the mount path of the persistent volume. If storageMountPath is empty,
+      #   the storageMountPath will be set to /opt/starrocks/cn/storage.
+      #   If storageMountPath is not /opt/starrocks/cn/storage, you must add in config the following configuration: storage_root_path = xxx.
+      # if storageCount > 1
+      #   the storageMountPath field is used to specify the prefix of mount path of the persistent volume. For example, if the
+      #   storageMountPath is /opt/starrocks/cn/storage, the real mount path will be /opt/starrocks/cn/storage0, /opt/starrocks/cn/storage1, ...
+      #   You must add in config the following configuration: storage_root_path = /opt/starrocks/cn/storage0;/opt/starrocks/cn/storage1;...
       storageCount: 1
-      # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/cn/storage.
+      # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
       # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
@@ -930,11 +934,16 @@ starrocks:
       # the storage size of per persistent volume for data.
       storageSize: 1Ti
       # the number of persistent volumes for data.
-      # if its value is greater than 1:
-      #   1. the storageMountPath will follow the format, e.g. /opt/starrocks/be/storage0, /opt/starrocks/be/storage1, ...
-      #   2. You must add in config the following configuration: storage_root_path = /opt/starrocks/be/storage0;/opt/starrocks/be/storage1;...
+      # if storageCount == 1
+      #   the storageMountPath field is used to specify the mount path of the persistent volume. If storageMountPath is empty,
+      #   the storageMountPath will be set to /opt/starrocks/be/storage.
+      #   If storageMountPath /opt/starrocks/be/storage, you must add in config the following configuration: storage_root_path = xxx.
+      # if storageCount > 1
+      #   the storageMountPath field is used to specify the prefix of mount path of the persistent volume. For example, if the
+      #   storageMountPath is /opt/starrocks/be/storage, the real mount path will be /opt/starrocks/be/storage0, /opt/starrocks/be/storage1, ...
+      #   You must add in config the following configuration: storage_root_path = /opt/starrocks/be/storage0;/opt/starrocks/be/storage1;...
       storageCount: 1
-      # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/be/storage.
+      # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
