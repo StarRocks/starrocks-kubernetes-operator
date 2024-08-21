@@ -452,10 +452,23 @@ spec:
     {{- if or .Values.starrocksBeSpec.storageSpec.name .Values.starrocksBeSpec.emptyDirs .Values.starrocksBeSpec.hostPaths }}
     storageVolumes:
     {{- if .Values.starrocksBeSpec.storageSpec.name }}
+    {{- if gt (int .Values.starrocksBeSpec.storageSpec.storageCount) 1 }}
+    {{- $storageName := .Values.starrocksBeSpec.storageSpec.name -}}
+    {{- $storageClassName := .Values.starrocksBeSpec.storageSpec.storageClassName -}}
+    {{- $storageSize := .Values.starrocksBeSpec.storageSpec.storageSize -}}
+    {{- $storageMountPath := include "starrockscluster.be.data.path" . -}}
+    {{- range $i, $e := until (int .Values.starrocksBeSpec.storageSpec.storageCount) }}
+    - name: {{ $storageName }}{{ $i }}{{template "starrockscluster.be.data.suffix" . }}
+      storageClassName: {{ $storageClassName }}
+      storageSize: "{{ $storageSize }}"
+      mountPath: {{ $storageMountPath }}{{ $i }}
+    {{- end }}
+    {{- else}}
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.data.suffix" . }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksBeSpec.storageSpec.storageSize }}"
       mountPath: {{template "starrockscluster.be.data.path" . }}
+    {{- end }}
     - name: {{ .Values.starrocksBeSpec.storageSpec.name }}{{template "starrockscluster.be.log.suffix" . }}
       storageClassName: {{ .Values.starrocksBeSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksBeSpec.storageSpec.logStorageSize }}"
@@ -704,10 +717,23 @@ spec:
     {{- if or .Values.starrocksCnSpec.storageSpec.name .Values.starrocksCnSpec.emptyDirs .Values.starrocksCnSpec.hostPaths }}
     storageVolumes:
     {{- if .Values.starrocksCnSpec.storageSpec.name }}
+    {{- if gt (int .Values.starrocksCnSpec.storageSpec.storageCount) 1 }}
+    {{- $storageName := .Values.starrocksCnSpec.storageSpec.name -}}
+    {{- $storageClassName := .Values.starrocksCnSpec.storageSpec.storageClassName -}}
+    {{- $storageSize := .Values.starrocksCnSpec.storageSpec.storageSize -}}
+    {{- $storageMountPath := include "starrockscluster.cn.data.path" . -}}
+    {{- range $i, $e := until (int .Values.starrocksCnSpec.storageSpec.storageCount) }}
+    - name: {{ $storageName }}{{ $i }}{{template "starrockscluster.cn.data.suffix" . }}
+      storageClassName: {{ $storageClassName }}
+      storageSize: "{{ $storageSize }}"
+      mountPath: {{ $storageMountPath }}{{ $i }}
+    {{- end }}
+    {{- else }}
     - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.data.suffix" . }}
       storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksCnSpec.storageSpec.storageSize }}"
       mountPath: {{template "starrockscluster.cn.data.path" . }}
+    {{- end }}
     - name: {{ .Values.starrocksCnSpec.storageSpec.name }}{{template "starrockscluster.cn.log.suffix" . }}
       storageClassName: {{ .Values.starrocksCnSpec.storageSpec.storageClassName }}
       storageSize: "{{ .Values.starrocksCnSpec.storageSpec.logStorageSize }}"
