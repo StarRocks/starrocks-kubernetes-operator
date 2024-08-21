@@ -420,6 +420,9 @@ starrocks:
       edit_log_port = 9010
       mysql_service_nio_enabled = true
       sys_log_level = INFO
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -706,6 +709,9 @@ starrocks:
       webserver_port = 8040
       heartbeat_service_port = 9050
       brpc_port = 8060
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
@@ -958,6 +964,9 @@ starrocks:
       brpc_port = 8060
       sys_log_level = INFO
       default_rowset_type = beta
+    # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
+    # precedence and values in config field will be discarded.
+    configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
     secrets: []
