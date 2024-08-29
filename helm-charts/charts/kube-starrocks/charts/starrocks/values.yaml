@@ -338,15 +338,15 @@ starrocksFESpec:
 
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   startupProbeFailureSeconds:
   # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   livenessProbeFailureSeconds:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   readinessProbeFailureSeconds:
   # Lifecycle describes actions that the management system should take in response to container lifecycle events.
   # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
@@ -637,15 +637,15 @@ starrocksCnSpec:
 
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   startupProbeFailureSeconds:
   # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   livenessProbeFailureSeconds:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   readinessProbeFailureSeconds:
   # Lifecycle describes actions that the management system should take in response to container lifecycle events.
   # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
@@ -902,15 +902,15 @@ starrocksBeSpec:
 
   # StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
   # default value is 300 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   startupProbeFailureSeconds:
   # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   livenessProbeFailureSeconds:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   readinessProbeFailureSeconds:
   # Lifecycle describes actions that the management system should take in response to container lifecycle events.
   # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
@@ -1052,11 +1052,11 @@ starrocksFeProxySpec:
 
   # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   livenessProbeFailureSeconds:
   # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
   # default value is 15 seconds
-  # You can set it to 0 to disable the probe.
+  # You can set it to "0" to disable the probe.
   readinessProbeFailureSeconds:
   # Note: will create emptyDir volume for fe proxy, PVC is not supported.
   emptyDirs: []
