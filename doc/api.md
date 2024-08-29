@@ -2276,5 +2276,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>b308920</code>.
+on git commit <code>354d3f8</code>.
 </em></p>

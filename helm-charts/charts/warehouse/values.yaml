@@ -35,7 +35,7 @@ spec:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
     # Note: the image tag must be greater than or equal to 3.2.0
-    tag: 3.2-latest
+    tag: 3.3-latest
   # serviceAccount for pod access cloud service.
   serviceAccount: ""
   # add annotations for pods. example, if you want to config monitor for datadog, you can config the annotations.

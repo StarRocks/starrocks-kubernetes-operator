@@ -28,7 +28,7 @@ metadata:
     cluster: kube-starrocks
 spec:
   starRocksFeSpec:
-    image: "starrocks/fe-ubuntu:3.2-latest"
+    image: "starrocks/fe-ubuntu:3.3-latest"
     replicas: 1
     storageVolumes:
     - name: fe-storage-meta
@@ -41,7 +41,7 @@ spec:
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
   starRocksBeSpec:
-    image: "starrocks/be-ubuntu:3.2-latest"
+    image: "starrocks/be-ubuntu:3.3-latest"
     replicas: 3
     storageVolumes:
     - name: be-storage-data
@@ -107,7 +107,7 @@ starrocks:
    starrocksFESpec:
       image:
          repository: starrocks/fe-ubuntu
-         tag: 3.2-latest
+         tag: 3.3-latest
       storageSpec:
          name: fe-storage
          storageClassName: standard-rwo   # standard-rwo is the default storageClassName in GKE.
@@ -116,7 +116,7 @@ starrocks:
    starrocksBeSpec:
       image:
          repository: starrocks/be-ubuntu
-         tag: 3.2-latest
+         tag: 3.3-latest
       replicas: 3
       storageSpec:
          name: be-storage

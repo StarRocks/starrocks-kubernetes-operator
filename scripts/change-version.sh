@@ -13,5 +13,5 @@ find . -type f | while read -r file; do
   [[ $file == *"/CHANGELOG.md" ]] && continue
 
   echo $file
-  sed -i '' 's/$1/$2/g' "$file"
+  sed -i '' "s/$1/$2/g" "$file"
 done
