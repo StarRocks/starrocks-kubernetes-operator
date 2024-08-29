@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## [v1.9.8](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.8)
+
+Release Notes for starrocks-kubernetes-operator v1.9.8
+
+We are excited to announce the release of StarRocks Kubernetes Operator v1.9.8. This version has the following
+enhancements:
+
+1. [Helm Chart] Support multiple data volumes on helm chart.
+   [#578](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/578).
+2. [Helm Chart] Use a reasonable volume size for logging for BE/CN. Because the logStorageSize field of the Helm Chart
+   is modified. If the user uses the default value, the Operator will try to update the PVC part of the component's
+   Statefulset. Statefulset does not allow this part of the configuration to be updated, so there is a case of tuning
+   failure. The solution is to set it to the original default value, 1GB.
+   [#579](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/579).
+3. [Helm Chart] Support config override.
+   [#580](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/580).
+4. [Operator] Add update permission for starrocksclusters/finalizers resource for OpenShift.
+   [#484](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/484)
+5. [Operator] Support to disable probe.
+   [#569](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/569)
+
+We thank our community for their contributions and feedback. For a detailed list of changes and updates, please refer to
+the GitHub repository. Happy deploying!
+
 ## [v1.9.7](https://github.com/StarRocks/starrocks-kubernetes-operator/releases/tag/v1.9.7)
 
 Release Notes for starrocks-kubernetes-operator v1.9.7
