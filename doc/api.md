@@ -1677,7 +1677,8 @@ Default failureThreshold is 60 and the periodSeconds is 5, this means the startu
 will fail if the pod can&rsquo;t start in 300 seconds. Your StartupProbeFailureSeconds is
 the total time of seconds before startupProbe give up and fail the container start.
 If startupProbeFailureSeconds can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold
-will be rounded up.</p>
+will be rounded up.
+Note: you can set it to 0 to disable the startup probe.</p>
 </td>
 </tr>
 <tr>
@@ -1693,7 +1694,8 @@ int32
 Default failureThreshold is 3 and the periodSeconds is 5, this means the liveness
 will fail if the pod can&rsquo;t respond in 15 seconds. Your LivenessProbeFailureSeconds is
 the total time of seconds before the container restart. If LivenessProbeFailureSeconds
-can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.</p>
+can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+Note: you can set it to 0 to disable the liveness probe.</p>
 </td>
 </tr>
 <tr>
@@ -1709,7 +1711,8 @@ int32
 Default failureThreshold is 3 and the periodSeconds is 5, this means the readiness
 will fail if the pod can&rsquo;t respond in 15 seconds. Your ReadinessProbeFailureSeconds is
 the total time of seconds before pods becomes not ready. If ReadinessProbeFailureSeconds
-can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.</p>
+can&rsquo;t be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
+Note: you can set it to 0 to disable the readiness probe.</p>
 </td>
 </tr>
 <tr>
@@ -2273,5 +2276,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>35451e5</code>.
+on git commit <code>b308920</code>.
 </em></p>
