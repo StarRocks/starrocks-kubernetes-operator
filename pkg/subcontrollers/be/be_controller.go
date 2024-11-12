@@ -251,5 +251,8 @@ func (be *BeController) validating(beSpec *srapi.StarRocksBeSpec) error {
 			return err
 		}
 	}
+	if err := srapi.ValidUpdateStrategy(beSpec.UpdateStrategy); err != nil {
+		return err
+	}
 	return nil
 }

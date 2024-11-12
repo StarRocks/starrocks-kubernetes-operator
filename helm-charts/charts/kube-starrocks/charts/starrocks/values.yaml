@@ -382,6 +382,13 @@ starrocksFESpec:
     #   volumeMounts:
     #   - mountPath: /opt/starrocks/fe/meta
     #     name: fe-meta   # append -meta to the end of the name of the starrocksFESpec.storageSpec.name
+  # Max unavailable pods for the fe component when doing rolling update.
+  # This field cannot be 0. The default setting is 1.
+  # Note: Because Operator uses statefulset to manage this component, the maxUnavailable field is in Alpha stage, and it is honored
+  # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
+  maxUnavailablePods:
+
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -683,6 +690,12 @@ starrocksCnSpec:
     #   volumeMounts:
     #   - mountPath: /opt/starrocks/cn/storage
     #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
+  # Max unavailable pods for the fe component when doing rolling update.
+  # This field cannot be 0. The default setting is 1.
+  # Note: Because Operator uses statefulset to manage this component, the maxUnavailable field is in Alpha stage, and it is honored
+  # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
+  maxUnavailablePods:
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -946,6 +959,12 @@ starrocksBeSpec:
     #   volumeMounts:
     #   - mountPath: /opt/starrocks/be/storage
     #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
+  # Max unavailable pods for the fe component when doing rolling update.
+  # This field cannot be 0. The default setting is 1.
+  # Note: Because Operator uses statefulset to manage this component, the maxUnavailable field is in Alpha stage, and it is honored
+  # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
+  maxUnavailablePods:
 
 # create secrets if necessary.
 secrets: []

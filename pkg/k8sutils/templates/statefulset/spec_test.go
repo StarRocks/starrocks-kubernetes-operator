@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -163,6 +164,54 @@ func TestMakeStatefulset(t *testing.T) {
 						Type: appsv1.RollingUpdateStatefulSetStrategyType,
 						RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 							Partition: func() *int32 { i := int32(0); return &i }(),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test Statefulset with updateStrategy",
+			args: args{
+				cluster: cluster,
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							Replicas: &replicas,
+						},
+						UpdateStrategy: &appsv1.StatefulSetUpdateStrategy{
+							Type: appsv1.RollingUpdateStatefulSetStrategyType,
+							RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+								MaxUnavailable: func() *intstr.IntOrString { i := intstr.FromInt(3); return &i }(),
+							},
+						},
+					},
+				},
+			},
+			want: appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-fe",
+					Namespace: "namespace",
+					Labels: map[string]string{
+						"app.starrocks.ownerreference/name": "test",
+						"app.kubernetes.io/component":       "fe",
+					},
+					Annotations: map[string]string{},
+				},
+				Spec: appsv1.StatefulSetSpec{
+					Replicas: &replicas,
+					Template: corev1.PodTemplateSpec{},
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"app.kubernetes.io/component":       "fe",
+							"app.starrocks.ownerreference/name": "test-fe",
+						},
+					},
+					ServiceName:         "test-fe-search",
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+						Type: appsv1.RollingUpdateStatefulSetStrategyType,
+						RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+							MaxUnavailable: func() *intstr.IntOrString { i := intstr.FromInt(3); return &i }(),
 						},
 					},
 				},

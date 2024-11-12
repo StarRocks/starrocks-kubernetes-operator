@@ -76,7 +76,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}()
 
 	feSpec := src.Spec.StarRocksFeSpec
-	if err = fc.validating(feSpec); err != nil {
+	if err = fc.Validating(feSpec); err != nil {
 		return err
 	}
 
@@ -207,11 +207,14 @@ func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocks
 	return nil
 }
 
-func (fc *FeController) validating(feSpec *srapi.StarRocksFeSpec) error {
+func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 	for i := range feSpec.StorageVolumes {
 		if err := feSpec.StorageVolumes[i].Validate(); err != nil {
 			return err
 		}
+	}
+	if err := srapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
+		return err
 	}
 	return nil
 }
