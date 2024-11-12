@@ -16,7 +16,13 @@
 
 package v1
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	"errors"
+	"strings"
+
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+)
 
 type StarRocksComponentSpec struct {
 	StarRocksLoadSpec `json:",inline"`
@@ -85,6 +91,15 @@ type StarRocksComponentSpec struct {
 	// More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
 	// +optional
 	Args []string `json:"args,omitempty"`
+
+	// StarRocksCluster use StatefulSet to deploy FE/BE/CN components.
+	// UpdateStrategy indicates the StatefulSetUpdateStrategy that will be
+	// employed to update Pods in the StatefulSet when a revision is made to
+	// Template. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#rolling-updates for more details.
+	// Note: The maxUnavailable field is in Alpha stage and it is honored only by API servers that are running with the
+	//       MaxUnavailableStatefulSet feature gate enabled.
+	// +optional
+	UpdateStrategy *appv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -189,4 +204,33 @@ func (spec *StarRocksComponentSpec) GetCommand() []string {
 
 func (spec *StarRocksComponentSpec) GetArgs() []string {
 	return spec.Args
+}
+
+func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy {
+	if spec.UpdateStrategy == nil {
+		const defaultRollingUpdateStartPod int32 = 0
+		return &appv1.StatefulSetUpdateStrategy{
+			Type: appv1.RollingUpdateStatefulSetStrategyType,
+			RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+				Partition: func(v int32) *int32 { return &v }(defaultRollingUpdateStartPod),
+			},
+		}
+	}
+	return spec.UpdateStrategy
+}
+
+func ValidUpdateStrategy(updateStrategy *appv1.StatefulSetUpdateStrategy) error {
+	if updateStrategy != nil {
+		if (updateStrategy.Type == "" || updateStrategy.Type == appv1.RollingUpdateStatefulSetStrategyType) &&
+			updateStrategy.RollingUpdate != nil {
+			rollingUpdate := updateStrategy.RollingUpdate
+			if rollingUpdate.MaxUnavailable != nil {
+				s := rollingUpdate.MaxUnavailable.String()
+				if strings.HasPrefix(s, "0") {
+					return errors.New("maxUnavailable field should > 0")
+				}
+			}
+		}
+	}
+	return nil
 }

@@ -24,6 +24,11 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
+    {{- if .Values.starrocksFESpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: "{{ .Values.starrocksFESpec.maxUnavailablePods }}"
+    {{- end }}
     {{- /*
     support both resources and resource for backward compatibility
     */}}
@@ -252,6 +257,11 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
+    {{- if .Values.starrocksBeSpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: "{{ .Values.starrocksBeSpec.maxUnavailablePods }}"
+    {{- end }}
     {{- /*
     support both resources and resource for backward compatibility
     */}}
@@ -512,6 +522,11 @@ spec:
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
     imagePullPolicy: {{ .Values.starrocksCnSpec.imagePullPolicy }}
+    {{- if .Values.starrocksCnSpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: "{{ .Values.starrocksCnSpec.maxUnavailablePods }}"
+    {{- end }}
     {{- if or .Values.starrocksCnSpec.serviceAccount .Values.starrocksCluster.componentValues.serviceAccount }}
     serviceAccount: {{ include "starrockscluster.cn.serviceAccount" . }}
     {{- end }}

@@ -2052,6 +2052,22 @@ spec:
                       - whenUnsatisfiable
                       type: object
                     type: array
+                  updateStrategy:
+                    properties:
+                      rollingUpdate:
+                        properties:
+                          maxUnavailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            x-kubernetes-int-or-string: true
+                          partition:
+                            format: int32
+                            type: integer
+                        type: object
+                      type:
+                        type: string
+                    type: object
                 type: object
               starRocksCnSpec:
                 properties:
@@ -4389,6 +4405,22 @@ spec:
                       - whenUnsatisfiable
                       type: object
                     type: array
+                  updateStrategy:
+                    properties:
+                      rollingUpdate:
+                        properties:
+                          maxUnavailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            x-kubernetes-int-or-string: true
+                          partition:
+                            format: int32
+                            type: integer
+                        type: object
+                      type:
+                        type: string
+                    type: object
                 type: object
               starRocksFeProxySpec:
                 properties:
@@ -7072,6 +7104,22 @@ spec:
                       - whenUnsatisfiable
                       type: object
                     type: array
+                  updateStrategy:
+                    properties:
+                      rollingUpdate:
+                        properties:
+                          maxUnavailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            x-kubernetes-int-or-string: true
+                          partition:
+                            format: int32
+                            type: integer
+                        type: object
+                      type:
+                        type: string
+                    type: object
                 type: object
             type: object
           status:

@@ -477,6 +477,10 @@ func (cc *CnController) validating(cnSpec *srapi.StarRocksCnSpec) error {
 		}
 	}
 
+	if err := srapi.ValidUpdateStrategy(cnSpec.UpdateStrategy); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -21,6 +21,7 @@ limitations under the License.
 package v1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -425,6 +426,11 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 		in, out := &in.Args, &out.Args
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.UpdateStrategy != nil {
+		in, out := &in.UpdateStrategy, &out.UpdateStrategy
+		*out = new(appsv1.StatefulSetUpdateStrategy)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

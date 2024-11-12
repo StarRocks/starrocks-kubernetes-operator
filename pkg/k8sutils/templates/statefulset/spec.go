@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
@@ -64,7 +63,6 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 
 // MakeStatefulset make statefulset
 func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appv1.StatefulSet {
-	const defaultRollingUpdateStartPod int32 = 0
 	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
 	st := appv1.StatefulSet{
@@ -80,12 +78,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			Selector: &metav1.LabelSelector{
 				MatchLabels: load.Selector(object.AliasName, spec),
 			},
-			UpdateStrategy: appv1.StatefulSetUpdateStrategy{
-				Type: appv1.RollingUpdateStatefulSetStrategyType,
-				RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
-					Partition: rutils.GetInt32Pointer(defaultRollingUpdateStartPod),
-				},
-			},
+			UpdateStrategy:       *spec.GetUpdateStrategy(),
 			Template:             *podTemplateSpec,
 			ServiceName:          service.SearchServiceName(object.AliasName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
