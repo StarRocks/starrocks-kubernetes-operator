@@ -100,6 +100,15 @@ type StarRocksComponentSpec struct {
 	//       MaxUnavailableStatefulSet feature gate enabled.
 	// +optional
 	UpdateStrategy *appv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
+
+	// Whether this container has a read-only root filesystem.
+	// Default is false.
+	// Note that:
+	// 	1. This field cannot be set when spec.os.name is windows.
+	//	2. The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6,
+	//     and does not support read-only root filesystem
+	// +optional
+	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty" protobuf:"varint,6,opt,name=readOnlyRootFilesystem"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -233,4 +242,12 @@ func ValidUpdateStrategy(updateStrategy *appv1.StatefulSetUpdateStrategy) error 
 		}
 	}
 	return nil
+}
+
+func (spec *StarRocksComponentSpec) IsReadOnlyRootFilesystem() *bool {
+	if spec.ReadOnlyRootFilesystem == nil {
+		b := false
+		return &b
+	}
+	return spec.ReadOnlyRootFilesystem
 }

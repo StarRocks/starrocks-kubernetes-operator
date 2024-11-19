@@ -1281,6 +1281,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readOnlyRootFilesystem:
+                    type: boolean
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -3634,6 +3636,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readOnlyRootFilesystem:
+                    type: boolean
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -6333,6 +6337,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  readOnlyRootFilesystem:
+                    type: boolean
                   readinessProbeFailureSeconds:
                     format: int32
                     type: integer
