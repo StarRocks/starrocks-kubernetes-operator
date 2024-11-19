@@ -50,8 +50,8 @@ of [this PR](https://github.com/StarRocks/starrocks-kubernetes-operator/pull/288
 # clone the repository
 git clone https://github.com/StarRocks/starrocks-kubernetes-operator.git
 
-# checkout the latest released version, e.g., v1.9.8
-git checkout v1.9.8
+# checkout the latest released version, e.g., v1.9.9
+git checkout v1.9.9
 
 # revert the commit
 git revert 66e2f2c
@@ -78,9 +78,9 @@ make generate
 
 ```bash
 # replace the image name with your own, e.g. replace meaglekey to the username of the Docker Hub account
-docker build -t meaglekey/operator:v1.9.8-remove-appProtocol .
+docker build -t meaglekey/operator:v1.9.9-remove-appProtocol .
 
 # push the image to the Docker Hub
 # Note: you have to log in to the Docker Hub by `docker login` First.
-docker push meaglekey/operator:v1.9.8-remove-appProtocol
+docker push meaglekey/operator:v1.9.9-remove-appProtocol
 ```
