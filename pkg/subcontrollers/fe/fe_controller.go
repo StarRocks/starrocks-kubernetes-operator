@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -225,7 +224,7 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 func GetFEConfig(ctx context.Context, client client.Client,
 	feSpec *srapi.StarRocksFeSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, client, feSpec.ConfigMapInfo,
-		feSpec.ConfigMaps, common.GetFEConfigDir(feSpec.FeEnvVars), "fe.conf",
+		feSpec.ConfigMaps, pod.GetConfigDir(feSpec), "fe.conf",
 		namespace)
 }
 

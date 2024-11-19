@@ -21,7 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
@@ -44,14 +43,14 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	vols, volumeMounts := pod.MountStorageVolumes(beSpec)
 
 	if !k8sutils.HasVolume(vols, _storageName) && !k8sutils.HasVolume(vols, _storageName2) &&
-		!k8sutils.HasMountPath(volumeMounts, common.GetBEStorageDir(beSpec.BeEnvVars)) {
+		!k8sutils.HasMountPath(volumeMounts, pod.GetStorageDir(beSpec)) {
 		// Changing the volume name to _storageName2 is fine, it will only affect users who did not persist data.
 		// The reason why we need to change the volume name is that the helm chart uses the format _storageName2
 		// Keeping the same suffix will make user easy to use feature, like init-containers and sidecars.
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName2, common.GetBEStorageDir(beSpec.BeEnvVars), "")
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _storageName2, pod.GetStorageDir(beSpec), "")
 	}
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, common.GetBELogDir(beSpec.BeEnvVars)) {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, common.GetBELogDir(beSpec.BeEnvVars), "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, pod.GetLogDir(beSpec)) {
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, pod.GetLogDir(beSpec), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -78,8 +77,11 @@ func (be *BeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		StartupProbe:    pod.StartupProbe(beSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(beSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(beSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(beSpec.GetLifecycle(), common.GetBEPreStopScriptPath(beSpec.BeEnvVars)),
+		Lifecycle:       pod.LifeCycle(beSpec.GetLifecycle(), pod.GetPreStopScriptPath(beSpec)),
 		SecurityContext: pod.ContainerSecurityContext(beSpec),
+	}
+	if pod.GetStarRocksRootPath(beSpec.BeEnvVars) != pod.GetStarRocksDefaultRootPath() {
+		beContainer.WorkingDir = pod.GetStarRocksRootPath(beSpec.BeEnvVars)
 	}
 	if beSpec.ConfigMapInfo.ConfigMapName != "" && beSpec.ConfigMapInfo.ResolveKey != "" {
 		beContainer.Env = append(beContainer.Env, corev1.EnvVar{

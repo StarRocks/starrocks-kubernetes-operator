@@ -322,13 +322,76 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 func getDefaultEntrypointScript(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
-		return fmt.Sprintf("%s/fe_entrypoint.sh", common.GetStarRocksRootPath(v.FeEnvVars))
+		return fmt.Sprintf("%s/fe_entrypoint.sh", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
-		return fmt.Sprintf("%s/be_entrypoint.sh", common.GetStarRocksRootPath(v.BeEnvVars))
+		return fmt.Sprintf("%s/be_entrypoint.sh", GetStarRocksRootPath(v.BeEnvVars))
 	case *v1.StarRocksCnSpec:
-		return fmt.Sprintf("%s/cn_entrypoint.sh", common.GetStarRocksRootPath(v.CnEnvVars))
+		return fmt.Sprintf("%s/cn_entrypoint.sh", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
+}
+
+func GetStorageDir(spec v1.SpecInterface) string {
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe/meta", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksBeSpec:
+		return fmt.Sprintf("%s/be/storage", GetStarRocksRootPath(v.BeEnvVars))
+	case *v1.StarRocksCnSpec:
+		return fmt.Sprintf("%s/cn/storage", GetStarRocksRootPath(v.CnEnvVars))
+	}
+	return ""
+}
+
+func GetLogDir(spec v1.SpecInterface) string {
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe/log", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksBeSpec:
+		return fmt.Sprintf("%s/be/log", GetStarRocksRootPath(v.BeEnvVars))
+	case *v1.StarRocksCnSpec:
+		return fmt.Sprintf("%s/cn/log", GetStarRocksRootPath(v.CnEnvVars))
+	}
+	return ""
+}
+
+func GetConfigDir(spec v1.SpecInterface) string {
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe/conf", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksBeSpec:
+		return fmt.Sprintf("%s/be/conf", GetStarRocksRootPath(v.BeEnvVars))
+	case *v1.StarRocksCnSpec:
+		return fmt.Sprintf("%s/cn/conf", GetStarRocksRootPath(v.CnEnvVars))
+	}
+	return ""
+}
+
+func GetPreStopScriptPath(spec v1.SpecInterface) string {
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe_prestop.sh", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksBeSpec:
+		return fmt.Sprintf("%s/be_prestop.sh", GetStarRocksRootPath(v.BeEnvVars))
+	case *v1.StarRocksCnSpec:
+		return fmt.Sprintf("%s/cn_prestop.sh", GetStarRocksRootPath(v.CnEnvVars))
+	}
+	return ""
+}
+
+func GetStarRocksDefaultRootPath() string {
+	return "/opt/starrocks"
+}
+
+func GetStarRocksRootPath(envVars []corev1.EnvVar) string {
+	if envVars != nil {
+		for _, env := range envVars {
+			if common.EqualsIgnoreCase(env.Name, "STARROCKS_ROOT") {
+				return env.Value
+			}
+		}
+	}
+	return "/opt/starrocks"
 }
 
 func ContainerCommand(spec v1.SpecInterface) []string {

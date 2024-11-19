@@ -65,55 +65,63 @@ metadata:
   namespace: starrocks
 spec:
   starRocksFeSpec:
-    command: [ "bash", "-c" ]
-    args:
-      - cp -r /opt/starrocks/* /opt/starrocks-artifacts && export STARROCKS_ROOT=/opt/starrocks-artifacts && exec /opt/starrocks-artifacts/fe_entrypoint.sh $FE_SERVICE_NAME
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
     configMapInfo:
       configMapName: kube-starrocks-fe-cm
       resolveKey: fe.conf
+    storageVolumes:
+    - mountPath: /opt/starrocks-artifacts
+      name: fe-artifacts
+      storageClassName: emptyDir
+      storageSize: 20Gi
+    - mountPath: /opt/starrocks-meta
+      name: fe-meta
+      storageSize: 10Gi
+    - mountPath: /opt/starrocks-log
+      name: fe-log
+      storageSize: 10Gi
+    command: ["bash", "-c"]
+    args:
+      - cp -r /opt/starrocks/* /opt/starrocks-artifacts && exec /opt/starrocks-artifacts/fe_entrypoint.sh $FE_SERVICE_NAME
+    feEnvVars:
+    - name: STARROCKS_ROOT
+      value: /opt/starrocks-artifacts
     image: starrocks/fe-ubuntu:3.2.2
     imagePullPolicy: IfNotPresent
     replicas: 1
     requests:
       cpu: 1m
       memory: 22Mi
-    storageVolumes:
-      - mountPath: /opt/starrocks-artifacts
-        name: fe-artifacts
-        storageClassName: emptyDir
-        storageSize: 20Gi
-      - mountPath: /opt/starrocks-meta
-        name: fe-meta
-        storageSize: 10Gi
-      - mountPath: /opt/starrocks-log
-        name: fe-log
-        storageSize: 10Gi
   starRocksBeSpec:
-    command: [ "bash", "-c" ]
-    args:
-      - cp -r /opt/starrocks/* /opt/starrocks-artifacts && export STARROCKS_ROOT=/opt/starrocks-artifacts && exec /opt/starrocks-artifacts/be_entrypoint.sh $FE_SERVICE_NAME
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
     configMapInfo:
       configMapName: kube-starrocks-be-cm
       resolveKey: be.conf
+    storageVolumes:
+    - mountPath: /opt/starrocks-artifacts
+      name: be-artifacts
+      storageClassName: emptyDir
+      storageSize: 20Gi
+    - mountPath: /opt/starrocks-storage
+      name: be-storage  # the name must be this
+      storageSize: 10Gi
+    - mountPath: /opt/starrocks-log
+      name: be-log  # the name must be this
+      storageSize: 10Gi
+    command: ["bash", "-c"]
+    args:
+      - cp -r /opt/starrocks/* /opt/starrocks-artifacts && exec /opt/starrocks-artifacts/be_entrypoint.sh $FE_SERVICE_NAME
+    beEnvVars:
+    - name: STARROCKS_ROOT
+      value: /opt/starrocks-artifacts
     image: starrocks/be-ubuntu:3.2.2
     imagePullPolicy: IfNotPresent
-    replicas: 1
+    replicas: 2
     requests:
       cpu: 1m
       memory: 10Mi
-    storageVolumes:
-      - mountPath: /opt/starrocks-artifacts
-        name: be-artifacts
-        storageClassName: emptyDir
-        storageSize: 20Gi
-      - mountPath: /opt/starrocks-storage
-        name: be-storage  # the name must be this
-        storageSize: 10Gi
-      - mountPath: /opt/starrocks-log
-        name: be-log  # the name must be this
-        storageSize: 10Gi
 
 ---
 
@@ -129,7 +137,7 @@ data:
     edit_log_port = 9010
     mysql_service_nio_enabled = true
     sys_log_level = INFO
-
+    
     # config for meta and log
     meta_dir = /opt/starrocks-meta
     dump_log_dir = /opt/starrocks-log
@@ -171,7 +179,7 @@ If you are using the `kube-starrocks` Helm chart, add the following snippets to 
 operator:
   starrocksOperator:
     image:
-      repository: operator
+      repository: starrocks/operator
       tag: v1.9.9-rc1
     imagePullPolicy: IfNotPresent
     resources:
@@ -179,59 +187,26 @@ operator:
         cpu: 1m
         memory: 20Mi
 starrocks:
-  initPassword:
-    enabled: false
-    password: "123456"
-  starrocksBeSpec:
-    readOnlyRootFilesystem: true
-    entrypoint:
-      script: |
-        #! /bin/bash
-        echo "do something before start BE"
-        cp -r /opt/starrocks/* /opt/starrocks-artifacts 
-        export STARROCKS_ROOT=/opt/starrocks-artifacts
-        exec /opt/starrocks-artifacts/be_entrypoint.sh $FE_SERVICE_NAME
-    image:
-      repository: starrocks/be-ubuntu
-      tag: 3.2.2
-    replicas: 1
-    resources:
-      limits:
-        cpu: 8
-        memory: 8Gi
-      requests:
-        cpu: 1m
-        memory: 10Mi
-    storageSpec:
-      name: be
-      storageSize: 10Gi
-      storageMountPath: /opt/starrocks-storage
-      logStorageSize: 10Gi
-      logMountPath: /opt/starrocks-log
-      spillStorageSize: 10Gi
-      spillMountPath: /opt/starrocks-spill
-    emptyDirs:
-      - name: be-artifacts
-        mountPath: /opt/starrocks-artifacts
-    config: |
-      be_port = 9060
-      webserver_port = 8040
-      heartbeat_service_port = 9050
-      brpc_port = 8060
-      sys_log_level = INFO
-      default_rowset_type = beta
-      # config for storage and log
-      storage_root_path = /opt/starrocks-storage
-      sys_log_dir = /opt/starrocks-log
-      spill_local_storage_dir = /opt/starrocks-spill
   starrocksFESpec:
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    storageSpec:
+      name: fe
+      storageSize: 10Gi
+      storageMountPath: /opt/starrocks-meta
+      logStorageSize: 10Gi
+      logMountPath: /opt/starrocks-log
+    emptyDirs:
+    - name: fe-artifacts
+      mountPath: /opt/starrocks-artifacts
     entrypoint:
       script: |
         #! /bin/bash
         cp -r /opt/starrocks/* /opt/starrocks-artifacts
-        export STARROCKS_ROOT=/opt/starrocks-artifacts
         exec /opt/starrocks/fe_entrypoint.sh $FE_SERVICE_NAME
+    feEnvVars:
+    - name: STARROCKS_ROOT
+      value: /opt/starrocks-artifacts
     image:
       repository: starrocks/fe-ubuntu
       tag: 3.2.2
@@ -242,15 +217,6 @@ starrocks:
       requests:
         cpu: 1m
         memory: 20Mi
-    storageSpec:
-      name: fe
-      storageSize: 10Gi
-      storageMountPath: /opt/starrocks-meta
-      logStorageSize: 10Gi
-      logMountPath: /opt/starrocks-log
-    emptyDirs:
-      - name: fe-artifacts
-        mountPath: /opt/starrocks-artifacts
     config: |
       LOG_DIR = ${STARROCKS_HOME}/log
       DATE = "$(date +%Y%m%d-%H%M%S)"
@@ -266,4 +232,48 @@ starrocks:
       dump_log_dir = /opt/starrocks-log
       sys_log_dir = /opt/starrocks-log
       audit_log_dir = /opt/starrocks-log
+  starrocksBeSpec:
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    storageSpec:
+      name: be
+      storageSize: 10Gi
+      storageMountPath: /opt/starrocks-storage
+      logStorageSize: 10Gi
+      logMountPath: /opt/starrocks-log
+      spillStorageSize: 10Gi
+      spillMountPath: /opt/starrocks-spill
+    emptyDirs:
+    - name: be-artifacts
+      mountPath: /opt/starrocks-artifacts
+    entrypoint:
+      script: |
+        #! /bin/bash
+        cp -r /opt/starrocks/* /opt/starrocks-artifacts 
+        exec /opt/starrocks-artifacts/be_entrypoint.sh $FE_SERVICE_NAME
+    beEnvVars:
+    - name: STARROCKS_ROOT
+      value: /opt/starrocks-artifacts
+    image:
+      repository: starrocks/be-ubuntu
+      tag: 3.2.2
+    replicas: 1
+    resources:
+      limits:
+        cpu: 8
+        memory: 8Gi
+      requests:
+        cpu: 1m
+        memory: 10Mi
+    config: |
+      be_port = 9060
+      webserver_port = 8040
+      heartbeat_service_port = 9050
+      brpc_port = 8060
+      sys_log_level = INFO
+      default_rowset_type = beta
+      # config for storage and log
+      storage_root_path = /opt/starrocks-storage
+      sys_log_dir = /opt/starrocks-log
+      spill_local_storage_dir = /opt/starrocks-spill
 ```

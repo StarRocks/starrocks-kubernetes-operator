@@ -29,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
@@ -48,8 +47,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	vols, volumeMounts := pod.MountStorageVolumes(cnSpec)
 
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, common.GetCNLogDir(cnSpec.CnEnvVars)) {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, common.GetCNLogDir(cnSpec.CnEnvVars), "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, pod.GetLogDir(cnSpec)) {
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, pod.GetLogDir(cnSpec), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -89,8 +88,11 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(cnSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), common.GetCNPreStopScriptPath(cnSpec.CnEnvVars)),
+		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), pod.GetPreStopScriptPath(cnSpec)),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
+	}
+	if pod.GetStarRocksRootPath(cnSpec.CnEnvVars) != pod.GetStarRocksDefaultRootPath() {
+		cnContainer.WorkingDir = pod.GetStarRocksRootPath(cnSpec.CnEnvVars)
 	}
 
 	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {

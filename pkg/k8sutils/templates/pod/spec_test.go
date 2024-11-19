@@ -591,3 +591,41 @@ func TestK8sYamlMarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStarRocksRootPath(t *testing.T) {
+	type args struct {
+		envVars []corev1.EnvVar
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test get starrocks root path - 1",
+			args: args{
+				envVars: nil,
+			},
+			want: "/opt/starrocks",
+		},
+		{
+			name: "test get starrocks root path - 2",
+			args: args{
+				envVars: []corev1.EnvVar{
+					{
+						Name:  "STARROCKS_ROOT",
+						Value: "xxx",
+					},
+				},
+			},
+			want: "xxx",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetStarRocksRootPath(tt.args.envVars); got != tt.want {
+				t.Errorf("GetStarRocksRootPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
