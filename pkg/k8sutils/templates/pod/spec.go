@@ -384,11 +384,9 @@ func GetStarRocksDefaultRootPath() string {
 }
 
 func GetStarRocksRootPath(envVars []corev1.EnvVar) string {
-	if envVars != nil {
-		for _, env := range envVars {
-			if common.EqualsIgnoreCase(env.Name, "STARROCKS_ROOT") {
-				return env.Value
-			}
+	for _, env := range envVars {
+		if common.EqualsIgnoreCase(env.Name, "STARROCKS_ROOT") {
+			return env.Value
 		}
 	}
 	return "/opt/starrocks"
