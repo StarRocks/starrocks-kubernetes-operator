@@ -15,6 +15,7 @@
 package pod
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 )
@@ -318,13 +320,13 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 }
 
 func getDefaultEntrypointScript(spec v1.SpecInterface) string {
-	switch spec.(type) {
+	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
-		return "/opt/starrocks/fe_entrypoint.sh"
+		return fmt.Sprintf("%s/fe_entrypoint.sh", common.GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
-		return "/opt/starrocks/be_entrypoint.sh"
+		return fmt.Sprintf("%s/be_entrypoint.sh", common.GetStarRocksRootPath(v.BeEnvVars))
 	case *v1.StarRocksCnSpec:
-		return "/opt/starrocks/cn_entrypoint.sh"
+		return fmt.Sprintf("%s/cn_entrypoint.sh", common.GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
 }

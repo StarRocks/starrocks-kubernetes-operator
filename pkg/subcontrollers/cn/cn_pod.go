@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
@@ -37,13 +38,9 @@ import (
 )
 
 const (
-	_logPath         = "/opt/starrocks/cn/log"
 	_logName         = "cn-log"
 	_cnConfigPath    = "/etc/starrocks/cn/conf"
 	_envCnConfigPath = "CONFIGMAP_MOUNT_PATH"
-
-	_cnConfDirPath = "/opt/starrocks/cn/conf"
-	_cnConfigKey   = "cn.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
@@ -51,8 +48,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	vols, volumeMounts := pod.MountStorageVolumes(cnSpec)
 
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, _logPath) {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, common.GetCNLogDir(cnSpec.CnEnvVars)) {
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, common.GetCNLogDir(cnSpec.CnEnvVars), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -92,7 +89,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(cnSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), "/opt/starrocks/cn_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), common.GetCNPreStopScriptPath(cnSpec.CnEnvVars)),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
 	}
 

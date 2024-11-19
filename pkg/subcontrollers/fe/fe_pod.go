@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
@@ -28,15 +29,10 @@ import (
 )
 
 const (
-	_metaPath             = "/opt/starrocks/fe/meta"
 	_metaName             = "fe-meta"
-	_logPath              = "/opt/starrocks/fe/log"
 	_logName              = "fe-log"
 	_feConfigMountPath    = "/etc/starrocks/fe/conf"
 	_envFeConfigMountPath = "CONFIGMAP_MOUNT_PATH"
-
-	_feConfDirPath = "/opt/starrocks/fe/conf"
-	_feKey         = "fe.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
@@ -46,11 +42,11 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	vols, volMounts := pod.MountStorageVolumes(feSpec)
 	// add default volume about log, meta if not configure.
-	if !k8sutils.HasVolume(vols, _metaName) && !k8sutils.HasMountPath(volMounts, _metaPath) {
-		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, _metaPath, "")
+	if !k8sutils.HasVolume(vols, _metaName) && !k8sutils.HasMountPath(volMounts, common.GetFEMetaDir(feSpec.FeEnvVars)) {
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, common.GetFEMetaDir(feSpec.FeEnvVars), "")
 	}
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volMounts, _logPath) {
-		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, _logPath, "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volMounts, common.GetFELogDir(feSpec.FeEnvVars)) {
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, common.GetFELogDir(feSpec.FeEnvVars), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -77,7 +73,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		StartupProbe:    pod.StartupProbe(feSpec.GetStartupProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(feSpec.GetLivenessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(feSpec.GetReadinessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(feSpec.GetLifecycle(), "/opt/starrocks/fe_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(feSpec.GetLifecycle(), common.GetFEPreStopScriptPath(feSpec.FeEnvVars)),
 		SecurityContext: pod.ContainerSecurityContext(feSpec),
 	}
 

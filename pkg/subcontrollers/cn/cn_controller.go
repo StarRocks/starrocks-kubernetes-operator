@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
@@ -428,7 +429,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 func (cc *CnController) GetCnConfig(ctx context.Context,
 	cnSpec *srapi.StarRocksCnSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, cc.k8sClient, cnSpec.ConfigMapInfo,
-		cnSpec.ConfigMaps, _cnConfDirPath, _cnConfigKey,
+		cnSpec.ConfigMaps, common.GetCNConfigDir(cnSpec.CnEnvVars), "cn.conf",
 		namespace)
 }
 

@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -211,7 +212,7 @@ func (be *BeController) generateInternalService(ctx context.Context,
 func (be *BeController) GetBeConfig(ctx context.Context,
 	beSpec *srapi.StarRocksBeSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, be.Client, beSpec.ConfigMapInfo,
-		beSpec.ConfigMaps, _beConfDirPath, _beConfigKey, namespace)
+		beSpec.ConfigMaps, common.GetBEConfigDir(beSpec.BeEnvVars), "be.conf", namespace)
 }
 
 func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {

@@ -34,3 +34,4 @@ gen-crd-api-reference-docs-master/
 *.tgz
 
 temp/
+cmd/cmd

@@ -286,6 +286,7 @@ starrocksFESpec:
     storageSize: 10Gi
     # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/fe/meta.
     storageMountPath: ""
+    logMountPath: ""
     # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/fe/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
     logStorageSize: 5Gi
@@ -587,6 +588,8 @@ starrocksCnSpec:
     storageCount: 1
     # see the comment of storageCount for the usage of storageMountPath.
     storageMountPath: ""
+    logMountPath: ""
+    spillMountPath: ""
     # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
     logStorageSize: 20Gi
@@ -865,6 +868,8 @@ starrocksBeSpec:
     storageCount: 1
     # see the comment of storageCount for the usage of storageMountPath.
     storageMountPath: ""
+    logMountPath: ""
+    spillMountPath: ""
     # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
     # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
     logStorageSize: 20Gi
