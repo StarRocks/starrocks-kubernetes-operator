@@ -180,7 +180,7 @@ operator:
   starrocksOperator:
     image:
       repository: starrocks/operator
-      tag: v1.9.9-rc1
+      tag: v1.9.9
     imagePullPolicy: IfNotPresent
     resources:
       requests:
