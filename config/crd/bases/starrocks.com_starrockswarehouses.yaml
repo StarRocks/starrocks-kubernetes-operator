@@ -3230,6 +3230,13 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  readOnlyRootFilesystem:
+                    description: "Whether this container has a read-only root filesystem.\nDefault
+                      is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
+                      is windows.\n\t2. The FE/BE/CN container should support read-only
+                      root filesystem. The newest version of FE/BE/CN is 3.3.6,\n
+                      \   and does not support read-only root filesystem"
+                    type: boolean
                   readinessProbeFailureSeconds:
                     description: |-
                       ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.

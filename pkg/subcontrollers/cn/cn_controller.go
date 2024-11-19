@@ -428,7 +428,7 @@ func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocks
 func (cc *CnController) GetCnConfig(ctx context.Context,
 	cnSpec *srapi.StarRocksCnSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, cc.k8sClient, cnSpec.ConfigMapInfo,
-		cnSpec.ConfigMaps, _cnConfDirPath, _cnConfigKey,
+		cnSpec.ConfigMaps, pod.GetConfigDir(cnSpec), "cn.conf",
 		namespace)
 }
 

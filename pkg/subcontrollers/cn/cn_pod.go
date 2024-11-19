@@ -37,13 +37,9 @@ import (
 )
 
 const (
-	_logPath         = "/opt/starrocks/cn/log"
 	_logName         = "cn-log"
 	_cnConfigPath    = "/etc/starrocks/cn/conf"
 	_envCnConfigPath = "CONFIGMAP_MOUNT_PATH"
-
-	_cnConfDirPath = "/opt/starrocks/cn/conf"
-	_cnConfigKey   = "cn.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
@@ -51,8 +47,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	vols, volumeMounts := pod.MountStorageVolumes(cnSpec)
 
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, _logPath) {
-		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, _logPath, "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, pod.GetLogDir(cnSpec)) {
+		vols, volumeMounts = pod.MountEmptyDirVolume(vols, volumeMounts, _logName, pod.GetLogDir(cnSpec), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -92,8 +88,11 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		StartupProbe:    pod.StartupProbe(cnSpec.GetStartupProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(cnSpec.GetLivenessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(cnSpec.GetReadinessProbeFailureSeconds(), webServerPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), "/opt/starrocks/cn_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(cnSpec.GetLifecycle(), pod.GetPreStopScriptPath(cnSpec)),
 		SecurityContext: pod.ContainerSecurityContext(cnSpec),
+	}
+	if pod.GetStarRocksRootPath(cnSpec.CnEnvVars) != pod.GetStarRocksDefaultRootPath() {
+		cnContainer.WorkingDir = pod.GetStarRocksRootPath(cnSpec.CnEnvVars)
 	}
 
 	if cnSpec.ConfigMapInfo.ConfigMapName != "" && cnSpec.ConfigMapInfo.ResolveKey != "" {

@@ -270,6 +270,9 @@ starrocks:
     # If runAsNonRoot is true, the container is run as non-root user.
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
+    # Whether this container has a read-only root filesystem.
+    # Note: The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6, and does not support read-only root filesystem.
+    readOnlyRootFilesystem: false
     # specify the service name and port config and serviceType
     # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     service:
@@ -394,6 +397,12 @@ starrocks:
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/fe/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 5Gi
+      # If logMountPath is empty, the logMountPath will be set to /opt/starrocks/fe/log.
+      # If logMountPath is not /opt/starrocks/fe/log, you must add in config the following configuration:
+      #    dump_log_dir = xxx
+      #    sys_log_dir = xxx
+      #    audit_log_dir = xxx
+      logMountPath: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent metadata and log.
     emptyDirs: []
@@ -528,6 +537,9 @@ starrocks:
     # If runAsNonRoot is true, the container is run as non-root user.
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
+    # Whether this container has a read-only root filesystem.
+    # Note: The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6, and does not support read-only root filesystem.
+    readOnlyRootFilesystem: false
     # add/drop capabilities for CN container.
     capabilities: {}
     #  add:
@@ -692,10 +704,16 @@ starrocks:
       # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 20Gi
+      # If logMountPath is empty, the logMountPath will be set to /opt/starrocks/cn/log.
+      # If logMountPath is not /opt/starrocks/cn/log, you must add in config the following configuration: sys_log_dir = xxx.
+      logMountPath: ""
       # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/cn/spill.
       # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
       # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/cn/spill.
       spillStorageSize: 0Gi
+      # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/cn/spill.
+      # If spillMountPath is not /opt/starrocks/cn/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
+      spillMountPath: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []
@@ -831,6 +849,9 @@ starrocks:
     # If runAsNonRoot is true, the container is run as non-root user.
     # The userId will be set to 1000, and the groupID will be set to 1000.
     runAsNonRoot: false
+    # Whether this container has a read-only root filesystem.
+    # Note: The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6, and does not support read-only root filesystem.
+    readOnlyRootFilesystem: false
     # add/drop capabilities for BE container.
     capabilities: {}
     #  add:
@@ -967,10 +988,16 @@ starrocks:
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 20Gi
+      # If logMountPath is empty, the logMountPath will be set to /opt/starrocks/be/log.
+      # If logMountPath is not /opt/starrocks/be/log, you must add in config the following configuration: sys_log_dir = xxx.
+      logMountPath: ""
       # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/be/spill.
       # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
       # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/be/spill.
       spillStorageSize: 0Gi
+      # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/be/spill.
+      # If spillMountPath is not /opt/starrocks/be/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
+      spillMountPath: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []

@@ -86,6 +86,9 @@ spec:
     serviceAccount: {{ include "starrockscluster.fe.serviceAccount" . }}
     {{- end }}
     runAsNonRoot: {{ include "starrockscluster.fe.runAsNonRoot" . }}
+    {{- if .Values.starrocksFESpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.starrocksFESpec.readOnlyRootFilesystem }}
+    {{- end }}
     {{- if or .Values.starrocksFESpec.nodeSelector .Values.starrocksCluster.componentValues.nodeSelector }}
     nodeSelector:
       {{- include "starrockscluster.fe.nodeSelector" . | nindent 6 }}
@@ -319,6 +322,9 @@ spec:
     serviceAccount: {{ include "starrockscluster.be.serviceAccount" . }}
     {{- end }}
     runAsNonRoot: {{ include "starrockscluster.be.runAsNonRoot" . }}
+    {{- if .Values.starrocksBeSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.starrocksBeSpec.readOnlyRootFilesystem }}
+    {{- end }}
     {{- if or .Values.starrocksBeSpec.capabilities .Values.datadog.profiling.be }}
     capabilities:
       {{- if or .Values.starrocksBeSpec.capabilities.add .Values.datadog.profiling.be }}
@@ -531,6 +537,9 @@ spec:
     serviceAccount: {{ include "starrockscluster.cn.serviceAccount" . }}
     {{- end }}
     runAsNonRoot: {{ include "starrockscluster.cn.runAsNonRoot" . }}
+    {{- if .Values.starrocksCnSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.starrocksCnSpec.readOnlyRootFilesystem }}
+    {{- end }}
     {{- if or .Values.starrocksCnSpec.capabilities .Values.datadog.profiling.cn }}
     capabilities:
       {{- if or .Values.starrocksCnSpec.capabilities.add .Values.datadog.profiling.cn }}

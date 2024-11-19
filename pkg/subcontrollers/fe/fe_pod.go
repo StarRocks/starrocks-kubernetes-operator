@@ -28,15 +28,10 @@ import (
 )
 
 const (
-	_metaPath             = "/opt/starrocks/fe/meta"
 	_metaName             = "fe-meta"
-	_logPath              = "/opt/starrocks/fe/log"
 	_logName              = "fe-log"
 	_feConfigMountPath    = "/etc/starrocks/fe/conf"
 	_envFeConfigMountPath = "CONFIGMAP_MOUNT_PATH"
-
-	_feConfDirPath = "/opt/starrocks/fe/conf"
-	_feKey         = "fe.conf"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
@@ -46,11 +41,11 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	vols, volMounts := pod.MountStorageVolumes(feSpec)
 	// add default volume about log, meta if not configure.
-	if !k8sutils.HasVolume(vols, _metaName) && !k8sutils.HasMountPath(volMounts, _metaPath) {
-		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, _metaPath, "")
+	if !k8sutils.HasVolume(vols, _metaName) && !k8sutils.HasMountPath(volMounts, pod.GetStorageDir(feSpec)) {
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _metaName, pod.GetStorageDir(feSpec), "")
 	}
-	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volMounts, _logPath) {
-		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, _logPath, "")
+	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volMounts, pod.GetLogDir(feSpec)) {
+		vols, volMounts = pod.MountEmptyDirVolume(vols, volMounts, _logName, pod.GetLogDir(feSpec), "")
 	}
 
 	// mount configmap, secrets to pod if needed
@@ -77,8 +72,11 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		StartupProbe:    pod.StartupProbe(feSpec.GetStartupProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
 		LivenessProbe:   pod.LivenessProbe(feSpec.GetLivenessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
 		ReadinessProbe:  pod.ReadinessProbe(feSpec.GetReadinessProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
-		Lifecycle:       pod.LifeCycle(feSpec.GetLifecycle(), "/opt/starrocks/fe_prestop.sh"),
+		Lifecycle:       pod.LifeCycle(feSpec.GetLifecycle(), pod.GetPreStopScriptPath(feSpec)),
 		SecurityContext: pod.ContainerSecurityContext(feSpec),
+	}
+	if pod.GetStarRocksRootPath(feSpec.FeEnvVars) != pod.GetStarRocksDefaultRootPath() {
+		feContainer.WorkingDir = pod.GetStarRocksRootPath(feSpec.FeEnvVars)
 	}
 
 	if feSpec.ConfigMapInfo.ConfigMapName != "" && feSpec.ConfigMapInfo.ResolveKey != "" {

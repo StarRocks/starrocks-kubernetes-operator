@@ -106,7 +106,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.fe.log.path" -}}
+{{- if .Values.starrocksFESpec.storageSpec.logMountPath }}
+{{- print .Values.starrocksFESpec.storageSpec.logMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/fe/log" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.be.data.suffix" -}}
@@ -126,7 +130,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.be.log.path" -}}
+{{- if .Values.starrocksBeSpec.storageSpec.logMountPath }}
+{{- print .Values.starrocksBeSpec.storageSpec.logMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/be/log" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.be.spill.suffix" -}}
@@ -134,7 +142,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.be.spill.path" -}}
+{{- if .Values.starrocksBeSpec.storageSpec.spillMountPath }}
+{{- print .Values.starrocksBeSpec.storageSpec.spillMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/be/spill" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.data.suffix" -}}
@@ -154,7 +166,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.cn.log.path" -}}
+{{- if .Values.starrocksCnSpec.storageSpec.logMountPath }}
+{{- print .Values.starrocksCnSpec.storageSpec.logMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/cn/log" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.cn.spill.suffix" -}}
@@ -162,7 +178,11 @@ be.conf: |
 {{- end }}
 
 {{- define "starrockscluster.cn.spill.path" -}}
+{{- if .Values.starrocksCnSpec.storageSpec.spillMountPath }}
+{{- print .Values.starrocksCnSpec.storageSpec.spillMountPath }}
+{{- else }}
 {{- print "/opt/starrocks/cn/spill" }}
+{{- end }}
 {{- end }}
 
 {{- define "starrockscluster.entrypoint.script.name" -}}

@@ -224,7 +224,7 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 func GetFEConfig(ctx context.Context, client client.Client,
 	feSpec *srapi.StarRocksFeSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, client, feSpec.ConfigMapInfo,
-		feSpec.ConfigMaps, _feConfDirPath, _feKey,
+		feSpec.ConfigMaps, pod.GetConfigDir(feSpec), "fe.conf",
 		namespace)
 }
 

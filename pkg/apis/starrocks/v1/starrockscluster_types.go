@@ -78,6 +78,7 @@ type SpecInterface interface {
 	GetCapabilities() *corev1.Capabilities
 	GetSidecars() []corev1.Container
 	GetInitContainers() []corev1.Container
+	IsReadOnlyRootFilesystem() *bool
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -219,7 +220,7 @@ func (spec *StarRocksFeProxySpec) GetInitContainers() []corev1.Container {
 
 // GetCommand
 // fe proxy does not have field command, the reason why implementing this method is
-// // that StarRocksFeProxySpec needs to implement SpecInterface interface
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetCommand() []string {
 	return nil
 }
@@ -233,6 +234,13 @@ func (spec *StarRocksFeProxySpec) GetArgs() []string {
 // GetUpdateStrategy
 // fe proxy is deployed by deployment, and it does not have field UpdateStrategy
 func (spec *StarRocksFeProxySpec) GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy {
+	return nil
+}
+
+// IsReadOnlyRootFilesystem
+// fe proxy does not have field ReadOnlyRootFilesystem, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) IsReadOnlyRootFilesystem() *bool {
 	return nil
 }
 
