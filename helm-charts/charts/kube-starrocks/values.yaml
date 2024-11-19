@@ -431,6 +431,8 @@ starrocks:
       sys_log_level = INFO
     # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
     # precedence and values in config field will be discarded.
+    # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+    #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
     configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
@@ -746,6 +748,8 @@ starrocks:
       brpc_port = 8060
     # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
     # precedence and values in config field will be discarded.
+    # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+    #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
     configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
@@ -1026,6 +1030,8 @@ starrocks:
       default_rowset_type = beta
     # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
     # precedence and values in config field will be discarded.
+    # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+    #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
     configyaml: {}
     # mount secrets if necessary.
     # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
