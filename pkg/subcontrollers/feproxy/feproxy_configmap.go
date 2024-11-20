@@ -61,6 +61,7 @@ http {
   ignore_invalid_headers off;
   underscores_in_headers on;
   proxy_read_timeout 600s;
+  proxy_http_version 1.1;
 
   client_body_temp_path /tmp/client_temp;
   proxy_temp_path       /tmp/proxy_temp_path;
