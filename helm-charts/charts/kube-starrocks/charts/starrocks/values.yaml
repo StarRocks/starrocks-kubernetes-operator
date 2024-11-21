@@ -276,6 +276,7 @@ starrocksFESpec:
     #
     # For persistent storage, specify a volume name prefix.
     # For example, using `fe` as the name prefix would be appropriate.
+    # Note: If the values of the following mountPaths are not default, you must set the name to fe.
     name: ""
     # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # You must set name when you set storageClassName.
@@ -576,6 +577,7 @@ starrocksCnSpec:
     #
     # For persistent storage, specify a volume name prefix.
     # For example, using `cn` as the name prefix would be appropriate.
+    # Note: If the values of the following mountPaths are not default, you must set the name to cn.
     name: ""
     # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # You must set name when you set storageClassName
@@ -862,6 +864,7 @@ starrocksBeSpec:
     #
     # For persistent storage, specify a volume name prefix.
     # For example, using `be` as the name prefix would be appropriate.
+    # Note: If the values of the following mountPaths are not default, you must set the name to be.
     name: ""
     # The storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
     # You must set name when you set storageClassName

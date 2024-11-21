@@ -76,10 +76,10 @@ spec:
       storageClassName: emptyDir
       storageSize: 20Gi
     - mountPath: /opt/starrocks-meta
-      name: fe-meta
+      name: fe-meta   # must be this
       storageSize: 10Gi
     - mountPath: /opt/starrocks-log
-      name: fe-log
+      name: fe-log    # must be this
       storageSize: 10Gi
     command: ["bash", "-c"]
     args:
@@ -105,10 +105,10 @@ spec:
       storageClassName: emptyDir
       storageSize: 20Gi
     - mountPath: /opt/starrocks-storage
-      name: be-storage  # the name must be this
+      name: be-storage  # must be this
       storageSize: 10Gi
     - mountPath: /opt/starrocks-log
-      name: be-log  # the name must be this
+      name: be-log  # must be this
       storageSize: 10Gi
     command: ["bash", "-c"]
     args:
@@ -191,7 +191,7 @@ starrocks:
     readOnlyRootFilesystem: true
     runAsNonRoot: true
     storageSpec:
-      name: fe
+      name: fe  # must be this
       storageSize: 10Gi
       storageMountPath: /opt/starrocks-meta
       logStorageSize: 10Gi
@@ -236,7 +236,7 @@ starrocks:
     readOnlyRootFilesystem: true
     runAsNonRoot: true
     storageSpec:
-      name: be
+      name: be  # must be this
       storageSize: 10Gi
       storageMountPath: /opt/starrocks-storage
       logStorageSize: 10Gi
