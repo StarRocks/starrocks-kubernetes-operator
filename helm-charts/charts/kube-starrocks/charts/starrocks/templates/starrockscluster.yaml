@@ -89,6 +89,10 @@ spec:
     {{- if .Values.starrocksFESpec.readOnlyRootFilesystem }}
     readOnlyRootFilesystem: {{ .Values.starrocksFESpec.readOnlyRootFilesystem }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.capabilities }}
+    capabilities:
+      {{- toYaml .Values.starrocksFESpec.capabilities | nindent 6 }}
+    {{- end }}
     {{- if or .Values.starrocksFESpec.nodeSelector .Values.starrocksCluster.componentValues.nodeSelector }}
     nodeSelector:
       {{- include "starrockscluster.fe.nodeSelector" . | nindent 6 }}

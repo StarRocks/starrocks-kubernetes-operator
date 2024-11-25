@@ -273,6 +273,13 @@ starrocks:
     # Whether this container has a read-only root filesystem.
     # Note: The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6, and does not support read-only root filesystem.
     readOnlyRootFilesystem: false
+    # add/drop capabilities for FE container.
+    capabilities: {}
+    #  add:
+    #    - PERFMON
+    #    - SYS_PTRACE
+    #  drop:
+    #    - SYS_ADMIN
     # specify the service name and port config and serviceType
     # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     service:
