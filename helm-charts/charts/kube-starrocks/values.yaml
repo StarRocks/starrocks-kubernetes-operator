@@ -395,6 +395,8 @@ starrocks:
       storageSize: 10Gi
       # If storageMountPath is empty, the storageMountPath will be set to /opt/starrocks/fe/meta.
       storageMountPath: ""
+      # If not set will use the value of the storageClassName field.
+      logStorageClassName: ""
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/fe/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 5Gi
@@ -705,12 +707,16 @@ starrocks:
       storageCount: 1
       # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
+      # If not set will use the value of the storageClassName field.
+      logStorageClassName: ""
       # the storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 20Gi
       # If logMountPath is empty, the logMountPath will be set to /opt/starrocks/cn/log.
       # If logMountPath is not /opt/starrocks/cn/log, you must add in config the following configuration: sys_log_dir = xxx.
       logMountPath: ""
+      # If not set will use the value of the storageClassName field.
+      spillStorageClassName: ""
       # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/cn/spill.
       # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
       # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/cn/spill.
@@ -992,12 +998,16 @@ starrocks:
       storageCount: 1
       # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
+      # If not set will use the value of the storageClassName field.
+      logStorageClassName: ""
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
       # If you set it to 0Gi, the related PVC will not be created, and the log will not be persisted.
       logStorageSize: 20Gi
       # If logMountPath is empty, the logMountPath will be set to /opt/starrocks/be/log.
       # If logMountPath is not /opt/starrocks/be/log, you must add in config the following configuration: sys_log_dir = xxx.
       logMountPath: ""
+      # If not set will use the value of the storageClassName field.
+      spillStorageClassName: ""
       # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/be/spill.
       # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
       # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/be/spill.
