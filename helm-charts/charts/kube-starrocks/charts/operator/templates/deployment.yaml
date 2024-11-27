@@ -40,6 +40,9 @@ spec:
         {{- if .Values.starrocksOperator.watchNamespace }}
         - --namespace={{ .Values.starrocksOperator.watchNamespace }}
         {{- end }}
+        {{- if .Values.starrocksOperator.dnsDomainSuffix }}
+        - --dns-domain-suffix={{ .Values.starrocksOperator.dnsDomainSuffix }}
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

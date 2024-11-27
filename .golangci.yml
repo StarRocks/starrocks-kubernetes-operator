@@ -35,7 +35,7 @@ linters-settings:
       - pattern: 'interface{}'
         replacement: 'any'
   goimports:
-    local-prefixes: github.com/StarRocks/starrocks-kubernetes-operator/pkg
+    local-prefixes: github.com/StarRocks/starrocks-kubernetes-operator
   gomnd:
     # don't include the "operation" and "assign"
     checks:

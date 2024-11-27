@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -45,6 +46,7 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&_namespace, "namespace", "", "if specified, "+
 		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
+	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
 
 	// Set up logger.
 	opts := zap.Options{}
@@ -83,7 +85,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	//+kubebuilder:scaffold:builder
+	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		logger.Error(err, "unable to set up health check")
