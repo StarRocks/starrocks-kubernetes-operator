@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	cmdconfig "github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
@@ -27,11 +28,11 @@ func (controller *FeProxyController) SyncConfigMap(ctx context.Context, src *sra
 
 	feSearchServiceName := service.SearchServiceName(src.Name, feSpec)
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	proxyPass := fmt.Sprintf("http://%s.%s.%s:%d", feExternalServiceName, src.GetNamespace(), "svc.cluster.local", httpPort)
+	proxyPass := fmt.Sprintf("http://%s.%s.%s:%d", feExternalServiceName, src.GetNamespace(), cmdconfig.GetServiceDomainSuffix(), httpPort)
 
 	resolver := feProxySpec.Resolver
 	if resolver == "" {
-		resolver = "kube-dns.kube-system.svc.cluster.local"
+		resolver = fmt.Sprintf("%s.%s", "kube-dns.kube-system", cmdconfig.GetServiceDomainSuffix())
 	}
 
 	or := metav1.NewControllerRef(src, src.GroupVersionKind())
