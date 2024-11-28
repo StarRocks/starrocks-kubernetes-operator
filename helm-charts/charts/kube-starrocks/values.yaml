@@ -839,7 +839,7 @@ starrocks:
       #   volumeMounts:
       #   - mountPath: /opt/starrocks/cn/storage
       #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
-    # Max unavailable pods for the fe component when doing rolling update.
+    # Max unavailable pods for the cn component when doing rolling update.
     # This field cannot be 0. The default setting is 1.
     # Note: Because Operator uses statefulset to manage this component, the maxUnavailable field is in Alpha stage, and it is honored
     # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
@@ -1124,7 +1124,7 @@ starrocks:
       #   volumeMounts:
       #   - mountPath: /opt/starrocks/be/storage
       #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
-    # Max unavailable pods for the fe component when doing rolling update.
+    # Max unavailable pods for the be component when doing rolling update.
     # This field cannot be 0. The default setting is 1.
     # Note: Because Operator uses statefulset to manage this component, the maxUnavailable field is in Alpha stage, and it is honored
     # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
