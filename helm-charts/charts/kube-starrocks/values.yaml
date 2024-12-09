@@ -126,6 +126,11 @@ starrocks:
   #       If you install StarRocks using helm install and set the initPassword, please always retain the configuration of initPassword.
   initPassword:
     enabled: false
+    # Note: If you are using Argo CD to deploy the StarRocks cluster, you must set isInstall to false after the first installation.
+    # This is because Argo CD support helm like this: helm template <options> | kubectl apply -f -. If isInstall is true, the
+    # initPassword job will be executed every time you run the command.
+    # see https://github.com/argoproj/argo-cd/discussions/7496#discussioncomment-1609267 for more information
+    isInstall: true
     password: ""
     # The secret name that contains password, the key of the secret is "password", and you should create it first.
     passwordSecret: ""
