@@ -1,4 +1,4 @@
-{{- if and .Values.initPassword.enabled .Release.IsInstall }}
+{{- if and .Values.initPassword.enabled .Values.initPassword.isInstall .Release.IsInstall }}
 apiVersion: batch/v1
 kind: Job
 metadata:
