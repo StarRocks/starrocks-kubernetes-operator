@@ -2778,6 +2778,13 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  shareProcessNamespace:
+                    description: |-
+                      Share a single process namespace between all of the containers in a pod.
+                      When this is set containers will be able to view and signal processes from other containers
+                      in the same pod, and the first process in each container will not be assigned PID 1.
+                      Optional: Default to false.
+                    type: boolean
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
@@ -7747,6 +7754,13 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  shareProcessNamespace:
+                    description: |-
+                      Share a single process namespace between all of the containers in a pod.
+                      When this is set containers will be able to view and signal processes from other containers
+                      in the same pod, and the first process in each container will not be assigned PID 1.
+                      Optional: Default to false.
+                    type: boolean
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
@@ -10569,6 +10583,13 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  shareProcessNamespace:
+                    description: |-
+                      Share a single process namespace between all of the containers in a pod.
+                      When this is set containers will be able to view and signal processes from other containers
+                      in the same pod, and the first process in each container will not be assigned PID 1.
+                      Optional: Default to false.
+                    type: boolean
                   startupProbeFailureSeconds:
                     description: |-
                       StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
@@ -13586,6 +13607,13 @@ spec:
                   serviceAccount:
                     description: serviceAccount for access cloud service.
                     type: string
+                  shareProcessNamespace:
+                    description: |-
+                      Share a single process namespace between all of the containers in a pod.
+                      When this is set containers will be able to view and signal processes from other containers
+                      in the same pod, and the first process in each container will not be assigned PID 1.
+                      Optional: Default to false.
+                    type: boolean
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.

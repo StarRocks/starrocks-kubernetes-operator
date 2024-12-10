@@ -1668,6 +1668,8 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  shareProcessNamespace:
+                    type: boolean
                   sidecars:
                     items:
                       properties:
