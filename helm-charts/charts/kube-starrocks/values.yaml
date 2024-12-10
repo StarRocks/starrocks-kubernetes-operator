@@ -526,6 +526,10 @@ starrocks:
     # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
     # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
     maxUnavailablePods:
+    # Share a single process namespace between all of the containers in a pod.
+    # When this is set containers will be able to view and signal processes from other containers
+    # in the same pod, and the first process in each container will not be assigned PID 1.
+    shareProcessNamespace:
   
   
   # spec for compute node, compute node provide compute function.
@@ -850,6 +854,10 @@ starrocks:
     # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
     # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
     maxUnavailablePods:
+    # Share a single process namespace between all of the containers in a pod.
+    # When this is set containers will be able to view and signal processes from other containers
+    # in the same pod, and the first process in each container will not be assigned PID 1.
+    shareProcessNamespace:
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -1135,6 +1143,10 @@ starrocks:
     # only by API servers that are running with the MaxUnavailableStatefulSet feature gate enabled.
     # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#maximum-unavailable-pods for more details.
     maxUnavailablePods:
+    # Share a single process namespace between all of the containers in a pod.
+    # When this is set containers will be able to view and signal processes from other containers
+    # in the same pod, and the first process in each container will not be assigned PID 1.
+    shareProcessNamespace:
   
   # create secrets if necessary.
   secrets: []

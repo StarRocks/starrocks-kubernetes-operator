@@ -16,6 +16,9 @@ spec:
     initContainers:
       {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.starrocksFESpec.shareProcessNamespace }}
+    {{- end }}
     image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
     {{- if .Values.starrocksFESpec.entrypoint }}
     command: ["bash", "-c"]
@@ -259,6 +262,9 @@ spec:
     {{- if .Values.starrocksBeSpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksBeSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.starrocksBeSpec.shareProcessNamespace }}
     {{- end }}
     image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
     {{- if .Values.starrocksBeSpec.entrypoint }}
@@ -533,6 +539,9 @@ spec:
     {{- if .Values.starrocksCnSpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksCnSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.starrocksCnSpec.shareProcessNamespace }}
     {{- end }}
     image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
     {{- if .Values.starrocksCnSpec.entrypoint }}

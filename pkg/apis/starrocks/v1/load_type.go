@@ -21,6 +21,7 @@ type loadInterface interface {
 	GetLifecycle() *corev1.Lifecycle
 	GetService() *StarRocksService
 	GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy
+	GetShareProcessNamespace() *bool
 
 	GetStorageVolumes() []StorageVolume
 	GetServiceAccount() string
@@ -161,6 +162,13 @@ type StarRocksLoadSpec struct {
 	// and for the CN Component is /opt/starrocks/cn_prestop.sh.
 	// +optional
 	Lifecycle *corev1.Lifecycle `json:"lifecycle,omitempty"`
+
+	// Share a single process namespace between all of the containers in a pod.
+	// When this is set containers will be able to view and signal processes from other containers
+	// in the same pod, and the first process in each container will not be assigned PID 1.
+	// Optional: Default to false.
+	// +optional
+	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
 }
 
 // StarRocksService defines external service for starrocks component.
@@ -307,6 +315,10 @@ func (spec *StarRocksLoadSpec) GetReadinessProbeFailureSeconds() *int32 {
 
 func (spec *StarRocksLoadSpec) GetLifecycle() *corev1.Lifecycle {
 	return spec.Lifecycle
+}
+
+func (spec *StarRocksLoadSpec) GetShareProcessNamespace() *bool {
+	return spec.ShareProcessNamespace
 }
 
 func (spec *StarRocksLoadSpec) GetImagePullPolicy() corev1.PullPolicy {
