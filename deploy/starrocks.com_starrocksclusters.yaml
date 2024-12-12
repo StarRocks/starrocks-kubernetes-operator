@@ -1346,6 +1346,8 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  shareProcessNamespace:
+                    type: boolean
                   sidecars:
                     items:
                       properties:
@@ -3701,6 +3703,8 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  shareProcessNamespace:
+                    type: boolean
                   sidecars:
                     items:
                       properties:
@@ -5002,6 +5006,8 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  shareProcessNamespace:
+                    type: boolean
                   startupProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -6402,6 +6408,8 @@ spec:
                     type: object
                   serviceAccount:
                     type: string
+                  shareProcessNamespace:
+                    type: boolean
                   sidecars:
                     items:
                       properties:
