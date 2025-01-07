@@ -627,7 +627,7 @@ starrocksCnSpec:
     spillStorageClassName: ""
     # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/cn/spill.
     # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
-    # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/cn/spill.
+    # You need to add spill_local_storage_dir=/opt/starrocks/cn/spill in cn.conf.
     spillStorageSize: 0Gi
     # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/cn/spill.
     # If spillMountPath is not /opt/starrocks/cn/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
@@ -922,7 +922,7 @@ starrocksBeSpec:
     spillStorageClassName: ""
     # Setting this parameter can persist spill storage, and the mount path is /opt/starrocks/be/spill.
     # If you set it to 0Gi, the related PVC will not be created, and the spill will not be persisted.
-    # You need to add in be.conf spill_local_storage_dir=/opt/starrocks/be/spill.
+    # You need to add spill_local_storage_dir=/opt/starrocks/be/spill in be.conf.
     spillStorageSize: 0Gi
     # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/be/spill.
     # If spillMountPath is not /opt/starrocks/be/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
