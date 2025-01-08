@@ -76,7 +76,7 @@ cn.conf: |
 {{- end }}
 {{- end }}
 
-{{- define "starrocksclster.be.config" -}}
+{{- define "starrockscluster.be.config" -}}
 be.conf: |
 {{- if and .Values.starrocksBeSpec.configyaml (kindIs "map" .Values.starrocksBeSpec.configyaml) }}
   {{- range $key, $value := .Values.starrocksBeSpec.configyaml }}
