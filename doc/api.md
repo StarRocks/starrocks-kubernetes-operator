@@ -1156,6 +1156,42 @@ of whether the variable exists or not. Cannot be updated.
 More info: <a href="https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell">https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell</a></p>
 </td>
 </tr>
+<tr>
+<td>
+<code>updateStrategy</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#statefulsetupdatestrategy-v1-apps">
+Kubernetes apps/v1.StatefulSetUpdateStrategy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StarRocksCluster use StatefulSet to deploy FE/BE/CN components.
+UpdateStrategy indicates the StatefulSetUpdateStrategy that will be
+employed to update Pods in the StatefulSet when a revision is made to
+Template. See <a href="https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#rolling-updates">https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#rolling-updates</a> for more details.
+Note: The maxUnavailable field is in Alpha stage and it is honored only by API servers that are running with the
+MaxUnavailableStatefulSet feature gate enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>readOnlyRootFilesystem</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Whether this container has a read-only root filesystem.
+Default is false.
+Note that:
+1. This field cannot be set when spec.os.name is windows.
+2. The FE/BE/CN container should support read-only root filesystem. The newest version of FE/BE/CN is 3.3.6,
+and does not support read-only root filesystem</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -1732,6 +1768,21 @@ script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Componen
 and for the CN Component is /opt/starrocks/cn_prestop.sh.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>shareProcessNamespace</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Share a single process namespace between all of the containers in a pod.
+When this is set containers will be able to view and signal processes from other containers
+in the same pod, and the first process in each container will not be assigned PID 1.
+Optional: Default to false.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
@@ -2276,5 +2327,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>354d3f8</code>.
+on git commit <code>f1f16fe</code>.
 </em></p>
