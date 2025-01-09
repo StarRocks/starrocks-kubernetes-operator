@@ -32,7 +32,7 @@ spec:
   starRocksFeSpec:
     storageVolumes:
       - mountPath: /opt/starrocks/fe/log
-        name: fe-storage-log
+        name: fe-log
         storageSize: 10Gi
         # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
 ```
@@ -52,7 +52,7 @@ spec:
 starrocks:
   starrocksFESpec:
     storageSpec:
-      name: "fe-storage"
+      name: "fe"
       storageSize: 10Gi
       logStorageSize: 10Gi
       # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
@@ -63,7 +63,7 @@ starrocks:
 ```yaml
 starrocksFESpec:
   storageSpec:
-    name: "fe-storage"
+    name: "fe"
     storageSize: 10Gi
     logStorageSize: 10Gi
     # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。

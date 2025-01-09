@@ -72,7 +72,7 @@ func TestReconcileConstructFeResource(t *testing.T) {
 						},
 						StorageVolumes: []srapi.StorageVolume{
 							{
-								Name:             "fe-storage",
+								Name:             "fe-meta",
 								StorageClassName: rutils.GetStringPointer("shard-data"),
 								MountPath:        "/data/fe/meta",
 								StorageSize:      "10Gi",

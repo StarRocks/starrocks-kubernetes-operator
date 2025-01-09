@@ -22,12 +22,12 @@ spec:
     # storageVolumes is optional. If you don't specify it, emptyDir will be used to store FE meta and log, and the files
     # and directories written to the volume will be completely lost upon container restarting.
     storageVolumes:
-    - name: fe-storage-meta
+    - name: fe-meta
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
       # FE container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta
-    - name: fe-storage-log
+    - name: fe-log
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
@@ -45,11 +45,11 @@ spec:
     # storageVolumes is optional. If you don't specify it, emptyDir will be used to store BE data and log, and be aware
     # that the files and directories written to the volume will be completely lost upon container restarting.
     storageVolumes:
-    - name: be-storage-data
+    - name: be-data
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
       storageSize: 1Ti
       mountPath: /opt/starrocks/be/storage
-    - name: be-storage-log
+    - name: be-log
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
       storageSize: 1Gi
       mountPath: /opt/starrocks/be/log

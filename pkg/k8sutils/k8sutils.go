@@ -430,18 +430,36 @@ func GetValueFromSecret(ctx context.Context, k8sClient client.Client, namespace 
 	return string(value), nil
 }
 
-func HasVolume(volumes []corev1.Volume, newVolumeName string) bool {
+// HasVolume is used to decide whether operator should create a default volume for a component.
+func HasVolume(volumes []corev1.Volume, defaultVolumeName string) bool {
 	for _, v := range volumes {
-		if v.Name == newVolumeName {
+		if v.Name == defaultVolumeName {
+			return true
+		}
+
+		// The defaultVolumeName is like be-data, be-log, fe-meta, fe-log, cn-log.
+		// If a user deploy StarRocks by helm chart with multiple volumes, their volume names may be like: be0-data, be1-data...,
+		// and their mount paths may be like: /opt/starrocks/be/storage0, /opt/starrocks/be/storage1...
+		// Considering this situation, we will only check if they have the same suffix, e.g. -data, -log
+		subStrings1 := strings.Split(defaultVolumeName, "-")
+		suffixFromDefaultVolumeName := subStrings1[len(subStrings1)-1]
+		subStrings2 := strings.Split(v.Name, "-")
+		suffixFromVolumeName := subStrings2[len(subStrings2)-1]
+		if len(subStrings1) > 1 && len(subStrings2) > 1 && suffixFromDefaultVolumeName == suffixFromVolumeName {
 			return true
 		}
 	}
 	return false
 }
 
-func HasMountPath(mounts []corev1.VolumeMount, newMountPath string) bool {
+// HasMountPath is used to decide whether operator should create a default volume for a component.
+func HasMountPath(mounts []corev1.VolumeMount, defaultMountPath string) bool {
 	for _, v := range mounts {
-		if v.MountPath == newMountPath {
+		// The defaultVolumeName is like be-data, be-log, fe-meta, fe-log, cn-log.
+		// If a user deploy StarRocks by helm chart with multiple volumes, their volume names may be like: be0-data, be1-data...,
+		// and their mount paths may be like: /opt/starrocks/be/storage0, /opt/starrocks/be/storage1...
+		// Considering this situation, we need to check if the defaultMountPath is a prefix of the mount path.
+		if strings.Contains(v.MountPath, defaultMountPath) {
 			return true
 		}
 	}

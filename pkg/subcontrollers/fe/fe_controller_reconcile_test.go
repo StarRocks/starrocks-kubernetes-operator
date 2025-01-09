@@ -58,7 +58,7 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 						},
 						StorageVolumes: []srapi.StorageVolume{
 							{
-								Name:             "fe-storage",
+								Name:             "fe-meta",
 								StorageClassName: rutils.GetStringPointer("shard-data"),
 								StorageSize:      "10Gi",
 								MountPath:        "/data/fe/meta",

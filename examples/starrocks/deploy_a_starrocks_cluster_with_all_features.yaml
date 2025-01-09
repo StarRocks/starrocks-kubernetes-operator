@@ -24,7 +24,7 @@ spec:
       resolveKey: fe.conf
     # fe storage volumes for persistent metadata and log
     storageVolumes:
-      - name: fe-storage-meta
+      - name: fe-meta
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
         # storageClassName: ""
         # the persistent volume size. FE container stop running if the disk free space which the
@@ -32,7 +32,7 @@ spec:
         storageSize: 10Gi
         # the mount path for FE meta.
         mountPath: /opt/starrocks/fe/meta
-      - name: fe-storage-log
+      - name: fe-log
         # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
@@ -148,14 +148,14 @@ spec:
       resolveKey: be.conf
     # be storage volumes for persistent storage.
     storageVolumes:
-      - name: be-storage-data
+      - name: be-data
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
         # storageClassName: ""
         # the size of storage volume for data
         storageSize: 10Gi
         # the mount path for BE data.
         mountPath: /opt/starrocks/be/storage
-      - name: be-storage-log
+      - name: be-log
         # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
@@ -271,14 +271,14 @@ spec:
       configMapName: starrockscluster-sample-cn-cm
       resolveKey: cn.conf
     storageVolumes:
-      - name: cn-storage-data
+      - name: cn-data
         # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
         # storageClassName: ""
         # the size of storage volume for data
         storageSize: 10Gi
         # the mount path of CN data
         mountPath: /opt/starrocks/cn/storage
-      - name: cn-storage-log
+      - name: cn-log
         # storageClassName: ""
         # the size of storage volume for log
         storageSize: 1Gi
