@@ -792,11 +792,22 @@ func TestHasMountPath(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "test has mount path",
+			name: "test dose not have mount path",
 			args: args{
 				mounts: []corev1.VolumeMount{
 					{
-						Name:      "fe-meta-storage",
+						MountPath: "/etc/fe/fe-meta",
+					},
+				},
+				newMountPath: "/opt/starrocks/fe/fe-meta",
+			},
+			want: false,
+		},
+		{
+			name: "test has mount path 1",
+			args: args{
+				mounts: []corev1.VolumeMount{
+					{
 						MountPath: "/opt/starrocks/fe/fe-meta",
 					},
 				},
@@ -809,13 +820,13 @@ func TestHasMountPath(t *testing.T) {
 			args: args{
 				mounts: []corev1.VolumeMount{
 					{
-						Name:      "fe-meta-storage",
-						MountPath: "/opt/starrocks/fe/fe-meta",
+						Name:      "storage",
+						MountPath: "/opt/starrocks/fe/fe-meta1",
 					},
 				},
-				newMountPath: "/opt/starrocks/fe/fe-meta2",
+				newMountPath: "/opt/starrocks/fe/fe-meta",
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {
@@ -829,8 +840,8 @@ func TestHasMountPath(t *testing.T) {
 
 func TestHasVolume(t *testing.T) {
 	type args struct {
-		volumes       []corev1.Volume
-		newVolumeName string
+		volumes           []corev1.Volume
+		defaultVolumeName string
 	}
 	tests := []struct {
 		name string
@@ -840,41 +851,47 @@ func TestHasVolume(t *testing.T) {
 		{
 			name: "test has volume",
 			args: args{
-				volumes: []corev1.Volume{
-					{
-						Name: "fe-meta",
-						VolumeSource: corev1.VolumeSource{
-							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-								ClaimName: "fe-meta",
-							},
-						},
-					},
-				},
-				newVolumeName: "fe-meta",
+				volumes:           []corev1.Volume{{Name: "fe-meta"}},
+				defaultVolumeName: "fe-meta",
 			},
 			want: true,
 		},
 		{
 			name: "test has volume",
 			args: args{
-				volumes: []corev1.Volume{
-					{
-						Name: "fe-meta",
-						VolumeSource: corev1.VolumeSource{
-							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-								ClaimName: "fe-meta",
-							},
-						},
-					},
-				},
-				newVolumeName: "fe-meta2",
+				volumes:           []corev1.Volume{{Name: "be0-data"}},
+				defaultVolumeName: "be-data",
+			},
+			want: true,
+		},
+		{
+			name: "test does not have volume 1",
+			args: args{
+				volumes:           []corev1.Volume{{Name: "fe-meta"}},
+				defaultVolumeName: "fe-meta2",
+			},
+			want: false,
+		},
+		{
+			name: "test does not have volume 2",
+			args: args{
+				volumes:           []corev1.Volume{{Name: "fe-meta-1"}},
+				defaultVolumeName: "fe-meta",
+			},
+			want: false,
+		},
+		{
+			name: "test does not have volume 3",
+			args: args{
+				volumes:           []corev1.Volume{{Name: "fe-meta-1"}},
+				defaultVolumeName: "meta",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := k8sutils.HasVolume(tt.args.volumes, tt.args.newVolumeName); got != tt.want {
+			if got := k8sutils.HasVolume(tt.args.volumes, tt.args.defaultVolumeName); got != tt.want {
 				t.Errorf("HasVolume() = %v, want %v", got, tt.want)
 			}
 		})

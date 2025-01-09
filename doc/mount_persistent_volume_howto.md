@@ -31,12 +31,12 @@ spec:
     image: "starrocks/fe-ubuntu:3.3-latest"
     replicas: 1
     storageVolumes:
-    - name: fe-storage-meta
+    - name: fe-meta
       storageClassName: standard-rwo  # standard-rwo is the default storageClassName in GKE.
       # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
       storageSize: 10Gi
       mountPath: /opt/starrocks/fe/meta
-    - name: fe-storage-log
+    - name: fe-log
       storageClassName: standard-rwo
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
@@ -44,11 +44,11 @@ spec:
     image: "starrocks/be-ubuntu:3.3-latest"
     replicas: 3
     storageVolumes:
-    - name: be-storage-data
+    - name: be-data
       storageClassName: standard-rwo
       storageSize: 1Ti
       mountPath: /opt/starrocks/be/storage
-    - name: be-storage-log
+    - name: be-log
       storageClassName: standard-rwo
       storageSize: 1Gi
       mountPath: /opt/starrocks/be/log
@@ -109,7 +109,7 @@ starrocks:
          repository: starrocks/fe-ubuntu
          tag: 3.3-latest
       storageSpec:
-         name: fe-storage
+         name: fe-data
          storageClassName: standard-rwo   # standard-rwo is the default storageClassName in GKE.
          logStorageSize: 10Gi
          storageSize: 100Gi

@@ -37,7 +37,7 @@ spec:
   starRocksFeSpec:
     storageVolumes:
       - mountPath: /opt/starrocks/fe/log
-        name: fe-storage-log
+        name: fe-log
         storageSize: 10Gi
         # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
 ```
@@ -61,7 +61,7 @@ For the kube-starrocks Helm Chart, you can configure as:
 starrocks:
   starrocksFESpec:
     storageSpec:
-      name: "fe-storage"
+      name: "fe"
       storageSize: 10Gi
       logStorageSize: 10Gi
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
@@ -72,7 +72,7 @@ For the starrocks Helm Chart, configure as:
 ```yaml
 starrocksFESpec:
   storageSpec:
-    name: "fe-storage"
+    name: "fe"
     storageSize: 10Gi
     logStorageSize: 10Gi
     # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
