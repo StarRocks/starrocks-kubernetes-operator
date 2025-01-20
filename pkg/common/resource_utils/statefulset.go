@@ -34,6 +34,7 @@ type hashStatefulsetObject struct {
 	serviceName          string
 	volumeClaimTemplates []corev1.PersistentVolumeClaim
 	replicas             int32
+	updateStrategy       appv1.StatefulSetUpdateStrategy
 }
 
 // StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
@@ -60,6 +61,7 @@ func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStat
 		serviceName:          sts.Spec.ServiceName,
 		volumeClaimTemplates: sts.Spec.VolumeClaimTemplates,
 		replicas:             replicas,
+		updateStrategy:       sts.Spec.UpdateStrategy,
 	}
 }
 
@@ -91,8 +93,7 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 
 	// avoid the update from kubectl.
 	return newHashv == oldHashv &&
-		new.Namespace == old.Namespace /* &&
-		oldGeneration == old.Generation*/
+		new.Namespace == old.Namespace
 }
 
 // MergeStatefulSets merge exist statefulset and new statefulset.

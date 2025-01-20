@@ -156,8 +156,10 @@ run:
   skip-files:
     - ".*_test\\.go"
     - pkg/subcontrollers/feproxy/feproxy_configmap.go
+    - scripts/migrate-chart-value/main.go
   skip-dirs:
     - test/testdata_etc # test files
     - internal/cache # extracted from Go code
     - internal/renameio # extracted from Go code
     - internal/robustio # extracted from Go code
+    - /opt/homebrew
