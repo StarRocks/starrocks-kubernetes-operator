@@ -338,7 +338,7 @@ starrocksFESpec:
     sys_log_level = INFO
   # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
   # precedence and values in config field will be discarded.
-  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notation.
   #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
   configyaml: {}
   # mount secrets if necessary.
@@ -391,6 +391,17 @@ starrocksFESpec:
   # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
   sidecars: []
     # - name: sidecar-container
+    #   image: busybox
+    #   # If starrocksFESpec.storageSpec.name is fe or not set, you can mount the volume of meta like this.
+    #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/fe/meta/sidecar-data.txt && sleep 3600']
+    #   volumeMounts:
+    #   - mountPath: /opt/starrocks/fe/meta
+    #     name: fe-meta   # append -meta to the end of the name of the starrocksFESpec.storageSpec.name
+  # sidecarsMap is an optional map of containers that are run in the same pod as the starrocks component.
+  # The reason for using sidecarsMap please refer to https://github.com/StarRocks/starrocks-kubernetes-operator/issues/618
+  # sidecarsMap has higher priority than sidecars, and the key of sidecarsMap is the name of the sidecar container.
+  sidecarsMap: {}
+    # sidecar-container:
     #   image: busybox
     #   # If starrocksFESpec.storageSpec.name is fe or not set, you can mount the volume of meta like this.
     #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/fe/meta/sidecar-data.txt && sleep 3600']
@@ -664,7 +675,7 @@ starrocksCnSpec:
     brpc_port = 8060
   # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
   # precedence and values in config field will be discarded.
-  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notation.
   #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
   configyaml: {}
   # mount secrets if necessary.
@@ -717,6 +728,18 @@ starrocksCnSpec:
   # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
   sidecars: []
     # - name: sidecar-container
+    #   image: busybox
+    #   # If starrocksCnSpec.storageSpec.name is cn, you can mount the volume of cache data like this.
+    #   # If starrocksCnSpec.storageSpec.name is not set, no default volume will be created, so you can not mount the volume of cache data like this.
+    #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/cn/storage/sidecar-data.txt && sleep 3600']
+    #   volumeMounts:
+    #   - mountPath: /opt/starrocks/cn/storage
+    #     name: cn-data   # append -data to the end of the name of the starrocksCnSpec.storageSpec.name
+  # sidecarsMap is an optional map of containers that are run in the same pod as the starrocks component.
+  # The reason for using sidecarsMap please refer to https://github.com/StarRocks/starrocks-kubernetes-operator/issues/618
+  # sidecarsMap has higher priority than sidecars, and the key of sidecarsMap is the name of the sidecar container.
+  sidecarsMap: {}
+    # sidecar-container:
     #   image: busybox
     #   # If starrocksCnSpec.storageSpec.name is cn, you can mount the volume of cache data like this.
     #   # If starrocksCnSpec.storageSpec.name is not set, no default volume will be created, so you can not mount the volume of cache data like this.
@@ -955,7 +978,7 @@ starrocksBeSpec:
     default_rowset_type = beta
   # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
   # precedence and values in config field will be discarded.
-  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notiation.
+  # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notation.
   #       e.g. brpc_socket_max_unwritten_bytes: "10737418240"
   configyaml: {}
   # mount secrets if necessary.
@@ -1008,6 +1031,17 @@ starrocksBeSpec:
   # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
   sidecars: []
     # - name: sidecar-container
+    #   image: busybox
+    #   # If your starrocksBeSpec.storageSpec.name is be or not set, you can mount the volume of data like this.
+    #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/be/storage/sidecar-data.txt && sleep 3600']
+    #   volumeMounts:
+    #   - mountPath: /opt/starrocks/be/storage
+    #     name: be-data   # append -data to the end of the name of the starrocksBeSpec.storageSpec.name
+  # sidecarsMap is an optional map of containers that are run in the same pod as the starrocks component.
+  # The reason for using sidecarsMap please refer to https://github.com/StarRocks/starrocks-kubernetes-operator/issues/618
+  # sidecarsMap has higher priority than sidecars, and the key of sidecarsMap is the name of the sidecar container.
+  sidecarsMap: {}
+    # sidecar-container:
     #   image: busybox
     #   # If your starrocksBeSpec.storageSpec.name is be or not set, you can mount the volume of data like this.
     #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/be/storage/sidecar-data.txt && sleep 3600']
