@@ -275,7 +275,7 @@ starrocksFESpec:
     requests:
       cpu: 4
       memory: 4Gi
-    # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
+    # If you want to remove one resource limit, e.g. cpu, you can set it to cpu: "unlimited".
     limits:
       cpu: 8
       memory: 8Gi
@@ -582,7 +582,7 @@ starrocksCnSpec:
     requests:
       cpu: 4
       memory: 8Gi
-    # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
+    # If you want to remove one resource limit, e.g. cpu, you can set it to cpu: "unlimited".
     limits:
       cpu: 8
       memory: 8Gi
@@ -877,7 +877,7 @@ starrocksBeSpec:
     requests:
       cpu: 4
       memory: 4Gi
-    # If you want to remove one resource limit, e.g. cpu, you can it to cpu: "unlimited".
+    # If you want to remove one resource limit, e.g. cpu, you can set it to cpu: "unlimited".
     limits:
       cpu: 8
       memory: 8Gi
