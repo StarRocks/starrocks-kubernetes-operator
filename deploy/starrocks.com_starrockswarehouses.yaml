@@ -789,6 +789,14 @@ spec:
                           type: string
                       type: object
                     type: array
+                  disasterRecovery:
+                    properties:
+                      enabled:
+                        type: boolean
+                      generation:
+                        format: int64
+                        type: integer
+                    type: object
                   envVars:
                     items:
                       properties:
@@ -2405,6 +2413,20 @@ spec:
                 items:
                   type: string
                 type: array
+              disasterRecovery:
+                properties:
+                  endTimestamp:
+                    type: string
+                  observedGeneration:
+                    format: int64
+                    type: integer
+                  phase:
+                    type: string
+                  reason:
+                    type: string
+                  startTimestamp:
+                    type: string
+                type: object
               failedInstances:
                 items:
                   type: string
