@@ -193,6 +193,9 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
     {{- end }}
+    {{- if and .Values.starrocksFESpec.sidecarsMap .Values.starrocksFESpec.sidecars }}
+      {{ fail "starrocksFESpec.sidecarsMap and starrocksFESpec.sidecars cannot be set at the same time" }}
+    {{- end }}
     {{- if or .Values.starrocksFESpec.sidecarsMap .Values.starrocksFESpec.sidecars }}
     sidecars:
       {{- if .Values.starrocksFESpec.sidecarsMap }}
@@ -456,6 +459,9 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
     {{- end }}
+    {{- if and .Values.starrocksBeSpec.sidecarsMap .Values.starrocksBeSpec.sidecars }}
+      {{ fail "starrocksBeSpec.sidecarsMap and starrocksBeSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
     {{- if or .Values.starrocksBeSpec.sidecarsMap .Values.starrocksBeSpec.sidecars }}
     sidecars:
       {{- if .Values.starrocksBeSpec.sidecarsMap }}
@@ -689,6 +695,9 @@ spec:
     {{- if .Values.starrocksCnSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.starrocksCnSpec.sidecarsMap .Values.starrocksCnSpec.sidecars }}
+      {{ fail "starrocksCnSpec.sidecarsMap and starrocksCnSpec.sidecars cannot be set at the same time" }}
     {{- end }}
     {{- if or .Values.starrocksCnSpec.sidecarsMap .Values.starrocksCnSpec.sidecars }}
     sidecars:
