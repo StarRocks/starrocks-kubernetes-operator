@@ -1,13 +1,17 @@
 package fe
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
 func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
@@ -373,6 +377,188 @@ func Test_hasClusterSnapshotConf(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := hasClusterSnapshotConf(tt.args.configMaps); got != tt.want {
 				t.Errorf("hasClusterSnapshotConf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
+	type args struct {
+		ctx              context.Context
+		k8sClient        client.Client
+		clusterNamespace string
+		clusterName      string
+		generation       int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		// Add cases that FE is not ready
+		{
+			name: "there is no fe instances",
+			args: args{
+				ctx:              context.TODO(),
+				k8sClient:        fake.NewFakeClient(v1.Scheme),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "there is no container status",
+			args: args{
+				ctx:              context.TODO(),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Pods",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "default",
+						Name:      "kube-starrocks-fe-0",
+						Labels: map[string]string{
+							v1.ComponentLabelKey: v1.DEFAULT_FE,
+							v1.OwnerReference:    "kube-starrocks",
+						},
+					},
+					Status: corev1.PodStatus{
+						ContainerStatuses: nil,
+					},
+				}),
+			},
+			want: false,
+		},
+		{
+			name: "container is not ready",
+			args: args{
+				ctx:              context.TODO(),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Pods",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "default",
+						Name:      "kube-starrocks-fe-0",
+						Labels: map[string]string{
+							v1.ComponentLabelKey: v1.DEFAULT_FE,
+							v1.OwnerReference:    "kube-starrocks",
+						},
+					},
+					Status: corev1.PodStatus{
+						ContainerStatuses: []corev1.ContainerStatus{
+							{
+								Name:  v1.DEFAULT_FE,
+								Ready: false,
+							},
+						},
+					},
+				}),
+			},
+			want: false,
+		},
+		{
+			name: "environment RESTORE_CLUSTER_GENERATION is not equal to generation",
+			args: args{
+				ctx:              context.TODO(),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Pods",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "default",
+						Name:      "kube-starrocks-fe-0",
+						Labels: map[string]string{
+							v1.ComponentLabelKey: v1.DEFAULT_FE,
+							v1.OwnerReference:    "kube-starrocks",
+						},
+					},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: v1.DEFAULT_FE,
+								Env: []corev1.EnvVar{
+									{
+										Name:  "RESTORE_CLUSTER_GENERATION",
+										Value: "1",
+									},
+								},
+							},
+						},
+					},
+					Status: corev1.PodStatus{
+						ContainerStatuses: []corev1.ContainerStatus{
+							{
+								Name:  v1.DEFAULT_FE,
+								Ready: true,
+							},
+						},
+					},
+				}),
+				generation: 2,
+			},
+			want: false,
+		},
+		// Add cases that FE is ready
+		{
+			name: "environment RESTORE_CLUSTER_GENERATION is not equal to generation",
+			args: args{
+				ctx:              context.TODO(),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Pods",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "default",
+						Name:      "kube-starrocks-fe-0",
+						Labels: map[string]string{
+							v1.ComponentLabelKey: v1.DEFAULT_FE,
+							v1.OwnerReference:    "kube-starrocks",
+						},
+					},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: v1.DEFAULT_FE,
+								Env: []corev1.EnvVar{
+									{
+										Name:  "RESTORE_CLUSTER_GENERATION",
+										Value: "2",
+									},
+								},
+							},
+						},
+					},
+					Status: corev1.PodStatus{
+						ContainerStatuses: []corev1.ContainerStatus{
+							{
+								Name:  v1.DEFAULT_FE,
+								Ready: true,
+							},
+						},
+					},
+				}),
+				generation: 2,
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckFEReadyInDisasterRecovery(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName, tt.args.generation); got != tt.want {
+				t.Errorf("CheckFEReadyInDisasterRecovery() = %v, want %v", got, tt.want)
 			}
 		})
 	}

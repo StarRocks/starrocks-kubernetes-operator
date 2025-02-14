@@ -145,7 +145,6 @@ func PortReadyProbe(port int) *corev1.Probe {
 // CheckFEReadyInDisasterRecovery will check the following things:
 //  1. make sure the value of environment RESTORE_CLUSTER_GENERATION equals to the generation of disaster recovery.
 //  2. make sure the pod is ready.
-// TODO(ydx): write test cases.
 func CheckFEReadyInDisasterRecovery(ctx context.Context, k8sClient client.Client,
 	clusterNamespace string, clusterName string, generation int64) bool {
 	logger := logr.FromContextOrDiscard(ctx)
