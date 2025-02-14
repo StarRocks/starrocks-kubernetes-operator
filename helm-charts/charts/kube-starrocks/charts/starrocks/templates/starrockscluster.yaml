@@ -193,9 +193,19 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
     {{- end }}
-    {{- if .Values.starrocksFESpec.sidecars }}
+    {{- if and .Values.starrocksFESpec.sidecarsMap .Values.starrocksFESpec.sidecars }}
+      {{ fail "starrocksFESpec.sidecarsMap and starrocksFESpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.starrocksFESpec.sidecarsMap .Values.starrocksFESpec.sidecars }}
     sidecars:
+      {{- if .Values.starrocksFESpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.starrocksFESpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.starrocksFESpec.sidecars }}
       {{- toYaml .Values.starrocksFESpec.sidecars | nindent 6 }}
+      {{- end }}
     {{- end }}
     {{- if .Values.starrocksFESpec.secrets }}
     secrets:
@@ -449,9 +459,19 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
     {{- end }}
-    {{- if .Values.starrocksBeSpec.sidecars }}
+    {{- if and .Values.starrocksBeSpec.sidecarsMap .Values.starrocksBeSpec.sidecars }}
+      {{ fail "starrocksBeSpec.sidecarsMap and starrocksBeSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.starrocksBeSpec.sidecarsMap .Values.starrocksBeSpec.sidecars }}
     sidecars:
+      {{- if .Values.starrocksBeSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.starrocksBeSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.starrocksBeSpec.sidecars }}
       {{- toYaml .Values.starrocksBeSpec.sidecars | nindent 6 }}
+      {{- end }}
     {{- end }}
     {{- if .Values.starrocksBeSpec.secrets }}
     secrets:
@@ -676,9 +696,19 @@ spec:
     lifecycle:
       {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}
     {{- end }}
-    {{- if .Values.starrocksCnSpec.sidecars }}
+    {{- if and .Values.starrocksCnSpec.sidecarsMap .Values.starrocksCnSpec.sidecars }}
+      {{ fail "starrocksCnSpec.sidecarsMap and starrocksCnSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.starrocksCnSpec.sidecarsMap .Values.starrocksCnSpec.sidecars }}
     sidecars:
+      {{- if .Values.starrocksCnSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.starrocksCnSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.starrocksCnSpec.sidecars }}
       {{- toYaml .Values.starrocksCnSpec.sidecars | nindent 6 }}
+      {{- end }}
     {{- end }}
     {{- if and .Values.starrocksCluster.enabledCn .Values.starrocksCnSpec.autoScalingPolicy }}
     autoScalingPolicy:
