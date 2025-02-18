@@ -15,6 +15,7 @@ import (
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 )
 
 func ShouldEnterDisasterRecoveryMode(feSpec *v1.StarRocksFeSpec,
@@ -153,7 +154,7 @@ func CheckFEReadyInDisasterRecovery(ctx context.Context, k8sClient client.Client
 	if err := k8sClient.List(ctx, &podList, client.InNamespace(clusterNamespace),
 		client.MatchingLabels{
 			v1.ComponentLabelKey: v1.DEFAULT_FE,
-			v1.OwnerReference:    clusterName,
+			v1.OwnerReference:    load.Name(clusterName, (*v1.StarRocksFeSpec)(nil)),
 		}); err != nil {
 		logger.Error(err, "list fe pod failed")
 		return false
