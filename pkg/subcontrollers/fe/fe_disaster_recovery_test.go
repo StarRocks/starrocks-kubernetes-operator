@@ -525,7 +525,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 						Name:      "kube-starrocks-fe-0",
 						Labels: map[string]string{
 							v1.ComponentLabelKey: v1.DEFAULT_FE,
-							v1.OwnerReference:    "kube-starrocks",
+							v1.OwnerReference:    "kube-starrocks-fe",
 						},
 					},
 					Spec: corev1.PodSpec{
