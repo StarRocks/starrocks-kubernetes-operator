@@ -89,11 +89,11 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 	}
 
 	logger.Info("get fe config to make sure StarRocks run in shared_data mode")
-	feconfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	feConfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
 	if err != nil {
 		return err
 	}
-	if val := feconfig["run_mode"]; val == nil || !strings.Contains(val.(string), "shared_data") {
+	if !fe.IsRunInSharedDataMode(feConfig) {
 		return StarRocksClusterRunModeError
 	}
 
@@ -119,7 +119,18 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
+	feConfig, err := cc.getFeConfig(ctx, src.Namespace, src.Name)
+	if err != nil {
+		return err
+	}
+	feSpec := src.Spec.StarRocksFeSpec
+	feStatus := src.Status.StarRocksFeStatus
+	if b, _ := fe.ShouldEnterDisasterRecoveryMode(feSpec, feStatus, feConfig); b {
+		// return nil because in disaster recovery mode, we do not need to sync the CN.
+		return nil
+	}
+
+	err = cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
 	defer func() {
 		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {

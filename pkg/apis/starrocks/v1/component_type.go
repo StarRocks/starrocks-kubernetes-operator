@@ -18,7 +18,9 @@ package v1
 
 import (
 	"errors"
+	"strconv"
 	"strings"
+	"time"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -109,6 +111,9 @@ type StarRocksComponentSpec struct {
 	//     and does not support read-only root filesystem
 	// +optional
 	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty" protobuf:"varint,6,opt,name=readOnlyRootFilesystem"`
+
+	// DisasterRecovery is used to determine whether to enter disaster recovery mode.
+	DisasterRecovery *DisasterRecovery `json:"disasterRecovery,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -135,6 +140,10 @@ type StarRocksComponentStatus struct {
 	// +optional
 	// Reason represents the reason of not running.
 	Reason string `json:"reason"`
+
+	// +optional
+	// DisasterRecovery represents the status of disaster recovery.
+	DisasterRecovery *DisasterRecoveryStatus `json:"disasterRecovery,omitempty"`
 }
 
 type ConfigMapInfo struct {
@@ -251,3 +260,50 @@ func (spec *StarRocksComponentSpec) IsReadOnlyRootFilesystem() *bool {
 	}
 	return spec.ReadOnlyRootFilesystem
 }
+
+// DisasterRecovery is used to determine whether to enter disaster recovery mode.
+type DisasterRecovery struct {
+	// Enabled is used to determine whether to enter disaster recovery mode.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+	// increase the generation.
+	Generation int64 `json:"generation,omitempty"`
+}
+
+// DisasterRecoveryStatus represents the status of disaster recovery.
+// Note: you should create a new instance of DisasterRecoveryStatus by NewDisasterRecoveryStatus.
+type DisasterRecoveryStatus struct {
+	// the available phase include: todo, doing, done
+	Phase DRPhase `json:"phase,omitempty"`
+
+	// the reason of disaster recovery.
+	Reason string `json:"reason,omitempty"`
+
+	// the unix time of starting disaster recovery.
+	StartTimestamp string `json:"startTimestamp,omitempty"`
+
+	// the unix time of ending disaster recovery.
+	EndTimestamp string `json:"endTimestamp,omitempty"`
+
+	// the observed generation of disaster recovery.
+	// If the observed generation is less than the generation, it will trigger disaster recovery.
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+}
+
+// NewDisasterRecoveryStatus creates a new disaster recovery status which the phase is todo.
+func NewDisasterRecoveryStatus(generation int64) *DisasterRecoveryStatus {
+	return &DisasterRecoveryStatus{
+		Phase:              DRPhaseTodo,
+		StartTimestamp:     strconv.FormatInt(time.Now().Unix(), 10),
+		ObservedGeneration: generation,
+	}
+}
+
+type DRPhase string
+
+const (
+	DRPhaseTodo  DRPhase = "todo"
+	DRPhaseDoing DRPhase = "doing"
+	DRPhaseDone  DRPhase = "done"
+)
