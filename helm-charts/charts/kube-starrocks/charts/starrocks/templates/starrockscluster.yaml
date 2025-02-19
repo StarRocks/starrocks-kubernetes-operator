@@ -11,11 +11,11 @@ metadata:
     {{- toYaml .Values.starrocksCluster.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.starrocksCluster.disasterRecovery }}
+  disasterRecovery:
+    {{- toYaml .Values.starrocksCluster.disasterRecovery | nindent 4 }}
+  {{- end }}
   starRocksFeSpec:
-    {{- if .Values.starrocksFESpec.disasterRecovery }}
-    disasterRecovery:
-      {{- toYaml .Values.starrocksFESpec.disasterRecovery | nindent 6 }}
-    {{- end }}
     {{- if .Values.starrocksFESpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
