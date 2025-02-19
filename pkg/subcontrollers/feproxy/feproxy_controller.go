@@ -136,7 +136,6 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 	}
 	src.Status.StarRocksFeProxyStatus = status
 
-	// TODO(yandongxiao): delete it
 	var actual appsv1.Deployment
 	deploymentName := load.Name(src.Name, feProxySpec)
 	err := controller.k8sClient.Get(ctx, types.NamespacedName{

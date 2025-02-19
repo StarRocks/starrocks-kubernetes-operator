@@ -263,7 +263,6 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	var st appv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
-	// todo(yandongxiao): delete it
 	statefulSetName := load.Name(object.AliasName, cnSpec)
 	namespacedName := types.NamespacedName{Namespace: object.Namespace, Name: statefulSetName}
 	if err := cc.k8sClient.Get(ctx, namespacedName, &st); apierrors.IsNotFound(err) {

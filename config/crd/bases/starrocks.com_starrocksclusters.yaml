@@ -15272,7 +15272,8 @@ spec:
                 properties:
                   endTimestamp:
                     description: the unix time of ending disaster recovery.
-                    type: string
+                    format: int64
+                    type: integer
                   observedGeneration:
                     description: |-
                       the observed generation of disaster recovery.
@@ -15287,7 +15288,8 @@ spec:
                     type: string
                   startTimestamp:
                     description: the unix time of starting disaster recovery.
-                    type: string
+                    format: int64
+                    type: integer
                 type: object
               phase:
                 description: 'Represents the state of cluster. the possible value

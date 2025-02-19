@@ -63,7 +63,6 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 
 // MakeStatefulset make statefulset
 func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appv1.StatefulSet {
-	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
 	expectSts := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{

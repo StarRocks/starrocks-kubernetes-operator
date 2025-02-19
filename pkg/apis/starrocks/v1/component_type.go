@@ -18,7 +18,6 @@ package v1
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"time"
 
@@ -274,10 +273,10 @@ type DisasterRecoveryStatus struct {
 	Reason string `json:"reason,omitempty"`
 
 	// the unix time of starting disaster recovery.
-	StartTimestamp string `json:"startTimestamp,omitempty"`
+	StartTimestamp int64 `json:"startTimestamp,omitempty"`
 
 	// the unix time of ending disaster recovery.
-	EndTimestamp string `json:"endTimestamp,omitempty"`
+	EndTimestamp int64 `json:"endTimestamp,omitempty"`
 
 	// the observed generation of disaster recovery.
 	// If the observed generation is less than the generation, it will trigger disaster recovery.
@@ -288,7 +287,7 @@ type DisasterRecoveryStatus struct {
 func NewDisasterRecoveryStatus(generation int64) *DisasterRecoveryStatus {
 	return &DisasterRecoveryStatus{
 		Phase:              DRPhaseTodo,
-		StartTimestamp:     strconv.FormatInt(time.Now().Unix(), 10),
+		StartTimestamp:     time.Now().Unix(),
 		ObservedGeneration: generation,
 	}
 }

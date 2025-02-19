@@ -11,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
@@ -258,69 +257,6 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Reconcile() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestStarRocksWarehouseReconciler_SetupWithManager(t *testing.T) {
-	type fields struct {
-		Client         client.Client
-		recorder       record.EventRecorder
-		subControllers []subcontrollers.WarehouseSubController
-	}
-	type args struct {
-		mgr controllerruntime.Manager
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &StarRocksWarehouseReconciler{
-				Client:         tt.fields.Client,
-				recorder:       tt.fields.recorder,
-				subControllers: tt.fields.subControllers,
-			}
-			if err := r.SetupWithManager(tt.args.mgr); (err != nil) != tt.wantErr {
-				t.Errorf("SetupWithManager() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestStarRocksWarehouseReconciler_UpdateStarRocksWarehouseStatus(t *testing.T) {
-	type fields struct {
-		Client         client.Client
-		recorder       record.EventRecorder
-		subControllers []subcontrollers.WarehouseSubController
-	}
-	type args struct {
-		ctx       context.Context
-		warehouse *v1.StarRocksWarehouse
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &StarRocksWarehouseReconciler{
-				Client:         tt.fields.Client,
-				recorder:       tt.fields.recorder,
-				subControllers: tt.fields.subControllers,
-			}
-			if err := r.UpdateStarRocksWarehouseStatus(tt.args.ctx, tt.args.warehouse); (err != nil) != tt.wantErr {
-				t.Errorf("UpdateStarRocksWarehouseStatus() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

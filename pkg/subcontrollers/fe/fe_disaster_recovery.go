@@ -79,7 +79,7 @@ func EnterDisasterRecoveryMode(ctx context.Context, k8sClient client.Client,
 		} else {
 			drStatus.Phase = v1.DRPhaseDone
 			drStatus.Reason = "disaster recovery is done"
-			drStatus.EndTimestamp = strconv.FormatInt(time.Now().Unix(), 10)
+			drStatus.EndTimestamp = time.Now().Unix()
 		}
 	}
 	return nil

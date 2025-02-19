@@ -7149,7 +7149,8 @@ spec:
               disasterRecoveryStatus:
                 properties:
                   endTimestamp:
-                    type: string
+                    format: int64
+                    type: integer
                   observedGeneration:
                     format: int64
                     type: integer
@@ -7158,7 +7159,8 @@ spec:
                   reason:
                     type: string
                   startTimestamp:
-                    type: string
+                    format: int64
+                    type: integer
                 type: object
               phase:
                 type: string

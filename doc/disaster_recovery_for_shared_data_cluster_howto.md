@@ -8,25 +8,23 @@ The following describes:
 1. How the Operator supports disaster recovery.
 2. Give an example of how to configure the disaster recovery.
 
-## How does Operator support disaster recovery
+## How does Operator support disaster recovery?
 
 Operator adds the following fields:
 
 ```yaml
 spec:
-  starrocksFESpec:
-    disasterRecovery:
-      generation: 1
-      enabled: true
+  disasterRecovery:
+    generation: 1
+    enabled: true
 
 status:
-  starRocksFeStatus:
-    disasterRecovery:
-      phase: todo/doing/done
-      reason: ""
-      observedGeneration: 1
-      startTimestamp: xxx
-      endTimestamp: yyy  
+  disasterRecoveryStatus:
+    phase: todo/doing/done
+    reason: ""
+    observedGeneration: 1
+    startTimestamp: xxx   # unix timestamp
+    endTimestamp: yyy     # unix timestamp  
 ```
 
 ### When does the DR(disaster recovery) operation trigger?
@@ -34,8 +32,8 @@ status:
 1. The `enabled` field must be true.
 2. The `generation` is a monotonically increasing integer that represents the expected state (spec) change version of
    the resource object. `observedGeneration` represents the version of the DR operation that has been executed. The
-   Operator compares the values of `generation` and `observedGeneration`: when `starRocksFeStatus.disasterRecovery` is
-   empty, or `observedGeneration < generation`, a new DR operation is triggered.
+   Operator compares the values of `generation` and `observedGeneration`: when `disasterRecoveryStatus` is empty,
+   or `observedGeneration < generation`, a new DR operation is triggered.
    If `generation == observedGeneration` && `disasterRecovery.Phase` != `v1.DRPhaseDone`, it means that after the last
    reconcile, the StarRocks cluster has entered disaster recovery mode.
 3. Check the FE configuration file to ensure that the StarRocks cluster is started in shared-data mode.
@@ -44,9 +42,9 @@ If all the above conditions are met, the Operator will enter the DR mode.
 
 ### How does the Operator implement the DR process?
 
-For BE, the reconcile is paused.
+For BE component, the reconcile is paused.
 
-For CN, the reconcile is paused.
+For CN component, the reconcile is paused.
 
 The reconcile process for FE is as follows:
 
@@ -58,37 +56,37 @@ The reconcile process for FE is as follows:
        used to determine the Generation to which the Pod belongs, and the latter is an environment variable passed to
        the FE module to trigger the disaster recovery operation of the FE Pod.
     3. Delete the startup/liveness configuration because the DR operation will take a long time.
-    4. Modify the Readiness configuration. The old configuration is to send an HTTP request to FE 8030; the new
-       configuration is used to detect whether the FE 9030 port is connected. Once connected, it means that the FE Pod
-       disaster recovery operation is complete.
+    4. Modify the Readiness configuration. The configuration for normal cluster is to send an HTTP request to FE 8030;
+       the new configuration is used to detect whether the FE 9030 port is connected. Once connected, it means that the
+       FE Pod disaster recovery operation is complete.
 3. After the FE Pod disaster recovery is complete, according to the configuration of the StarRocksCluster, StarRocks
    is started normally.
 
-### How does the Operator update the FE disaster recovery phase?
+### How does Operator update the disaster recovery phase?
 
-What is the phase of the FE disaster recovery? In the FE Status, `starRocksFeStatus.disasterRecovery.phase` represents
-the phase of the disaster recovery, including `todo`, `doing`, `done`.
+What is the phase of disaster recovery? In the status, `disasterRecoveryStatus.phase` represents the phase of the
+disaster recovery, including `todo`, `doing`, `done`.
 
 The status update logic is as follows:
 
-1. The Operator detects that the disaster recovery mode is first entered (starRocksFeStatus is empty) or
+1. The Operator detects that the disaster recovery mode is first entered (disasterRecoveryStatus is empty) or
    `observedGeneration < generation`. Then the disaster recovery mode enters the `todo` phase.
-2. After the modified Statefulset is applied, update `starRocksFeStatus.disasterRecovery.phase` to the `doing` state.
-   The duration of this state depends on the time it takes to complete the disaster recovery.
+2. After the modified Statefulset is applied, update `disasterRecoveryStatus.phase` to the `doing` state. The duration
+   of this state depends on the time it takes to complete the disaster recovery.
 3. The Operator periodically checks the status of the FE Pod. First, confirm the `generation` to which it belongs;
    second, confirm whether the Pod is Ready.
-4. After the FE Pod is Ready, update `starRocksFeStatus.disasterRecovery.phase` to the `done` mode.
+4. After the FE Pod is Ready, update `disasterRecoveryStatus.phase` to the `done` mode.
 
 ## Example
 
 Inorder to keep it simple and easy for users to follow this document, we use the `kube-starrocks` Helm Chart to deploy.
 Please note:
 
-1. Be sure to use at least v1.9.11 version of Operator and CRD.
-2. Be sure to use at least 3.4.1 version of the StarRocks image.
+1. Be sure to use at least v1.10.0 version of Operator and CRD.
+2. Be sure to use at least 3.4.1 version of the StarRocks image to do disaster recovery.
 3. Sensitive information is replaced by xxx, please set it to a reasonable value.
 
-### Create a normal working cluster
+### 1. Create a normal working cluster
 
 Prepare the `./starrocks-values.yaml` file:
 > Note: we set `automated_cluster_snapshot_interval_seconds` to configure every minute to take a snapshot.
@@ -98,7 +96,7 @@ operator:
   starrocksOperator:
     image:
       repository: starrocks/operator
-      tag: v1.9.11
+      tag: v1.10.0
     imagePullPolicy: IfNotPresent
     replicaCount: 1
     resources:
@@ -176,8 +174,8 @@ starrocks:
 
 Create the cluster using Helm:
 
-```shell
-helm install -f ./starrocks-values.yaml starrocks starrocks-community/kube-starrocks --version 1.9.11
+```bash
+helm install -f ./starrocks-values.yaml starrocks starrocks-community/kube-starrocks
 
 # make sure the cluster has been successfully deployed
 kubectl get pods
@@ -188,11 +186,11 @@ kube-starrocks-fe-1 1/1 Running 0 79s
 kube-starrocks-fe-2 1/1 Running 0 79s
 ```
 
-### Create a table and insert data
+### 2. Create a table and insert data
 
 Connect to the FE Pod:
 
-```shell
+```bash
 # enter FE pod
 kubectl exec -it kube-starrocks-fe-0 bash
 
@@ -253,7 +251,7 @@ select *
 from source_wiki_edit;
 ```
 
-### Generate Cluster Snapshot
+### 3. Generate Cluster Snapshot
 
 Begin backup:
 
@@ -297,13 +295,13 @@ STARMGR_JOURNAL_ID: 126
 Please note: because we set the backup interval to 1 minute, the backup path may be different from the above. The final
 result can be viewed through s3:
 
-```shell
+```bash
 s3cmd ls s3://xxx/data/7351ce6a-f4a4-4937-a876-cb8801085aea/meta/image/
 
 sDIR s3://xxx/data/7351ce6a-f4a4-4937-a876-cb8801085aea/meta/image/automated_cluster_snapshot_1739858235830/
 ```
 
-### Delete the created cluster
+### 4. Delete the created cluster
 
 ```bash
 helm uninstall starrocks
@@ -320,18 +318,18 @@ persistentvolumeclaim "fe-storage-meta-kube-starrocks-fe-1" deleted
 persistentvolumeclaim "fe-storage-meta-kube-starrocks-fe-2" deleted
 ```
 
-### Create a new cluster for disaster recovery
+### 5. Create a new cluster for disaster recovery
 
-We will reuse the previous `starrocks-values.yaml` file, so be sure to ensure the security of this storage file. Prepare
-a new file named `override.yaml`, which contains the configuration required for disaster recovery.
+We will reuse the previous `starrocks-values.yaml` file, so be sure to ensure the security of this configuration file.
+Prepare a new file named `override.yaml`, which contains the configuration required for disaster recovery.
 
 ```yaml
 starrocks:
-  starrocksFESpec: # enable disaster recovery
+  starrocksCluster: # enable disaster recovery
     disasterRecovery:
       enabled: true
       generation: 1
-    # mount the cluster_snapshot.yaml
+  starrocksFESpec: # mount the cluster_snapshot.yaml
     configMaps:
       - name: cluster-snapshot
         mountPath: /opt/starrocks/fe/conf/cluster_snapshot.yaml
@@ -373,60 +371,59 @@ starrocks:
 
 This time, we will deploy the cluster with the following command:
 
-```shell
-helm install -f ./starrocks-values.yaml -f override.yaml starrocks starrocks-community/kube-starrocks --version 1.9.11
-```
+```bash
+# Note:
+# 1. make sure you are using the at least v1.10.0 version of Operator and CRD
+# 2. the command to deploy the cluster is different from the first time. We specify two files, and the override.yaml
+#    is used for the recovery configuration.
+helm install -f ./starrocks-values.yaml -f override.yaml starrocks starrocks-community/kube-starrocks --version 1.10.0
 
-Please note: the command to deploy the cluster is different from the first time. We specify two yaml files, and the
-`override.yaml` is used for this recovery configuration, and it should be placed after the `starrocks-values.yaml` file.
+```
 
 The detailed process of disaster recovery is as follows:
 
 1. The Operator will start a FE Pod and start the disaster recovery.
-   ```sql
-        # ignore the operator pod
-        kubectl get pods
-        NAME                  READY   STATUS    RESTARTS        AGE
-        kube-starrocks-fe-0   1/1     Running   0               4m37s
+   ```
+   kubectl get pods
+   NAME                  READY   STATUS    RESTARTS        AGE
+   kube-starrocks-fe-0   1/1     Running   0               4m37s
    ```
    If you check the status of the StarRocksCluster at this time, you will see:
-   ```shell
-        kubectl get src kube-starrocks -oyaml | less
-        status:
-          phase: running
-          starRocksFeStatus:
-            disasterRecovery:
-              observedGeneration: 1
-              phase: doing
-              reason: disaster recovery is in progress
-              startTimestamp: "1739860263"
+   ```
+   kubectl get src kube-starrocks -oyaml | less
+   status:
+     phase: running
+     disasterRecovery:
+       observedGeneration: 1
+       phase: doing
+       reason: disaster recovery is in progress
+       startTimestamp: "1739860263"
    ```
 
 2. After the disaster recovery is complete, the Operator will automatically start other Pods.
-   ```shell
-        kubectl get pods
-        NAME                  READY   STATUS    RESTARTS        AGE
-        kube-starrocks-cn-0   1/1     Running   0               7m54s
-        kube-starrocks-fe-0   1/1     Running   0               7m1s
-        kube-starrocks-fe-1   1/1     Running   0               7m54s
-        kube-starrocks-fe-2   1/1     Running   0               7m54s
+   ```
+   kubectl get pods
+   NAME                  READY   STATUS    RESTARTS        AGE
+   kube-starrocks-cn-0   1/1     Running   0               7m54s
+   kube-starrocks-fe-0   1/1     Running   0               7m1s
+   kube-starrocks-fe-1   1/1     Running   0               7m54s
+   kube-starrocks-fe-2   1/1     Running   0               7m54s
    ```
    The cluster status is as follows:
-   ```shell
-        status:
-          phase: running
-          starRocksFeStatus:
-            disasterRecovery:
-              endTimestamp: "1739861262"
-              observedGeneration: 1
-              phase: done
-              reason: disaster recovery is done
-              startTimestamp: "1739860263"
+   ```
+   status:
+     phase: running
+     disasterRecoveryStatus:
+       endTimestamp: 1739861262
+       observedGeneration: 1
+       phase: done
+       reason: disaster recovery is done
+       startTimestamp: 1739860263
    ```
 
 ### Verify the disaster recovery
 
-```bash
+```shell
 # enter the pod
 kubectl exec -it kube-starrocks-fe-0 bash
 
@@ -435,10 +432,10 @@ mysql -h 127.0.0.1 -P9030 -uroot
 
 # get the data
 
-mysql> USE quickstart;
+mysql >USE quickstart
 Reading table information for completion of table and column names
 You can turn off this feature to get a quicker startup with -A
 
 Database changed
-mysql> select * from source_wiki_edit;
+mysql >select * from source_wiki_edit
 ```
