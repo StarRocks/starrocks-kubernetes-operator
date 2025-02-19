@@ -110,16 +110,16 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 	expectSts := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
 
-	feStatus := src.Status.StarRocksFeStatus
-	shouldEnterDRMode, queryPort := ShouldEnterDisasterRecoveryMode(feSpec, feStatus, feConfig)
+	drSpec := src.Spec.DisasterRecovery
+	drStatus := src.Status.DisasterRecoveryStatus
+	shouldEnterDRMode, queryPort := ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig)
 	if shouldEnterDRMode {
 		logger.Info("should enter disaster recovery mode")
-		if src.Status.StarRocksFeStatus == nil {
-			src.Status.StarRocksFeStatus = &srapi.StarRocksFeStatus{
-				StarRocksComponentStatus: srapi.StarRocksComponentStatus{},
-			}
+		if drStatus == nil {
+			drStatus = srapi.NewDisasterRecoveryStatus(drSpec.Generation)
+			src.Status.DisasterRecoveryStatus = drStatus
 		}
-		if err = EnterDisasterRecoveryMode(ctx, fc, src, &expectSts, queryPort); err != nil {
+		if err = EnterDisasterRecoveryMode(ctx, fc.Client, src, &expectSts, queryPort); err != nil {
 			logger.Error(err, "enter disaster recovery mode failed")
 			return err
 		}

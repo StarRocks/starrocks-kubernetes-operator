@@ -111,9 +111,6 @@ type StarRocksComponentSpec struct {
 	//     and does not support read-only root filesystem
 	// +optional
 	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty" protobuf:"varint,6,opt,name=readOnlyRootFilesystem"`
-
-	// DisasterRecovery is used to determine whether to enter disaster recovery mode.
-	DisasterRecovery *DisasterRecovery `json:"disasterRecovery,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -140,10 +137,6 @@ type StarRocksComponentStatus struct {
 	// +optional
 	// Reason represents the reason of not running.
 	Reason string `json:"reason"`
-
-	// +optional
-	// DisasterRecovery represents the status of disaster recovery.
-	DisasterRecovery *DisasterRecoveryStatus `json:"disasterRecovery,omitempty"`
 }
 
 type ConfigMapInfo struct {

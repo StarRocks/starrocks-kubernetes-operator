@@ -58,6 +58,21 @@ spec:
           spec:
             description: Specification of the desired state of the starrocks cluster.
             properties:
+              disasterRecovery:
+                description: DisasterRecovery is used to determine whether to enter
+                  disaster recovery mode.
+                properties:
+                  enabled:
+                    description: Enabled is used to determine whether to enter disaster
+                      recovery mode.
+                    type: boolean
+                  generation:
+                    description: |-
+                      Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+                      increase the generation.
+                    format: int64
+                    type: integer
+                type: object
               serviceAccount:
                 description: |-
                   Specify a Service Account for starRocksCluster use k8s cluster.
@@ -1067,21 +1082,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery is used to determine whether to
-                      enter disaster recovery mode.
-                    properties:
-                      enabled:
-                        description: Enabled is used to determine whether to enter
-                          disaster recovery mode.
-                        type: boolean
-                      generation:
-                        description: |-
-                          Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
-                          increase the generation.
-                        format: int64
-                        type: integer
-                    type: object
                   hostAliases:
                     description: |-
                       HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
@@ -6058,21 +6058,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery is used to determine whether to
-                      enter disaster recovery mode.
-                    properties:
-                      enabled:
-                        description: Enabled is used to determine whether to enter
-                          disaster recovery mode.
-                        type: boolean
-                      generation:
-                        description: |-
-                          Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
-                          increase the generation.
-                        format: int64
-                        type: integer
-                    type: object
                   hostAliases:
                     description: |-
                       HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
@@ -11811,21 +11796,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery is used to determine whether to
-                      enter disaster recovery mode.
-                    properties:
-                      enabled:
-                        description: Enabled is used to determine whether to enter
-                          disaster recovery mode.
-                        type: boolean
-                      generation:
-                        description: |-
-                          Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
-                          increase the generation.
-                        format: int64
-                        type: integer
-                    type: object
                   feEnvVars:
                     description: feEnvVars is a slice of environment variables that
                       are added to the pods, the default is empty.
@@ -15296,6 +15266,29 @@ spec:
           status:
             description: Most recent observed status of the starrocks cluster
             properties:
+              disasterRecoveryStatus:
+                description: DisasterRecoveryStatus represents the status of disaster
+                  recovery.
+                properties:
+                  endTimestamp:
+                    description: the unix time of ending disaster recovery.
+                    type: string
+                  observedGeneration:
+                    description: |-
+                      the observed generation of disaster recovery.
+                      If the observed generation is less than the generation, it will trigger disaster recovery.
+                    format: int64
+                    type: integer
+                  phase:
+                    description: 'the available phase include: todo, doing, done'
+                    type: string
+                  reason:
+                    description: the reason of disaster recovery.
+                    type: string
+                  startTimestamp:
+                    description: the unix time of starting disaster recovery.
+                    type: string
+                type: object
               phase:
                 description: 'Represents the state of cluster. the possible value
                   are: running, failed, pending'
@@ -15312,29 +15305,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery represents the status of disaster
-                      recovery.
-                    properties:
-                      endTimestamp:
-                        description: the unix time of ending disaster recovery.
-                        type: string
-                      observedGeneration:
-                        description: |-
-                          the observed generation of disaster recovery.
-                          If the observed generation is less than the generation, it will trigger disaster recovery.
-                        format: int64
-                        type: integer
-                      phase:
-                        description: 'the available phase include: todo, doing, done'
-                        type: string
-                      reason:
-                        description: the reason of disaster recovery.
-                        type: string
-                      startTimestamp:
-                        description: the unix time of starting disaster recovery.
-                        type: string
-                    type: object
                   failedInstances:
                     description: FailedInstances failed pod names.
                     items:
@@ -15373,29 +15343,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery represents the status of disaster
-                      recovery.
-                    properties:
-                      endTimestamp:
-                        description: the unix time of ending disaster recovery.
-                        type: string
-                      observedGeneration:
-                        description: |-
-                          the observed generation of disaster recovery.
-                          If the observed generation is less than the generation, it will trigger disaster recovery.
-                        format: int64
-                        type: integer
-                      phase:
-                        description: 'the available phase include: todo, doing, done'
-                        type: string
-                      reason:
-                        description: the reason of disaster recovery.
-                        type: string
-                      startTimestamp:
-                        description: the unix time of starting disaster recovery.
-                        type: string
-                    type: object
                   failedInstances:
                     description: FailedInstances failed pod names.
                     items:
@@ -15449,29 +15396,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery represents the status of disaster
-                      recovery.
-                    properties:
-                      endTimestamp:
-                        description: the unix time of ending disaster recovery.
-                        type: string
-                      observedGeneration:
-                        description: |-
-                          the observed generation of disaster recovery.
-                          If the observed generation is less than the generation, it will trigger disaster recovery.
-                        format: int64
-                        type: integer
-                      phase:
-                        description: 'the available phase include: todo, doing, done'
-                        type: string
-                      reason:
-                        description: the reason of disaster recovery.
-                        type: string
-                      startTimestamp:
-                        description: the unix time of starting disaster recovery.
-                        type: string
-                    type: object
                   failedInstances:
                     description: FailedInstances failed pod names.
                     items:
@@ -15510,29 +15434,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  disasterRecovery:
-                    description: DisasterRecovery represents the status of disaster
-                      recovery.
-                    properties:
-                      endTimestamp:
-                        description: the unix time of ending disaster recovery.
-                        type: string
-                      observedGeneration:
-                        description: |-
-                          the observed generation of disaster recovery.
-                          If the observed generation is less than the generation, it will trigger disaster recovery.
-                        format: int64
-                        type: integer
-                      phase:
-                        description: 'the available phase include: todo, doing, done'
-                        type: string
-                      reason:
-                        description: the reason of disaster recovery.
-                        type: string
-                      startTimestamp:
-                        description: the unix time of starting disaster recovery.
-                        type: string
-                    type: object
                   failedInstances:
                     description: FailedInstances failed pod names.
                     items:

@@ -16,8 +16,8 @@ import (
 
 func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 	type args struct {
-		feSpec   *v1.StarRocksFeSpec
-		feStatus *v1.StarRocksFeStatus
+		drSpec   *v1.DisasterRecovery
+		drStatus *v1.DisasterRecoveryStatus
 		config   map[string]interface{}
 	}
 	tests := []struct {
@@ -29,15 +29,11 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "cluster data is not shared data mode",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: nil,
+				drStatus: nil,
 				config: map[string]interface{}{
 					"run_mode": "shared_nothing",
 				},
@@ -47,10 +43,8 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "disaster recovery field is not present",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{},
-				},
-				feStatus: nil,
+				drSpec:   nil,
+				drStatus: nil,
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
 				},
@@ -60,14 +54,10 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "disaster recovery is not enabled",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled: false,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled: false,
 				},
-				feStatus: nil,
+				drStatus: nil,
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
 				},
@@ -77,20 +67,12 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "observed generation equals to generation",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled: true,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled: true,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							Phase:              v1.DRPhaseDone,
-							ObservedGeneration: 0,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDone,
+					ObservedGeneration: 0,
 				},
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
@@ -101,20 +83,12 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "observed generation is larger than generation",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							ObservedGeneration: 2,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					ObservedGeneration: 2,
 				},
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
@@ -128,14 +102,10 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "fe status is nil",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled: true,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled: true,
 				},
-				feStatus: nil,
+				drStatus: nil,
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
 				},
@@ -146,20 +116,12 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "generation is larger than observed generation",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							ObservedGeneration: 0,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					ObservedGeneration: 0,
 				},
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
@@ -171,21 +133,13 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "generation equal to observed generation, and phase is todo",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							Phase:              v1.DRPhaseTodo,
-							ObservedGeneration: 1,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseTodo,
+					ObservedGeneration: 1,
 				},
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
@@ -197,21 +151,13 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "generation equal to observed generation, and phase is doing",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							Phase:              v1.DRPhaseDoing,
-							ObservedGeneration: 1,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDoing,
+					ObservedGeneration: 1,
 				},
 				config: map[string]interface{}{
 					"run_mode": "shared_data",
@@ -223,21 +169,13 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 		{
 			name: "generation equal to observed generation, and phase is doing",
 			args: args{
-				feSpec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						DisasterRecovery: &v1.DisasterRecovery{
-							Enabled:    true,
-							Generation: 1,
-						},
-					},
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
 				},
-				feStatus: &v1.StarRocksFeStatus{
-					StarRocksComponentStatus: v1.StarRocksComponentStatus{
-						DisasterRecovery: &v1.DisasterRecoveryStatus{
-							Phase:              v1.DRPhaseDoing,
-							ObservedGeneration: 1,
-						},
-					},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDoing,
+					ObservedGeneration: 1,
 				},
 				config: map[string]interface{}{
 					"run_mode":   "shared_data",
@@ -250,7 +188,7 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := ShouldEnterDisasterRecoveryMode(tt.args.feSpec, tt.args.feStatus, tt.args.config); got != tt.want {
+			if got, _ := ShouldEnterDisasterRecoveryMode(tt.args.drSpec, tt.args.drStatus, tt.args.config); got != tt.want {
 				t.Errorf("ShouldEnterDisasterRecoveryMode() = %v, want %v", got, tt.want)
 			}
 		})

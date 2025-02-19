@@ -90,9 +90,8 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec
-	feStatus := src.Status.StarRocksFeStatus
 	feConfig, _ := fe.GetFEConfig(ctx, be.Client, feSpec, src.Namespace)
-	if b, _ := fe.ShouldEnterDisasterRecoveryMode(feSpec, feStatus, feConfig); b {
+	if b, _ := fe.ShouldEnterDisasterRecoveryMode(src.Spec.DisasterRecovery, src.Status.DisasterRecoveryStatus, feConfig); b {
 		// return nil because in disaster recovery mode, we do not need to sync the BE.
 		return nil
 	}

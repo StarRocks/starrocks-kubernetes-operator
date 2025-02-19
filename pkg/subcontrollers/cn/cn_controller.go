@@ -123,9 +123,9 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	if err != nil {
 		return err
 	}
-	feSpec := src.Spec.StarRocksFeSpec
-	feStatus := src.Status.StarRocksFeStatus
-	if b, _ := fe.ShouldEnterDisasterRecoveryMode(feSpec, feStatus, feConfig); b {
+	drSpec := src.Spec.DisasterRecovery
+	drStatus := src.Status.DisasterRecoveryStatus
+	if b, _ := fe.ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig); b {
 		// return nil because in disaster recovery mode, we do not need to sync the CN.
 		return nil
 	}

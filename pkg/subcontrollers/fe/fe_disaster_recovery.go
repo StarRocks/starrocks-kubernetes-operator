@@ -18,69 +18,68 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 )
 
-func ShouldEnterDisasterRecoveryMode(feSpec *v1.StarRocksFeSpec,
-	feStatus *v1.StarRocksFeStatus, feConfig map[string]interface{}) (bool, int32) {
+func ShouldEnterDisasterRecoveryMode(drSpec *v1.DisasterRecovery,
+	drStatus *v1.DisasterRecoveryStatus, feConfig map[string]interface{}) (bool, int32) {
 	if !IsRunInSharedDataMode(feConfig) {
 		// not run in shared data mode, not in disaster recovery mode
 		return false, 0
 	}
 
-	if feSpec.DisasterRecovery == nil {
+	if drSpec == nil {
 		return false, 0
 	}
 
-	dr := feSpec.DisasterRecovery
-	if !dr.Enabled {
+	if !drSpec.Enabled {
 		return false, 0
 	}
 
 	// we separate the if condition in order to fix: unnecessary leading newline (whitespace)
-	if feStatus == nil || feStatus.DisasterRecovery == nil {
+	if drStatus == nil {
 		return true, rutils.GetPort(feConfig, rutils.QUERY_PORT)
 	}
 
-	og := feStatus.DisasterRecovery.ObservedGeneration
-	if dr.Generation > og || (dr.Generation == og && feStatus.DisasterRecovery.Phase != v1.DRPhaseDone) {
+	og := drStatus.ObservedGeneration
+	if drSpec.Generation > og || (drSpec.Generation == og && drStatus.Phase != v1.DRPhaseDone) {
 		return true, rutils.GetPort(feConfig, rutils.QUERY_PORT)
 	}
 
 	return false, 0
 }
 
-func EnterDisasterRecoveryMode(ctx context.Context,
-	controller *FeController, src *v1.StarRocksCluster, sts *appv1.StatefulSet, queryPort int32) error {
+func EnterDisasterRecoveryMode(ctx context.Context, k8sClient client.Client,
+	src *v1.StarRocksCluster, sts *appv1.StatefulSet, queryPort int32) error {
 	feSpec := src.Spec.StarRocksFeSpec
-	feStatus := src.Status.StarRocksFeStatus
+	drSpec := src.Spec.DisasterRecovery
+	drStatus := src.Status.DisasterRecoveryStatus
 	logger := logr.FromContextOrDiscard(ctx)
 
 	logger.Info("enter disaster recovery mode")
-	if feStatus.DisasterRecovery == nil ||
-		feSpec.DisasterRecovery.Generation > feStatus.DisasterRecovery.ObservedGeneration {
-		feStatus.DisasterRecovery = v1.NewDisasterRecoveryStatus(feSpec.DisasterRecovery.Generation)
+	if drStatus == nil || drSpec.Generation > drStatus.ObservedGeneration {
+		drStatus = v1.NewDisasterRecoveryStatus(drSpec.Generation)
+		src.Status.DisasterRecoveryStatus = drStatus
 	}
 
-	switch feStatus.DisasterRecovery.Phase {
+	switch drStatus.Phase {
 	case v1.DRPhaseTodo:
 		if !hasClusterSnapshotConf(feSpec.ConfigMaps) {
-			feStatus.DisasterRecovery.Phase = v1.DRPhaseTodo
+			drStatus.Phase = v1.DRPhaseTodo
 			reason := "cluster_snapshot.yaml is not mounted"
-			feStatus.DisasterRecovery.Reason = reason
+			drStatus.Reason = reason
 			return errors.New(reason)
 		}
-
 		// rewrite the statefulset
-		rewriteStatefulSetForDisasterRecovery(sts, feSpec.DisasterRecovery.Generation, queryPort)
-		feStatus.DisasterRecovery.Phase = v1.DRPhaseDoing
-		feStatus.DisasterRecovery.Reason = "has changed to pod template for disaster recovery"
+		rewriteStatefulSetForDisasterRecovery(sts, drSpec.Generation, queryPort)
+		drStatus.Phase = v1.DRPhaseDoing
+		drStatus.Reason = "has changed to pod template for disaster recovery"
 	case v1.DRPhaseDoing:
 		// check whether the pod is ready
-		rewriteStatefulSetForDisasterRecovery(sts, feSpec.DisasterRecovery.Generation, queryPort)
-		if !CheckFEReadyInDisasterRecovery(ctx, controller.Client, src.Namespace, src.Name, feSpec.DisasterRecovery.Generation) {
-			feStatus.DisasterRecovery.Reason = "disaster recovery is in progress"
+		rewriteStatefulSetForDisasterRecovery(sts, drSpec.Generation, queryPort)
+		if !CheckFEReadyInDisasterRecovery(ctx, k8sClient, src.Namespace, src.Name, drSpec.Generation) {
+			drStatus.Reason = "disaster recovery is in progress"
 		} else {
-			feStatus.DisasterRecovery.Phase = v1.DRPhaseDone
-			feStatus.DisasterRecovery.Reason = "disaster recovery is done"
-			feStatus.DisasterRecovery.EndTimestamp = strconv.FormatInt(time.Now().Unix(), 10)
+			drStatus.Phase = v1.DRPhaseDone
+			drStatus.Reason = "disaster recovery is done"
+			drStatus.EndTimestamp = strconv.FormatInt(time.Now().Unix(), 10)
 		}
 	}
 	return nil
