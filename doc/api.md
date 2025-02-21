@@ -231,6 +231,146 @@ Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </tr>
 </tbody>
 </table>
+<h3 id="starrocks.com/v1.DRPhase">DRPhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;doing&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;done&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;todo&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="starrocks.com/v1.DisasterRecovery">DisasterRecovery
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+</p>
+<div>
+<p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>generation</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+increase the generation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="starrocks.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+</p>
+<div>
+<p>DisasterRecoveryStatus represents the status of disaster recovery.
+Note: you should create a new instance of DisasterRecoveryStatus by NewDisasterRecoveryStatus.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#starrocks.com/v1.DRPhase">
+DRPhase
+</a>
+</em>
+</td>
+<td>
+<p>the available phase include: todo, doing, done</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the reason of disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startTimestamp</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the unix time of starting disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>endTimestamp</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the unix time of ending disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>observedGeneration</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the observed generation of disaster recovery.
+If the observed generation is less than the generation, it will trigger disaster recovery.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="starrocks.com/v1.HPAPolicy">HPAPolicy
 </h3>
 <p>
@@ -656,6 +796,20 @@ StarRocksFeProxySpec
 <p>StarRocksLoadSpec define a proxy for fe.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>disasterRecovery</code><br/>
+<em>
+<a href="#starrocks.com/v1.DisasterRecovery">
+DisasterRecovery
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -755,6 +909,20 @@ StarRocksFeProxySpec
 <p>StarRocksLoadSpec define a proxy for fe.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>disasterRecovery</code><br/>
+<em>
+<a href="#starrocks.com/v1.DisasterRecovery">
+DisasterRecovery
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus
@@ -847,6 +1015,20 @@ StarRocksFeProxyStatus
 </td>
 <td>
 <p>Represents the status of fe proxy. the status have running, failed and creating pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>disasterRecoveryStatus</code><br/>
+<em>
+<a href="#starrocks.com/v1.DisasterRecoveryStatus">
+DisasterRecoveryStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisasterRecoveryStatus represents the status of disaster recovery.</p>
 </td>
 </tr>
 </tbody>
@@ -2327,5 +2509,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>f1f16fe</code>.
+on git commit <code>42e17ab</code>.
 </em></p>
