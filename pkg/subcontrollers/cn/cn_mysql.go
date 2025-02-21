@@ -34,18 +34,18 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 	feServicePort := ""
 	logger := logr.FromContextOrDiscard(ctx)
 
-	var est appv1.StatefulSet
+	var sts appv1.StatefulSet
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,
 			Name:      load.Name(aliasName, (*srapi.StarRocksCnSpec)(nil)),
 		},
-		&est); err != nil {
+		&sts); err != nil {
 		return nil, err
 	}
 
 	var err error
-	for _, envVar := range est.Spec.Template.Spec.Containers[0].Env {
+	for _, envVar := range sts.Spec.Template.Spec.Containers[0].Env {
 		if envVar.Name == "MYSQL_PWD" {
 			rootPassword, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {

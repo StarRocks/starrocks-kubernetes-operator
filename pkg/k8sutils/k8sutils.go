@@ -153,6 +153,12 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 		return err
 	}
 
+	// When user delete the statefulset, we should remove the finalizers.
+	if actual.DeletionTimestamp != nil && actual.Finalizers != nil {
+		actual.Finalizers = nil
+		return k8sClient.Update(ctx, &actual)
+	}
+
 	if !enableScaleTo1 {
 		if actual.Spec.Replicas != nil && *actual.Spec.Replicas > 1 {
 			if expect.Spec.Replicas == nil || *expect.Spec.Replicas == 1 {
