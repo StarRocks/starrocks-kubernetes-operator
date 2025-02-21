@@ -37,7 +37,7 @@ type hashStatefulsetObject struct {
 	updateStrategy       appv1.StatefulSetUpdateStrategy
 }
 
-// StatefulsetHashObject construct the hash spec for deep equals to exist statefulset.
+// statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
 func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	// set -1 for the initial is zero.
 	replicas := int32(-1)

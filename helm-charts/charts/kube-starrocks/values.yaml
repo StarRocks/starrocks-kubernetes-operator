@@ -186,6 +186,19 @@ starrocks:
     # specify the cn deploy or not.
     enabledBe: true
     enabledCn: false
+    # disaster recovery configuration. If you want to enable disaster recovery, you need to set the enabled field to true.
+    # Note:
+    #  1. If you are using an existing StarRocks cluster, you need to clean up the meta of the FE component and the data of the CN
+    #     component before enabling disaster recovery. So it is better to use an empty StarRocks cluster to start disaster recovery.
+    #  2. After disaster recovery, Operator will reboot the cluster as a normal cluster automatically, so if you need more checks by yourself,
+    #     you can
+    #       1. set the replicas of FE component to 1
+    #       2. set enabledBe and enabledCn to be false to disable to deploy BE and CN components.
+    #  3. generation field is used to run multiple times for disaster recovery. For example, if the last disaster recovery is
+    #     not what you want, you can modify related configurations and increase the generation value to run a new disaster recovery.
+    disasterRecovery:
+      # enabled: true
+      # generation: 1
     # componentValues field is used to define values for all starrocks cluster components, including starrocksFESpec,
     # starrocksBeSpec, starrocksCnSpec, not including starrocksFeProxySpec. So that you do not need to modify them in
     # their own spec.
@@ -541,7 +554,6 @@ starrocks:
     # When this is set containers will be able to view and signal processes from other containers
     # in the same pod, and the first process in each container will not be assigned PID 1.
     shareProcessNamespace:
-  
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:

@@ -58,6 +58,21 @@ spec:
           spec:
             description: Specification of the desired state of the starrocks cluster.
             properties:
+              disasterRecovery:
+                description: DisasterRecovery is used to determine whether to enter
+                  disaster recovery mode.
+                properties:
+                  enabled:
+                    description: Enabled is used to determine whether to enter disaster
+                      recovery mode.
+                    type: boolean
+                  generation:
+                    description: |-
+                      Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+                      increase the generation.
+                    format: int64
+                    type: integer
+                type: object
               serviceAccount:
                 description: |-
                   Specify a Service Account for starRocksCluster use k8s cluster.
@@ -15251,6 +15266,31 @@ spec:
           status:
             description: Most recent observed status of the starrocks cluster
             properties:
+              disasterRecoveryStatus:
+                description: DisasterRecoveryStatus represents the status of disaster
+                  recovery.
+                properties:
+                  endTimestamp:
+                    description: the unix time of ending disaster recovery.
+                    format: int64
+                    type: integer
+                  observedGeneration:
+                    description: |-
+                      the observed generation of disaster recovery.
+                      If the observed generation is less than the generation, it will trigger disaster recovery.
+                    format: int64
+                    type: integer
+                  phase:
+                    description: 'the available phase include: todo, doing, done'
+                    type: string
+                  reason:
+                    description: the reason of disaster recovery.
+                    type: string
+                  startTimestamp:
+                    description: the unix time of starting disaster recovery.
+                    format: int64
+                    type: integer
+                type: object
               phase:
                 description: 'Represents the state of cluster. the possible value
                   are: running, failed, pending'

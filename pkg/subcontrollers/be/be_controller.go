@@ -89,6 +89,13 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
+	feSpec := src.Spec.StarRocksFeSpec
+	feConfig, _ := fe.GetFEConfig(ctx, be.Client, feSpec, src.Namespace)
+	if b, _ := fe.ShouldEnterDisasterRecoveryMode(src.Spec.DisasterRecovery, src.Status.DisasterRecoveryStatus, feConfig); b {
+		// return nil because in disaster recovery mode, we do not need to sync the BE.
+		return nil
+	}
+
 	logger.V(log.DebugLevel).Info("get be/fe config to resolve ports", "ConfigMapInfo", beSpec.ConfigMapInfo)
 	config, err := be.GetBeConfig(ctx, beSpec, src.Namespace)
 	if err != nil {
@@ -96,9 +103,8 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	feconfig, _ := fe.GetFEConfig(ctx, be.Client, src.Spec.StarRocksFeSpec, src.Namespace)
 	// add query port from fe config.
-	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
+	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feConfig, rutils.QUERY_PORT)), 10)
 	// generate new be external service.
 	externalsvc := rutils.BuildExternalService(object.NewFromCluster(src),
 		beSpec, config, load.Selector(src.Name, beSpec), load.Labels(src.Name, beSpec))

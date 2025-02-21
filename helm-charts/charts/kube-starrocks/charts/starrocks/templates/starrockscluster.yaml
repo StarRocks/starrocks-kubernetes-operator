@@ -11,6 +11,10 @@ metadata:
     {{- toYaml .Values.starrocksCluster.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.starrocksCluster.disasterRecovery }}
+  disasterRecovery:
+    {{- toYaml .Values.starrocksCluster.disasterRecovery | nindent 4 }}
+  {{- end }}
   starRocksFeSpec:
     {{- if .Values.starrocksFESpec.initContainers }}
     initContainers:
@@ -569,7 +573,7 @@ spec:
     args:
       - {{template "starrockscluster.entrypoint.mount.path" .}}/{{template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
-    {{- if .Values.starrocksCnSpec.replicas }}
+    {{- if hasKey .Values.starrocksCnSpec "replicas" }}
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
     imagePullPolicy: {{ .Values.starrocksCnSpec.imagePullPolicy }}

@@ -89,11 +89,11 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 	}
 
 	logger.Info("get fe config to make sure StarRocks run in shared_data mode")
-	feconfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	feConfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
 	if err != nil {
 		return err
 	}
-	if val := feconfig["run_mode"]; val == nil || !strings.Contains(val.(string), "shared_data") {
+	if !fe.IsRunInSharedDataMode(feConfig) {
 		return StarRocksClusterRunModeError
 	}
 
@@ -119,7 +119,18 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	err := cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
+	feConfig, err := cc.getFeConfig(ctx, src.Namespace, src.Name)
+	if err != nil {
+		return err
+	}
+	drSpec := src.Spec.DisasterRecovery
+	drStatus := src.Status.DisasterRecoveryStatus
+	if b, _ := fe.ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig); b {
+		// return nil because in disaster recovery mode, we do not need to sync the CN.
+		return nil
+	}
+
+	err = cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
 	defer func() {
 		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
@@ -252,7 +263,6 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	var st appv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
-	// todo(yandongxiao): delete it
 	statefulSetName := load.Name(object.AliasName, cnSpec)
 	namespacedName := types.NamespacedName{Namespace: object.Namespace, Name: statefulSetName}
 	if err := cc.k8sClient.Get(ctx, namespacedName, &st); apierrors.IsNotFound(err) {

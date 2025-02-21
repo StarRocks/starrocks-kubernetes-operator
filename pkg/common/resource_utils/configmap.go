@@ -81,7 +81,6 @@ func GetPort(config map[string]interface{}, key string) int32 {
 		return GetPort(config, BE_PORT)
 	} else if key == WEBSERVER_PORT {
 		// If both webserver_port and be_http_port are set, the be_http_port will be used in StarRocks.
-		// todo(yandongxiao): Call GetPort(config, BE_HTTP_PORT) not GetPort(config, WEBSERVER_PORT).
 		return GetPort(config, BE_HTTP_PORT)
 	}
 

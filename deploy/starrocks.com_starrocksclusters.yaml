@@ -45,6 +45,14 @@ spec:
             type: object
           spec:
             properties:
+              disasterRecovery:
+                properties:
+                  enabled:
+                    type: boolean
+                  generation:
+                    format: int64
+                    type: integer
+                type: object
               serviceAccount:
                 type: string
               starRocksBeSpec:
@@ -7138,6 +7146,22 @@ spec:
             type: object
           status:
             properties:
+              disasterRecoveryStatus:
+                properties:
+                  endTimestamp:
+                    format: int64
+                    type: integer
+                  observedGeneration:
+                    format: int64
+                    type: integer
+                  phase:
+                    type: string
+                  reason:
+                    type: string
+                  startTimestamp:
+                    format: int64
+                    type: integer
+                type: object
               phase:
                 type: string
               reason:

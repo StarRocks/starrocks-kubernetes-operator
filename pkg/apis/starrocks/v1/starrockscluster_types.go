@@ -45,6 +45,10 @@ type StarRocksClusterSpec struct {
 
 	// StarRocksLoadSpec define a proxy for fe.
 	StarRocksFeProxySpec *StarRocksFeProxySpec `json:"starRocksFeProxySpec,omitempty"`
+
+	// +optional
+	// DisasterRecovery is used to determine whether to enter disaster recovery mode.
+	DisasterRecovery *DisasterRecovery `json:"disasterRecovery,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
@@ -66,6 +70,10 @@ type StarRocksClusterStatus struct {
 
 	// Represents the status of fe proxy. the status have running, failed and creating pods.
 	StarRocksFeProxyStatus *StarRocksFeProxyStatus `json:"starRocksFeProxyStatus,omitempty"`
+
+	// +optional
+	// DisasterRecoveryStatus represents the status of disaster recovery.
+	DisasterRecoveryStatus *DisasterRecoveryStatus `json:"disasterRecoveryStatus,omitempty"`
 }
 
 // SpecInterface is a common interface for all starrocks component spec.

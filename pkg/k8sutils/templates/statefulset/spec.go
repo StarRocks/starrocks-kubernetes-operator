@@ -63,9 +63,8 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 
 // MakeStatefulset make statefulset
 func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appv1.StatefulSet {
-	// TODO: statefulset only allow update 'replicas', 'template',  'updateStrategy'
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
-	st := appv1.StatefulSet{
+	expectSts := appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            load.Name(object.AliasName, spec),
 			Namespace:       object.Namespace,
@@ -89,8 +88,8 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 	// When Warehouse CR is deleted, operator need to get some environments from the statefulset to
 	// execute dropping warehouse statement.
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		st.Finalizers = append(st.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
+		expectSts.Finalizers = append(expectSts.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
 	}
 
-	return st
+	return expectSts
 }

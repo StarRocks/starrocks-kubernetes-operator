@@ -82,7 +82,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	// get the fe configMap for resolve ports
 	logger.V(log.DebugLevel).Info("get fe configMap to resolve ports", "ConfigMapInfo", feSpec.ConfigMapInfo)
-	config, err := GetFEConfig(ctx, fc.Client, feSpec, src.Namespace)
+	feConfig, err := GetFEConfig(ctx, fc.Client, feSpec, src.Namespace)
 	if err != nil {
 		logger.Error(err, "get fe config failed", "ConfigMapInfo", feSpec.ConfigMapInfo)
 		return err
@@ -91,34 +91,53 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// generate new fe service.
 	logger.V(log.DebugLevel).Info("build fe service", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
-	svc := rutils.BuildExternalService(object, feSpec, config, load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
+	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{
 			Name:        "query-port",
-			Port:        rutils.GetPort(config, rutils.QUERY_PORT),
-			TargetPort:  intstr.FromInt(int(rutils.GetPort(config, rutils.QUERY_PORT))),
+			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
+			TargetPort:  intstr.FromInt(int(rutils.GetPort(feConfig, rutils.QUERY_PORT))),
 			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
 		},
 	})
 
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
-	podTemplateSpec, err := fc.buildPodTemplate(src, config)
+	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")
 		return err
 	}
-	st := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &st, false, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
-		return rutils.StatefulSetDeepEqual(new, actual, false)
-	}); err != nil {
+	expectSts := statefulset.MakeStatefulset(object, feSpec, podTemplateSpec)
+
+	drSpec := src.Spec.DisasterRecovery
+	drStatus := src.Status.DisasterRecoveryStatus
+	shouldEnterDRMode, queryPort := ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig)
+	if shouldEnterDRMode {
+		logger.Info("should enter disaster recovery mode")
+		if drStatus == nil {
+			drStatus = srapi.NewDisasterRecoveryStatus(drSpec.Generation)
+			src.Status.DisasterRecoveryStatus = drStatus
+		}
+		if err = EnterDisasterRecoveryMode(ctx, fc.Client, src, &expectSts, queryPort); err != nil {
+			logger.Error(err, "enter disaster recovery mode failed")
+			return err
+		}
+		logger.Info("deploy statefulset", "statefulset", expectSts)
+	}
+
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode,
+		func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+			return rutils.StatefulSetDeepEqual(new, actual, false)
+		},
+	); err != nil {
 		logger.Error(err, "deploy statefulset failed")
 		return err
 	}
 
 	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
 		// for compatible v1.5, we use `fe-domain-search` for internal communicating.
-		internalService.Name = st.Spec.ServiceName
+		internalService.Name = expectSts.Spec.ServiceName
 		return rutils.ServiceDeepEqual(new, esvc)
 	}); err != nil {
 		logger.Error(err, "deploy search service failed", "internalService", internalService)
@@ -219,16 +238,10 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 	return nil
 }
 
-// GetFEConfig get the fe config from configMap.
-// It is not a method of FeController, but BE/CN controller also need to get the config from configMap.
-func GetFEConfig(ctx context.Context, client client.Client,
-	feSpec *srapi.StarRocksFeSpec, namespace string) (map[string]interface{}, error) {
-	return k8sutils.GetConfig(ctx, client, feSpec.ConfigMapInfo,
-		feSpec.ConfigMaps, pod.GetConfigDir(feSpec), "fe.conf",
-		namespace)
-}
-
 // CheckFEReady check the fe cluster is ok.
+// Note:
+// When user upgrade the cluster, and the statefulset controller has not begun to update the statefulset,
+// CheckFEReady will use the old status to check whether FE is ready.
 func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
 	logger := logr.FromContextOrDiscard(ctx)
 	endpoints := corev1.Endpoints{}

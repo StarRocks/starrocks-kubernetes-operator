@@ -19,6 +19,7 @@ package v1
 import (
 	"errors"
 	"strings"
+	"time"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -251,3 +252,50 @@ func (spec *StarRocksComponentSpec) IsReadOnlyRootFilesystem() *bool {
 	}
 	return spec.ReadOnlyRootFilesystem
 }
+
+// DisasterRecovery is used to determine whether to enter disaster recovery mode.
+type DisasterRecovery struct {
+	// Enabled is used to determine whether to enter disaster recovery mode.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+	// increase the generation.
+	Generation int64 `json:"generation,omitempty"`
+}
+
+// DisasterRecoveryStatus represents the status of disaster recovery.
+// Note: you should create a new instance of DisasterRecoveryStatus by NewDisasterRecoveryStatus.
+type DisasterRecoveryStatus struct {
+	// the available phase include: todo, doing, done
+	Phase DRPhase `json:"phase,omitempty"`
+
+	// the reason of disaster recovery.
+	Reason string `json:"reason,omitempty"`
+
+	// the unix time of starting disaster recovery.
+	StartTimestamp int64 `json:"startTimestamp,omitempty"`
+
+	// the unix time of ending disaster recovery.
+	EndTimestamp int64 `json:"endTimestamp,omitempty"`
+
+	// the observed generation of disaster recovery.
+	// If the observed generation is less than the generation, it will trigger disaster recovery.
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+}
+
+// NewDisasterRecoveryStatus creates a new disaster recovery status which the phase is todo.
+func NewDisasterRecoveryStatus(generation int64) *DisasterRecoveryStatus {
+	return &DisasterRecoveryStatus{
+		Phase:              DRPhaseTodo,
+		StartTimestamp:     time.Now().Unix(),
+		ObservedGeneration: generation,
+	}
+}
+
+type DRPhase string
+
+const (
+	DRPhaseTodo  DRPhase = "todo"
+	DRPhaseDoing DRPhase = "doing"
+	DRPhaseDone  DRPhase = "done"
+)
