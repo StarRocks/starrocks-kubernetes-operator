@@ -47,6 +47,7 @@ func main() {
 	flag.StringVar(&_namespace, "namespace", "", "if specified, "+
 		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
 	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
+	flag.BoolVar(&config.VolumeNameWithHash, "volume-name-with-hash", true, "Add a hash to the volume name")
 
 	// Set up logger.
 	opts := zap.Options{}
