@@ -5,6 +5,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -185,10 +186,13 @@ func MountSecrets(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
 }
 
 func getVolumeName(mountInfo v1.MountInfo) string {
-	suffixLen := 4
-	suffix := hash.HashObject(mountInfo)
-	if len(suffix) > suffixLen {
-		suffix = suffix[:suffixLen]
+	if config.VolumeNameWithHash {
+		suffixLen := 4
+		suffix := hash.HashObject(mountInfo)
+		if len(suffix) > suffixLen {
+			suffix = suffix[:suffixLen]
+		}
+		return mountInfo.Name + "-" + suffix
 	}
-	return mountInfo.Name + "-" + suffix
+	return mountInfo.Name
 }
