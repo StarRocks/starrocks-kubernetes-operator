@@ -68,6 +68,10 @@ spec:
         {{- if .Values.starrocksFESpec.service.annotations}}
         {{- toYaml .Values.starrocksFESpec.service.annotations | nindent 8 }}
         {{- end }}
+      labels:
+        {{- if .Values.starrocksFESpec.service.labels}}
+        {{- toYaml .Values.starrocksFESpec.service.labels | nindent 8 }}
+        {{- end }}
       {{- end }}
     {{- end }}
     annotations:
@@ -324,6 +328,10 @@ spec:
         {{- end }}
         {{- if .Values.starrocksBeSpec.service.annotations }}
         {{- toYaml .Values.starrocksBeSpec.service.annotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- if .Values.starrocksBeSpec.service.labels}}
+        {{- toYaml .Values.starrocksBeSpec.service.labels | nindent 8 }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -750,6 +758,10 @@ spec:
         {{- if .Values.starrocksCnSpec.service.annotations }}
         {{- toYaml .Values.starrocksCnSpec.service.annotations | nindent 8 }}
         {{- end }}
+      labels:
+        {{- if .Values.starrocksCnSpec.service.labels}}
+        {{- toYaml .Values.starrocksCnSpec.service.labels | nindent 8 }}
+        {{- end }}
       {{- end }}
     {{- end }}
     annotations:
@@ -874,6 +886,10 @@ spec:
       {{- if .Values.starrocksFeProxySpec.service.annotations }}
       annotations:
         {{- toYaml .Values.starrocksFeProxySpec.service.annotations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksFeProxySpec.service.labels}}
+      labels:
+        {{- toYaml .Values.starrocksFeProxySpec.service.labels | nindent 8 }}
       {{- end }}
       {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.starrocksFeProxySpec.service.loadbalancerIP }}

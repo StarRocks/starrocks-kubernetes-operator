@@ -64,6 +64,43 @@ func Test_getServiceAnnotations(t *testing.T) {
 	}
 }
 
+func Test_getServiceLabels(t *testing.T) {
+	type args struct {
+		svc *srapi.StarRocksService
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "empty service",
+			args: args{
+				svc: &srapi.StarRocksService{},
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "service with labels",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Labels: map[string]string{
+						"test": "test",
+					},
+				},
+			},
+			want: map[string]string{"test": "test"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getServiceLabels(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getServiceLabels() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 	warehouse := &srapi.StarRocksWarehouse{
 		ObjectMeta: metav1.ObjectMeta{
@@ -171,6 +208,9 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 						Service: &srapi.StarRocksService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
+							Labels: map[string]string{
+								"user_supplied_label": "test",
+							},
 						},
 					},
 				},
@@ -181,6 +221,9 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 						Service: &srapi.StarRocksService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
+							Labels: map[string]string{
+								"user_supplied_label": "test",
+							},
 						},
 					},
 				},
@@ -191,6 +234,9 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 						Service: &srapi.StarRocksService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
+							Labels: map[string]string{
+								"user_supplied_label": "test",
+							},
 						},
 					},
 				},
@@ -218,7 +264,11 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "1826250052",
+						srapi.ComponentResourceHash: "2323011486",
+					},
+					Labels: map[string]string{
+						"starrocks_default_label": "test",
+						"user_supplied_label":     "test",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -254,7 +304,11 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-be-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2188319972",
+						srapi.ComponentResourceHash: "2811174334",
+					},
+					Labels: map[string]string{
+						"starrocks_default_label": "test",
+						"user_supplied_label":     "test",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -287,7 +341,11 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "4058356074",
+						srapi.ComponentResourceHash: "4173513860",
+					},
+					Labels: map[string]string{
+						"starrocks_default_label": "test",
+						"user_supplied_label":     "test",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(src, src.GroupVersionKind())
@@ -333,17 +391,20 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 		}
 	}
 
+	starrocksDefaultLabels := map[string]string{
+		"starrocks_default_label": "test",
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			object := object.NewFromCluster(src)
 			gotFeService := BuildExternalService(object, src.Spec.StarRocksFeSpec,
-				map[string]interface{}{}, map[string]string{}, map[string]string{})
+				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotFeService, tt.wantFeService)
 			gotBeService := BuildExternalService(object, src.Spec.StarRocksBeSpec,
-				map[string]interface{}{}, map[string]string{}, map[string]string{})
+				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotBeService, tt.wantBeService)
 			gotCnService := BuildExternalService(object, src.Spec.StarRocksCnSpec,
-				map[string]interface{}{}, map[string]string{}, map[string]string{})
+				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotCnService, tt.wantCnService)
 		})
 	}

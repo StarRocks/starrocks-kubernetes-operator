@@ -1641,6 +1641,10 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
                       loadBalancerIP:
                         type: string
                       loadBalancerSourceRanges:

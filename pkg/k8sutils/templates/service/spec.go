@@ -20,13 +20,15 @@ import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
-func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort) *corev1.Service {
+func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort,
+	labels map[string]string) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
 	// some service annotations can only be used when `type` is 'LoadBalancer', e.g. service.beta.kubernetes.io/load-balancer-source-ranges
 	// we do not need to annotations for search service
 	searchSvc.Annotations = nil
 	searchSvc.Name = serviceName
+	searchSvc.Labels = labels
 	searchSvc.Spec = corev1.ServiceSpec{
 		ClusterIP: "None",
 		Ports:     ports,

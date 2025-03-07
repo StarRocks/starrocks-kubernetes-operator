@@ -177,6 +177,10 @@ type StarRocksService struct {
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
+	// Labels store Kubernetes Service labels. StarRocks may add its own default labels.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
 	// type of service,the possible value for the service type are : ClusterIP, NodePort, LoadBalancer,ExternalName.
 	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 	// +optional

@@ -29,6 +29,7 @@ func TestMakeSearchService(t *testing.T) {
 		serviceName     string
 		externalService *corev1.Service
 		ports           []corev1.ServicePort
+		labels          map[string]string
 	}
 	tests := []struct {
 		name string
@@ -40,6 +41,11 @@ func TestMakeSearchService(t *testing.T) {
 			args: args{
 				serviceName: "test",
 				externalService: &corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"label_to_be_discarded": "test",
+						},
+					},
 					Spec: corev1.ServiceSpec{
 						Selector: map[string]string{
 							"test": "test",
@@ -52,10 +58,16 @@ func TestMakeSearchService(t *testing.T) {
 						Port: 18030,
 					},
 				},
+				labels: map[string]string{
+					"test": "test",
+				},
 			},
 			want: &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
+					Labels: map[string]string{
+						"test": "test",
+					},
 				},
 				Spec: corev1.ServiceSpec{
 					ClusterIP: "None",
@@ -75,7 +87,7 @@ func TestMakeSearchService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSearchService(tt.args.serviceName, tt.args.externalService, tt.args.ports); !reflect.DeepEqual(got, tt.want) {
+			if got := MakeSearchService(tt.args.serviceName, tt.args.externalService, tt.args.ports, tt.args.labels); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSearchService() = %v, want %v", got, tt.want)
 			}
 		})

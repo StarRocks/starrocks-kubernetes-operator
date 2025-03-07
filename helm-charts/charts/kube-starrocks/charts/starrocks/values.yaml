@@ -199,6 +199,8 @@ starrocksFESpec:
     loadbalancerIP: ""
     # add annotations for fe service.
     annotations: {}
+    # Add labels for fe service. The operator may add its own labels
+    labels: {}
     # config the service port for fe service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
     # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
@@ -492,6 +494,8 @@ starrocksCnSpec:
     loadbalancerIP: ""
     # add annotations for cn service.
     annotations: {}
+    # Add labels for cn service. The operator may add its own labels
+    labels: {}
     # config the service port for cn service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
     # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
@@ -827,6 +831,8 @@ starrocksBeSpec:
     loadbalancerIP: ""
     # add annotations for be service.
     annotations: {}
+    # Add labels for be service. The operator may add its own labels
+    labels: {}
     # config the service port for be service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
     # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
@@ -1136,6 +1142,8 @@ starrocksFeProxySpec:
     loadbalancerIP: ""
     # add annotations for fe service.
     annotations: {}
+    # Add labels for fe proxy service. The operator may add its own labels
+    labels: {}
     # config the service port for fe proxy service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
     # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.

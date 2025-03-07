@@ -52,6 +52,8 @@ spec:
     loadbalancerIP: ""
     # add annotations for service.
     annotations: {}
+    # add labels for service.
+    labels: {}
     # config the service port for service.
     # if you want to use a dedicated port for service, you can config the port.
     # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
