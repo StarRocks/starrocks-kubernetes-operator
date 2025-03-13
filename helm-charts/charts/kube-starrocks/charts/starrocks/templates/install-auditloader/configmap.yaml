@@ -1,0 +1,67 @@
+{{- if .Values.installAuditLoader.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "starrockscluster.name" . }}-install-auditloader
+  namespace: {{ template "starrockscluster.namespace" . }}
+data:
+  procedure.sql: |-
+    CREATE DATABASE IF NOT EXISTS starrocks_audit_db__;
+
+    CREATE TABLE IF NOT EXISTS starrocks_audit_db__.starrocks_audit_tbl__ (
+      `queryId`           VARCHAR(64)                COMMENT "Unique query ID",
+      `timestamp`         DATETIME         NOT NULL  COMMENT "Query start time",
+      `queryType`         VARCHAR(12)                COMMENT "Query type (query, slow_query, connection）",
+      `clientIp`          VARCHAR(32)                COMMENT "Client IP address",
+      `user`              VARCHAR(64)                COMMENT "User who initiates the query",
+      `authorizedUser`    VARCHAR(64)                COMMENT "user_identity",
+      `resourceGroup`     VARCHAR(64)                COMMENT "Resource group name",
+      `catalog`           VARCHAR(32)                COMMENT "Catalog name",
+      `db`                VARCHAR(96)                COMMENT "Database that the query scans",
+      `state`             VARCHAR(8)                 COMMENT "Query state (EOF, ERR, OK)",
+      `errorCode`         VARCHAR(512)               COMMENT "Error code",
+      `queryTime`         BIGINT                     COMMENT "Query latency in milliseconds",
+      `scanBytes`         BIGINT                     COMMENT "Size of the scanned data in bytes",
+      `scanRows`          BIGINT                     COMMENT "Row count of the scanned data",
+      `returnRows`        BIGINT                     COMMENT "Row count of the result",
+      `cpuCostNs`         BIGINT                     COMMENT "CPU resources consumption time for query in nanoseconds",
+      `memCostBytes`      BIGINT                     COMMENT "Memory cost for query in bytes",
+      `stmtId`            INT                        COMMENT "Incremental SQL statement ID",
+      `isQuery`           TINYINT                    COMMENT "If the SQL is a query (0 and 1)",
+      `feIp`              VARCHAR(128)               COMMENT "IP address of FE that executes the SQL",
+      `stmt`              VARCHAR(1048576)           COMMENT "Original SQL statement",
+      `digest`            VARCHAR(32)                COMMENT "Slow SQL fingerprint",
+      `planCpuCosts`      DOUBLE                     COMMENT "CPU resources consumption time for planning in nanoseconds",
+      `planMemCosts`      DOUBLE                     COMMENT "Memory cost for planning in bytes"
+    ) ENGINE = OLAP
+    DUPLICATE KEY (`queryId`, `timestamp`, `queryType`)
+    COMMENT "Audit log table"
+    PARTITION BY date_trunc('day', `timestamp`)
+    DISTRIBUTED BY HASH (`queryId`);
+
+    INSTALL PLUGIN FROM "/opt/starrocks-plugins/auditloader.zip";
+
+  script.sh: |-
+    #!/bin/bash
+
+    # ensure `mysql` command can be ended with 30 seconds
+    mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch < /opt/install-auditloader/procedure.sql > install_auditloader.log 2>&1
+
+    if [ $? -ne 0 ]; then
+        echo "Error installing auditloader plugin:"
+        cat install_auditloader.log
+
+        # Check if the database or plugin already exists
+        if grep -q "already exists" install_auditloader.log; then
+            echo "Database or plugin already exists, continuing..."
+            exit 0
+        fi
+
+        # Other unsuccessful errors, abnormal exit
+        echo "Failed to install auditloader plugin"
+        exit 1
+    fi
+
+    echo "Successfully installed auditloader plugin"
+    exit 0
+{{- end }}

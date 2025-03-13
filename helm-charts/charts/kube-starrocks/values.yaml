@@ -149,6 +149,27 @@ starrocks:
     #    cpu: 500m
     #    memory: 800Mi
   
+  installAuditLoader:
+    enabled: false
+    # Note: If you are using Argo CD to deploy the StarRocks cluster, you must set isInstall to false after the first installation.
+    # This is because Argo CD support helm like this: helm template <options> | kubectl apply -f -. If isInstall is true, the
+    # initPassword job will be executed every time you run the command.
+    # see https://github.com/argoproj/argo-cd/discussions/7496#discussioncomment-1609267 for more information
+    isInstall: true
+    # The image of the installAuditLoader job, if it is not set, the FE image will be used.
+    # see https://github.com/StarRocks/starrocks-kubernetes-operator/issues/453 for why we need to set the image.
+    image: ""
+    annotations: {}
+    # resources for init_job pod.
+    resources: {}
+    #resources:
+    #  requests:
+    #    cpu: 500m
+    #    memory: 400Mi
+    #  limits:
+    #    cpu: 500m
+    #    memory: 800Mi
+  
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
   

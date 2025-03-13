@@ -16,9 +16,54 @@ spec:
     {{- toYaml .Values.starrocksCluster.disasterRecovery | nindent 4 }}
   {{- end }}
   starRocksFeSpec:
-    {{- if .Values.starrocksFESpec.initContainers }}
+    {{- if or .Values.installAuditLoader.enabled .Values.starrocksFESpec.initContainers }}
     initContainers:
+      {{- if and .Values.installAuditLoader.enabled }}
+      - name: prepare-auditloader
+        image: alpine
+        command: ["sh", "-c"]
+        args:
+          - |
+            # Install required packages
+            apk add --no-cache curl unzip zip
+
+            # Download AuditLoader
+            echo "Downloading AuditLoader..."
+            curl -L -o /opt/starrocks-plugins/auditloader.zip https://releases.starrocks.io/resources/AuditLoader.zip
+
+            # Extract the plugin
+            echo "Extracting AuditLoader..."
+            cd /opt/starrocks-plugins
+            mkdir -p tmp_extract
+            unzip -o auditloader.zip -d tmp_extract
+            cd tmp_extract
+
+            # Update the password in the plugin.conf file
+            echo "Updating AuditLoader configuration..."
+            sed -i "s/^password=.*/password=$MYSQL_PWD/" plugin.conf
+
+            # Re-package the plugin
+            echo "Repackaging AuditLoader..."
+            zip -j ../auditloader.zip auditloader.jar plugin.conf plugin.properties
+            cd ..
+            rm -rf tmp_extract
+
+            echo "AuditLoader preparation completed successfully"
+        env:
+          {{- if and .Values.initPassword.enabled (.Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+          - name: "MYSQL_PWD"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "starrockscluster.initpassword.secret.name" . }}
+                key: password
+          {{- end }}
+        volumeMounts:
+          - name: plugins-dir
+            mountPath: /opt/starrocks-plugins
+      {{- end }}
+      {{- if .Values.starrocksFESpec.initContainers }}
       {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
+      {{- end }}
     {{- end }}
     {{- if .Values.starrocksFESpec.shareProcessNamespace }}
     shareProcessNamespace: {{ .Values.starrocksFESpec.shareProcessNamespace }}
@@ -243,6 +288,11 @@ spec:
       resolveKey: fe.conf
     {{- if or .Values.starrocksFESpec.storageSpec.name .Values.starrocksFESpec.emptyDirs .Values.starrocksFESpec.hostPaths }}
     storageVolumes:
+    {{- if and .Values.installAuditLoader.enabled }}
+    - name: plugins-dir
+      mountPath: /opt/starrocks-plugins
+      storageClassName: "emptyDir"
+    {{- end }}
     {{- if .Values.starrocksFESpec.storageSpec.name }}
     - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.meta.suffix" . }}
       storageClassName: {{ .Values.starrocksFESpec.storageSpec.storageClassName }}

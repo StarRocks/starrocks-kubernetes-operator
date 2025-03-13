@@ -1,0 +1,64 @@
+{{- if and .Values.installAuditLoader.enabled .Values.installAuditLoader.isInstall .Release.IsInstall }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "starrockscluster.name" . }}-install-auditloader
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+  {{- if .Values.installAuditLoader.annotations }}
+  annotations:
+    {{- toYaml .Values.installAuditLoader.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    spec:
+      {{- if or .Values.starrocksFESpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
+      imagePullSecrets:
+        {{- include "starrockscluster.fe.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
+      {{- if or .Values.starrocksFESpec.affinity .Values.starrocksCluster.componentValues.affinity }}
+      affinity:
+        {{- include "starrockscluster.fe.affinity" . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.starrocksFESpec.tolerations .Values.starrocksCluster.componentValues.tolerations }}
+      tolerations:
+        {{- include "starrockscluster.fe.tolerations" . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: install-auditloader
+        {{- if .Values.installAuditLoader.image }}
+        image: {{ .Values.installAuditLoader.image }}
+        {{- else }}
+        image: {{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+        {{- if .Values.installAuditLoader.resources }}
+        resources: {{- toYaml .Values.installAuditLoader.resources | nindent 10 }}
+        {{- end }}
+        command:
+        - /bin/bash
+        args:
+        - /opt/install-auditloader/script.sh
+        - {{ template "starrockscluster.name" . }}-fe-0.{{ template "starrockscluster.name" . }}-fe-search
+        - "{{- default 9030 (include "starrockscluster.fe.query.port" .) }}"
+        env:
+          {{- if and .Values.initPassword.enabled (.Values.starrocksFESpec.feEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+          - name: "MYSQL_PWD"
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "starrockscluster.initpassword.secret.name" . }}
+                key: password
+          {{- end }}
+        volumeMounts:
+        - mountPath: /opt/install-auditloader
+          name: {{ template "starrockscluster.name" . }}-install-auditloader
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: {{ template "starrockscluster.name" . }}-install-auditloader
+          optional: false
+        name: {{ template "starrockscluster.name" . }}-install-auditloader
+      restartPolicy: OnFailure
+  backoffLimit: 10
+{{- end }}
