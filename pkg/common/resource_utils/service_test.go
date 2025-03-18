@@ -27,7 +27,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
 
-func Test_getServiceAnnotations(t *testing.T) {
+func Test_getExternalServiceAnnotations(t *testing.T) {
 	type args struct {
 		svc *srapi.StarRocksService
 	}
@@ -57,14 +57,14 @@ func Test_getServiceAnnotations(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getServiceAnnotations(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getServiceAnnotations() = %v, want %v", got, tt.want)
+			if got := getExternalServiceAnnotations(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getExternalServiceAnnotations() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_getServiceLabels(t *testing.T) {
+func Test_getExternalServiceLabels(t *testing.T) {
 	type args struct {
 		svc *srapi.StarRocksService
 	}
@@ -94,8 +94,8 @@ func Test_getServiceLabels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getServiceLabels(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getServiceLabels() = %v, want %v", got, tt.want)
+			if got := getExternalServiceLabels(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getExternalServiceLabels() = %v, want %v", got, tt.want)
 			}
 		})
 	}

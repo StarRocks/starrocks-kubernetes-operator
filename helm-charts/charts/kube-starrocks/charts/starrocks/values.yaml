@@ -197,9 +197,9 @@ starrocksFESpec:
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for fe service.
+    # add annotations for external fe service.
     annotations: {}
-    # Add labels for fe service. The operator may add its own labels
+    # Add labels for external fe service. The operator may add its own default labels.
     labels: {}
     # config the service port for fe service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
@@ -492,9 +492,9 @@ starrocksCnSpec:
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for cn service.
+    # add annotations for external cn service.
     annotations: {}
-    # Add labels for cn service. The operator may add its own labels
+    # Add labels for external cn service. The operator may add its own default labels.
     labels: {}
     # config the service port for cn service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
@@ -829,9 +829,9 @@ starrocksBeSpec:
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for be service.
+    # add annotations for external be service.
     annotations: {}
-    # Add labels for be service. The operator may add its own labels
+    # Add labels for external be service. The operator may add its own default labels.
     labels: {}
     # config the service port for be service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
@@ -1140,9 +1140,9 @@ starrocksFeProxySpec:
     type: ClusterIP
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for fe service.
+    # add annotations for external fe proxy service.
     annotations: {}
-    # Add labels for fe proxy service. The operator may add its own labels
+    # Add labels for external fe proxy service. The operator may add its own default labels.
     labels: {}
     # config the service port for fe proxy service.
     # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or

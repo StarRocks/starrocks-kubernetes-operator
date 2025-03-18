@@ -173,11 +173,13 @@ type StarRocksLoadSpec struct {
 
 // StarRocksService defines external service for starrocks component.
 type StarRocksService struct {
-	// Annotations store Kubernetes Service annotations.
+	// Annotations store Kubernetes Service annotations. These will be added to the external service
+	// only (not internal).
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
-	// Labels store Kubernetes Service labels. StarRocks may add its own default labels.
+	// Labels store Kubernetes Service labels. These will be added to the external service only (not
+	// internal). StarRocks may add its own default labels.
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 

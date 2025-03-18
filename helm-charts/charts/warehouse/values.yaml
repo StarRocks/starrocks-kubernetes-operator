@@ -50,9 +50,9 @@ spec:
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
-    # add annotations for service.
+    # add annotations for external service.
     annotations: {}
-    # add labels for service.
+    # add labels for external service.
     labels: {}
     # config the service port for service.
     # if you want to use a dedicated port for service, you can config the port.

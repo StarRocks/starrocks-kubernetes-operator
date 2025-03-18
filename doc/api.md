@@ -2044,7 +2044,8 @@ map[string]string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Annotations store Kubernetes Service annotations.</p>
+<p>Annotations store Kubernetes Service annotations. These will be added to the external service
+only (not internal).</p>
 </td>
 </tr>
 <tr>
@@ -2056,7 +2057,8 @@ map[string]string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Labels store Kubernetes Service labels. StarRocks may add its own default labels.</p>
+<p>Labels store Kubernetes Service labels. These will be added to the external service only (not
+internal). StarRocks may add its own default labels.</p>
 </td>
 </tr>
 <tr>
@@ -2521,5 +2523,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>5b706db</code>.
+on git commit <code>dbe00d8</code>.
 </em></p>
