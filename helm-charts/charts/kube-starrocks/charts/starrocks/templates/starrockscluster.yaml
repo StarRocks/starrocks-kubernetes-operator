@@ -69,6 +69,10 @@ spec:
         {{- toYaml .Values.starrocksFESpec.service.annotations | nindent 8 }}
         {{- end }}
       {{- end }}
+      {{- if .Values.starrocksFESpec.service.labels}}
+      labels:
+        {{- toYaml .Values.starrocksFESpec.service.labels | nindent 8 }}
+      {{- end }}
     {{- end }}
     annotations:
       app.starrocks.io/fe-config-hash: "{{template "starrockscluster.fe.config.hash" . }}"
@@ -325,6 +329,10 @@ spec:
         {{- if .Values.starrocksBeSpec.service.annotations }}
         {{- toYaml .Values.starrocksBeSpec.service.annotations | nindent 8 }}
         {{- end }}
+      {{- end }}
+      {{- if .Values.starrocksBeSpec.service.labels}}
+      labels:
+        {{- toYaml .Values.starrocksBeSpec.service.labels | nindent 8 }}
       {{- end }}
     {{- end }}
     annotations:
@@ -751,6 +759,10 @@ spec:
         {{- toYaml .Values.starrocksCnSpec.service.annotations | nindent 8 }}
         {{- end }}
       {{- end }}
+      {{- if .Values.starrocksCnSpec.service.labels}}
+      labels:
+        {{- toYaml .Values.starrocksCnSpec.service.labels | nindent 8 }}
+      {{- end }}
     {{- end }}
     annotations:
       app.starrocks.io/cn-config-hash: "{{template "starrockscluster.cn.config.hash" . }}"
@@ -874,6 +886,10 @@ spec:
       {{- if .Values.starrocksFeProxySpec.service.annotations }}
       annotations:
         {{- toYaml .Values.starrocksFeProxySpec.service.annotations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksFeProxySpec.service.labels}}
+      labels:
+        {{- toYaml .Values.starrocksFeProxySpec.service.labels | nindent 8 }}
       {{- end }}
       {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.starrocksFeProxySpec.service.loadbalancerIP }}

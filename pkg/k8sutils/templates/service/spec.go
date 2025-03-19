@@ -20,13 +20,18 @@ import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
 
-func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort) *corev1.Service {
+func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort,
+	defaultLabels map[string]string) *corev1.Service {
 	searchSvc := &corev1.Service{}
 	externalService.ObjectMeta.DeepCopyInto(&searchSvc.ObjectMeta)
-	// some service annotations can only be used when `type` is 'LoadBalancer', e.g. service.beta.kubernetes.io/load-balancer-source-ranges
-	// we do not need to annotations for search service
+	// Set annotations to nil so external service annotations aren't copied. Interal / search service annotations aren't
+	// needed, and adding them can be an issue since some service annotations can only be used when `type` is
+	// 'LoadBalancer', e.g. service.beta.kubernetes.io/load-balancer-source-ranges.
 	searchSvc.Annotations = nil
 	searchSvc.Name = serviceName
+	// Set labels to the default labels so external service labels aren't copied. Since labels are used to select objects,
+	// adding them to the internal / search service can be detrimental.
+	searchSvc.Labels = defaultLabels
 	searchSvc.Spec = corev1.ServiceSpec{
 		ClusterIP: "None",
 		Ports:     ports,

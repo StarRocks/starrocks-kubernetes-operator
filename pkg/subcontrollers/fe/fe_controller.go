@@ -91,7 +91,8 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// generate new fe service.
 	logger.V(log.DebugLevel).Info("build fe service", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
-	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), load.Labels(src.Name, feSpec))
+	defaultLabels := load.Labels(src.Name, feSpec)
+	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), defaultLabels)
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{
@@ -100,7 +101,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 			TargetPort:  intstr.FromInt(int(rutils.GetPort(feConfig, rutils.QUERY_PORT))),
 			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
 		},
-	})
+	}, defaultLabels)
 
 	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)

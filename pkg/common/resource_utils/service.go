@@ -73,7 +73,16 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 
 	starRocksService := spec.GetService()
 	setServiceType(starRocksService, &svc)
-	anno := getServiceAnnotations(starRocksService)
+	anno := getExternalServiceAnnotations(starRocksService)
+	userSuppliedLabels := getExternalServiceLabels(starRocksService)
+	newLabels := map[string]string{}
+	for key, val := range labels {
+		newLabels[key] = val
+	}
+	for key, val := range userSuppliedLabels {
+		newLabels[key] = val
+	}
+	svc.Labels = newLabels
 	switch spec.(type) {
 	case *srapi.StarRocksFeSpec:
 		srPorts = getFeServicePorts(config, starRocksService)
@@ -226,13 +235,24 @@ func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServi
 	return port
 }
 
-func getServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
+func getExternalServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
 	if svc != nil && svc.Annotations != nil {
 		annotations := map[string]string{}
 		for key, val := range svc.Annotations {
 			annotations[key] = val
 		}
 		return annotations
+	}
+	return map[string]string{}
+}
+
+func getExternalServiceLabels(svc *srapi.StarRocksService) map[string]string {
+	if svc != nil && svc.Labels != nil {
+		labels := map[string]string{}
+		for key, val := range svc.Labels {
+			labels[key] = val
+		}
+		return labels
 	}
 	return map[string]string{}
 }

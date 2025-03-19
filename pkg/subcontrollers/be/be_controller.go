@@ -106,10 +106,11 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	// add query port from fe config.
 	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feConfig, rutils.QUERY_PORT)), 10)
 	// generate new be external service.
+	defaultLabels := load.Labels(src.Name, beSpec)
 	externalsvc := rutils.BuildExternalService(object.NewFromCluster(src),
-		beSpec, config, load.Selector(src.Name, beSpec), load.Labels(src.Name, beSpec))
+		beSpec, config, load.Selector(src.Name, beSpec), defaultLabels)
 	// generate internal fe service, update the status of cn on src.
-	internalService := be.generateInternalService(ctx, src, &externalsvc, config)
+	internalService := be.generateInternalService(ctx, src, &externalsvc, config, defaultLabels)
 
 	// create be statefulset
 	podTemplateSpec, err := be.buildPodTemplate(src, config)
@@ -188,7 +189,8 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 }
 
 func (be *BeController) generateInternalService(ctx context.Context,
-	src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{}) *corev1.Service {
+	src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{},
+	labels map[string]string) *corev1.Service {
 	logger := logr.FromContextOrDiscard(ctx)
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
@@ -198,7 +200,7 @@ func (be *BeController) generateInternalService(ctx context.Context,
 			Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
 			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
 		},
-	})
+	}, labels)
 
 	// for compatible version < v1.5
 	var esearchSvc corev1.Service

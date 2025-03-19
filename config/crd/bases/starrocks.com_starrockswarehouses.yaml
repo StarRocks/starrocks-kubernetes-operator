@@ -3317,7 +3317,16 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations store Kubernetes Service annotations.
+                        description: |-
+                          Annotations store Kubernetes Service annotations. These will be added to the external service
+                          only (not internal).
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Labels store Kubernetes Service labels. These will be added to the external service only (not
+                          internal). StarRocks may add its own default labels.
                         type: object
                       loadBalancerIP:
                         description: |-

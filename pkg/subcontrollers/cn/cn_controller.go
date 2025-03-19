@@ -186,8 +186,9 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	}
 
 	// build and deploy service
+	defaultLabels := load.Labels(object.AliasName, cnSpec)
 	externalsvc := rutils.BuildExternalService(object, cnSpec, config,
-		load.Selector(object.AliasName, cnSpec), load.Labels(object.AliasName, cnSpec))
+		load.Selector(object.AliasName, cnSpec), defaultLabels)
 	searchServiceName := service.SearchServiceName(object.AliasName, cnSpec)
 	internalService := service.MakeSearchService(searchServiceName, &externalsvc, []corev1.ServicePort{
 		{
@@ -195,7 +196,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 			Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
 			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
 		},
-	})
+	}, defaultLabels)
 
 	if err := k8sutils.ApplyService(ctx, cc.k8sClient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "sync CN external service failed")

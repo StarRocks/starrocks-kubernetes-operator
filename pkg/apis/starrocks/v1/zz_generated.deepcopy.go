@@ -734,6 +734,13 @@ func (in *StarRocksService) DeepCopyInto(out *StarRocksService) {
 			(*out)[key] = val
 		}
 	}
+	if in.Labels != nil {
+		in, out := &in.Labels, &out.Labels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.Ports != nil {
 		in, out := &in.Ports, &out.Ports
 		*out = make([]StarRocksServicePort, len(*in))
