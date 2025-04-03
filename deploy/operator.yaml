@@ -178,6 +178,7 @@ spec:
         - --leader-elect
         - --zap-time-encoding=iso8601
         - --zap-encoder=console
+        - --volume-name-with-hash=true
         env:
         - name: TZ
           value: Asia/Shanghai
