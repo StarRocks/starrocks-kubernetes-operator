@@ -101,3 +101,8 @@ starrocksOperator:
   # By default, Operator will use cluster.local as the dnsDomainSuffix.
   # If you set up a kubernetes cluster with a different dnsDomainSuffix, you need to set this value.
   dnsDomainSuffix: ""
+  # By default, the volume name of secret and configmap created by operator for the FE/BE/CN pods has a hash suffix.
+  # If users plan to use a sidecar or init container to mount the same volume, it will be difficult to get the volume name.
+  # In this situation, you can set this value to false.
+  volumeNameWithHash: true
+
