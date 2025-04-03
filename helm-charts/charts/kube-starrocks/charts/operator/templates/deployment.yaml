@@ -43,6 +43,7 @@ spec:
         {{- if .Values.starrocksOperator.dnsDomainSuffix }}
         - --dns-domain-suffix={{ .Values.starrocksOperator.dnsDomainSuffix }}
         {{- end }}
+        - --volume-name-with-hash={{ .Values.starrocksOperator.volumeNameWithHash }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}
