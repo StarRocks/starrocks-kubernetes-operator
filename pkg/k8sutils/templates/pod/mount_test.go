@@ -1,13 +1,22 @@
 package pod
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 )
+
+func TestMain(m *testing.M) {
+	// Set up the test environment
+	config.VolumeNameWithHash = true // because this is a default value
+
+	os.Exit(m.Run())
+}
 
 func TestMountConfigMapInfo(t *testing.T) {
 	type args struct {
