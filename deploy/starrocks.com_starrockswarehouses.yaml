@@ -2311,6 +2311,18 @@ spec:
                       - name
                       type: object
                     type: array
+                  sysctls:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                        value:
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
                   terminationGracePeriodSeconds:
                     format: int64
                     type: integer

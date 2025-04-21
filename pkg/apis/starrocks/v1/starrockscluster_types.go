@@ -87,6 +87,7 @@ type SpecInterface interface {
 	GetSidecars() []corev1.Container
 	GetInitContainers() []corev1.Container
 	IsReadOnlyRootFilesystem() *bool
+	GetSysctls() []corev1.Sysctl
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -209,19 +210,19 @@ func (spec *StarRocksFeProxySpec) GetTerminationGracePeriodSeconds() *int64 {
 
 // GetCapabilities
 // fe proxy does not have field Capabilities, the reason why implementing this method is
-// // that StarRocksFeProxySpec needs to implement SpecInterface interface
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetCapabilities() *corev1.Capabilities { return nil }
 
 // GetSidecars
 // fe proxy does not have field Sidecars, the reason why implementing this method is
-// // that StarRocksFeProxySpec needs to implement SpecInterface interface
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetSidecars() []corev1.Container {
 	return nil
 }
 
 // GetInitContainers
 // fe proxy does not have field InitContainers, the reason why implementing this method is
-// // that StarRocksFeProxySpec needs to implement SpecInterface interface
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetInitContainers() []corev1.Container {
 	return nil
 }
@@ -251,6 +252,11 @@ func (spec *StarRocksFeProxySpec) GetUpdateStrategy() *appv1.StatefulSetUpdateSt
 func (spec *StarRocksFeProxySpec) IsReadOnlyRootFilesystem() *bool {
 	return nil
 }
+
+// GetSysctls
+// fe proxy does not have field Sysctls, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) GetSysctls() []corev1.Sysctl { return nil }
 
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
