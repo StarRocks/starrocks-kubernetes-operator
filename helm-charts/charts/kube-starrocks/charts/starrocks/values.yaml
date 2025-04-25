@@ -200,11 +200,17 @@ starrocksFESpec:
   readOnlyRootFilesystem: false
   # add/drop capabilities for FE container.
   capabilities: {}
-  #  add:
-  #    - PERFMON
-  #    - SYS_PTRACE
-  #  drop:
-  #    - SYS_ADMIN
+    #  add:
+    #    - PERFMON
+    #    - SYS_PTRACE
+    #  drop:
+    #    - SYS_ADMIN
+  # set sysctls for fe pod.
+  # See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for how to set sysctls.
+  # Note: The use of unsafe sysctls is at-your-own-risk and can lead to severe problems
+  sysctls: []
+    # - name: net.ipv4.ip_unprivileged_port_start
+    #   value: "2048"
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
@@ -498,11 +504,17 @@ starrocksCnSpec:
   readOnlyRootFilesystem: false
   # add/drop capabilities for CN container.
   capabilities: {}
-  #  add:
-  #    - PERFMON
-  #    - SYS_PTRACE
-  #  drop:
-  #    - SYS_ADMIN
+    #  add:
+    #    - PERFMON
+    #    - SYS_PTRACE
+    #  drop:
+    #    - SYS_ADMIN
+  # set sysctls for cn pod.
+  # See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for how to set sysctls.
+  # Note: The use of unsafe sysctls is at-your-own-risk and can lead to severe problems
+  sysctls: []
+    # - name: net.ipv4.ip_unprivileged_port_start
+    #   value: "2048"
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
@@ -838,11 +850,17 @@ starrocksBeSpec:
   readOnlyRootFilesystem: false
   # add/drop capabilities for BE container.
   capabilities: {}
-  #  add:
-  #    - PERFMON
-  #    - SYS_PTRACE
-  #  drop:
-  #    - SYS_ADMIN
+    #  add:
+    #    - PERFMON
+    #    - SYS_PTRACE
+    #  drop:
+    #    - SYS_ADMIN
+  # set sysctls for be pod.
+  # See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for how to set sysctls.
+  # Note: The use of unsafe sysctls is at-your-own-risk and can lead to severe problems
+  sysctls: []
+    # - name: net.ipv4.ip_unprivileged_port_start
+    #   value: "2048"
   # specify the service name and port config and serviceType
   # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:

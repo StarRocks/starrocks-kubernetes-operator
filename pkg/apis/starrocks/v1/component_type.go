@@ -110,6 +110,10 @@ type StarRocksComponentSpec struct {
 	//     and does not support read-only root filesystem
 	// +optional
 	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty" protobuf:"varint,6,opt,name=readOnlyRootFilesystem"`
+
+	// Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
+	// See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
+	Sysctls []corev1.Sysctl `json:"sysctls,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -214,6 +218,10 @@ func (spec *StarRocksComponentSpec) GetCommand() []string {
 
 func (spec *StarRocksComponentSpec) GetArgs() []string {
 	return spec.Args
+}
+
+func (spec *StarRocksComponentSpec) GetSysctls() []corev1.Sysctl {
+	return spec.Sysctls
 }
 
 func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy {

@@ -4170,6 +4170,24 @@ spec:
                       - name
                       type: object
                     type: array
+                  sysctls:
+                    description: |-
+                      Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
+                      See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
+                    items:
+                      description: Sysctl defines a kernel parameter to be set
+                      properties:
+                        name:
+                          description: Name of a property to set
+                          type: string
+                        value:
+                          description: Value of a property to set
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
                   terminationGracePeriodSeconds:
                     description: |-
                       TerminationGracePeriodSeconds defines duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.
@@ -9153,6 +9171,24 @@ spec:
                       required:
                       - mountPath
                       - name
+                      type: object
+                    type: array
+                  sysctls:
+                    description: |-
+                      Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
+                      See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
+                    items:
+                      description: Sysctl defines a kernel parameter to be set
+                      properties:
+                        name:
+                          description: Name of a property to set
+                          type: string
+                        value:
+                          description: Value of a property to set
+                          type: string
+                      required:
+                      - name
+                      - value
                       type: object
                     type: array
                   terminationGracePeriodSeconds:
@@ -15024,6 +15060,24 @@ spec:
                       required:
                       - mountPath
                       - name
+                      type: object
+                    type: array
+                  sysctls:
+                    description: |-
+                      Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
+                      See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
+                    items:
+                      description: Sysctl defines a kernel parameter to be set
+                      properties:
+                        name:
+                          description: Name of a property to set
+                          type: string
+                        value:
+                          description: Value of a property to set
+                          type: string
+                      required:
+                      - name
+                      - value
                       type: object
                     type: array
                   terminationGracePeriodSeconds:
