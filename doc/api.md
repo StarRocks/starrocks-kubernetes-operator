@@ -1374,6 +1374,20 @@ Note that:
 and does not support read-only root filesystem</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>sysctls</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#sysctl-v1-core">
+[]Kubernetes core/v1.Sysctl
+</a>
+</em>
+</td>
+<td>
+<p>Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
+See <a href="https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/">https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/</a> for more details.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -2523,5 +2537,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>e5ab9e9</code>.
+on git commit <code>de25b43</code>.
 </em></p>
