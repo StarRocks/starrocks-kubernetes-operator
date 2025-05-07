@@ -13,7 +13,7 @@ nameOverride: "kube-starrocks"
 #       you should also not set the initPassword.
 #       If you install StarRocks using helm install and set the initPassword, please always retain the configuration of initPassword.
 initPassword:
-  enabled: false
+  enabled: true
   # Note: If you are using Argo CD to deploy the StarRocks cluster, you must set isInstall to false after the first installation.
   # This is because Argo CD support helm like this: helm template <options> | kubectl apply -f -. If isInstall is true, the
   # initPassword job will be executed every time you run the command.
@@ -27,6 +27,8 @@ initPassword:
   image: ""
   # The annotations for the Job, not including the annotations for the pod.
   annotations: {}
+  # The annotations for the Job's Pod, not including the annotations for the job.
+  podAnnotations: {}
   # resources for init_job pod.
   resources: {}
   #resources:

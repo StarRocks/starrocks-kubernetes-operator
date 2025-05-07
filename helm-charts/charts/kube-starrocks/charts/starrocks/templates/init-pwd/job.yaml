@@ -12,6 +12,11 @@ metadata:
   {{- end }}
 spec:
   template:
+    {{- if .Values.initPassword.podAnnotations }}
+    metadata:
+      annotations:
+        {{- toYaml .Values.initPassword.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
       {{- if or .Values.starrocksFESpec.imagePullSecrets .Values.starrocksCluster.componentValues.imagePullSecrets }}
       imagePullSecrets:
