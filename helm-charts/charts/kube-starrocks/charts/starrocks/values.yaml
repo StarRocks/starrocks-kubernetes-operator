@@ -27,6 +27,8 @@ initPassword:
   image: ""
   # The annotations for the Job, not including the annotations for the pod.
   annotations: {}
+  # The annotations for the Job's Pod, not including the annotations for the job.
+  podAnnotations: {}
   # resources for init_job pod.
   resources: {}
   #resources:
