@@ -258,6 +258,10 @@ func (spec *StarRocksFeProxySpec) IsReadOnlyRootFilesystem() *bool {
 // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetSysctls() []corev1.Sysctl { return nil }
 
+func (spec *StarRocksFeProxySpec) GetPriorityClassName() string {
+	return spec.StarRocksLoadSpec.GetPriorityClassName()
+}
+
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
 // 2. StarRocksWarehouseStatus.Phase represents the phase of starrocks warehouse.
