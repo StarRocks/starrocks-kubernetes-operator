@@ -340,3 +340,7 @@ func (spec *StarRocksLoadSpec) GetImagePullPolicy() corev1.PullPolicy {
 	}
 	return spec.ImagePullPolicy
 }
+
+func (spec *StarRocksLoadSpec) GetPriorityClassName() string {
+	return spec.PriorityClassName
+}
