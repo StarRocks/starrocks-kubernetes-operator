@@ -31,6 +31,9 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
+    {{- if .Values.starrocksFESpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksFESpec.priorityClassName }}
+    {{- end }}
     {{- if .Values.starrocksFESpec.maxUnavailablePods }}
     updateStrategy:
       rollingUpdate:
@@ -296,6 +299,9 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksBeSpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksBeSpec.imagePullPolicy }}
+    {{- if .Values.starrocksBeSpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksBeSpec.priorityClassName }}
+    {{- end }}
     {{- if .Values.starrocksBeSpec.maxUnavailablePods }}
     updateStrategy:
       rollingUpdate:
@@ -593,6 +599,9 @@ spec:
     replicas: {{ .Values.starrocksCnSpec.replicas }}
     {{- end }}
     imagePullPolicy: {{ .Values.starrocksCnSpec.imagePullPolicy }}
+    {{- if .Values.starrocksCnSpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksCnSpec.priorityClassName }}
+    {{- end }}
     {{- if .Values.starrocksCnSpec.maxUnavailablePods }}
     updateStrategy:
       rollingUpdate:
@@ -888,6 +897,9 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksFeProxySpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFeProxySpec.imagePullPolicy }}
+    {{- if .Values.starrocksFeProxySpec.priorityClassName }}
+    priorityClassName: {{ .Values.starrocksFeProxySpec.priorityClassName }}
+    {{- end }}
     resolver: {{ .Values.starrocksFeProxySpec.resolver }}
     {{- if .Values.starrocksFeProxySpec.resources }}
       {{- toYaml .Values.starrocksFeProxySpec.resources | nindent 4 }}
