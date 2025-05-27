@@ -25,6 +25,10 @@ spec:
           name: {{ .Values.metrics.serviceMonitor.basicAuth.passwordSecretName }}
           key: {{ .Values.metrics.serviceMonitor.basicAuth.passwordSecretKey }}
       {{- end }}
+      {{- if .Values.metrics.serviceMonitor.endpointParam.enabled }}
+      params:
+        {{- toYaml .Values.metrics.serviceMonitor.endpointParam.params | nindent 8 }}
+      {{- end }}
       relabelings:
         - sourceLabels: [__meta_kubernetes_endpoints_label_app_starrocks_ownerreference_name]
           targetLabel: app_starrocks_ownerreference_name

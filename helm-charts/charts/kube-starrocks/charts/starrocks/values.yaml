@@ -86,6 +86,14 @@ metrics:
       passwordSecretName: ""
       # The key in the secret that contains the password for basic auth.
       passwordSecretKey: ""
+    # Whether to enable request parameters for the ServiceMonitor.
+    endpointParam:
+      enabled: false
+      # the parameters for the ServiceMonitor.
+      # params:
+      #    with_materialized_view_metrics:
+      #      - "all"
+      params: {}
 
 # deploy a starrocks cluster
 starrocksCluster:
