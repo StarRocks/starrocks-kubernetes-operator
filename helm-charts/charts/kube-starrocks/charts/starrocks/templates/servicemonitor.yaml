@@ -27,7 +27,7 @@ spec:
       {{- end }}
       {{- if .Values.metrics.serviceMonitor.endpointParam.enabled }}
       params:
-            {{- toYaml .Values.metrics.serviceMonitor.endpointParam.params | nindent 8 }}
+        {{- toYaml .Values.metrics.serviceMonitor.endpointParam.params | nindent 8 }}
       {{- end }}
       relabelings:
         - sourceLabels: [__meta_kubernetes_endpoints_label_app_starrocks_ownerreference_name]
