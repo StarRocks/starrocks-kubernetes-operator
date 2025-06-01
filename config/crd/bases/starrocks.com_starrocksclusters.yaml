@@ -2634,6 +2634,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  priorityClassName:
+                    description: |-
+                      If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
+                      cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
+                      More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
@@ -7637,6 +7643,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  priorityClassName:
+                    description: |-
+                      If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
+                      cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
+                      More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
@@ -10534,6 +10546,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  priorityClassName:
+                    description: |-
+                      If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
+                      cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
+                      More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+                    type: string
                   readinessProbeFailureSeconds:
                     description: |-
                       ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
@@ -13526,6 +13544,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  priorityClassName:
+                    description: |-
+                      If specified, Pods can have priority. Priority indicates the importance of a Pod relative to other Pods. If a Pod
+                      cannot be scheduled, the scheduler tries to preempt (evict) lower priority Pods to make scheduling
+                      More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption of the pending Pod possible.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
