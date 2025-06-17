@@ -23,10 +23,10 @@ func TestDetectPVCExpansion(t *testing.T) {
 	_ = storagev1.AddToScheme(scheme)
 
 	tests := []struct {
-		name                    string
-		existingStatefulSet     *appv1.StatefulSet
-		existingPVCs            []corev1.PersistentVolumeClaim
-		newStorageVolumes       []v1.StorageVolume
+		name                       string
+		existingStatefulSet        *appv1.StatefulSet
+		existingPVCs               []corev1.PersistentVolumeClaim
+		newStorageVolumes          []v1.StorageVolume
 		expectedNeedsExpansion     bool
 		expectedNeedsRecreation    bool
 		expectedOnlyPVCSizeChanged bool
@@ -117,7 +117,7 @@ func TestDetectPVCExpansion(t *testing.T) {
 			},
 			expectedNeedsExpansion:     true,
 			expectedNeedsRecreation:    false,
-			expectedOnlyPVCSizeChanged: true,  // Only PVC size changed
+			expectedOnlyPVCSizeChanged: true, // Only PVC size changed
 			expectedPVCCount:           1,
 			expectedValidationErrors:   0,
 		},
@@ -245,15 +245,15 @@ func TestDetectPVCExpansion(t *testing.T) {
 
 			// Add storage classes for testing
 			objects = append(objects, &storagev1.StorageClass{
-				ObjectMeta: metav1.ObjectMeta{Name: "standard"},
+				ObjectMeta:           metav1.ObjectMeta{Name: "standard"},
 				AllowVolumeExpansion: boolPtr(true),
 			})
 			objects = append(objects, &storagev1.StorageClass{
-				ObjectMeta: metav1.ObjectMeta{Name: "premium"},
+				ObjectMeta:           metav1.ObjectMeta{Name: "premium"},
 				AllowVolumeExpansion: boolPtr(true),
 			})
 			objects = append(objects, &storagev1.StorageClass{
-				ObjectMeta: metav1.ObjectMeta{Name: "no-expansion"},
+				ObjectMeta:           metav1.ObjectMeta{Name: "no-expansion"},
 				AllowVolumeExpansion: boolPtr(false),
 			})
 
@@ -472,11 +472,11 @@ func TestCheckStorageClassRequiresDetachment(t *testing.T) {
 	_ = storagev1.AddToScheme(scheme)
 
 	tests := []struct {
-		name                string
-		storageClassName    *string
-		storageClasses      []storagev1.StorageClass
-		expectedDetachment  bool
-		expectError         bool
+		name               string
+		storageClassName   *string
+		storageClasses     []storagev1.StorageClass
+		expectedDetachment bool
+		expectError        bool
 	}{
 		{
 			name:             "Unknown provisioner requires detachment (conservative default)",
@@ -563,9 +563,9 @@ func TestCheckStorageClassRequiresDetachment(t *testing.T) {
 			expectError:        false,
 		},
 		{
-			name:             "emptyDir storage class (special case)",
-			storageClassName: stringPtr("emptyDir"),
-			storageClasses:   []storagev1.StorageClass{},
+			name:               "emptyDir storage class (special case)",
+			storageClassName:   stringPtr("emptyDir"),
+			storageClasses:     []storagev1.StorageClass{},
 			expectedDetachment: false,
 			expectError:        false,
 		},

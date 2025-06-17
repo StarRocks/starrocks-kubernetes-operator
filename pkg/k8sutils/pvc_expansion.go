@@ -25,7 +25,7 @@ type PVCExpansionResult struct {
 	NeedsExpansion             bool
 	NeedsStatefulSetRecreation bool
 	RequiresDetachment         bool
-	OnlyPVCSizeChanged         bool  // True if only PVC sizes changed, no other StatefulSet changes
+	OnlyPVCSizeChanged         bool // True if only PVC sizes changed, no other StatefulSet changes
 	PVCsToExpand               []PVCExpansionInfo
 	ValidationErrors           []string
 }
@@ -40,11 +40,11 @@ type PVCExpansionInfo struct {
 }
 
 // DetectPVCExpansion analyzes if PVC expansion is needed for a StatefulSet
-func DetectPVCExpansion(ctx context.Context, k8sClient client.Client, 
+func DetectPVCExpansion(ctx context.Context, k8sClient client.Client,
 	namespace, statefulSetName string, newStorageVolumes []v1.StorageVolume) (*PVCExpansionResult, error) {
-	
+
 	logger := log.FromContext(ctx).WithName("pvc-expansion")
-	
+
 	result := &PVCExpansionResult{
 		PVCsToExpand:     []PVCExpansionInfo{},
 		ValidationErrors: []string{},
@@ -75,7 +75,7 @@ func DetectPVCExpansion(ctx context.Context, k8sClient client.Client,
 		if isSpecialStorageClass(sv) || strings.HasPrefix(sv.StorageSize, "0") {
 			continue
 		}
-		
+
 		pvc := corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{Name: sv.Name},
 			Spec: corev1.PersistentVolumeClaimSpec{
@@ -173,7 +173,7 @@ func DetectPVCExpansion(ctx context.Context, k8sClient client.Client,
 // ExpandPVCs performs the actual PVC expansion
 func ExpandPVCs(ctx context.Context, k8sClient client.Client, expansionInfos []PVCExpansionInfo) error {
 	logger := log.FromContext(ctx).WithName("pvc-expansion")
-	
+
 	for _, info := range expansionInfos {
 		logger.Info("Expanding PVC", "pvc", info.PVCName, "namespace", info.Namespace,
 			"currentSize", info.CurrentSize.String(), "newSize", info.NewSize.String())
@@ -189,7 +189,7 @@ func ExpandPVCs(ctx context.Context, k8sClient client.Client, expansionInfos []P
 
 		// Update the PVC size
 		pvc.Spec.Resources.Requests[corev1.ResourceStorage] = info.NewSize
-		
+
 		err = k8sClient.Update(ctx, &pvc)
 		if err != nil {
 			return fmt.Errorf("failed to update PVC %s: %w", info.PVCName, err)
@@ -278,9 +278,9 @@ func ExpandPVCsWithDetachment(ctx context.Context, k8sClient client.Client, expe
 }
 
 // getStatefulSetPVCs returns all PVCs for a specific volume in a StatefulSet
-func getStatefulSetPVCs(ctx context.Context, k8sClient client.Client, 
+func getStatefulSetPVCs(ctx context.Context, k8sClient client.Client,
 	namespace, statefulSetName, volumeName string) ([]corev1.PersistentVolumeClaim, error) {
-	
+
 	var pvcList corev1.PersistentVolumeClaimList
 	err := k8sClient.List(ctx, &pvcList, client.InNamespace(namespace))
 	if err != nil {
@@ -514,11 +514,11 @@ func requiresDetachmentForExpansion(sc *storagev1.StorageClass) bool {
 	// Known provisioners that support online expansion (safe to expand without detachment)
 	onlineExpansionSupportedProvisioners := map[string]bool{
 		// Google Cloud Persistent Disk
-		"kubernetes.io/gce-pd": true,
+		"kubernetes.io/gce-pd":  true,
 		"pd.csi.storage.gke.io": true,
 		// AWS EBS
 		"kubernetes.io/aws-ebs": true,
-		"ebs.csi.aws.com": true,
+		"ebs.csi.aws.com":       true,
 		// DigitalOcean Block Storage
 		"dobs.csi.digitalocean.com": true,
 		// Linode Block Storage
