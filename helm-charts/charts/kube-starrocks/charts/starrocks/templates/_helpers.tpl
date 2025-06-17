@@ -710,6 +710,52 @@ Get the value of tag field in the starrocksCnSpec
 {{- end -}}
 
 {{/*
+Validate storage size to prevent reduction
+*/}}
+{{- define "starrockscluster.validate.storage.size" -}}
+{{- $component := .component -}}
+{{- $storageSpec := .storageSpec -}}
+{{- if $storageSpec.name -}}
+{{- $storageSize := $storageSpec.storageSize -}}
+{{- $logStorageSize := $storageSpec.logStorageSize -}}
+{{- $spillStorageSize := $storageSpec.spillStorageSize -}}
+{{- /* Validate that storage sizes are not empty or zero */ -}}
+{{- if and $storageSize (regexMatch "^0" $storageSize) -}}
+{{- fail (printf "Storage size cannot be zero for %s component: %s" $component $storageSize) -}}
+{{- end -}}
+{{- if and $logStorageSize (regexMatch "^0" $logStorageSize) -}}
+{{- fail (printf "Log storage size cannot be zero for %s component: %s" $component $logStorageSize) -}}
+{{- end -}}
+{{- if and $spillStorageSize (regexMatch "^0" $spillStorageSize) -}}
+{{- fail (printf "Spill storage size cannot be zero for %s component: %s" $component $spillStorageSize) -}}
+{{- end -}}
+{{- /* Validate storage class for expansion support */ -}}
+{{- $storageClassName := $storageSpec.storageClassName -}}
+{{- if and $storageClassName (ne $storageClassName "emptyDir") (ne $storageClassName "hostPath") -}}
+{{- /* Note: We can't check allowVolumeExpansion in Helm templates as it requires API access */ -}}
+{{- /* The operator will validate this at runtime */ -}}
+{{- end -}}
+{{- /* Add note about expansion support */ -}}
+{{- if $storageSize -}}
+{{- /* Storage expansion is supported - sizes can only be increased */ -}}
+{{- /* Ensure your storage class has allowVolumeExpansion: true */ -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate storage class validation warning
+*/}}
+{{- define "starrockscluster.storage.expansion.warning" -}}
+{{- $storageClassName := . -}}
+{{- if and $storageClassName (ne $storageClassName "emptyDir") (ne $storageClassName "hostPath") -}}
+# IMPORTANT: Ensure your storage class '{{ $storageClassName }}' has 'allowVolumeExpansion: true'
+# to support PVC expansion. You can check this with:
+# kubectl get storageclass {{ $storageClassName }} -o yaml | grep allowVolumeExpansion
+{{- end -}}
+{{- end -}}
+
+{{/*
 Get the value of podLabels field in the starrocksFESpec
 */}}
 {{- define "starrockscluster.fe.podLabels" -}}

@@ -7,3 +7,33 @@ ERROR: Installation of the ServiceMonitor CR for the Prometheus operator failed.
 Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} starrocks chart. Please wait for a few minutes for the cluster to be ready.
 
 Please see the values.yaml for more operation information: https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml
+
+{{- if or .Values.starrocksFESpec.storageSpec.name .Values.starrocksBeSpec.storageSpec.name .Values.starrocksCnSpec.storageSpec.name }}
+
+STORAGE EXPANSION SUPPORT:
+This StarRocks operator now supports PVC expansion! You can increase storage sizes by updating the following values:
+- starrocksFESpec.storageSpec.storageSize (FE metadata storage)
+- starrocksFESpec.storageSpec.logStorageSize (FE log storage)
+- starrocksBeSpec.storageSpec.storageSize (BE data storage)
+- starrocksBeSpec.storageSpec.logStorageSize (BE log storage)
+- starrocksCnSpec.storageSpec.storageSize (CN data storage)
+- starrocksCnSpec.storageSpec.logStorageSize (CN log storage)
+
+IMPORTANT NOTES:
+- Storage size can only be INCREASED, not decreased
+- The underlying storage class must support volume expansion (allowVolumeExpansion: true)
+- During expansion, the operator will patch existing PVCs and may recreate StatefulSets if needed
+- Data will be preserved during the expansion process
+
+STORAGE CLASS VALIDATION:
+{{- if .Values.starrocksFESpec.storageSpec.storageClassName }}
+{{- include "starrockscluster.storage.expansion.warning" .Values.starrocksFESpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksBeSpec.storageSpec.storageClassName }}
+{{- include "starrockscluster.storage.expansion.warning" .Values.starrocksBeSpec.storageSpec.storageClassName }}
+{{- end }}
+{{- if .Values.starrocksCnSpec.storageSpec.storageClassName }}
+{{- include "starrockscluster.storage.expansion.warning" .Values.starrocksCnSpec.storageSpec.storageClassName }}
+{{- end }}
+
+{{- end }}
