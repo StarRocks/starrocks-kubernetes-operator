@@ -127,12 +127,11 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		logger.Info("deploy statefulset", "statefulset", expectSts)
 	}
 
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode,
+	if err = k8sutils.ApplyStatefulSetWithPVCExpansion(ctx, fc.Client, &expectSts, shouldEnterDRMode,
 		func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 			return rutils.StatefulSetDeepEqual(new, actual, false)
-		},
-	); err != nil {
-		logger.Error(err, "deploy statefulset failed")
+		}, feSpec.GetStorageVolumes()); err != nil {
+		logger.Error(err, "deploy statefulset with PVC expansion failed")
 		return err
 	}
 

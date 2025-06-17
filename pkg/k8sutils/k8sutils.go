@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/go-logr/logr"
@@ -140,6 +141,7 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
+// This function now supports PVC expansion by detecting storage size changes and handling them appropriately.
 func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv1.StatefulSet,
 	enableScaleTo1 bool, equal StatefulSetEqual) error {
 	logger := logr.FromContextOrDiscard(ctx)
@@ -183,6 +185,82 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 	return k8sClient.Patch(ctx, expect, client.Merge)
 }
 
+// ApplyStatefulSetWithPVCExpansion applies a StatefulSet with support for PVC expansion.
+// It detects when PVC sizes need to be expanded and handles the expansion process.
+func ApplyStatefulSetWithPVCExpansion(ctx context.Context, k8sClient client.Client, expect *appv1.StatefulSet,
+	enableScaleTo1 bool, equal StatefulSetEqual, storageVolumes []srapi.StorageVolume) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("applying statefulset with PVC expansion support", "name", expect.Name)
+
+	// First, detect if PVC expansion is needed
+	expansionResult, err := DetectPVCExpansion(ctx, k8sClient, expect.Namespace, expect.Name, storageVolumes)
+	if err != nil {
+		return fmt.Errorf("failed to detect PVC expansion needs: %w", err)
+	}
+
+	// Validate that no storage size reductions are attempted
+	if len(expansionResult.ValidationErrors) > 0 {
+		return fmt.Errorf("storage validation failed: %v", expansionResult.ValidationErrors)
+	}
+
+	// If PVC expansion is needed, handle based on detachment requirement and other changes
+	if expansionResult.NeedsExpansion {
+		if expansionResult.RequiresDetachment {
+			logger.Info("PVC expansion requires detachment, performing offline expansion", "count", len(expansionResult.PVCsToExpand))
+
+			err = ExpandPVCsWithDetachment(ctx, k8sClient, expect, expansionResult.PVCsToExpand, enableScaleTo1)
+			if err != nil {
+				return fmt.Errorf("failed to expand PVCs with detachment: %w", err)
+			}
+
+			logger.Info("PVC expansion with detachment completed successfully")
+			return nil // StatefulSet was already recreated in ExpandPVCsWithDetachment
+		} else {
+			// Online expansion case
+			if expansionResult.OnlyPVCSizeChanged {
+				// Only PVC sizes changed - expand PVCs without touching StatefulSet
+				logger.Info("Only PVC sizes changed, expanding PVCs online without StatefulSet disruption", "count", len(expansionResult.PVCsToExpand))
+
+				err = ExpandPVCs(ctx, k8sClient, expansionResult.PVCsToExpand)
+				if err != nil {
+					return fmt.Errorf("failed to expand PVCs: %w", err)
+				}
+
+				logger.Info("PVC expansion completed successfully without StatefulSet disruption")
+				// Don't update StatefulSet to avoid VolumeClaimTemplate immutability error
+				return nil
+			} else {
+				// PVC sizes + other changes - delete StatefulSet first, then expand PVCs, then recreate
+				logger.Info("PVC expansion with other StatefulSet changes, will delete StatefulSet first for safe expansion", "count", len(expansionResult.PVCsToExpand))
+
+				err = ExpandPVCsWithDetachment(ctx, k8sClient, expect, expansionResult.PVCsToExpand, enableScaleTo1)
+				if err != nil {
+					return fmt.Errorf("failed to expand PVCs with StatefulSet recreation: %w", err)
+				}
+
+				logger.Info("PVC expansion with StatefulSet recreation completed successfully")
+				return nil // StatefulSet was already recreated in ExpandPVCsWithDetachment
+			}
+		}
+	}
+
+	// If StatefulSet recreation is needed (for non-size VCT changes), handle it
+	if expansionResult.NeedsStatefulSetRecreation {
+		logger.Info("StatefulSet recreation needed due to VolumeClaimTemplate changes")
+
+		err = RecreateStatefulSetSafely(ctx, k8sClient, expect, enableScaleTo1)
+		if err != nil {
+			return fmt.Errorf("failed to recreate StatefulSet: %w", err)
+		}
+
+		logger.Info("StatefulSet recreation completed successfully")
+		return nil
+	}
+
+	// Otherwise, use normal StatefulSet update process
+	return ApplyStatefulSet(ctx, k8sClient, expect, enableScaleTo1, equal)
+}
+
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
 	if err := k8sClient.Create(ctx, object); err != nil {
 		return err
@@ -195,6 +273,115 @@ func UpdateClientObject(ctx context.Context, k8sClient client.Client, object cli
 		return err
 	}
 	return nil
+}
+
+// RecreateStatefulSetSafely safely recreates a StatefulSet while preserving existing PVCs
+func RecreateStatefulSetSafely(ctx context.Context, k8sClient client.Client, expect *appv1.StatefulSet, enableScaleTo1 bool) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("safely recreating StatefulSet", "name", expect.Name)
+
+	// Get the current StatefulSet
+	var current appv1.StatefulSet
+	err := k8sClient.Get(ctx, types.NamespacedName{
+		Namespace: expect.Namespace,
+		Name:      expect.Name,
+	}, &current)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// StatefulSet doesn't exist, create it
+			return CreateClientObject(ctx, k8sClient, expect)
+		}
+		return fmt.Errorf("failed to get current StatefulSet: %w", err)
+	}
+
+	// Store current replicas to restore later
+	currentReplicas := current.Spec.Replicas
+
+	// Delete the StatefulSet immediately since VolumeClaimTemplates are immutable
+	// This is more efficient than scaling to 0 first
+	logger.Info("deleting StatefulSet to update VolumeClaimTemplates")
+	err = k8sClient.Delete(ctx, &current)
+	if err != nil {
+		return fmt.Errorf("failed to delete StatefulSet: %w", err)
+	}
+
+	// Wait for StatefulSet to be fully deleted
+	err = waitForStatefulSetDeletion(ctx, k8sClient, expect.Namespace, expect.Name)
+	if err != nil {
+		return fmt.Errorf("failed to wait for StatefulSet deletion: %w", err)
+	}
+
+	// Restore the original replica count
+	expect.Spec.Replicas = currentReplicas
+
+	// Create the new StatefulSet
+	logger.Info("creating new StatefulSet")
+	err = CreateClientObject(ctx, k8sClient, expect)
+	if err != nil {
+		return fmt.Errorf("failed to create new StatefulSet: %w", err)
+	}
+
+	logger.Info("StatefulSet recreation completed successfully")
+	return nil
+}
+
+// waitForStatefulSetScaleDown waits for a StatefulSet to scale down to 0 replicas
+func waitForStatefulSetScaleDown(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	for i := 0; i < 60; i++ { // Wait up to 5 minutes
+		var sts appv1.StatefulSet
+		err := k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
+		if err != nil {
+			return err
+		}
+
+		if sts.Status.ReadyReplicas == 0 && sts.Status.Replicas == 0 {
+			logger.Info("StatefulSet scaled down successfully")
+			return nil
+		}
+
+		logger.V(1).Info("waiting for StatefulSet to scale down",
+			"readyReplicas", sts.Status.ReadyReplicas,
+			"replicas", sts.Status.Replicas)
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+			// Continue waiting
+		}
+	}
+
+	return fmt.Errorf("timeout waiting for StatefulSet %s to scale down", name)
+}
+
+// waitForStatefulSetDeletion waits for a StatefulSet to be fully deleted
+func waitForStatefulSetDeletion(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	for i := 0; i < 60; i++ { // Wait up to 5 minutes
+		var sts appv1.StatefulSet
+		err := k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
+		if apierrors.IsNotFound(err) {
+			logger.Info("StatefulSet deleted successfully")
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		logger.V(1).Info("waiting for StatefulSet deletion")
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+			// Continue waiting
+		}
+	}
+
+	return fmt.Errorf("timeout waiting for StatefulSet %s to be deleted", name)
 }
 
 // DeleteStatefulset delete statefulset.

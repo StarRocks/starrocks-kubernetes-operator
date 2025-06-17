@@ -16,6 +16,8 @@ spec:
     {{- toYaml .Values.starrocksCluster.disasterRecovery | nindent 4 }}
   {{- end }}
   starRocksFeSpec:
+    {{- /* Validate FE storage configuration */ -}}
+    {{- include "starrockscluster.validate.storage.size" (dict "component" "fe" "storageSpec" .Values.starrocksFESpec.storageSpec) -}}
     {{- if .Values.starrocksFESpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksFESpec.initContainers | nindent 6 }}
@@ -281,6 +283,8 @@ spec:
 
   {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
+    {{- /* Validate BE storage configuration */ -}}
+    {{- include "starrockscluster.validate.storage.size" (dict "component" "be" "storageSpec" .Values.starrocksBeSpec.storageSpec) -}}
     {{- if .Values.starrocksBeSpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksBeSpec.initContainers | nindent 6 }}
@@ -576,6 +580,8 @@ spec:
   {{- end }}
   {{- if .Values.starrocksCluster.enabledCn }}
   starRocksCnSpec:
+    {{- /* Validate CN storage configuration */ -}}
+    {{- include "starrockscluster.validate.storage.size" (dict "component" "cn" "storageSpec" .Values.starrocksCnSpec.storageSpec) -}}
     {{- if .Values.starrocksCnSpec.initContainers }}
     initContainers:
       {{- toYaml .Values.starrocksCnSpec.initContainers | nindent 6 }}
