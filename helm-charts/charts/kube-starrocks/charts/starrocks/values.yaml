@@ -395,6 +395,13 @@ starrocksFESpec:
     edit_log_port = 9010
     mysql_service_nio_enabled = true
     sys_log_level = INFO
+    # When shutting down FE, it will wait for min_graceful_exit_time_second seconds before refusing new requests. If you
+    # want to ensure that queries, writes, and other operations complete smoothly, you need to ensure that the time it
+    # takes for the Pod to become Not Ready is less than min_graceful_exit_time_second. The default Pod configuration is
+    # probe.FailureThreshold = 3, probe.PeriodSeconds = 5, so in the worst case, the Pod will have (3+1)*5 = 20s to
+    # transition to Node Not Ready state. Since the default value of min_graceful_exit_time_second is 15, we change it to a larger value.
+    # Note: StarRocks version must be greater than or equal to 3.4.2 to support this configuration, otherwise it will not take effect.
+    min_graceful_exit_time_second = 25
   # A map object for setting the config. When configyaml is set, to non-empty, the configs in configyaml will take
   # precedence and values in config field will be discarded.
   # Note: When using configyaml, the number needs to be quoted to avoid being converted to scientific notation.
