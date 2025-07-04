@@ -374,13 +374,15 @@ func GetConfigDir(spec v1.SpecInterface) string {
 }
 
 func GetPreStopScriptPath(spec v1.SpecInterface) string {
+	// we do not need set --timeout parameter for stop_xx.sh, because the terminationGracePeriodSeconds configuration
+	// on Pod will take the same effect
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
-		return fmt.Sprintf("%s/fe_prestop.sh", GetStarRocksRootPath(v.FeEnvVars))
+		return fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
-		return fmt.Sprintf("%s/be_prestop.sh", GetStarRocksRootPath(v.BeEnvVars))
+		return fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars))
 	case *v1.StarRocksCnSpec:
-		return fmt.Sprintf("%s/cn_prestop.sh", GetStarRocksRootPath(v.CnEnvVars))
+		return fmt.Sprintf("%s/cn/bin/stop_cn.sh -g", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
 }
