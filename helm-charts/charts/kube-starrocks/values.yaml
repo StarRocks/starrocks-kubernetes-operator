@@ -244,7 +244,7 @@ starrocks:
     #   2. the values in their own spec will replace all the values in this field, not merge.
     componentValues:
       image:
-        tag: "3.3-latest"
+        tag: "3.5-latest"
       # hostAliases allows adding entries to /etc/hosts inside the containers.
       hostAliases: []
         # - ip: "127.0.0.1"
