@@ -279,6 +279,7 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 		SchedulerName:                 spec.GetSchedulerName(),
 		AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
 		ShareProcessNamespace:         spec.GetShareProcessNamespace(),
+		PriorityClassName:             spec.GetPriorityClassName(),
 	}
 	return podSpec
 }
