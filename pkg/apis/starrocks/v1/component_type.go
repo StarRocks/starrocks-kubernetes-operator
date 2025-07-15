@@ -140,9 +140,8 @@ type StarRocksComponentStatus struct {
 	// also if fe have one creating pod phase=creating, also if component all running phase=running, others unknown.
 	Phase ComponentPhase `json:"phase"`
 
-	// +optional
 	// Reason represents the reason of not running.
-	Reason string `json:"reason"`
+	Reason string `json:"reason,omitempty"`
 }
 
 type ConfigMapInfo struct {
