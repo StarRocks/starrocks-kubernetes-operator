@@ -27,6 +27,7 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
@@ -261,12 +262,12 @@ func (cc *CnController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 
 func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
-	var st appv1.StatefulSet
+	var actualSTS appv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
 	statefulSetName := load.Name(object.AliasName, cnSpec)
 	namespacedName := types.NamespacedName{Namespace: object.Namespace, Name: statefulSetName}
-	if err := cc.k8sClient.Get(ctx, namespacedName, &st); apierrors.IsNotFound(err) {
+	if err := cc.k8sClient.Get(ctx, namespacedName, &actualSTS); apierrors.IsNotFound(err) {
 		logger.Info("cn statefulset is not found")
 		return nil
 	}
@@ -281,6 +282,20 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 
 	cnStatus.ServiceName = service.ExternalServiceName(object.AliasName, cnSpec)
 	cnStatus.ResourceNames = rutils.MergeSlices(cnStatus.ResourceNames, []string{statefulSetName})
+
+	// get the selector and replicas field from statefulset
+	if actualSTS.Spec.Replicas == nil {
+		cnStatus.Replicas = 1
+	} else {
+		cnStatus.Replicas = *actualSTS.Spec.Replicas
+	}
+
+	selector, err := metav1.LabelSelectorAsSelector(actualSTS.Spec.Selector)
+	if err != nil {
+		logger.Error(err, "convert label selector to selector failed", "selector", actualSTS.Spec.Selector)
+		return err
+	}
+	cnStatus.Selector = selector.String()
 
 	if err := subc.UpdateStatus(&cnStatus.StarRocksComponentStatus, cc.k8sClient,
 		object.Namespace, load.Name(object.AliasName, cnSpec), pod.Labels(object.AliasName, cnSpec), subc.StatefulSetLoadType); err != nil {
@@ -343,7 +358,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context, object object.Star
 		Name:            cc.generateAutoScalerName(object.AliasName, cnSpec),
 		Labels:          labels,
 		AutoscalerType:  cnSpec.AutoScalingPolicy.Version, // cnSpec.AutoScalingPolicy can not be nil
-		TargetName:      target.Name,
+		TargetName:      object.Name,
 		OwnerReferences: target.OwnerReferences,
 		ScalerPolicy:    &policy,
 	}
@@ -457,10 +472,10 @@ func (cc *CnController) mutating(cnSpec *srapi.StarRocksCnSpec) error {
 	// When the HPA policy with a fixed replica count is set: every time the starrockscluster CR is
 	// applied, the replica count of the StatefulSet object in K8S will be reset to the value
 	// specified by the 'Replicas' field, erasing the value previously set by HPA.
-	policy := cnSpec.AutoScalingPolicy
-	if policy != nil {
-		cnSpec.Replicas = nil
-	}
+	// policy := cnSpec.AutoScalingPolicy
+	// if policy != nil {
+	// 	cnSpec.Replicas = nil
+	// }
 	return nil
 }
 

@@ -19,7 +19,6 @@ package resource_utils
 import (
 	"unsafe"
 
-	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/api/autoscaling/v2beta2"
@@ -31,9 +30,10 @@ import (
 )
 
 var (
-	AutoscalerKind  = "HorizontalPodAutoscaler"
-	StatefulSetKind = "StatefulSet"
-	ServiceKind     = "Service"
+	AutoscalerKind       = "HorizontalPodAutoscaler"
+	StatefulSetKind      = "StatefulSet"
+	StarRocksClusterKind = "StarRocksCluster"
+	ServiceKind          = "Service"
 )
 
 type PodAutoscalerParams struct {
@@ -77,8 +77,8 @@ func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams, autoScalerVersion sr
 
 	scaleTargetRef := &v1.CrossVersionObjectReference{
 		Name:       pap.TargetName,
-		Kind:       StatefulSetKind,
-		APIVersion: appv1.SchemeGroupVersion.String(),
+		Kind:       StarRocksClusterKind,
+		APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
 	}
 
 	switch autoScalerVersion {

@@ -7268,6 +7268,9 @@ spec:
                     type: string
                   reason:
                     type: string
+                  replicas:
+                    format: int32
+                    type: integer
                   resourceNames:
                     items:
                       type: string
@@ -7276,6 +7279,8 @@ spec:
                     items:
                       type: string
                     type: array
+                  selector:
+                    type: string
                   serviceName:
                     type: string
                 required:
@@ -7342,4 +7347,8 @@ spec:
     served: true
     storage: true
     subresources:
+      scale:
+        labelSelectorPath: .status.starRocksCnStatus.selector
+        specReplicasPath: .spec.starRocksCnSpec.replicas
+        statusReplicasPath: .status.starRocksCnStatus.replicas
       status: {}
