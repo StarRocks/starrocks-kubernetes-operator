@@ -468,14 +468,6 @@ func (cc *CnController) getFeConfig(ctx context.Context,
 }
 
 func (cc *CnController) mutating(cnSpec *srapi.StarRocksCnSpec) error {
-	// Mutating because of the autoscaling policy.
-	// When the HPA policy with a fixed replica count is set: every time the starrockscluster CR is
-	// applied, the replica count of the StatefulSet object in K8S will be reset to the value
-	// specified by the 'Replicas' field, erasing the value previously set by HPA.
-	// policy := cnSpec.AutoScalingPolicy
-	// if policy != nil {
-	// 	cnSpec.Replicas = nil
-	// }
 	return nil
 }
 
