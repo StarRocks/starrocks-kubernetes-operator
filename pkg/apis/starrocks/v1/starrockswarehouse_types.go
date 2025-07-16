@@ -68,6 +68,7 @@ type StarRocksWarehouseStatus struct {
 // +kubebuilder:resource:shortName=warehouse
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.template.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 // +kubebuilder:printcolumn:name="status",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="reason",type=string,JSONPath=`.status.reason`
 // +kubebuilder:storageversion
