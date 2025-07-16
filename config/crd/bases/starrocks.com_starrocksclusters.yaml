@@ -2654,11 +2654,10 @@ spec:
                   replicas:
                     description: |-
                       Replicas is the number of desired Pod.
-                      When HPA policy is enabled with a fixed replica count: every time the
-                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
+                      the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
-                      field, erasing the value previously set by HPA. So operator will set
-                      it to nil when HPA policy is enabled.
+                      field, erasing the value previously set by HPA.
                     format: int32
                     minimum: 0
                     type: integer
@@ -7658,11 +7657,10 @@ spec:
                   replicas:
                     description: |-
                       Replicas is the number of desired Pod.
-                      When HPA policy is enabled with a fixed replica count: every time the
-                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
+                      the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
-                      field, erasing the value previously set by HPA. So operator will set
-                      it to nil when HPA policy is enabled.
+                      field, erasing the value previously set by HPA.
                     format: int32
                     minimum: 0
                     type: integer
@@ -10549,11 +10547,10 @@ spec:
                   replicas:
                     description: |-
                       Replicas is the number of desired Pod.
-                      When HPA policy is enabled with a fixed replica count: every time the
-                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
+                      the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
-                      field, erasing the value previously set by HPA. So operator will set
-                      it to nil when HPA policy is enabled.
+                      field, erasing the value previously set by HPA.
                     format: int32
                     minimum: 0
                     type: integer
@@ -13549,11 +13546,10 @@ spec:
                   replicas:
                     description: |-
                       Replicas is the number of desired Pod.
-                      When HPA policy is enabled with a fixed replica count: every time the
-                      starrockscluster CR is applied, the replica count of the StatefulSet
+                      When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
+                      the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
-                      field, erasing the value previously set by HPA. So operator will set
-                      it to nil when HPA policy is enabled.
+                      field, erasing the value previously set by HPA.
                     format: int32
                     minimum: 0
                     type: integer
@@ -15468,8 +15464,8 @@ spec:
                     description: Reason represents the reason of not running.
                     type: string
                   replicas:
-                    description: Replicas is the total number of non-terminated pods
-                      targeted by this deployment (their labels match the selector).
+                    description: Replicas is the total number of non-terminated CN
+                      pods targeted.
                     format: int32
                     type: integer
                   resourceNames:
@@ -15483,7 +15479,7 @@ spec:
                       type: string
                     type: array
                   selector:
-                    description: Selector for pods. The HPA will be using this selector
+                    description: Selector for CN pods. The HPA will use this selector
                       to know which pods to monitor.
                     type: string
                   serviceName:

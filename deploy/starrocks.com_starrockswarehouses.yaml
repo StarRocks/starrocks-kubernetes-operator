@@ -2460,4 +2460,8 @@ spec:
     served: true
     storage: true
     subresources:
+      scale:
+        labelSelectorPath: .status.selector
+        specReplicasPath: .spec.template.replicas
+        statusReplicasPath: .status.replicas
       status: {}

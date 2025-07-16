@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/api/autoscaling/v2beta2"
@@ -35,14 +34,14 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 	labels := Labels{}
 	labels["cluster"] = _defaultName
 	labels["namespace"] = _defaultNamespace
-	pap := &PodAutoscalerParams{
-		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      _defaultNamespace,
-		Name:           "test",
-		Labels:         labels,
-		TargetName:     "test-statefulset",
+	hpaParams := &HPAParams{
+		Version:    srapi.AutoScalerV1,
+		Namespace:  _defaultNamespace,
+		Name:       "test-autoscaler",
+		Labels:     labels,
+		TargetName: "test-starrockscluster",
 		OwnerReferences: []metav1.OwnerReference{{
-			Kind: "StarRocksCluster",
+			Kind: StarRocksClusterKind,
 			Name: "test-starrockscluster",
 		}},
 		ScalerPolicy: &srapi.AutoScalingPolicy{
@@ -61,39 +60,39 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 			APIVersion: "autoscaling/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      pap.Name,
-			Namespace: pap.Namespace,
+			Name:      hpaParams.Name,
+			Namespace: hpaParams.Namespace,
 			Labels:    ls,
 			OwnerReferences: []metav1.OwnerReference{{
-				Kind: "StarRocksCluster",
+				Kind: StarRocksClusterKind,
 				Name: "test-starrockscluster",
 			}},
 		},
 		Spec: v1.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v1.CrossVersionObjectReference{
-				Name:       "test-statefulset",
-				Kind:       StatefulSetKind,
-				APIVersion: appv1.SchemeGroupVersion.String(),
+				Kind:       StarRocksClusterKind,
+				Name:       "test-starrockscluster",
+				APIVersion: "starrocks.com/v1",
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
 		},
 	}
-	require.Equal(t, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV1), ha)
+	require.Equal(t, BuildHPA(hpaParams, srapi.AutoScalerV1), ha)
 }
 
 func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 	labels := Labels{}
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
-	pap := &PodAutoscalerParams{
-		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      _defaultNamespace,
-		Name:           "test",
-		Labels:         labels,
-		TargetName:     "test-statefulset",
+	pap := &HPAParams{
+		Version:    srapi.AutoScalerV1,
+		Namespace:  _defaultNamespace,
+		Name:       "test-autoscaler",
+		Labels:     labels,
+		TargetName: "test-starrockscluster",
 		OwnerReferences: []metav1.OwnerReference{{
-			Kind: "StarRocksCluster",
+			Kind: StarRocksClusterKind,
 			Name: "test-starrockscluster",
 		}},
 		ScalerPolicy: &srapi.AutoScalingPolicy{
@@ -105,9 +104,9 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 					Type: v2beta2.PodsMetricSourceType,
 					Object: &v2beta2.ObjectMetricSource{
 						DescribedObject: v2beta2.CrossVersionObjectReference{
-							Kind:       "statefulset",
-							Name:       "test-statefulset",
-							APIVersion: "apps/v2beta2",
+							Kind:       StarRocksClusterKind,
+							Name:       "test-starrockscluster",
+							APIVersion: "starrocks.com/v1",
 						},
 						Target: v2beta2.MetricTarget{
 							Type:               v2beta2.ValueMetricType,
@@ -175,19 +174,19 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 			APIVersion: v2beta2.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
+			Name:      "test-autoscaler",
 			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
-				Kind: "StarRocksCluster",
+				Kind: StarRocksClusterKind,
 				Name: "test-starrockscluster",
 			}},
 		},
 		Spec: v2beta2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2beta2.CrossVersionObjectReference{
-				Name:       "test-statefulset",
-				Kind:       StatefulSetKind,
-				APIVersion: appv1.SchemeGroupVersion.String(),
+				Name:       "test-starrockscluster",
+				Kind:       StarRocksClusterKind,
+				APIVersion: "starrocks.com/v1",
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
@@ -195,9 +194,9 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 				Type: v2beta2.PodsMetricSourceType,
 				Object: &v2beta2.ObjectMetricSource{
 					DescribedObject: v2beta2.CrossVersionObjectReference{
-						Kind:       "statefulset",
-						Name:       "test-statefulset",
-						APIVersion: "apps/v2beta2",
+						Kind:       StarRocksClusterKind,
+						Name:       "test-starrockscluster",
+						APIVersion: "starrocks.com/v1",
 					},
 					Target: v2beta2.MetricTarget{
 						Type:               v2beta2.ValueMetricType,
@@ -258,21 +257,21 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, ha, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV2Beta2))
+	require.Equal(t, ha, BuildHPA(pap, srapi.AutoScalerV2Beta2))
 }
 
 func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 	labels := Labels{}
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
-	pap := &PodAutoscalerParams{
-		AutoscalerType: srapi.AutoScalerV1,
-		Namespace:      _defaultNamespace,
-		Name:           "test",
-		Labels:         labels,
-		TargetName:     "test-statefulset",
+	pap := &HPAParams{
+		Version:    srapi.AutoScalerV1,
+		Namespace:  _defaultNamespace,
+		Name:       "test-autoscaler",
+		Labels:     labels,
+		TargetName: "test-starrockscluster",
 		OwnerReferences: []metav1.OwnerReference{{
-			Kind: "StarRocksCluster",
+			Kind: StarRocksClusterKind,
 			Name: "test-starrockscluster",
 		}},
 		ScalerPolicy: &srapi.AutoScalingPolicy{
@@ -284,9 +283,9 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 					Type: v2beta2.PodsMetricSourceType,
 					Object: &v2beta2.ObjectMetricSource{
 						DescribedObject: v2beta2.CrossVersionObjectReference{
-							Kind:       "statefulset",
-							Name:       "test-statefulset",
-							APIVersion: "apps/v2beta2",
+							Kind:       StarRocksClusterKind,
+							Name:       "test-starrockscluster",
+							APIVersion: "starrocks.com/v1",
 						},
 						Target: v2beta2.MetricTarget{
 							Type:               v2beta2.ValueMetricType,
@@ -354,19 +353,19 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 			APIVersion: v2.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
+			Name:      "test-autoscaler",
 			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
-				Kind: "StarRocksCluster",
+				Kind: StarRocksClusterKind,
 				Name: "test-starrockscluster",
 			}},
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				Name:       "test-statefulset",
-				Kind:       StatefulSetKind,
-				APIVersion: appv1.SchemeGroupVersion.String(),
+				Kind:       StarRocksClusterKind,
+				Name:       "test-starrockscluster",
+				APIVersion: "starrocks.com/v1",
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
@@ -374,9 +373,9 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 				Type: v2.PodsMetricSourceType,
 				Object: &v2.ObjectMetricSource{
 					DescribedObject: v2.CrossVersionObjectReference{
-						Kind:       "statefulset",
-						Name:       "test-statefulset",
-						APIVersion: "apps/v2beta2",
+						Kind:       StarRocksClusterKind,
+						Name:       "test-starrockscluster",
+						APIVersion: "starrocks.com/v1",
 					},
 					Target: v2.MetricTarget{
 						Type:               v2.ValueMetricType,
@@ -437,5 +436,5 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, ha, BuildHorizontalPodAutoscaler(pap, srapi.AutoScalerV2))
+	require.Equal(t, ha, BuildHPA(pap, srapi.AutoScalerV2))
 }

@@ -215,7 +215,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	// build and deploy HPA
 	if cnSpec.AutoScalingPolicy != nil {
-		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &sts)
+		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy)
 	} else {
 		// If the HPA policy is nil, delete the HPA resource.
 		if cnStatus != nil {
@@ -345,32 +345,32 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 }
 
 // Deploy autoscaler
-func (cc *CnController) deployAutoScaler(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
-	policy srapi.AutoScalingPolicy, target *appv1.StatefulSet) error {
+func (cc *CnController) deployAutoScaler(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec, policy srapi.AutoScalingPolicy) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update k8s hpa resource")
 
-	labels := rutils.Labels{}
-	labels.AddLabel(target.Labels)
-	labels.Add(srapi.ComponentLabelKey, "autoscaler")
-	autoscalerParams := &rutils.PodAutoscalerParams{
-		Namespace:       target.Namespace,
+	labels := rutils.Labels{
+		srapi.ComponentLabelKey: "autoscaler",
+		srapi.OwnerReference:    object.Name,
+	}
+	hpaParams := &rutils.HPAParams{
+		Namespace:       object.Namespace,
 		Name:            cc.generateAutoScalerName(object.AliasName, cnSpec),
 		Labels:          labels,
-		AutoscalerType:  cnSpec.AutoScalingPolicy.Version, // cnSpec.AutoScalingPolicy can not be nil
+		Version:         cnSpec.AutoScalingPolicy.Version, // cnSpec.AutoScalingPolicy can not be nil
 		TargetName:      object.Name,
-		OwnerReferences: target.OwnerReferences,
+		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(object, object.GroupVersionKind())},
 		ScalerPolicy:    &policy,
 	}
 
-	expectHPA := rutils.BuildHorizontalPodAutoscaler(autoscalerParams, "")
+	expectHPA := rutils.BuildHPA(hpaParams, "")
 	expectHPA.SetAnnotations(make(map[string]string))
 
-	actualHPA := autoscalerParams.AutoscalerType.CreateEmptyHPA(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
+	actualHPA := hpaParams.Version.CreateEmptyHPA(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
 	if err := cc.k8sClient.Get(ctx,
 		types.NamespacedName{
-			Namespace: autoscalerParams.Namespace,
-			Name:      autoscalerParams.Name,
+			Namespace: hpaParams.Namespace,
+			Name:      hpaParams.Name,
 		},
 		actualHPA,
 	); err != nil {

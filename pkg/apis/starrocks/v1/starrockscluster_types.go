@@ -156,10 +156,10 @@ type StarRocksCnStatus struct {
 	// HorizontalAutoscaler have the autoscaler information.
 	HorizontalScaler HorizontalScaler `json:"horizontalScaler,omitempty"`
 
-	// Replicas is the total number of non-terminated pods targeted by this deployment (their labels match the selector).
+	// Replicas is the total number of non-terminated CN pods targeted.
 	Replicas int32 `json:"replicas,omitempty"`
 
-	// Selector for pods. The HPA will be using this selector to know which pods to monitor.
+	// Selector for CN pods. The HPA will use this selector to know which pods to monitor.
 	Selector string `json:"selector,omitempty"`
 }
 
