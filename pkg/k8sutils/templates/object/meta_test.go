@@ -83,9 +83,10 @@ func TestNewFromWarehouse(t *testing.T) {
 				ObjectMeta: &metav1.ObjectMeta{
 					Name: "starrocks",
 				},
-				ClusterName: "starrocks",
-				Kind:        "StarRocksWarehouse",
-				AliasName:   "starrocks-warehouse",
+				ClusterName:       "starrocks",
+				Kind:              "StarRocksWarehouse",
+				AliasName:         "starrocks-warehouse",
+				IsWarehouseObject: true,
 			},
 		},
 	}

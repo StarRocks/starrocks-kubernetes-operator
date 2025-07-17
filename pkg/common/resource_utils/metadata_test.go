@@ -25,7 +25,7 @@ func TestMergeMetadata(t *testing.T) {
 						"new":     "new",
 						"exiting": "new",
 					},
-					Annotations: Annotations{
+					Annotations: map[string]string{
 						"new":     "new",
 						"exiting": "new",
 					},
@@ -39,7 +39,7 @@ func TestMergeMetadata(t *testing.T) {
 						"old":     "old",
 						"exiting": "old",
 					},
-					Annotations: Annotations{
+					Annotations: map[string]string{
 						"old":     "old",
 						"exiting": "old",
 					},
@@ -53,7 +53,7 @@ func TestMergeMetadata(t *testing.T) {
 					"exiting": "new",
 					"old":     "old",
 				},
-				Annotations: Annotations{
+				Annotations: map[string]string{
 					"new":     "new",
 					"exiting": "new",
 					"old":     "old",

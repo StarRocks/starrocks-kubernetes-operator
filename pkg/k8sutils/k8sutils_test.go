@@ -532,9 +532,7 @@ func TestApplyStatefulSet(t *testing.T) {
 					},
 				},
 				enableScaleTo1: true,
-				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
-					return rutils.StatefulSetDeepEqual(new, actual, false)
-				},
+				equal:          rutils.StatefulSetDeepEqual,
 			},
 			wantErr: false,
 		},
@@ -570,9 +568,7 @@ func TestApplyStatefulSet(t *testing.T) {
 					},
 				},
 				enableScaleTo1: true,
-				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
-					return rutils.StatefulSetDeepEqual(new, actual, false)
-				},
+				equal:          rutils.StatefulSetDeepEqual,
 			},
 			wantErr: false,
 		},
@@ -614,9 +610,7 @@ func TestApplyStatefulSet(t *testing.T) {
 					},
 				},
 				enableScaleTo1: false,
-				equal: func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
-					return rutils.StatefulSetDeepEqual(new, actual, false)
-				},
+				equal:          rutils.StatefulSetDeepEqual,
 			},
 			wantErr: true,
 		},

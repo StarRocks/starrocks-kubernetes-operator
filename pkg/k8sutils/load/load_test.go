@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
 func TestSelector(t *testing.T) {
@@ -16,7 +15,7 @@ func TestSelector(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want resource_utils.Labels
+		want map[string]string
 	}{
 		{
 			name: "test selector",

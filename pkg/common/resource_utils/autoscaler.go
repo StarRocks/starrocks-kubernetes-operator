@@ -40,7 +40,7 @@ type PodAutoscalerParams struct {
 	AutoscalerType  srapi.AutoScalerVersion
 	Namespace       string
 	Name            string
-	Labels          Labels
+	Labels          map[string]string
 	TargetName      string
 	OwnerReferences []metav1.OwnerReference
 	ScalerPolicy    *srapi.AutoScalingPolicy

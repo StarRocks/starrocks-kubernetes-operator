@@ -9,9 +9,8 @@ import (
 
 func TestStatefulSetDeepEqual(t *testing.T) {
 	type args struct {
-		new             *appv1.StatefulSet
-		old             *appv1.StatefulSet
-		excludeReplicas bool
+		new *appv1.StatefulSet
+		old *appv1.StatefulSet
 	}
 	tests := []struct {
 		name string
@@ -49,7 +48,7 @@ func TestStatefulSetDeepEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := StatefulSetDeepEqual(tt.args.new, tt.args.old, tt.args.excludeReplicas); got != tt.want {
+			if _, got := StatefulSetDeepEqual(tt.args.new, tt.args.old); got != tt.want {
 				t.Errorf("StatefulSetDeepEqual() = %v, want %v", got, tt.want)
 			}
 		})
