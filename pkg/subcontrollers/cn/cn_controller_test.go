@@ -16,16 +16,24 @@ package cn
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -529,6 +537,362 @@ func TestCnController_GetCnConfig(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetCnConfig() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestCnController_SyncComputeNodesInFE(t *testing.T) {
+	type fields struct {
+		k8sClient client.Client
+	}
+	type args struct {
+		ctx          context.Context
+		object       object.StarRocksObject
+		expectSTS    *appv1.StatefulSet
+		actualSTS    *appv1.StatefulSet
+		actualCNPods *corev1.PodList
+		db           *sql.DB
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "the replicas is not equal between expected sts and actual sts",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:    context.Background(),
+				object: object.StarRocksObject{},
+				expectSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(3),
+					},
+				},
+				actualSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(4),
+					},
+				},
+				actualCNPods: nil,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if !errors.Is(err, ErrReplicasNotEqual) {
+					t.Errorf("SyncComputeNodesInFE() expected ErrReplicasNotEqual, got %v, args: %v", err, i)
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name: "the replicas is not equal between expected pods and actual pods",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:    context.Background(),
+				object: object.StarRocksObject{},
+				expectSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+				actualSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+				actualCNPods: &corev1.PodList{
+					TypeMeta: metav1.TypeMeta{},
+					ListMeta: metav1.ListMeta{},
+					Items: []corev1.Pod{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "test-cn-0",
+							},
+						},
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "test-cn-1",
+							},
+						},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if !errors.Is(err, ErrReplicasNotEqual) {
+					t.Errorf("SyncComputeNodesInFE() expected ErrReplicasNotEqual, got %v, args: %v", err, i)
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name: "the hash value is not equal between expected sts and actual sts",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:    context.Background(),
+				object: object.StarRocksObject{},
+				expectSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+				actualSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+						Labels: map[string]string{
+							"extra-label": "value",
+						},
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if !errors.Is(err, ErrHashValueNotEqual) {
+					t.Errorf("SyncComputeNodesInFE() expected ErrHashValueNotEqual, got %v, args: %v", err, i)
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name: "the hash value is not equal between expected pods and actual pods",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(srapi.Scheme),
+			},
+			args: args{
+				ctx:    context.Background(),
+				object: object.StarRocksObject{},
+				expectSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+				actualSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+					Status: appv1.StatefulSetStatus{
+						UpdateRevision: "v1",
+					},
+				},
+				actualCNPods: &corev1.PodList{
+					TypeMeta: metav1.TypeMeta{},
+					ListMeta: metav1.ListMeta{},
+					Items: []corev1.Pod{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "test-cn-0",
+								Labels: map[string]string{
+									"controller-revision-hash": "v2",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if !errors.Is(err, ErrHashValueNotEqual) {
+					t.Errorf("SyncComputeNodesInFE() expected ErrHashValueNotEqual, got %v, args: %v", err, i)
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name: "xxx",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(
+					func() *runtime.Scheme {
+						schema := runtime.NewScheme()
+						_ = clientgoscheme.AddToScheme(schema)
+						return schema
+					}(),
+					&appsv1.StatefulSet{
+						TypeMeta: metav1.TypeMeta{
+							Kind:       "StatefulSet",
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+						},
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "wh1-warehouse-cn",
+							Namespace: "default",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Template: corev1.PodTemplateSpec{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Env: []corev1.EnvVar{
+												{
+													Name:  "MYSQL_PWD",
+													Value: "123456",
+												},
+												{
+													Name:  "FE_SERVICE_NAME",
+													Value: "fe",
+												},
+												{
+													Name:  "FE_QUERY_PORT",
+													Value: "9030",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				),
+			},
+			args: args{
+				ctx: context.Background(),
+				object: object.StarRocksObject{
+					ObjectMeta: &metav1.ObjectMeta{
+						Name:      "wh1",
+						Namespace: "default",
+					},
+					ClusterName:       "cluster",
+					AliasName:         "wh1-warehouse",
+					IsWarehouseObject: true,
+				},
+				expectSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "wh1-warehouse-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+				},
+				actualSTS: &appv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       rutils.StatefulSetKind,
+						APIVersion: appv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "wh1-warehouse-cn",
+						Namespace: "default",
+					},
+					Spec: appv1.StatefulSetSpec{
+						Replicas: rutils.GetInt32Pointer(1),
+					},
+					Status: appsv1.StatefulSetStatus{
+						UpdateRevision: "v2",
+					},
+				},
+				actualCNPods: &corev1.PodList{
+					TypeMeta: metav1.TypeMeta{},
+					ListMeta: metav1.ListMeta{},
+					Items: []corev1.Pod{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "wh1-warehouse-cn-0",
+								Labels: map[string]string{
+									"controller-revision-hash": "v2",
+								},
+							},
+						},
+					},
+				},
+
+				db: func() *sql.DB {
+					db, mock, err := sqlmock.New()
+					require.NoError(t, err)
+					mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(
+						sqlmock.NewRows([]string{"ComputeNodeId", "IP", "WarehouseName"}).AddRow([]byte("1"), []byte("kube-starrocks-fe-0.kube-starrocks-fe-search.default.svc.cluster.local_9010_1751367053833"), []byte("wh1")),
+					)
+					return db
+				}(),
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					t.Errorf("SyncComputeNodesInFE() unexpected error: %v, args: %v", err, i)
+				}
+				return true
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc := &CnController{
+				k8sClient: tt.fields.k8sClient,
+			}
+
+			tt.wantErr(t, cc.SyncComputeNodesInFE(tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods, tt.args.db), fmt.Sprintf("SyncComputeNodesInFE(%v, %v, %v, %v, %v)", tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods))
 		})
 	}
 }

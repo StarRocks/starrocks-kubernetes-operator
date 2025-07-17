@@ -16,9 +16,8 @@ package load
 
 import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
-func Selector(clusterName string, spec v1.SpecInterface) rutils.Labels {
+func Selector(clusterName string, spec v1.SpecInterface) map[string]string {
 	return Labels(Name(clusterName, spec), spec)
 }

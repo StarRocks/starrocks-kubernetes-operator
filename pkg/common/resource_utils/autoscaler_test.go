@@ -32,7 +32,7 @@ const _defaultNamespace = "default"
 const _defaultName = "test"
 
 func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
-	labels := Labels{}
+	labels := map[string]string{}
 	labels["cluster"] = _defaultName
 	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{
@@ -83,7 +83,7 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 }
 
 func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
-	labels := Labels{}
+	labels := map[string]string{}
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{
@@ -262,7 +262,7 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 }
 
 func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
-	labels := Labels{}
+	labels := map[string]string{}
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
 	pap := &PodAutoscalerParams{

@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -69,7 +68,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
 				// the cn_entrypoint.sh in container will use this env to create warehouse. Because of '-' character
 				// is not allowed in Warehouse SQL, so we replace it with '_'.
-				Value: strings.ReplaceAll(object.Name, "-", "_"),
+				Value: object.GetWarehouseNameInFE(),
 			})
 		} else {
 			return nil, ErrFailedToGetFeFeatureList
@@ -105,11 +104,8 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	podSpec := pod.Spec(cnSpec, cnContainer, vols)
 	annotations := pod.Annotations(cnSpec)
 	podSpec.SecurityContext = pod.PodSecurityContext(cnSpec)
-	metaName := object.Name + "-" + srapi.DEFAULT_CN
 	return &corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			// Name should not define in here, but it is used to compute the value of srapi.ComponentResourceHash
-			Name:        metaName,
 			Annotations: annotations,
 			Namespace:   object.Namespace,
 			Labels:      pod.Labels(object.AliasName, cnSpec),

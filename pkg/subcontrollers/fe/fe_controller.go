@@ -103,7 +103,6 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		},
 	}, defaultLabels)
 
-	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")
@@ -127,20 +126,12 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		logger.Info("deploy statefulset", "statefulset", expectSts)
 	}
 
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode,
-		func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
-			return rutils.StatefulSetDeepEqual(new, actual, false)
-		},
-	); err != nil {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode, rutils.StatefulSetDeepEqual); err != nil {
 		logger.Error(err, "deploy statefulset failed")
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
-		// for compatible v1.5, we use `fe-domain-search` for internal communicating.
-		internalService.Name = expectSts.Spec.ServiceName
-		return rutils.ServiceDeepEqual(new, esvc)
-	}); err != nil {
+	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "deploy search service failed", "internalService", internalService)
 		fc.Recorder.Event(src, corev1.EventTypeWarning, "DeployFeFailed", err.Error())
 		return err
