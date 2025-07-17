@@ -215,26 +215,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
-	if err = cc.SyncComputeNodesInFE(ctx, object, &expectSTS); err != nil {
-		logger.Error(err, "sync compute nodes in FE failed")
-		return err
-	}
-
-	return nil
-}
-
-// SyncComputeNodesInFE sync the compute nodes in StarRocks.
-func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.StarRocksObject, expectSTS *appv1.StatefulSet) error {
-	logger := logr.FromContextOrDiscard(ctx)
-
-	var expectReplicas int32
-	if expectSTS.Spec.Replicas != nil {
-		expectReplicas = *expectSTS.Spec.Replicas
-	} else {
-		expectReplicas = 1 // default value
-	}
-
-	var stsReplicas int
+	// get actual statefulset object
 	var actualSTS appv1.StatefulSet
 	namespacedName := types.NamespacedName{
 		Namespace: object.Namespace,
@@ -243,10 +224,44 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 	if err := cc.k8sClient.Get(ctx, namespacedName, &actualSTS); err != nil {
 		return err
 	}
+
+	// get actual pods
+	actualCNPods := corev1.PodList{}
+	matchingLabels := client.MatchingLabels{
+		srapi.ComponentLabelKey: srapi.DEFAULT_CN,
+		srapi.OwnerReference:    load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+	}
+	if err := cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace), matchingLabels);
+		err != nil && !apierrors.IsNotFound(err) {
+		logger.Error(err, "list cn pod failed")
+		return err
+	}
+	if err = cc.SyncComputeNodesInFE(ctx, object, &expectSTS, &actualSTS, &actualCNPods); err != nil {
+		logger.Error(err, "sync compute nodes in FE failed")
+		return err
+	}
+
+	return nil
+}
+
+// SyncComputeNodesInFE sync the compute nodes in StarRocks.
+// todo(ydx): write test case for SyncComputeNodesInFE
+func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.StarRocksObject,
+	expectSTS *appv1.StatefulSet, actualSTS *appv1.StatefulSet, actualCNPods *corev1.PodList) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	var expectReplicas int32
+	if expectSTS.Spec.Replicas != nil {
+		expectReplicas = *expectSTS.Spec.Replicas
+	} else {
+		expectReplicas = 1
+	}
+
+	var stsReplicas int
 	if actualSTS.Spec.Replicas != nil {
 		stsReplicas = int(*actualSTS.Spec.Replicas)
 	} else {
-		stsReplicas = 1 // default value
+		stsReplicas = 1
 	}
 
 	// compare the replicas between the expected value and the actual value in StatefulSet.
@@ -254,21 +269,12 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		logger.Info("expect replicas is not equal to statefulset replicas", "expectReplicas", expectReplicas, "stsReplicas", stsReplicas)
 		return nil
 	}
-	if expectHashValue, b := rutils.StatefulSetDeepEqual(expectSTS, &actualSTS); !b {
+	if expectHashValue, b := rutils.StatefulSetDeepEqual(expectSTS, actualSTS); !b {
 		logger.Info("the actual Statefulset is not operator expected", "expectHashValue", expectHashValue)
 		return nil
 	}
 
 	// compare the replicas between the expected value in Statefulset and the actual value in Pods.
-	actualCNPods := corev1.PodList{}
-	matchingLabels := client.MatchingLabels{
-		srapi.ComponentLabelKey: srapi.DEFAULT_CN,
-		srapi.OwnerReference:    load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
-	}
-	if err := cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace), matchingLabels); err != nil {
-		logger.Error(err, "list cn pod failed")
-		return err
-	}
 	if len(actualCNPods.Items) != int(expectReplicas) {
 		logger.Info("the expected number of pods is not equal to the actual number",
 			"expectReplicas", expectReplicas, "actualReplicas", len(actualCNPods.Items))
@@ -295,7 +301,7 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		return err
 	}
 	warehouseName := "default_warehouse"
-	if object.IsWarehouseCRD {
+	if object.IsWarehouseObject {
 		warehouseName = object.Name()
 	}
 	computeNodes := result.ComputeNodesByWarehouse[warehouseName]
@@ -385,7 +391,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, wa
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionClearWarehouse)
 	ctx = logr.NewContext(ctx, logger)
 
-	executor, err := NewSQLExecutor(ctx, cc.k8sClient, namespace, object.GetPrefixNameForWarehouse(warehouseName))
+	executor, err := NewSQLExecutor(ctx, cc.k8sClient, namespace, object.GetPrefixNameForResources(warehouseName))
 	if err != nil {
 		logger.Error(err, "new SQL executor failed")
 		return err
@@ -401,7 +407,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, wa
 	if err = cc.k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,
-			Name:      load.Name(object.GetPrefixNameForWarehouse(warehouseName), (*srapi.StarRocksCnSpec)(nil)),
+			Name:      load.Name(object.GetPrefixNameForResources(warehouseName), (*srapi.StarRocksCnSpec)(nil)),
 		},
 		&sts); err != nil {
 		return err

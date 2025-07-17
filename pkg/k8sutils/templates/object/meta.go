@@ -31,29 +31,29 @@ type StarRocksObject struct {
 	// todo(ydx): it is not a good name.
 	AliasName string
 
-	// IsWarehouseCRD indicates whether this object is a StarRocksWarehouse CRD.
-	IsWarehouseCRD bool
+	// IsWarehouseObject indicates whether this object is a StarRocksWarehouse object.
+	IsWarehouseObject bool
 }
 
 func NewFromCluster(cluster *srapi.StarRocksCluster) StarRocksObject {
 	return StarRocksObject{
-		TypeMeta:       &cluster.TypeMeta,
-		ObjectMeta:     &cluster.ObjectMeta,
-		ClusterName:    cluster.Name,
-		Kind:           StarRocksClusterKind,
-		AliasName:      cluster.Name,
-		IsWarehouseCRD: false,
+		TypeMeta:          &cluster.TypeMeta,
+		ObjectMeta:        &cluster.ObjectMeta,
+		ClusterName:       cluster.Name,
+		Kind:              StarRocksClusterKind,
+		AliasName:         cluster.Name,
+		IsWarehouseObject: false,
 	}
 }
 
 func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
 	return StarRocksObject{
-		TypeMeta:       &warehouse.TypeMeta,
-		ObjectMeta:     &warehouse.ObjectMeta,
-		ClusterName:    warehouse.Spec.StarRocksCluster,
-		Kind:           StarRocksWarehouseKind,
-		AliasName:      GetPrefixNameForWarehouse(warehouse.Name),
-		IsWarehouseCRD: false,
+		TypeMeta:          &warehouse.TypeMeta,
+		ObjectMeta:        &warehouse.ObjectMeta,
+		ClusterName:       warehouse.Spec.StarRocksCluster,
+		Kind:              StarRocksWarehouseKind,
+		AliasName:         GetPrefixNameForResources(warehouse.Name),
+		IsWarehouseObject: true,
 	}
 }
 
@@ -63,7 +63,7 @@ func (object *StarRocksObject) Name() string {
 	return object.ObjectMeta.Name
 }
 
-func GetPrefixNameForWarehouse(warehouseName string) string {
+func GetPrefixNameForResources(warehouseName string) string {
 	return warehouseName + "-warehouse"
 }
 

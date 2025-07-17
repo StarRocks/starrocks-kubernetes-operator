@@ -132,7 +132,6 @@ type ComputeNode struct {
 	WarehouseName string
 }
 
-// todo(ydx): consider the CN pods is in a warehouse name
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
 	rows, err := executor.QueryContext(ctx, db, ShowComputeNodesStatement)
 	if err != nil {
