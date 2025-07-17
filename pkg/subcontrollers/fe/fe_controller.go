@@ -103,7 +103,6 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		},
 	}, defaultLabels)
 
-	// first deploy statefulset for compatible v1.5, apply statefulset for update pod.
 	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")

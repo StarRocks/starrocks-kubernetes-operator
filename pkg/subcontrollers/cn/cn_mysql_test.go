@@ -206,8 +206,10 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 
 			result, err := executor.QueryShowComputeNodes(tt.args.ctx, db)
 			tt.wantErr(t, err, fmt.Sprintf("ShowComputeNodes(%v, %v)", tt.args.ctx, tt.args.db))
-			for _, cn := range result.ComputeNodes {
-				fmt.Printf("ComputeNodeId: %v, IP: %v\n", cn.ComputeNodeId, cn.FQDN)
+			for _, nodes := range result.ComputeNodesByWarehouse {
+				for i := range nodes {
+					fmt.Printf("ComputeNodeId: %v, IP: %v\n", nodes[i].ComputeNodeId, nodes[i].FQDN)
+				}
 			}
 		})
 	}

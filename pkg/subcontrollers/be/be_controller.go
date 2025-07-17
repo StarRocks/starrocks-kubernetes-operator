@@ -185,7 +185,6 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 func (be *BeController) generateInternalService(ctx context.Context,
 	src *srapi.StarRocksCluster, externalService *corev1.Service, config map[string]interface{},
 	labels map[string]string) *corev1.Service {
-	logger := logr.FromContextOrDiscard(ctx)
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
 	searchSvc := service.MakeSearchService(searchServiceName, externalService, []corev1.ServicePort{
@@ -195,16 +194,6 @@ func (be *BeController) generateInternalService(ctx context.Context,
 			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
 		},
 	}, labels)
-
-	// for compatible version < v1.5
-	var esearchSvc corev1.Service
-	if err := be.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: "be-domain-search"}, &esearchSvc); err == nil {
-		if rutils.HaveEqualOwnerReference(&esearchSvc, searchSvc) {
-			searchSvc.Name = "be-domain-search"
-		}
-	} else if !apierrors.IsNotFound(err) {
-		logger.Error(err, "get internal service object failed")
-	}
 
 	return searchSvc
 }

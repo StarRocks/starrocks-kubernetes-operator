@@ -15,6 +15,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
 
 const (
@@ -33,7 +34,8 @@ type SQLExecutor struct {
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
 // from the environment variables of the component CN.
-func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, aliasName string) (*SQLExecutor, error) {
+// prefixName is the prefix name of the component CN, which is used to get the StatefulSet of the component CN.
+func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, prefixName string) (*SQLExecutor, error) {
 	rootPassword := ""
 	feServiceName := ""
 	feServicePort := ""
@@ -43,7 +45,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,
-			Name:      load.Name(aliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Name:      load.Name(prefixName, (*srapi.StarRocksCnSpec)(nil)),
 		},
 		&sts); err != nil {
 		return nil, err
@@ -120,15 +122,17 @@ func (executor *SQLExecutor) QueryContext(ctx context.Context, db *sql.DB, state
 }
 
 type ShowComputeNodesResult struct {
-	ComputeNodes []ComputeNode
+	ComputeNodesByWarehouse map[string][]ComputeNode
 }
 
 type ComputeNode struct {
 	ComputeNodeId string
 	FQDN          string
 	HeartbeatPort string
+	WarehouseName string
 }
 
+// todo(ydx): consider the CN pods is in a warehouse name
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
 	rows, err := executor.QueryContext(ctx, db, ShowComputeNodesStatement)
 	if err != nil {
@@ -137,7 +141,9 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 	defer rows.Close()
 
 	// iterate over the rows
-	result := ShowComputeNodesResult{}
+	result := ShowComputeNodesResult{
+		ComputeNodesByWarehouse: make(map[string][]ComputeNode),
+	}
 	for rows.Next() {
 		var columns []string
 		columns, err = rows.Columns()
@@ -169,9 +175,11 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 				computeNode.FQDN = string(values[i].([]byte))
 			case "HeartbeatPort":
 				computeNode.HeartbeatPort = string(values[i].([]byte))
+			case "WarehouseName":
+				computeNode.WarehouseName = string(values[i].([]byte))
 			}
 		}
-		result.ComputeNodes = append(result.ComputeNodes, computeNode)
+		result.ComputeNodesByWarehouse[computeNode.WarehouseName] = append(result.ComputeNodesByWarehouse[computeNode.WarehouseName], computeNode)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -179,14 +187,20 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 
 	// The FQDN format is like kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local
 	// Sorting the compute nodes by FQDN can help us to remove the last several compute nodes if scale-in operation happens.
-	sort.Slice(result.ComputeNodes, func(i, j int) bool {
-		return result.ComputeNodes[i].FQDN < result.ComputeNodes[j].FQDN
-	})
-
+	for _, computeNodes := range result.ComputeNodesByWarehouse {
+		sort.Slice(computeNodes, func(i, j int) bool {
+			return computeNodes[i].FQDN < computeNodes[j].FQDN
+		})
+	}
 	return &result, nil
 }
 
-func (executor *SQLExecutor) ExecuteDropComputeNode(ctx context.Context, db *sql.DB, node ComputeNode) error {
-	dropStatement := fmt.Sprintf("ALTER SYSTEM DROP COMPUTE NODE \"%v:%v\"", node.FQDN, node.HeartbeatPort)
+func (executor *SQLExecutor) ExecuteDropComputeNode(ctx context.Context, db *sql.DB, cn ComputeNode) error {
+	dropStatement := fmt.Sprintf("ALTER SYSTEM DROP COMPUTE NODE \"%v:%v\" FROM WAREHOUSE %v", cn.FQDN, cn.HeartbeatPort, cn.WarehouseName)
 	return executor.ExecuteContext(ctx, db, dropStatement)
+}
+
+func (executor *SQLExecutor) ExecuteDropWarehouse(ctx context.Context, db *sql.DB, warehouseName string) error {
+	warehouseNameInFE := object.GetWarehouseNameInFE(warehouseName)
+	return executor.ExecuteContext(ctx, nil, fmt.Sprintf("DROP WAREHOUSE %s", warehouseNameInFE))
 }
