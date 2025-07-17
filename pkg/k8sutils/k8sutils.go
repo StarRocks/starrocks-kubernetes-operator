@@ -159,6 +159,11 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 		return k8sClient.Update(ctx, &actual)
 	}
 
+	if equal(expect, &actual) {
+		logger.Info("expectHash == actualHash, no need to update statefulset resource")
+		return nil
+	}
+
 	if !enableScaleTo1 {
 		if actual.Spec.Replicas != nil && *actual.Spec.Replicas > 1 {
 			if expect.Spec.Replicas == nil || *expect.Spec.Replicas == 1 {
@@ -171,12 +176,6 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 	// and use `xx-domain-search` for internal service. we should exclude the interference.
 	if actual.Spec.PodManagementPolicy == appv1.OrderedReadyPodManagement {
 		expect.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
-	}
-	expect.Spec.ServiceName = actual.Spec.ServiceName
-
-	if equal(expect, &actual) {
-		logger.Info("expectHash == actualHash, no need to update statefulset resource")
-		return nil
 	}
 
 	expect.ResourceVersion = actual.ResourceVersion

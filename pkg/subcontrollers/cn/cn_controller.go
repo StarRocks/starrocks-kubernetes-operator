@@ -140,8 +140,8 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	return err
 }
 
-func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
-	cnStatus *srapi.StarRocksCnStatus) error {
+func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject,
+	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	if err := cc.mutating(cnSpec); err != nil {
@@ -172,8 +172,8 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
-	sts := statefulset.MakeStatefulset(object, cnSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, true,
+	expectSTS := statefulset.MakeStatefulset(object, cnSpec, podTemplateSpec)
+	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &expectSTS, true,
 		func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
 			if expect.Spec.Replicas == nil {
 				return rutils.StatefulSetDeepEqual(expect, actual, true)
@@ -205,7 +205,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	if err := k8sutils.ApplyService(ctx, cc.k8sClient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
 		// for compatible v1.5, we use `cn-domain-search` for internal communicating.
-		internalService.Name = sts.Spec.ServiceName
+		internalService.Name = expectSTS.Spec.ServiceName
 		return rutils.ServiceDeepEqual(new, esvc)
 	}); err != nil {
 		logger.Error(err, "sync CN search service failed")
@@ -214,15 +214,98 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	// build and deploy HPA
 	if cnSpec.AutoScalingPolicy != nil {
-		return cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &sts)
+		err = cc.deployAutoScaler(ctx, object, cnSpec, *cnSpec.AutoScalingPolicy, &expectSTS)
 	} else {
 		// If the HPA policy is nil, delete the HPA resource.
 		if cnStatus != nil {
-			return cc.deleteAutoScaler(ctx, object, cnStatus.HorizontalScaler.Version)
+			err = cc.deleteAutoScaler(ctx, object, cnStatus.HorizontalScaler.Version)
 		} else {
-			return cc.deleteAutoScaler(ctx, object, "")
+			err = cc.deleteAutoScaler(ctx, object, "")
 		}
 	}
+	if err != nil {
+		logger.Error(err, "sync autoscaler failed")
+		return err
+	}
+
+	// call FE to drop the CN node
+	var expectReplicas int32
+	if cnSpec.Replicas != nil {
+		expectReplicas = *cnSpec.Replicas
+	} else {
+		expectReplicas = 1 // default value
+	}
+
+	var actualSTS appv1.StatefulSet
+	if err = cc.k8sClient.Get(ctx, types.NamespacedName{
+		Namespace: object.Namespace,
+		Name:      load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+	}, &actualSTS); err != nil {
+		return err
+	}
+	var stsReplicas int
+	if actualSTS.Spec.Replicas != nil {
+		stsReplicas = int(*actualSTS.Spec.Replicas)
+	} else {
+		stsReplicas = 1 // default value
+	}
+	if expectReplicas != int32(stsReplicas) || !rutils.StatefulSetDeepEqual(&expectSTS, &actualSTS, false) {
+		logger.Info("expect replicas is not equal to statefulset replicas", "expectReplicas", expectReplicas, "stsReplicas", stsReplicas)
+		return nil
+	}
+
+	// list all the cn pods
+	actualCNPods := corev1.PodList{}
+	if err := cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace),
+		client.MatchingLabels{
+			srapi.ComponentLabelKey: srapi.DEFAULT_CN,
+			srapi.OwnerReference:    load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+		}); err != nil {
+		logger.Error(err, "list fe pod failed")
+		return err
+	} else if len(actualCNPods.Items) == 0 {
+		logger.Info("no cn pod found, continue to wait for the statefulset to be ready")
+		return nil
+	}
+	for _, pod := range actualCNPods.Items {
+		if pod.Labels["controller-revision-hash"] == "" ||
+			pod.Labels["controller-revision-hash"] != actualSTS.Status.UpdateRevision {
+			logger.Info("there is old pod, continue to wait for the statefulset to be ready")
+			return nil
+		}
+	}
+	if len(actualCNPods.Items) != int(expectReplicas) {
+		logger.Info("expect replicas is not equal to actual replicas, continue to wait for the statefulset to be ready",
+			"expectReplicas", expectReplicas, "actualReplicas", len(actualCNPods.Items))
+		return nil
+	}
+
+	// now, all the new pods have been created, we can check the number of CN from FE
+	executor, err := NewSQLExecutor(ctx, cc.k8sClient, object.Namespace, object.AliasName)
+	if err != nil {
+		logger.Error(err, "new SQL executor failed")
+		return err
+	}
+	// todo(ydx): consider the CN pods is in a warehouse name
+	result, err := executor.QueryShowComputeNodes(ctx, nil)
+	if err != nil {
+		logger.Error(err, "query SHOW COMPUTE NODES failed", "sql", "SHOW COMPUTE NODES")
+		return err
+	}
+	if len(result.ComputeNodes) > int(expectReplicas) {
+		for i := len(result.ComputeNodes) - 1; i >= int(expectReplicas); i-- {
+			err = executor.ExecuteDropComputeNode(ctx, nil, result.ComputeNodes[i])
+			if err != nil {
+				logger.Error(err, "drop compute node failed", "computeNode", result.ComputeNodes[i])
+				return err
+			} else {
+				logger.Info("drop compute node success", "computeNode", result.ComputeNodes[i])
+			}
+		}
+	}
+
+	// parse the result from query
+	return nil
 }
 
 // UpdateWarehouseStatus updates the status of StarRocksWarehouse.
@@ -303,8 +386,9 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 		return err
 	}
 
+	// todo(ydx): move the code to cn_mysql.go
 	warehouseName := strings.ReplaceAll(name, "-", "_")
-	err = executor.Execute(ctx, nil, fmt.Sprintf("DROP WAREHOUSE %s", warehouseName))
+	err = executor.ExecuteContext(ctx, nil, fmt.Sprintf("DROP WAREHOUSE %s", warehouseName))
 	if err != nil {
 		logger.Error(err, "drop warehouse failed", "warehouse", warehouseName)
 		// we do not return error here, because we want to delete the statefulset anyway.

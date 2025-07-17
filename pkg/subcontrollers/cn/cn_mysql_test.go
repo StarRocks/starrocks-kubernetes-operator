@@ -2,6 +2,7 @@ package cn
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -119,7 +120,7 @@ func TestSQLExecutor_Execute(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "test Execute",
+			name: "test ExecuteContext",
 			fields: fields{
 				RootPassword:  "root",
 				FeServiceName: "localhost",
@@ -149,7 +150,65 @@ func TestSQLExecutor_Execute(t *testing.T) {
 			mock.ExpectExec(tt.args.statements).
 				WillReturnResult(sqlmock.NewResult(1, 1))
 
-			tt.wantErr(t, executor.Execute(tt.args.ctx, db, tt.args.statements), fmt.Sprintf("Execute(%v, %v)", tt.args.ctx, tt.args.statements))
+			err = executor.ExecuteContext(tt.args.ctx, db, tt.args.statements)
+			tt.wantErr(t, err, fmt.Sprintf("ExecuteContext(%v, %v)", tt.args.ctx, tt.args.statements))
+		})
+	}
+}
+
+func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
+	type fields struct {
+		RootPassword       string
+		FeServiceName      string
+		FeServiceNamespace string
+		FeServicePort      string
+	}
+	type args struct {
+		ctx context.Context
+		db  *sql.DB
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "test ExecuteContext",
+			fields: fields{
+				RootPassword:  "",
+				FeServiceName: "localhost",
+				FeServicePort: "9030",
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &SQLExecutor{
+				RootPassword:       tt.fields.RootPassword,
+				FeServiceName:      tt.fields.FeServiceName,
+				FeServiceNamespace: tt.fields.FeServiceNamespace,
+				FeServicePort:      tt.fields.FeServicePort,
+			}
+			// create mock db
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+
+			// set expected behavior on mock db
+			mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(
+				sqlmock.NewRows([]string{"ComputeNodeId", "IP"}).AddRow([]byte("id"), []byte("fqdn")),
+			)
+
+			result, err := executor.QueryShowComputeNodes(tt.args.ctx, db)
+			tt.wantErr(t, err, fmt.Sprintf("ShowComputeNodes(%v, %v)", tt.args.ctx, tt.args.db))
+			for _, cn := range result.ComputeNodes {
+				fmt.Printf("ComputeNodeId: %v, IP: %v\n", cn.ComputeNodeId, cn.FQDN)
+			}
 		})
 	}
 }

@@ -37,8 +37,8 @@ type hashStatefulsetObject struct {
 	updateStrategy       appv1.StatefulSetUpdateStrategy
 }
 
-// statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
-func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
+// StatefulSetHashObject construct the hash spec for deep equals to exist statefulset.
+func StatefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	// set -1 for the initial is zero.
 	replicas := int32(-1)
 	if !excludeReplica {
@@ -69,7 +69,7 @@ func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStat
 func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
-	newHso := statefulSetHashObject(new, excludeReplicas)
+	newHso := StatefulSetHashObject(new, excludeReplicas)
 	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
 		newHashv = new.Annotations[srapi.ComponentResourceHash]
 	} else {
@@ -82,7 +82,7 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
 		oldHashv = old.Annotations[srapi.ComponentResourceHash]
 	} else {
-		oldHso := statefulSetHashObject(old, excludeReplicas)
+		oldHso := StatefulSetHashObject(old, excludeReplicas)
 		oldHashv = hash.HashObject(oldHso)
 	}
 
@@ -92,8 +92,7 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 	new.Annotations = anno
 
 	// avoid the update from kubectl.
-	return newHashv == oldHashv &&
-		new.Namespace == old.Namespace
+	return newHashv == oldHashv && new.Namespace == old.Namespace
 }
 
 // MergeStatefulSets merge exist statefulset and new statefulset.
