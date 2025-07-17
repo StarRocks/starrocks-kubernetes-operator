@@ -6,6 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 )
 
 const (
@@ -28,7 +29,7 @@ type StarRocksObject struct {
 	// AliasName represents the prefix of subresource names for cn component. The reason is that when the name of
 	// StarRocksWarehouse is the same as the name of StarRocksCluster, operator should avoid to create the same name
 	// StatefulSet, Service, etc.
-	// todo(ydx): it is not a good name.
+	// todo(ydx): it is not a good name, will rename it to SubResourcePrefixName in another PR
 	AliasName string
 
 	// IsWarehouseObject indicates whether this object is a StarRocksWarehouse object.
@@ -52,9 +53,13 @@ func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
 		ObjectMeta:        &warehouse.ObjectMeta,
 		ClusterName:       warehouse.Spec.StarRocksCluster,
 		Kind:              StarRocksWarehouseKind,
-		AliasName:         GetPrefixNameForResources(warehouse.Name),
+		AliasName:         GetPrefixNameForWarehouse(warehouse.Name),
 		IsWarehouseObject: true,
 	}
+}
+
+func GetPrefixNameForWarehouse(warehouseName string) string {
+	return warehouseName + "-warehouse"
 }
 
 // Name The reason why we need this method is that we don't want user to use object.Name directly.
@@ -63,14 +68,15 @@ func (object *StarRocksObject) Name() string {
 	return object.ObjectMeta.Name
 }
 
-func GetPrefixNameForResources(warehouseName string) string {
-	return warehouseName + "-warehouse"
+func (object *StarRocksObject) GetCNStatefulSetName() string {
+	return load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil))
 }
 
 func (object *StarRocksObject) GetWarehouseNameInFE() string {
 	return GetWarehouseNameInFE(object.Name())
 }
 
+// GetWarehouseNameInFE warehouseName is the name defined in k8s
 func GetWarehouseNameInFE(warehouseName string) string {
 	return strings.ReplaceAll(warehouseName, "-", "_")
 }

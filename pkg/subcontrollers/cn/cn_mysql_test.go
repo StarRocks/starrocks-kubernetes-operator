@@ -48,7 +48,7 @@ func TestNewSQLExecutor(t *testing.T) {
 							APIVersion: appsv1.SchemeGroupVersion.String(),
 						},
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "my-sts-cn",
+							Name:      "my-sts",
 							Namespace: "default",
 							Annotations: map[string]string{
 								"test": "test",

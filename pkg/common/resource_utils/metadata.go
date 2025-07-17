@@ -20,22 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type Labels map[string]string
-
-func (l Labels) Add(key, value string) {
-	l[key] = value
-}
-
-func (l Labels) AddLabel(label Labels) {
-	if label == nil {
-		return
-	}
-
-	for k, v := range label {
-		l[k] = v
-	}
-}
-
 // MergeMetadata takes labels and annotations from the old resource and merges
 // them into the new resource. If a key is present in both resources, the new
 // resource wins. It also copies the ResourceVersion from the old resource to

@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
@@ -85,7 +84,7 @@ func TestMakeSelector(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want resource_utils.Labels
+		want map[string]string
 	}{
 		{
 			name: "test Selector",
@@ -93,7 +92,7 @@ func TestMakeSelector(t *testing.T) {
 				clusterName: "test",
 				spec:        &v1.StarRocksFeSpec{},
 			},
-			want: resource_utils.Labels{
+			want: map[string]string{
 				v1.OwnerReference:    "test-fe",
 				v1.ComponentLabelKey: "fe",
 			},

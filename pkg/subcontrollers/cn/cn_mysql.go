@@ -12,9 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
 
@@ -34,8 +32,7 @@ type SQLExecutor struct {
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
 // from the environment variables of the component CN.
-// prefixName is the prefix name of the component CN, which is used to get the StatefulSet of the component CN.
-func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, prefixName string) (*SQLExecutor, error) {
+func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnSTSName string) (*SQLExecutor, error) {
 	rootPassword := ""
 	feServiceName := ""
 	feServicePort := ""
@@ -45,7 +42,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, pre
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,
-			Name:      load.Name(prefixName, (*srapi.StarRocksCnSpec)(nil)),
+			Name:      cnSTSName,
 		},
 		&sts); err != nil {
 		return nil, err
@@ -194,12 +191,14 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 	return &result, nil
 }
 
+// todo(ydx): write test case
 func (executor *SQLExecutor) ExecuteDropComputeNode(ctx context.Context, db *sql.DB, cn ComputeNode) error {
 	dropStatement := fmt.Sprintf("ALTER SYSTEM DROP COMPUTE NODE \"%v:%v\" FROM WAREHOUSE %v", cn.FQDN, cn.HeartbeatPort, cn.WarehouseName)
 	return executor.ExecuteContext(ctx, db, dropStatement)
 }
 
+// todo(ydx): write test case
 func (executor *SQLExecutor) ExecuteDropWarehouse(ctx context.Context, db *sql.DB, warehouseName string) error {
 	warehouseNameInFE := object.GetWarehouseNameInFE(warehouseName)
-	return executor.ExecuteContext(ctx, nil, fmt.Sprintf("DROP WAREHOUSE %s", warehouseNameInFE))
+	return executor.ExecuteContext(ctx, db, fmt.Sprintf("DROP WAREHOUSE %s", warehouseNameInFE))
 }
