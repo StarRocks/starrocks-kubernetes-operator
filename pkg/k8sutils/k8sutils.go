@@ -45,7 +45,7 @@ import (
 type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
-type StatefulSetEqual func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool
+type StatefulSetEqual func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) (string, bool)
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
@@ -159,11 +159,6 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 		return k8sClient.Update(ctx, &actual)
 	}
 
-	if equal(expect, &actual) {
-		logger.Info("expectHash == actualHash, no need to update statefulset resource")
-		return nil
-	}
-
 	if !enableScaleTo1 {
 		if actual.Spec.Replicas != nil && *actual.Spec.Replicas > 1 {
 			if expect.Spec.Replicas == nil || *expect.Spec.Replicas == 1 {
@@ -172,11 +167,12 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 		}
 	}
 
-	// for compatible version <= v1.5, before v1.5 we use order policy to deploy pods.
-	// and use `xx-domain-search` for internal service. we should exclude the interference.
-	if actual.Spec.PodManagementPolicy == appv1.OrderedReadyPodManagement {
-		expect.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
+	newHashValue, b := equal(expect, &actual)
+	if b {
+		logger.Info("expectHash == actualHash, no need to update statefulset resource")
+		return nil
 	}
+	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
 
 	expect.ResourceVersion = actual.ResourceVersion
 	return k8sClient.Patch(ctx, expect, client.Merge)

@@ -173,15 +173,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	}
 
 	expectSTS := statefulset.MakeStatefulset(object, cnSpec, podTemplateSpec)
-	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &expectSTS, true,
-		func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
-			if expect.Spec.Replicas == nil {
-				return rutils.StatefulSetDeepEqual(expect, actual, true)
-			} else {
-				return rutils.StatefulSetDeepEqual(expect, actual, false)
-			}
-		},
-	); err != nil {
+	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &expectSTS, true, rutils.StatefulSetDeepEqual); err != nil {
 		return err
 	}
 
@@ -203,11 +195,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
-	if err := k8sutils.ApplyService(ctx, cc.k8sClient, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
-		// for compatible v1.5, we use `cn-domain-search` for internal communicating.
-		internalService.Name = expectSTS.Spec.ServiceName
-		return rutils.ServiceDeepEqual(new, esvc)
-	}); err != nil {
+	if err := k8sutils.ApplyService(ctx, cc.k8sClient, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "sync CN search service failed")
 		return err
 	}
@@ -249,8 +237,12 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	} else {
 		stsReplicas = 1 // default value
 	}
-	if expectReplicas != int32(stsReplicas) || !rutils.StatefulSetDeepEqual(&expectSTS, &actualSTS, false) {
+	if expectReplicas != int32(stsReplicas) {
 		logger.Info("expect replicas is not equal to statefulset replicas", "expectReplicas", expectReplicas, "stsReplicas", stsReplicas)
+		return nil
+	}
+	if expectHashValue, b := rutils.StatefulSetDeepEqual(&expectSTS, &actualSTS); !b {
+		logger.Info("the hash value of statefulset is not equal", "expectHashValue", expectHashValue)
 		return nil
 	}
 

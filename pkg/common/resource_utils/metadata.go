@@ -36,18 +36,6 @@ func (l Labels) AddLabel(label Labels) {
 	}
 }
 
-type Annotations map[string]string
-
-func (a Annotations) Add(key, value string) {
-	a[key] = value
-}
-
-func (a Annotations) AddAnnotation(annotation Annotations) {
-	for k, v := range annotation {
-		a[k] = v
-	}
-}
-
 // MergeMetadata takes labels and annotations from the old resource and merges
 // them into the new resource. If a key is present in both resources, the new
 // resource wins. It also copies the ResourceVersion from the old resource to

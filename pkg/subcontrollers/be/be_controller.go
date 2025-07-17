@@ -121,18 +121,12 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	st := statefulset.MakeStatefulset(object.NewFromCluster(src), beSpec, podTemplateSpec)
 
 	// update the statefulset if feSpec be updated.
-	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
-		return rutils.StatefulSetDeepEqual(new, actual, false)
-	}); err != nil {
+	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, rutils.StatefulSetDeepEqual); err != nil {
 		logger.Error(err, "apply statefulset failed")
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, be.Client, internalService, func(new *corev1.Service, esvc *corev1.Service) bool {
-		// for compatible v1.5, we use `cn-domain-search` for internal communicating.
-		internalService.Name = st.Spec.ServiceName
-		return rutils.ServiceDeepEqual(new, esvc)
-	}); err != nil {
+	if err = k8sutils.ApplyService(ctx, be.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "apply internal service failed", "internalService", internalService)
 		return err
 	}
