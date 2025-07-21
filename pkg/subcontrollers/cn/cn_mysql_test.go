@@ -303,7 +303,7 @@ func TestSQLExecutor_ExecuteDropWarehouse(t *testing.T) {
 				db: func() *sql.DB {
 					db, mock, err := sqlmock.New()
 					require.NoError(t, err)
-					mock.ExpectExec(fmt.Sprintf("DROP WAREHOUSE wh1")).
+					mock.ExpectExec("DROP WAREHOUSE wh1").
 						WillReturnResult(sqlmock.NewResult(1, 1))
 					return db
 				}(),

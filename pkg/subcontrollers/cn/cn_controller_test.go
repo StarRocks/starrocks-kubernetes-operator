@@ -27,7 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
-	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -548,8 +547,8 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 	type args struct {
 		ctx          context.Context
 		object       object.StarRocksObject
-		expectSTS    *appv1.StatefulSet
-		actualSTS    *appv1.StatefulSet
+		expectSTS    *appsv1.StatefulSet
+		actualSTS    *appsv1.StatefulSet
 		actualCNPods *corev1.PodList
 		db           *sql.DB
 	}
@@ -567,29 +566,29 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			args: args{
 				ctx:    context.Background(),
 				object: object.StarRocksObject{},
-				expectSTS: &appv1.StatefulSet{
+				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(3),
 					},
 				},
-				actualSTS: &appv1.StatefulSet{
+				actualSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(4),
 					},
 				},
@@ -611,29 +610,29 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			args: args{
 				ctx:    context.Background(),
 				object: object.StarRocksObject{},
-				expectSTS: &appv1.StatefulSet{
+				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
-				actualSTS: &appv1.StatefulSet{
+				actualSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
@@ -670,23 +669,23 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			args: args{
 				ctx:    context.Background(),
 				object: object.StarRocksObject{},
-				expectSTS: &appv1.StatefulSet{
+				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
-				actualSTS: &appv1.StatefulSet{
+				actualSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
@@ -695,7 +694,7 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 							"extra-label": "value",
 						},
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
@@ -716,32 +715,32 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			args: args{
 				ctx:    context.Background(),
 				object: object.StarRocksObject{},
-				expectSTS: &appv1.StatefulSet{
+				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
-				actualSTS: &appv1.StatefulSet{
+				actualSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
-					Status: appv1.StatefulSetStatus{
+					Status: appsv1.StatefulSetStatus{
 						UpdateRevision: "v1",
 					},
 				},
@@ -824,29 +823,29 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 					AliasName:         "wh1-warehouse",
 					IsWarehouseObject: true,
 				},
-				expectSTS: &appv1.StatefulSet{
+				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "wh1-warehouse-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 				},
-				actualSTS: &appv1.StatefulSet{
+				actualSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.StatefulSetKind,
-						APIVersion: appv1.SchemeGroupVersion.String(),
+						APIVersion: appsv1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "wh1-warehouse-cn",
 						Namespace: "default",
 					},
-					Spec: appv1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: rutils.GetInt32Pointer(1),
 					},
 					Status: appsv1.StatefulSetStatus{

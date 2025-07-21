@@ -232,7 +232,9 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		srapi.ComponentLabelKey: srapi.DEFAULT_CN,
 		srapi.OwnerReference:    object.GetCNStatefulSetName(),
 	}
-	if err := cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace), matchingLabels); err != nil && !apierrors.IsNotFound(err) {
+
+	err = cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace), matchingLabels)
+	if err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "list cn pod failed")
 		return err
 	}
@@ -548,15 +550,15 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		expectReplicas = 1
 	}
 
-	var stsReplicas int
+	var stsReplicas int32
 	if actualSTS.Spec.Replicas != nil {
-		stsReplicas = int(*actualSTS.Spec.Replicas)
+		stsReplicas = *actualSTS.Spec.Replicas
 	} else {
 		stsReplicas = 1
 	}
 
 	// compare the replicas between the expected value and the actual value in StatefulSet.
-	if expectReplicas != int32(stsReplicas) {
+	if expectReplicas != stsReplicas {
 		logger.Info("expect replicas is not equal to statefulset replicas", "expectReplicas", expectReplicas, "stsReplicas", stsReplicas)
 		return ErrReplicasNotEqual
 	}
