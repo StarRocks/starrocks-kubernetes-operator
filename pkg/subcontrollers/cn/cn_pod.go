@@ -72,7 +72,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 				Value: strings.ReplaceAll(object.Name, "-", "_"),
 			})
 		} else {
-			return nil, GetFeFeatureInfoError
+			return nil, ErrFailedToGetFeFeatureList
 		}
 	}
 	cnContainer := corev1.Container{

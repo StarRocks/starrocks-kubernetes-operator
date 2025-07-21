@@ -74,12 +74,13 @@ func GetPort(config map[string]interface{}, key string) int32 {
 		}
 	}
 
-	if key == THRIFT_PORT {
+	switch key {
+	case THRIFT_PORT:
 		// from StarRocks 3.1, the name of thrift_port is changed to be_port.
 		// If both be_port and thrift_port are set, the thrift_port will be used in StarRocks.
 		// see https://github.com/StarRocks/starrocks/pull/31747
 		return GetPort(config, BE_PORT)
-	} else if key == WEBSERVER_PORT {
+	case WEBSERVER_PORT:
 		// If both webserver_port and be_http_port are set, the be_http_port will be used in StarRocks.
 		return GetPort(config, BE_HTTP_PORT)
 	}

@@ -25,8 +25,8 @@ func TestCnController_addWarehouseEnv1(t *testing.T) {
 			name: "test FE support multi-warehouse",
 			args: args{
 				ctx: context.Background(),
-				ServerFunc: func(rw http.ResponseWriter, req *http.Request) {
-					rw.Write([]byte(`{"features": [{"name": "multi-warehouse"}], "version": "", "status": "OK"}`))
+				ServerFunc: func(rw http.ResponseWriter, _ *http.Request) {
+					_, _ = rw.Write([]byte(`{"features": [{"name": "multi-warehouse"}], "version": "", "status": "OK"}`))
 				},
 			},
 			want: true,
@@ -35,8 +35,8 @@ func TestCnController_addWarehouseEnv1(t *testing.T) {
 			name: "test FE does not support multi-warehouse",
 			args: args{
 				ctx: context.Background(),
-				ServerFunc: func(rw http.ResponseWriter, req *http.Request) {
-					rw.Write([]byte(`{"features": [], "version": "", "status": "OK"}`))
+				ServerFunc: func(rw http.ResponseWriter, _ *http.Request) {
+					_, _ = rw.Write([]byte(`{"features": [], "version": "", "status": "OK"}`))
 				},
 			},
 			want: false,

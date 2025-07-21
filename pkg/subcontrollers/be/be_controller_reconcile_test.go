@@ -135,7 +135,8 @@ func TestStarRocksClusterReconciler_BeResourceCreate(t *testing.T) {
 
 	// check the statefulset is created
 	sts := appv1.StatefulSet{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	client := r.Client
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-be",
 	}, &sts)
@@ -143,7 +144,7 @@ func TestStarRocksClusterReconciler_BeResourceCreate(t *testing.T) {
 
 	// check the external service is created
 	externalService := corev1.Service{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-be-service",
 	}, &externalService)
@@ -151,7 +152,7 @@ func TestStarRocksClusterReconciler_BeResourceCreate(t *testing.T) {
 
 	// check the internal service is created
 	internalService := corev1.Service{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-be-search",
 	}, &internalService)

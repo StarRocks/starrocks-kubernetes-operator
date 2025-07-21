@@ -162,9 +162,10 @@ func Do(reader io.Reader, targetChartVersion string, writer io.Writer) error {
 
 func Write(w io.Writer, originalFields map[string]interface{}, keys []string, header string) error {
 	getValue := func(key string) interface{} {
-		if key == "timeZone" {
+		switch key {
+		case "timeZone":
 			return "Asia/Shanghai"
-		} else if key == "nameOverride" {
+		case "nameOverride":
 			return "kube-starrocks"
 		}
 		return nil

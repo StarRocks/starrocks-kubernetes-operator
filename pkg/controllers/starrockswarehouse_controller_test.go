@@ -18,7 +18,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 )
 
-func init() {
+func TestMain(_ *testing.M) {
 	v1.Register()
 }
 

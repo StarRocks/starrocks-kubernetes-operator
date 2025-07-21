@@ -106,11 +106,11 @@ type Reader struct {
 	hasWarehouseCRD bool
 }
 
-func (r Reader) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (r Reader) Get(_ context.Context, _ client.ObjectKey, _ client.Object, _ ...client.GetOption) error {
 	return nil
 }
 
-func (r Reader) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (r Reader) List(_ context.Context, _ client.ObjectList, _ ...client.ListOption) error {
 	if r.hasWarehouseCRD {
 		return nil
 	}

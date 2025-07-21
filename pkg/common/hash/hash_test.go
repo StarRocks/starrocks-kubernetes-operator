@@ -124,7 +124,7 @@ func TestHashObject(t *testing.T) {
 	}
 }
 
-func TestTwoObject(t *testing.T) {
+func TestTwoObject(_ *testing.T) {
 	type T1 struct {
 		name string
 		age  int
@@ -167,7 +167,7 @@ func TestTwoObject(t *testing.T) {
 	}
 }
 
-func TestTwoObject2(t *testing.T) {
+func TestTwoObject2(_ *testing.T) {
 	a := int(10)
 	b := int(10)
 	type T1 struct {

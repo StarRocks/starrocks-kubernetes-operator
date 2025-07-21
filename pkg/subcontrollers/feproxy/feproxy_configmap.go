@@ -84,7 +84,6 @@ http {
     }
 
     location / {
-      # see https://serverfault.com/questions/240476/how-to-force-nginx-to-resolve-dns-of-a-dynamic-hostname-everytime-when-doing-p/593003#593003 for why we use set
       set $fe_service "%[2]s";
       proxy_pass $fe_service;
       proxy_set_header Expect $http_expect;

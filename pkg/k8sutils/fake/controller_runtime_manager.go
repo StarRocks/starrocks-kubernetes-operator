@@ -117,7 +117,7 @@ func GetEventRecorderFor(recorder record.EventRecorder) subcontrollers.GetEventR
 		bufferSize := 10
 		recorder = record.NewFakeRecorder(bufferSize)
 	}
-	return func(name string) record.EventRecorder {
+	return func(_ string) record.EventRecorder {
 		return recorder
 	}
 }

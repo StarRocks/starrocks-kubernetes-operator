@@ -87,7 +87,8 @@ func TestMakeSearchService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSearchService(tt.args.serviceName, tt.args.externalService, tt.args.ports, tt.args.labels); !reflect.DeepEqual(got, tt.want) {
+			if got := MakeSearchService(tt.args.serviceName,
+				tt.args.externalService, tt.args.ports, tt.args.labels); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSearchService() = %v, want %v", got, tt.want)
 			}
 		})

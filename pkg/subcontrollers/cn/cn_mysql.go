@@ -46,18 +46,19 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 
 	var err error
 	for _, envVar := range sts.Spec.Template.Spec.Containers[0].Env {
-		if envVar.Name == "MYSQL_PWD" {
+		switch envVar.Name {
+		case "MYSQL_PWD":
 			rootPassword, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
 				logger.Error(err, "failed to get MYSQL_PWD from env vars, use the default password: empty string")
 			}
-		} else if envVar.Name == "FE_SERVICE_NAME" {
+		case "FE_SERVICE_NAME":
 			feServiceName, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
 				logger.Error(err, "failed to get FE_SERVICE_NAME from env vars")
 				return nil, err
 			}
-		} else if envVar.Name == "FE_QUERY_PORT" {
+		case "FE_QUERY_PORT":
 			feServicePort, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
 			if err != nil {
 				logger.Error(err, "failed to get FE_QUERY_PORT from env vars")
