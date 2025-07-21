@@ -1,0 +1,193 @@
+# Example demonstrating PVC expansion feature for StarRocks cluster
+# This example shows how to expand storage for FE and BE components
+
+# Initial cluster configuration with smaller storage sizes
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrocks-pvc-expansion-example
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.3-latest
+    replicas: 3
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
+    # Initial storage configuration
+    storageVolumes:
+    - name: fe-meta
+      storageClassName: standard-rwo  # Ensure this storage class supports expansion
+      storageSize: 10Gi               # Initial size - can be expanded later
+      mountPath: /opt/starrocks/fe/meta
+    - name: fe-log
+      storageClassName: standard-rwo
+      storageSize: 5Gi                # Initial size - can be expanded later
+      mountPath: /opt/starrocks/fe/log
+
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.3-latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+    # Initial storage configuration
+    storageVolumes:
+    - name: be-data
+      storageClassName: standard-rwo  # Ensure this storage class supports expansion
+      storageSize: 100Gi              # Initial size - can be expanded later
+      mountPath: /opt/starrocks/be/storage
+    - name: be-log
+      storageClassName: standard-rwo
+      storageSize: 10Gi               # Initial size - can be expanded later
+      mountPath: /opt/starrocks/be/log
+
+---
+# Example of the same cluster after storage expansion
+# To expand storage, simply update the storageSize values and apply the changes
+
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrocks-pvc-expansion-example
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.3-latest
+    replicas: 3
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
+    # Expanded storage configuration
+    storageVolumes:
+    - name: fe-meta
+      storageClassName: standard-rwo
+      storageSize: 20Gi               # Expanded from 10Gi to 20Gi
+      mountPath: /opt/starrocks/fe/meta
+    - name: fe-log
+      storageClassName: standard-rwo
+      storageSize: 10Gi               # Expanded from 5Gi to 10Gi
+      mountPath: /opt/starrocks/fe/log
+
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.3-latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+    # Expanded storage configuration
+    storageVolumes:
+    - name: be-data
+      storageClassName: standard-rwo
+      storageSize: 200Gi              # Expanded from 100Gi to 200Gi
+      mountPath: /opt/starrocks/be/storage
+    - name: be-log
+      storageClassName: standard-rwo
+      storageSize: 20Gi               # Expanded from 10Gi to 20Gi
+      mountPath: /opt/starrocks/be/log
+
+---
+# Example using Helm values for PVC expansion
+# Save this as values-expansion.yaml and use with helm upgrade
+
+# values-expansion.yaml
+starrocks:
+  starrocksFESpec:
+    image:
+      repository: starrocks/fe-ubuntu
+      tag: 3.3-latest
+    replicas: 3
+    resources:
+      requests:
+        cpu: 2
+        memory: 4Gi
+      limits:
+        cpu: 4
+        memory: 8Gi
+    storageSpec:
+      name: fe
+      storageClassName: standard-rwo
+      storageSize: 20Gi               # Expanded from initial 10Gi
+      logStorageSize: 10Gi            # Expanded from initial 5Gi
+
+  starrocksBeSpec:
+    image:
+      repository: starrocks/be-ubuntu
+      tag: 3.3-latest
+    replicas: 3
+    resources:
+      requests:
+        cpu: 4
+        memory: 8Gi
+      limits:
+        cpu: 8
+        memory: 16Gi
+    storageSpec:
+      name: be
+      storageClassName: standard-rwo
+      storageSize: 200Gi              # Expanded from initial 100Gi
+      logStorageSize: 20Gi            # Expanded from initial 10Gi
+
+# To apply the expansion using Helm:
+# helm upgrade my-starrocks kube-starrocks/starrocks -f values-expansion.yaml
+
+---
+# Prerequisites for PVC expansion:
+
+# 1. Ensure your storage class supports volume expansion
+# Check with: kubectl get storageclass <storage-class-name> -o yaml
+# Look for: allowVolumeExpansion: true
+
+# 2. Example storage class that supports expansion:
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: expandable-ssd
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+  replication-type: none
+allowVolumeExpansion: true  # This enables PVC expansion
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# Monitoring PVC expansion progress:
+
+# 1. Check PVC status:
+# kubectl get pvc -n starrocks
+
+# 2. Check PVC events:
+# kubectl describe pvc <pvc-name> -n starrocks
+
+# 3. Check StatefulSet status:
+# kubectl get statefulset -n starrocks
+
+# 4. Check operator logs:
+# kubectl logs -n starrocks-operator-system deployment/starrocks-operator
+
+# 5. Monitor cluster status:
+# kubectl get starrockscluster -n starrocks -o yaml
+
+---
+# Important Notes:
+
+# 1. Storage size can only be INCREASED, never decreased
+# 2. The expansion process is non-disruptive - data is preserved
+# 3. During expansion, the operator may:
+#    - Patch existing PVCs with new sizes
+#    - Recreate StatefulSets if VolumeClaimTemplate changes are needed
+#    - Wait for pods to restart and attach expanded volumes
+# 4. Expansion time depends on the underlying storage provider
+# 5. Always backup your data before performing storage operations

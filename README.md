@@ -30,6 +30,7 @@ as installing, scaling, upgrading etc.
 - Support external clients outside the network of kubernetes to load data into StarRocks using STREAM LOAD
 - Support automatic scaling for CN nodes based on CPU and memory usage
 - Support mounting persistent volumes for StarRocks containers
+- **Support PVC expansion for storage volumes without data loss** (New in v1.9.9+)
 
 ### Helm Chart Features
 
@@ -165,16 +166,39 @@ kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merg
 
 ### 6. Resize the StarRocks cluster
 
-To resize, just patch the StarRocks cluster. 
+To resize, just patch the StarRocks cluster.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 >  Once you deploy with 3 FE nodes, you are in HA mode.  Do not resize FE nodes below 3 since that will affect cluster quorum.  This rule doesn't apply to CN nodes.
 
 ```console
 kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"replicas":9}}}'
 ```
 
-### 7. Delete/stop the StarRocks cluster
+### 7. Expand storage volumes (PVC Expansion)
+
+You can expand storage volumes for FE, BE, and CN components without data loss. The operator supports expanding PVC sizes by patching existing PVCs and recreating StatefulSets when necessary.
+
+> [!IMPORTANT]
+> - Storage sizes can only be **increased**, never decreased
+> - Your storage class must support volume expansion (`allowVolumeExpansion: true`)
+> - The expansion process preserves all data
+
+Example of expanding FE metadata storage from 10Gi to 20Gi:
+
+```console
+kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksFeSpec":{"storageVolumes":[{"name":"fe-meta","storageSize":"20Gi","mountPath":"/opt/starrocks/fe/meta"}]}}}'
+```
+
+Example of expanding BE data storage from 100Gi to 200Gi:
+
+```console
+kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"storageVolumes":[{"name":"be-data","storageSize":"200Gi","mountPath":"/opt/starrocks/be/storage"}]}}}'
+```
+
+For detailed information about PVC expansion, see the [PVC Expansion How-To Guide](./doc/pvc_expansion_howto.md).
+
+### 8. Delete/stop the StarRocks cluster
 
 To delete/stop the StarRocks cluster, just execute the delete command.
 
@@ -186,7 +210,7 @@ or
 kubectl delete starrockscluster starrockscluster-sample -n starrocks
 ```
 
-### 8. Delete/stop the StarRocks Operator
+### 9. Delete/stop the StarRocks Operator
 
 To delete/stop the StarRocks Operate, just execute the delete command.
 
