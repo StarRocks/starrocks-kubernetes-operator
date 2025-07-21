@@ -104,7 +104,8 @@ func TestStarRocksClusterReconciler_FeProxyResourceCreate(t *testing.T) {
 
 	// check the statefulset is created
 	sts := appv1.Deployment{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	client := r.Client
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-fe-proxy",
 	}, &sts)
@@ -112,7 +113,7 @@ func TestStarRocksClusterReconciler_FeProxyResourceCreate(t *testing.T) {
 
 	// check the external service is created
 	externalService := corev1.Service{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-fe-proxy-service",
 	}, &externalService)

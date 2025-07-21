@@ -64,11 +64,11 @@ func (cc *CnController) GetControllerName() string {
 	return "cnController"
 }
 
-var SpecMissingError = errors.New("spec.template or spec.starRocksCluster is missing")
-var StarRocksClusterMissingError = errors.New("custom resource StarRocksCluster is missing")
-var FeNotReadyError = errors.New("component fe is not ready")
-var StarRocksClusterRunModeError = errors.New("StarRocks Cluster should run in shared_data mode")
-var GetFeFeatureInfoError = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
+var ErrorSpecIsMissing = errors.New("spec.template or spec.starRocksCluster is missing")
+var ErrStarRocksClusterIsMissing = errors.New("custom resource StarRocksCluster is missing")
+var ErrFeIsNotReady = errors.New("component fe is not ready")
+var ErrShouldRunInSharedDataMode = errors.New("StarRocks Cluster should run in shared_data mode")
+var ErrFailedToGetFeFeatureList = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
 
 func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncWarehouse)
@@ -76,14 +76,14 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 
 	template := warehouse.Spec.Template
 	if warehouse.Spec.StarRocksCluster == "" || template == nil {
-		return SpecMissingError
+		return ErrorSpecIsMissing
 	}
 
 	logger.Info("get StarRocksCluster CR from kubernetes")
 	_, err := cc.getStarRocksCluster(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return StarRocksClusterMissingError
+			return ErrStarRocksClusterIsMissing
 		}
 		return err
 	}
@@ -94,11 +94,11 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return err
 	}
 	if !fe.IsRunInSharedDataMode(feConfig) {
-		return StarRocksClusterRunModeError
+		return ErrShouldRunInSharedDataMode
 	}
 
 	if !fe.CheckFEReady(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
-		return FeNotReadyError
+		return ErrFeIsNotReady
 	}
 
 	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec(), warehouse.Status.WarehouseComponentStatus)

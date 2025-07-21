@@ -41,7 +41,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
-func init() {
+func TestMain(_ *testing.M) {
 	srapi.Register()
 }
 

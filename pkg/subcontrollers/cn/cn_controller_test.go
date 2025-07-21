@@ -36,7 +36,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
 
-func init() {
+func TestMain(_ *testing.M) {
 	srapi.Register()
 }
 

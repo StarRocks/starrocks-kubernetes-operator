@@ -32,12 +32,8 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
-func init() {
+func TestMain(_ *testing.M) {
 	srapi.Register()
-}
-
-// fake client can not delete a resource when resource version is wrong
-func Test_DeleteAutoscaler(t *testing.T) {
 }
 
 func Test_getValueFromConfigmap(t *testing.T) {
@@ -493,7 +489,8 @@ func TestApplyConfigMap(t *testing.T) {
 				t.Errorf("Object does not have test annotation")
 			}
 
-			if err := k8sutils.DeleteConfigMap(context.Background(), tt.args.k8sClient, tt.args.configmap.Namespace, tt.args.configmap.Name); err != nil {
+			if err := k8sutils.DeleteConfigMap(context.Background(),
+				tt.args.k8sClient, tt.args.configmap.Namespace, tt.args.configmap.Name); err != nil {
 				t.Errorf("Delete Configmap error = %v", err)
 			}
 		})
@@ -623,7 +620,8 @@ func TestApplyStatefulSet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := k8sutils.ApplyStatefulSet(tt.args.ctx, tt.args.k8sClient, tt.args.sts, tt.args.enableScaleTo1, tt.args.equal); (err != nil) != tt.wantErr {
+			if err := k8sutils.ApplyStatefulSet(tt.args.ctx,
+				tt.args.k8sClient, tt.args.sts, tt.args.enableScaleTo1, tt.args.equal); (err != nil) != tt.wantErr {
 				t.Errorf("ApplyStatefulSet() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			sts := &appsv1.StatefulSet{}
@@ -774,7 +772,8 @@ func TestDeleteAutoscaler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := k8sutils.DeleteAutoscaler(tt.args.ctx, tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.version); (err != nil) != tt.wantErr {
+			if err := k8sutils.DeleteAutoscaler(tt.args.ctx,
+				tt.args.k8sClient, tt.args.namespace, tt.args.name, tt.args.version); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteAutoscaler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

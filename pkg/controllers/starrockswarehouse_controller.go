@@ -66,7 +66,8 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	logger.Info("get StarRocksWarehouse CR from kubernetes")
 	warehouse := &srapi.StarRocksWarehouse{}
-	err := r.Client.Get(ctx, req.NamespacedName, warehouse)
+	client := r.Client
+	err := client.Get(ctx, req.NamespacedName, warehouse)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			logger.Info("StarRocksWarehouse CR is not found, maybe deleted, begin to clear warehouse")
@@ -136,11 +137,12 @@ func (r *StarRocksWarehouseReconciler) Reconcile(ctx context.Context, req ctrl.R
 func (r *StarRocksWarehouseReconciler) UpdateStarRocksWarehouseStatus(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		actualWarehouse := &srapi.StarRocksWarehouse{}
-		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: warehouse.Namespace, Name: warehouse.Name}, actualWarehouse); err != nil {
+		client := r.Client
+		if err := client.Get(ctx, types.NamespacedName{Namespace: warehouse.Namespace, Name: warehouse.Name}, actualWarehouse); err != nil {
 			return err
 		}
 		actualWarehouse.Status = warehouse.Status
-		return r.Client.Status().Update(ctx, actualWarehouse)
+		return client.Status().Update(ctx, actualWarehouse)
 	})
 }
 
@@ -151,8 +153,8 @@ func handleSyncWarehouseError(ctx context.Context, err error, warehouse *srapi.S
 	logger.Error(err, "sub controller reconciles spec failed")
 	warehouse.Status.Phase = srapi.ComponentFailed
 	warehouse.Status.Reason = err.Error()
-	if errors.Is(err, cn.SpecMissingError) || errors.Is(err, cn.StarRocksClusterMissingError) ||
-		errors.Is(err, cn.FeNotReadyError) || errors.Is(err, cn.GetFeFeatureInfoError) {
+	if errors.Is(err, cn.ErrorSpecIsMissing) || errors.Is(err, cn.ErrStarRocksClusterIsMissing) ||
+		errors.Is(err, cn.ErrFeIsNotReady) || errors.Is(err, cn.ErrFailedToGetFeFeatureList) {
 		return true
 	}
 	return false

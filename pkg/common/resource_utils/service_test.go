@@ -187,7 +187,7 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			gotCnService := BuildExternalService(object.NewFromWarehouse(warehouse),
 				warehouse.Spec.Template.ToCnSpec(), map[string]interface{}{}, map[string]string{}, map[string]string{})
 			equal(gotCnService, tt.wantCnService)
@@ -395,7 +395,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 		"starrocks_default_label": "test",
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			object := object.NewFromCluster(src)
 			gotFeService := BuildExternalService(object, src.Spec.StarRocksFeSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)

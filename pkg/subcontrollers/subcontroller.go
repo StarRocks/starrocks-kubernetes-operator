@@ -95,7 +95,8 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 		var reason string
 		var done bool
 		var err error
-		if loadType == DeploymentLoadType {
+		switch loadType {
+		case DeploymentLoadType:
 			var load appsv1.Deployment
 			componentStatus.Phase = srapi.ComponentReconciling
 			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &load)
@@ -106,7 +107,7 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 			if err != nil {
 				return err
 			}
-		} else if loadType == StatefulSetLoadType {
+		case StatefulSetLoadType:
 			var sts appsv1.StatefulSet
 			componentStatus.Phase = srapi.ComponentReconciling
 			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)

@@ -72,7 +72,7 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 						// After uncommenting Replicas: rutils.GetInt32Pointer(3), due to the conflict between Replicas
 						// and AutoScalingPolicy, the Cn Controller will delete the Replicas field. This ultimately leads
 						// to the execution of ctrl.Result{Requeue: true}, r.PatchStarRocksCluster(ctx, src).
-						//Replicas: rutils.GetInt32Pointer(3),
+						// Replicas: rutils.GetInt32Pointer(3),
 						Image: "starrocks.com/cn:2.40",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
@@ -208,7 +208,8 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 
 	// check the statefulset is created
 	sts := appv1.StatefulSet{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	client := r.Client
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-cn",
 	}, &sts)
@@ -216,7 +217,7 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 
 	// check the external service is created
 	externalService := corev1.Service{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-cn-service",
 	}, &externalService)
@@ -224,7 +225,7 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 
 	// check the internal service is created
 	internalService := corev1.Service{}
-	err = r.Client.Get(context.Background(), types.NamespacedName{
+	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",
 		Name:      "starrockscluster-sample-cn-search",
 	}, &internalService)

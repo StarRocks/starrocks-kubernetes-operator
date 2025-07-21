@@ -70,7 +70,8 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	logger.Info("get StarRocksCluster CR from kubernetes")
 	var esrc srapi.StarRocksCluster
-	err := r.Client.Get(ctx, req.NamespacedName, &esrc)
+	client := r.Client
+	err := client.Get(ctx, req.NamespacedName, &esrc)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return ctrl.Result{}, nil
@@ -128,7 +129,8 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
-		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
+		client := r.Client
+		if err := client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); err != nil {
 			return err
 		}
 
@@ -141,14 +143,15 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		var esrc srapi.StarRocksCluster
-		if err := r.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); apierrors.IsNotFound(err) {
+		client := r.Client
+		if err := client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); apierrors.IsNotFound(err) {
 			return nil
 		} else if err != nil {
 			return err
 		}
 
 		src.ResourceVersion = esrc.ResourceVersion
-		return k8sutils.UpdateClientObject(ctx, r.Client, src)
+		return k8sutils.UpdateClientObject(ctx, client, src)
 	})
 }
 
