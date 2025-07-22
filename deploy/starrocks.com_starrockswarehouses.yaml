@@ -1603,6 +1603,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  priorityClassName:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:

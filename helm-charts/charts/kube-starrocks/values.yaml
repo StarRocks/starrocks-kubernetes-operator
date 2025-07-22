@@ -612,6 +612,10 @@ starrocks:
     # When this is set containers will be able to view and signal processes from other containers
     # in the same pod, and the first process in each container will not be assigned PID 1.
     shareProcessNamespace:
+    # priorityClassName allows you to assign a [Kubernetes PriorityClass]
+    # to the pods of this component. This determines the scheduling priority of pods and their eviction order under resource pressure.
+    # see https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass for more details.
+    priorityClassName:
   
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
@@ -962,6 +966,10 @@ starrocks:
     # When this is set containers will be able to view and signal processes from other containers
     # in the same pod, and the first process in each container will not be assigned PID 1.
     shareProcessNamespace:
+    # priorityClassName allows you to assign a [Kubernetes PriorityClass]
+    # to the pods of this component. This determines the scheduling priority of pods and their eviction order under resource pressure.
+    # see https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass for more details.
+    priorityClassName:
   
   # spec for component be, provide storage and compute function.
   starrocksBeSpec:
@@ -1273,6 +1281,10 @@ starrocks:
     # When this is set containers will be able to view and signal processes from other containers
     # in the same pod, and the first process in each container will not be assigned PID 1.
     shareProcessNamespace:
+    # priorityClassName allows you to assign a [Kubernetes PriorityClass]
+    # to the pods of this component. This determines the scheduling priority of pods and their eviction order under resource pressure.
+    # see https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass for more details.
+    priorityClassName:
   
   # create secrets if necessary.
   secrets: []
@@ -1392,3 +1404,7 @@ starrocks:
         # e.g. mount an emptyDir volume to /tmp
         # - name: tmp-data
         #   mountPath: /tmp
+    # priorityClassName allows you to assign a [Kubernetes PriorityClass]
+    # to the pods of this component. This determines the scheduling priority of pods and their eviction order under resource pressure.
+    # see https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass for more details.
+    priorityClassName:
