@@ -27,6 +27,69 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// SpecInterface defines the common interface that must be implemented by all StarRocks component specs
+// (FE, BE, CN, FE Proxy). It provides methods to configure pod and container settings like security context,
+// lifecycle hooks, networking, and storage.
+// All components including StarRocksFeSpec, StarRocksBeSpec, StarRocksCnSpec, StarRocksFeProxySpec have implemented
+// the SpecInterface. If a method has the same implementation, we will implement in StarRocksLoadSpec which implements
+// the loadInterface interface.
+// +kubebuilder:object:generate=false
+type SpecInterface interface {
+	loadInterface
+
+	// GetHostAliases returns the host aliases configuration for the pod. Host aliases allow adding entries to
+	// the pod's /etc/hosts file to configure custom host-to-IP mappings.
+	GetHostAliases() []corev1.HostAlias
+
+	// GetRunAsNonRoot returns the user ID and group ID to run the container as non-root.
+	// Returns (*uid, *gid) where nil means use container defaults.
+	GetRunAsNonRoot() (*int64, *int64)
+
+	// GetTerminationGracePeriodSeconds returns the grace period in seconds for pod termination.
+	// This is how long to wait for the pod to terminate gracefully before forcefully killing it.
+	GetTerminationGracePeriodSeconds() *int64
+
+	// GetCapabilities returns the Linux capabilities configuration for the container.
+	// Capabilities allow granting specific privileges to processes.
+	GetCapabilities() *corev1.Capabilities
+
+	// GetSidecars returns the list of sidecar containers to add to the pod.
+	// Sidecars run alongside the main container to provide additional functionality.
+	GetSidecars() []corev1.Container
+
+	// GetInitContainers returns the list of init containers to run before the main containers.
+	// Init containers run to completion in order, before the main containers start.
+	GetInitContainers() []corev1.Container
+
+	// IsReadOnlyRootFilesystem returns whether the container's root filesystem should be read-only.
+	// A read-only root filesystem prevents modifications to improve security.
+	IsReadOnlyRootFilesystem() *bool
+
+	// GetSysctls returns the sysctl parameters to set for the container.
+	// Sysctls allow configuring kernel parameters at runtime.
+	GetSysctls() []corev1.Sysctl
+
+	// GetCommand returns the command to run in the container.
+	// This overrides the container image's default entrypoint.
+	GetCommand() []string
+
+	// GetArgs returns the arguments to pass to the container command.
+	// These are the arguments passed to either the default entrypoint or GetCommand().
+	GetArgs() []string
+
+	// GetUpdateStrategy returns the update strategy for the StatefulSet.
+	// This controls how pods are replaced during updates.
+	GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy
+}
+
+var _ SpecInterface = &StarRocksFeSpec{}
+
+var _ SpecInterface = &StarRocksBeSpec{}
+
+var _ SpecInterface = &StarRocksCnSpec{}
+
+var _ SpecInterface = &StarRocksFeProxySpec{}
+
 // StarRocksClusterSpec defines the desired state of StarRocksCluster
 type StarRocksClusterSpec struct {
 	// Specify a Service Account for starRocksCluster use k8s cluster.
@@ -76,25 +139,6 @@ type StarRocksClusterStatus struct {
 	DisasterRecoveryStatus *DisasterRecoveryStatus `json:"disasterRecoveryStatus,omitempty"`
 }
 
-// SpecInterface is a common interface for all starrocks component spec.
-// +kubebuilder:object:generate=false
-type SpecInterface interface {
-	loadInterface
-	GetHostAliases() []corev1.HostAlias
-	GetRunAsNonRoot() (*int64, *int64)
-	GetTerminationGracePeriodSeconds() *int64
-	GetCapabilities() *corev1.Capabilities
-	GetSidecars() []corev1.Container
-	GetInitContainers() []corev1.Container
-	IsReadOnlyRootFilesystem() *bool
-	GetSysctls() []corev1.Sysctl
-}
-
-var _ SpecInterface = &StarRocksFeSpec{}
-var _ SpecInterface = &StarRocksBeSpec{}
-var _ SpecInterface = &StarRocksCnSpec{}
-var _ SpecInterface = &StarRocksFeProxySpec{}
-
 // StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
@@ -125,6 +169,8 @@ type StarRocksCnSpec struct {
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
 }
 
+// StarRocksFeProxySpec defines the specification for FE Proxy
+// Note: it includes StarRocksLoadSpec, not StarRocksComponentSpec
 type StarRocksFeProxySpec struct {
 	StarRocksLoadSpec `json:",inline"`
 
