@@ -19,7 +19,7 @@ package v1
 import (
 	"errors"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -242,7 +242,7 @@ func (spec *StarRocksFeProxySpec) GetArgs() []string {
 
 // GetUpdateStrategy
 // fe proxy is deployed by deployment, and it does not have field UpdateStrategy
-func (spec *StarRocksFeProxySpec) GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy {
+func (spec *StarRocksFeProxySpec) GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy {
 	return nil
 }
 

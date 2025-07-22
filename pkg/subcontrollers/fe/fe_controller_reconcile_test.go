@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -137,7 +137,7 @@ func TestStarRocksClusterReconciler_FeReconcileSuccess(t *testing.T) {
 		},
 	}
 
-	sts := &appv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{
+	sts := &appsv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{
 		Name:      src.Name + "-" + srapi.DEFAULT_FE,
 		Namespace: "default",
 	}}

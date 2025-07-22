@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -60,22 +60,22 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	st := appv1.StatefulSet{
+	st := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       rutils.StatefulSetKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "default",
 		},
-		Spec: appv1.StatefulSetSpec{},
+		Spec: appsv1.StatefulSetSpec{},
 	}
 
 	svc := corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       rutils.ServiceKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-be-access",
@@ -97,7 +97,7 @@ func Test_ClearResources(t *testing.T) {
 	err := bc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
-	var est appv1.StatefulSet
+	var est appsv1.StatefulSet
 	err = bc.Client.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var aesvc corev1.Service
@@ -160,7 +160,7 @@ func Test_Sync(t *testing.T) {
 	beStatus := src.Status.StarRocksBeStatus
 	require.Equal(t, beStatus.Phase, srapi.ComponentReconciling)
 	require.Equal(t, nil, err)
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksBeSpec

@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-logr/logr"
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -34,7 +34,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, ali
 	feServicePort := ""
 	logger := logr.FromContextOrDiscard(ctx)
 
-	var sts appv1.StatefulSet
+	var sts appsv1.StatefulSet
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,

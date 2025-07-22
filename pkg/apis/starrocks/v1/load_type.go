@@ -1,7 +1,7 @@
 package v1
 
 import (
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -20,7 +20,7 @@ type loadInterface interface {
 	GetReadinessProbeFailureSeconds() *int32
 	GetLifecycle() *corev1.Lifecycle
 	GetService() *StarRocksService
-	GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy
+	GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy
 	GetShareProcessNamespace() *bool
 
 	GetStorageVolumes() []StorageVolume

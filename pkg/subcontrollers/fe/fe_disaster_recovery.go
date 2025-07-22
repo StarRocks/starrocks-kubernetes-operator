@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,7 +47,7 @@ func ShouldEnterDisasterRecoveryMode(drSpec *v1.DisasterRecovery,
 }
 
 func EnterDisasterRecoveryMode(ctx context.Context, k8sClient client.Client,
-	src *v1.StarRocksCluster, sts *appv1.StatefulSet, queryPort int32) error {
+	src *v1.StarRocksCluster, sts *appsv1.StatefulSet, queryPort int32) error {
 	feSpec := src.Spec.StarRocksFeSpec
 	drSpec := src.Spec.DisasterRecovery
 	drStatus := src.Status.DisasterRecoveryStatus
@@ -99,7 +99,7 @@ func hasClusterSnapshotConf(configMaps []v1.ConfigMapReference) bool {
 	return hasConf
 }
 
-func rewriteStatefulSetForDisasterRecovery(expectSts *appv1.StatefulSet, generation int64, queryPort int32) *appv1.StatefulSet {
+func rewriteStatefulSetForDisasterRecovery(expectSts *appsv1.StatefulSet, generation int64, queryPort int32) *appsv1.StatefulSet {
 	// set replicas to 1
 	expectSts.Spec.Replicas = func(i int32) *int32 { return &i }(1)
 

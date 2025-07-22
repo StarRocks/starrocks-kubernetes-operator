@@ -3,13 +3,13 @@ package v1
 import (
 	"testing"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestValidUpdateStrategy(t *testing.T) {
 	type args struct {
-		updateStrategy *appv1.StatefulSetUpdateStrategy
+		updateStrategy *appsv1.StatefulSetUpdateStrategy
 	}
 	tests := []struct {
 		name    string
@@ -19,8 +19,8 @@ func TestValidUpdateStrategy(t *testing.T) {
 		{
 			name: "Validating update strategy with valid max unavailable",
 			args: args{
-				updateStrategy: &appv1.StatefulSetUpdateStrategy{
-					RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+				updateStrategy: &appsv1.StatefulSetUpdateStrategy{
+					RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 						MaxUnavailable: func() *intstr.IntOrString {
 							i := intstr.FromInt(1)
 							return &i
@@ -33,8 +33,8 @@ func TestValidUpdateStrategy(t *testing.T) {
 		{
 			name: "Validating update strategy with max unavailable 0",
 			args: args{
-				updateStrategy: &appv1.StatefulSetUpdateStrategy{
-					RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+				updateStrategy: &appsv1.StatefulSetUpdateStrategy{
+					RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 						MaxUnavailable: func() *intstr.IntOrString {
 							i := intstr.FromInt(0)
 							return &i
@@ -47,8 +47,8 @@ func TestValidUpdateStrategy(t *testing.T) {
 		{
 			name: "Validating update strategy with max unavailable 0%",
 			args: args{
-				updateStrategy: &appv1.StatefulSetUpdateStrategy{
-					RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+				updateStrategy: &appsv1.StatefulSetUpdateStrategy{
+					RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 						MaxUnavailable: func() *intstr.IntOrString {
 							i := intstr.FromString("0%")
 							return &i

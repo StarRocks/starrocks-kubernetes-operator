@@ -15,7 +15,7 @@
 package deployment
 
 import (
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -24,9 +24,9 @@ import (
 )
 
 // MakeDeployment make deployment
-func MakeDeployment(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) *appv1.Deployment {
+func MakeDeployment(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemplateSpec corev1.PodTemplateSpec) *appsv1.Deployment {
 	or := metav1.NewControllerRef(cluster, cluster.GroupVersionKind())
-	deployment := &appv1.Deployment{
+	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            load.Name(cluster.Name, spec),
 			Namespace:       cluster.Namespace,
@@ -34,7 +34,7 @@ func MakeDeployment(cluster *v1.StarRocksCluster, spec v1.SpecInterface, podTemp
 			Annotations:     load.Annotations(),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},
-		Spec: appv1.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: spec.GetReplicas(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: load.Selector(cluster.Name, spec),

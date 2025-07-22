@@ -15,7 +15,7 @@
 package resource_utils
 
 import (
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -34,11 +34,11 @@ type hashStatefulsetObject struct {
 	serviceName          string
 	volumeClaimTemplates []corev1.PersistentVolumeClaim
 	replicas             int32
-	updateStrategy       appv1.StatefulSetUpdateStrategy
+	updateStrategy       appsv1.StatefulSetUpdateStrategy
 }
 
 // statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
-func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
+func statefulSetHashObject(sts *appsv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
 	// set -1 for the initial is zero.
 	replicas := int32(-1)
 	if !excludeReplica {
@@ -66,7 +66,7 @@ func statefulSetHashObject(sts *appv1.StatefulSet, excludeReplica bool) hashStat
 }
 
 // StatefulSetDeepEqual judge two statefulset equal or not.
-func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, excludeReplicas bool) bool {
+func StatefulSetDeepEqual(new *appsv1.StatefulSet, old *appsv1.StatefulSet, excludeReplicas bool) bool {
 	var newHashv, oldHashv string
 
 	newHso := statefulSetHashObject(new, excludeReplicas)
@@ -97,6 +97,6 @@ func StatefulSetDeepEqual(new *appv1.StatefulSet, old *appv1.StatefulSet, exclud
 }
 
 // MergeStatefulSets merge exist statefulset and new statefulset.
-func MergeStatefulSets(new *appv1.StatefulSet, old appv1.StatefulSet) {
+func MergeStatefulSets(new *appsv1.StatefulSet, old appsv1.StatefulSet) {
 	MergeMetadata(&new.ObjectMeta, old.ObjectMeta)
 }

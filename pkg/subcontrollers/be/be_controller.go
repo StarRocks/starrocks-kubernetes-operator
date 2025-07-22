@@ -21,7 +21,7 @@ import (
 	"strconv"
 
 	"github.com/go-logr/logr"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -121,7 +121,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	st := statefulset.MakeStatefulset(object.NewFromCluster(src), beSpec, podTemplateSpec)
 
 	// update the statefulset if feSpec be updated.
-	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
 		return rutils.StatefulSetDeepEqual(new, actual, false)
 	}); err != nil {
 		logger.Error(err, "apply statefulset failed")
@@ -167,7 +167,7 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 	}
 	src.Status.StarRocksBeStatus = bs
 
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	statefulSetName := load.Name(src.Name, beSpec)
 	if err := be.Client.Get(ctx,
 		types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); apierrors.IsNotFound(err) {

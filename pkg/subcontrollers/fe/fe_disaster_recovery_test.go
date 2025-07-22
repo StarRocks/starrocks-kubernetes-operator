@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -197,19 +197,19 @@ func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
 
 func TestRewriteStatefulSetForDisasterRecovery(t *testing.T) {
 	type args struct {
-		sts                *appv1.StatefulSet
+		sts                *appsv1.StatefulSet
 		observedGeneration int64
 	}
 	tests := []struct {
 		name string
 		args args
-		want *appv1.StatefulSet
+		want *appsv1.StatefulSet
 	}{
 		{
 			name: "test rewrite statefulset for disaster recovery",
 			args: args{
-				sts: &appv1.StatefulSet{
-					Spec: appv1.StatefulSetSpec{
+				sts: &appsv1.StatefulSet{
+					Spec: appsv1.StatefulSetSpec{
 						Template: corev1.PodTemplateSpec{
 							Spec: corev1.PodSpec{
 								Containers: []corev1.Container{
@@ -231,8 +231,8 @@ func TestRewriteStatefulSetForDisasterRecovery(t *testing.T) {
 				},
 				observedGeneration: 1,
 			},
-			want: &appv1.StatefulSet{
-				Spec: appv1.StatefulSetSpec{
+			want: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{
 					Replicas: func(i int32) *int32 { return &i }(1),
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{

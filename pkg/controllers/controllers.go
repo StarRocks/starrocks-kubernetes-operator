@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -44,8 +44,8 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// v2.HorizontalPodAutoscaler does not exist.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksCluster{}).
-		Owns(&appv1.StatefulSet{}).
-		Owns(&appv1.Deployment{}).
+		Owns(&appsv1.StatefulSet{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
@@ -87,7 +87,7 @@ func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error 
 	// v2.HorizontalPodAutoscaler does not exist.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksWarehouse{}).
-		Owns(&appv1.StatefulSet{}).
+		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
