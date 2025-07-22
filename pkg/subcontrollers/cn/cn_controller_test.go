@@ -21,7 +21,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,16 +59,16 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	st := appv1.StatefulSet{
+	st := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       rutils.StatefulSetKind,
-			APIVersion: appv1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-cn",
 			Namespace: "default",
 		},
-		Spec: appv1.StatefulSetSpec{},
+		Spec: appsv1.StatefulSetSpec{},
 	}
 
 	svc := corev1.Service{
@@ -88,7 +88,7 @@ func Test_ClearResources(t *testing.T) {
 	err := cc.ClearResources(context.Background(), &src)
 	require.Equal(t, nil, err)
 
-	var est appv1.StatefulSet
+	var est appsv1.StatefulSet
 	err = cc.k8sClient.Get(context.Background(), types.NamespacedName{Name: "test-cn", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 
@@ -141,7 +141,7 @@ func Test_SyncCluster(t *testing.T) {
 	ccStatus := src.Status.StarRocksCnStatus
 	require.Equal(t, srapi.ComponentReconciling, ccStatus.Phase)
 
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	cnSpec := src.Spec.StarRocksCnSpec
@@ -240,7 +240,7 @@ func Test_SyncWarehouse(t *testing.T) {
 	require.Equal(t, nil, err)
 	require.Equal(t, srapi.ComponentReconciling, warehouse.Status.Phase)
 
-	var sts appv1.StatefulSet
+	var sts appsv1.StatefulSet
 	var externalService corev1.Service
 	var searchService corev1.Service
 	object := object.NewFromWarehouse(warehouse)
@@ -289,17 +289,17 @@ func TestCnController_UpdateStatus(t *testing.T) {
 			name: "update the status of cluster",
 			fields: fields{
 				k8sClient: fake.NewFakeClient(srapi.Scheme,
-					&appv1.StatefulSet{
+					&appsv1.StatefulSet{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test-cn",
 							Namespace: "default",
 						},
-						Spec: appv1.StatefulSetSpec{
-							UpdateStrategy: appv1.StatefulSetUpdateStrategy{
-								Type: appv1.RollingUpdateStatefulSetStrategyType,
+						Spec: appsv1.StatefulSetSpec{
+							UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+								Type: appsv1.RollingUpdateStatefulSetStrategyType,
 							},
 						},
-						Status: appv1.StatefulSetStatus{
+						Status: appsv1.StatefulSetStatus{
 							ObservedGeneration: 1,
 						},
 					},

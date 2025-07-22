@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -207,7 +207,7 @@ func TestStarRocksClusterReconciler_CnResourceCreate(t *testing.T) {
 	require.Equal(t, reconcile.Result{}, res)
 
 	// check the statefulset is created
-	sts := appv1.StatefulSet{}
+	sts := appsv1.StatefulSet{}
 	client := r.Client
 	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: "default",

@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -128,7 +128,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode,
-		func(new *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+		func(new *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
 			return rutils.StatefulSetDeepEqual(new, actual, false)
 		},
 	); err != nil {
@@ -183,7 +183,7 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 		return err
 	}
 
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
 	}

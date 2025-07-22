@@ -27,7 +27,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,7 +45,7 @@ import (
 type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
-type StatefulSetEqual func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool
+type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
@@ -69,11 +69,11 @@ func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev
 	return k8sClient.Patch(ctx, expectSvc, client.Merge)
 }
 
-func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appv1.Deployment) error {
+func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appsv1.Deployment) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update deployment", "name", deploy.Name)
 
-	var actual appv1.Deployment
+	var actual appsv1.Deployment
 	err := k8sClient.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, &actual)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -140,12 +140,12 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
-func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv1.StatefulSet,
+func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appsv1.StatefulSet,
 	enableScaleTo1 bool, equal StatefulSetEqual) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update statefulset", "name", expect.Name)
 
-	var actual appv1.StatefulSet
+	var actual appsv1.StatefulSet
 	err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual)
 	if err != nil && apierrors.IsNotFound(err) {
 		return CreateClientObject(ctx, k8sClient, expect)
@@ -169,8 +169,8 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *appv
 
 	// for compatible version <= v1.5, before v1.5 we use order policy to deploy pods.
 	// and use `xx-domain-search` for internal service. we should exclude the interference.
-	if actual.Spec.PodManagementPolicy == appv1.OrderedReadyPodManagement {
-		expect.Spec.PodManagementPolicy = appv1.OrderedReadyPodManagement
+	if actual.Spec.PodManagementPolicy == appsv1.OrderedReadyPodManagement {
+		expect.Spec.PodManagementPolicy = appsv1.OrderedReadyPodManagement
 	}
 	expect.Spec.ServiceName = actual.Spec.ServiceName
 
@@ -202,7 +202,7 @@ func DeleteStatefulset(ctx context.Context, k8sClient client.Client, namespace, 
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("delete statefulset from kubernetes", "name", name)
 
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &st); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
@@ -232,7 +232,7 @@ func DeleteDeployment(ctx context.Context, k8sClient client.Client, namespace, n
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("delete deployment from kubernetes", "name", name)
 
-	var deploy appv1.Deployment
+	var deploy appsv1.Deployment
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &deploy); apierrors.IsNotFound(err) {
 		return nil
 	} else if err != nil {

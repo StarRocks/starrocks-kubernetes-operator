@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -100,7 +100,7 @@ type StarRocksComponentSpec struct {
 	// Note: The maxUnavailable field is in Alpha stage and it is honored only by API servers that are running with the
 	//       MaxUnavailableStatefulSet feature gate enabled.
 	// +optional
-	UpdateStrategy *appv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
+	UpdateStrategy *appsv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
 
 	// Whether this container has a read-only root filesystem.
 	// Default is false.
@@ -224,12 +224,12 @@ func (spec *StarRocksComponentSpec) GetSysctls() []corev1.Sysctl {
 	return spec.Sysctls
 }
 
-func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appv1.StatefulSetUpdateStrategy {
+func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy {
 	if spec.UpdateStrategy == nil {
 		const defaultRollingUpdateStartPod int32 = 0
-		return &appv1.StatefulSetUpdateStrategy{
-			Type: appv1.RollingUpdateStatefulSetStrategyType,
-			RollingUpdate: &appv1.RollingUpdateStatefulSetStrategy{
+		return &appsv1.StatefulSetUpdateStrategy{
+			Type: appsv1.RollingUpdateStatefulSetStrategyType,
+			RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 				Partition: func(v int32) *int32 { return &v }(defaultRollingUpdateStartPod),
 			},
 		}
@@ -237,9 +237,9 @@ func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appv1.StatefulSetUpdate
 	return spec.UpdateStrategy
 }
 
-func ValidUpdateStrategy(updateStrategy *appv1.StatefulSetUpdateStrategy) error {
+func ValidUpdateStrategy(updateStrategy *appsv1.StatefulSetUpdateStrategy) error {
 	if updateStrategy != nil {
-		if (updateStrategy.Type == "" || updateStrategy.Type == appv1.RollingUpdateStatefulSetStrategyType) &&
+		if (updateStrategy.Type == "" || updateStrategy.Type == appsv1.RollingUpdateStatefulSetStrategyType) &&
 			updateStrategy.RollingUpdate != nil {
 			rollingUpdate := updateStrategy.RollingUpdate
 			if rollingUpdate.MaxUnavailable != nil {

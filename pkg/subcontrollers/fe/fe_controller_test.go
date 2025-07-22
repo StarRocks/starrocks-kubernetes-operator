@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -106,7 +106,7 @@ func Test_ClearResources(t *testing.T) {
 	err := fc.ClearResources(context.Background(), src)
 	require.Equal(t, nil, err)
 
-	var est appv1.StatefulSet
+	var est appsv1.StatefulSet
 	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: "test", Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var aesvc corev1.Service
@@ -159,7 +159,7 @@ func Test_SyncDeploy(t *testing.T) {
 	require.Equal(t, festatus.Phase, srapi.ComponentReconciling)
 	require.Equal(t, festatus.ServiceName, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec))
 
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
 	spec := src.Spec.StarRocksFeSpec

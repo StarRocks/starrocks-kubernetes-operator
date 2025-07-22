@@ -17,7 +17,7 @@ package statefulset
 import (
 	"strings"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,9 +62,9 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 }
 
 // MakeStatefulset make statefulset
-func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appv1.StatefulSet {
+func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appsv1.StatefulSet {
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
-	expectSts := appv1.StatefulSet{
+	expectSts := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            load.Name(object.AliasName, spec),
 			Namespace:       object.Namespace,
@@ -72,7 +72,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			Labels:          load.Labels(object.AliasName, spec),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},
-		Spec: appv1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: spec.GetReplicas(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: load.Selector(object.AliasName, spec),
@@ -81,7 +81,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			Template:             *podTemplateSpec,
 			ServiceName:          service.SearchServiceName(object.AliasName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
-			PodManagementPolicy:  appv1.ParallelPodManagement,
+			PodManagementPolicy:  appsv1.ParallelPodManagement,
 		},
 	}
 

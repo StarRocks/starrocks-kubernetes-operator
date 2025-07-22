@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -174,7 +174,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	sts := statefulset.MakeStatefulset(object, cnSpec, podTemplateSpec)
 	if err = k8sutils.ApplyStatefulSet(ctx, cc.k8sClient, &sts, true,
-		func(expect *appv1.StatefulSet, actual *appv1.StatefulSet) bool {
+		func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool {
 			if expect.Spec.Replicas == nil {
 				return rutils.StatefulSetDeepEqual(expect, actual, true)
 			} else {
@@ -261,7 +261,7 @@ func (cc *CnController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 
 func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
-	var st appv1.StatefulSet
+	var st appsv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
 	statefulSetName := load.Name(object.AliasName, cnSpec)
@@ -311,7 +311,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 	}
 
 	// Remove the finalizer from cn statefulset
-	var sts appv1.StatefulSet
+	var sts appsv1.StatefulSet
 	if err = cc.k8sClient.Get(ctx,
 		types.NamespacedName{
 			Namespace: namespace,
@@ -331,7 +331,7 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, na
 
 // Deploy autoscaler
 func (cc *CnController) deployAutoScaler(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
-	policy srapi.AutoScalingPolicy, target *appv1.StatefulSet) error {
+	policy srapi.AutoScalingPolicy, target *appsv1.StatefulSet) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update k8s hpa resource")
 

@@ -3,14 +3,14 @@ package resource_utils
 import (
 	"testing"
 
-	appv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestStatefulSetDeepEqual(t *testing.T) {
 	type args struct {
-		new             *appv1.StatefulSet
-		old             *appv1.StatefulSet
+		new             *appsv1.StatefulSet
+		old             *appsv1.StatefulSet
 		excludeReplicas bool
 	}
 	tests := []struct {
@@ -21,12 +21,12 @@ func TestStatefulSetDeepEqual(t *testing.T) {
 		{
 			name: "equal",
 			args: args{
-				new: &appv1.StatefulSet{
+				new: &appsv1.StatefulSet{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "test",
 					},
 				},
-				old: &appv1.StatefulSet{
+				old: &appsv1.StatefulSet{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "test",
 					},
@@ -37,12 +37,12 @@ func TestStatefulSetDeepEqual(t *testing.T) {
 		{
 			name: "not equal because of finalizer",
 			args: args{
-				new: &appv1.StatefulSet{
+				new: &appsv1.StatefulSet{
 					ObjectMeta: metav1.ObjectMeta{
 						Finalizers: []string{"test"},
 					},
 				},
-				old: &appv1.StatefulSet{},
+				old: &appsv1.StatefulSet{},
 			},
 			want: false,
 		},
