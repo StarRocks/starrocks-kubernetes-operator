@@ -216,6 +216,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
+	// only take effect for shared-data mode
+	if !fe.IsRunInSharedDataMode(feconfig) {
+		return nil
+	}
+
 	// get actual statefulset object
 	var actualSTS appsv1.StatefulSet
 	namespacedName := types.NamespacedName{
@@ -574,9 +579,9 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		return ErrReplicasNotEqual
 	}
 	const controllerRevisionHashKey = "controller-revision-hash"
-	for _, pod := range actualCNPods.Items {
-		if pod.Labels[controllerRevisionHashKey] == "" ||
-			pod.Labels[controllerRevisionHashKey] != actualSTS.Status.UpdateRevision {
+	for _, item := range actualCNPods.Items {
+		if item.Labels[controllerRevisionHashKey] == "" ||
+			item.Labels[controllerRevisionHashKey] != actualSTS.Status.UpdateRevision {
 			logger.Info("there is old pod, continue to wait for the statefulset to be ready")
 			return ErrHashValueNotEqual
 		}
