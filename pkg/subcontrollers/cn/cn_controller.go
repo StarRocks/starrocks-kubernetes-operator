@@ -141,6 +141,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	return err
 }
 
+//nolint:gocyclo
 func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
 	logger := logr.FromContextOrDiscard(ctx)
@@ -366,7 +367,8 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, wa
 }
 
 // Deploy autoscaler
-func (cc *CnController) deployAutoScaler(ctx context.Context, object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec, policy srapi.AutoScalingPolicy) error {
+func (cc *CnController) deployAutoScaler(ctx context.Context,
+	object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec, policy srapi.AutoScalingPolicy) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update k8s hpa resource")
 
@@ -487,7 +489,7 @@ func (cc *CnController) getFeConfig(ctx context.Context,
 	return fe.GetFEConfig(ctx, cc.k8sClient, src.Spec.StarRocksFeSpec, src.Namespace)
 }
 
-func (cc *CnController) mutating(cnSpec *srapi.StarRocksCnSpec) error {
+func (cc *CnController) mutating(_ *srapi.StarRocksCnSpec) error {
 	return nil
 }
 

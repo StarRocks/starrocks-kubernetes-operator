@@ -487,7 +487,7 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 }
 
 func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
-	labels := Labels{}
+	labels := map[string]string{}
 	labels["cluster"] = _defaultName
 	labels["namespace"] = _defaultNamespace
 

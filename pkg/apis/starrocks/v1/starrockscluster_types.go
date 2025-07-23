@@ -355,6 +355,8 @@ type HorizontalScaler struct {
 	Version AutoScalerVersion `json:"version,omitempty"`
 }
 
+//nolint:lll
+//nolint:goimports
 // StarRocksCluster defines a starrocks cluster deployment.
 // +kubebuilder:object:root=true
 // +kubebuilder:metadata:annotations="version=v1.10.2"
