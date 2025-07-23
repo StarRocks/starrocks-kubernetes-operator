@@ -2722,7 +2722,7 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          Annotations store Kubernetes Service annotations. These will be added to the external service
+                          Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
                       labels:
@@ -7725,7 +7725,7 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          Annotations store Kubernetes Service annotations. These will be added to the external service
+                          Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
                       labels:
@@ -10581,7 +10581,7 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          Annotations store Kubernetes Service annotations. These will be added to the external service
+                          Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
                       labels:
@@ -13614,7 +13614,7 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          Annotations store Kubernetes Service annotations. These will be added to the external service
+                          Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
                       labels:

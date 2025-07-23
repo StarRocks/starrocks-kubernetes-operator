@@ -1,34 +1,65 @@
 package v1
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
+// loadInterface represents a contract for managing workload specifications in StarRocks applications.
+// It defines methods to retrieve configuration details like replicas, storage volumes, affinity, probes, and services.
 type loadInterface interface {
+	// GetAnnotations returns a map of annotations to be added to the workload
 	GetAnnotations() map[string]string
 
+	// GetReplicas returns the desired number of replicas for the workload
 	GetReplicas() *int32
+
+	// GetImagePullSecrets returns a list of secrets used for pulling container images
 	GetImagePullSecrets() []corev1.LocalObjectReference
+
+	// GetSchedulerName returns the name of the scheduler to use for pod scheduling
 	GetSchedulerName() string
+
+	// GetNodeSelector returns a map of node selectors for pod scheduling
 	GetNodeSelector() map[string]string
+
+	// GetAffinity returns affinity rules for pod scheduling
 	GetAffinity() *corev1.Affinity
+
+	// GetTopologySpreadConstraints returns topology spread constraints for pod scheduling
 	GetTopologySpreadConstraints() []corev1.TopologySpreadConstraint
+
+	// GetTolerations returns tolerations for pod scheduling
 	GetTolerations() []corev1.Toleration
+
+	// GetStartupProbeFailureSeconds returns the total failure seconds for startup probe
 	GetStartupProbeFailureSeconds() *int32
+
+	// GetLivenessProbeFailureSeconds returns the total failure seconds for liveness probe
 	GetLivenessProbeFailureSeconds() *int32
+
+	// GetReadinessProbeFailureSeconds returns the total failure seconds for readiness probe
 	GetReadinessProbeFailureSeconds() *int32
+
+	// GetLifecycle returns the lifecycle hooks for the container
 	GetLifecycle() *corev1.Lifecycle
+
+	// GetService returns the service configuration
 	GetService() *StarRocksService
-	GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy
+
+	// GetShareProcessNamespace returns whether to share process namespace between containers
 	GetShareProcessNamespace() *bool
 
+	// GetStorageVolumes returns the storage volume configurations
 	GetStorageVolumes() []StorageVolume
+
+	// GetServiceAccount returns the service account to use
 	GetServiceAccount() string
+
+	// GetImagePullPolicy returns the image pull policy for containers
 	GetImagePullPolicy() corev1.PullPolicy
-	GetCommand() []string
-	GetArgs() []string
 }
+
+var _ loadInterface = &StarRocksLoadSpec{}
 
 type StarRocksLoadSpec struct {
 	// defines the specification of resource cpu and mem.
@@ -173,7 +204,7 @@ type StarRocksLoadSpec struct {
 
 // StarRocksService defines external service for starrocks component.
 type StarRocksService struct {
-	// Annotations store Kubernetes Service annotations. These will be added to the external service
+	// Annotations' store Kubernetes Service annotations. These will be added to the external service
 	// only (not internal).
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`

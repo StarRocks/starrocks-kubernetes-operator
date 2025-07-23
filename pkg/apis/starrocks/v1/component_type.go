@@ -25,6 +25,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var _ SpecInterface = &StarRocksComponentSpec{}
+
+// StarRocksComponentSpec defines the shared specification for all StarRocks components except FE Proxy
 type StarRocksComponentSpec struct {
 	StarRocksLoadSpec `json:",inline"`
 
