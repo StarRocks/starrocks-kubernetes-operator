@@ -201,6 +201,12 @@ type StarRocksCnStatus struct {
 
 	// HorizontalAutoscaler have the autoscaler information.
 	HorizontalScaler HorizontalScaler `json:"horizontalScaler,omitempty"`
+
+	// Replicas is the total number of non-terminated CN pods targeted.
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// Selector for CN pods. The HPA will use this selector to know which pods to monitor.
+	Selector string `json:"selector,omitempty"`
 }
 
 func (spec *StarRocksFeSpec) GetReplicas() *int32 {
@@ -355,6 +361,7 @@ type HorizontalScaler struct {
 // +kubebuilder:resource:shortName=src
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.starRocksCnSpec.replicas,statuspath=.status.starRocksCnStatus.replicas,selectorpath=.status.starRocksCnStatus.selector
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="FeStatus",type=string,JSONPath=`.status.starRocksFeStatus.phase`
 // +kubebuilder:printcolumn:name="BeStatus",type=string,JSONPath=`.status.starRocksBeStatus.phase`
@@ -363,6 +370,8 @@ type HorizontalScaler struct {
 // +kubebuilder:storageversion
 // +k8s:openapi-gen=true
 // +genclient
+//
+//nolint:lll
 type StarRocksCluster struct {
 	metav1.TypeMeta `json:",inline"`
 	// +k8s:openapi-gen=false

@@ -19,7 +19,6 @@ package resource_utils
 import (
 	"unsafe"
 
-	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/api/autoscaling/v2beta2"
@@ -31,24 +30,40 @@ import (
 )
 
 var (
-	AutoscalerKind  = "HorizontalPodAutoscaler"
-	StatefulSetKind = "StatefulSet"
-	ServiceKind     = "Service"
+	AutoscalerKind         = "HorizontalPodAutoscaler"
+	StatefulSetKind        = "StatefulSet"
+	StarRocksClusterKind   = "StarRocksCluster"
+	StarRocksWarehouseKind = "StarRocksWarehouse"
+	ServiceKind            = "Service"
 )
 
-type PodAutoscalerParams struct {
-	AutoscalerType  srapi.AutoScalerVersion
-	Namespace       string
-	Name            string
-	Labels          map[string]string
-	TargetName      string
+// HPAParams defines the parameters for creating a HorizontalPodAutoscaler resource.
+type HPAParams struct {
+	// Version defines the version of HPA to be used.
+	Version srapi.AutoScalerVersion
+
+	// Name is the name of the HorizontalPodAutoscaler resource.
+	Name string
+
+	// Namespace is the namespace where the HorizontalPodAutoscaler resource will be created.
+	// It will be in the same namespace as the target resource.
+	Namespace string
+
+	// Labels are the labels to be applied to the HorizontalPodAutoscaler resource.
+	// Now there are two labels: app.kubernetes.io/component: autoscaler and app.starrocks.ownerreference/name: <target-name>.
+	Labels map[string]string
+
+	// OwnerReferences includes only one OwnerReference, which is the StarRocksCluster or StarRocksWarehouse object that
+	// this HPA belongs to.
 	OwnerReferences []metav1.OwnerReference
-	ScalerPolicy    *srapi.AutoScalingPolicy
+
+	// ScalerPolicy defines the scaling policy for the HorizontalPodAutoscaler.
+	ScalerPolicy *srapi.AutoScalingPolicy
 }
 
-func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams, autoScalerVersion srapi.AutoScalerVersion) client.Object {
+func BuildHPA(hpaParams *HPAParams, autoScalerVersion srapi.AutoScalerVersion) client.Object {
 	if autoScalerVersion == "" {
-		autoScalerVersion = pap.AutoscalerType.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
+		autoScalerVersion = hpaParams.Version.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
 	}
 
 	getTypeMeta := func(version srapi.AutoScalerVersion) metav1.TypeMeta {
@@ -66,66 +81,66 @@ func BuildHorizontalPodAutoscaler(pap *PodAutoscalerParams, autoScalerVersion sr
 		return meta
 	}
 
-	getObjectMeta := func(pap *PodAutoscalerParams) metav1.ObjectMeta {
+	getObjectMeta := func(hpaParams *HPAParams) metav1.ObjectMeta {
 		return metav1.ObjectMeta{
-			Name:            pap.Name,
-			Namespace:       pap.Namespace,
-			Labels:          pap.Labels,
-			OwnerReferences: pap.OwnerReferences,
+			Name:            hpaParams.Name,
+			Namespace:       hpaParams.Namespace,
+			Labels:          hpaParams.Labels,
+			OwnerReferences: hpaParams.OwnerReferences,
 		}
 	}
 
 	scaleTargetRef := &v1.CrossVersionObjectReference{
-		Name:       pap.TargetName,
-		Kind:       StatefulSetKind,
-		APIVersion: appv1.SchemeGroupVersion.String(),
+		Name:       hpaParams.OwnerReferences[0].Name,
+		Kind:       hpaParams.OwnerReferences[0].Kind,
+		APIVersion: hpaParams.OwnerReferences[0].APIVersion,
 	}
 
 	switch autoScalerVersion {
 	case srapi.AutoScalerV1:
 		return &v1.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
-			ObjectMeta: getObjectMeta(pap),
+			ObjectMeta: getObjectMeta(hpaParams),
 			Spec: v1.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: *(scaleTargetRef),
-				MaxReplicas:    pap.ScalerPolicy.MaxReplicas,
-				MinReplicas:    pap.ScalerPolicy.MinReplicas,
+				MaxReplicas:    hpaParams.ScalerPolicy.MaxReplicas,
+				MinReplicas:    hpaParams.ScalerPolicy.MinReplicas,
 			},
 		}
 	case srapi.AutoScalerV2:
 		hpa := &v2.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
-			ObjectMeta: getObjectMeta(pap),
+			ObjectMeta: getObjectMeta(hpaParams),
 			Spec: v2.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: *((*v2.CrossVersionObjectReference)(unsafe.Pointer(scaleTargetRef))),
-				MaxReplicas:    pap.ScalerPolicy.MaxReplicas,
-				MinReplicas:    pap.ScalerPolicy.MinReplicas,
+				MaxReplicas:    hpaParams.ScalerPolicy.MaxReplicas,
+				MinReplicas:    hpaParams.ScalerPolicy.MinReplicas,
 			},
 		}
 		// the codes use unsafe.Pointer to convert struct, when audit please notice the correctness about memory assign.
-		if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
-			if len(pap.ScalerPolicy.HPAPolicy.Metrics) != 0 {
-				metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&pap.ScalerPolicy.HPAPolicy.Metrics[0])),
-					len(pap.ScalerPolicy.HPAPolicy.Metrics))
+		if hpaParams.ScalerPolicy != nil && hpaParams.ScalerPolicy.HPAPolicy != nil {
+			if len(hpaParams.ScalerPolicy.HPAPolicy.Metrics) != 0 {
+				metrics := unsafe.Slice((*v2.MetricSpec)(unsafe.Pointer(&hpaParams.ScalerPolicy.HPAPolicy.Metrics[0])),
+					len(hpaParams.ScalerPolicy.HPAPolicy.Metrics))
 				hpa.Spec.Metrics = metrics
 			}
-			hpa.Spec.Behavior = (*v2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(pap.ScalerPolicy.HPAPolicy.Behavior))
+			hpa.Spec.Behavior = (*v2.HorizontalPodAutoscalerBehavior)(unsafe.Pointer(hpaParams.ScalerPolicy.HPAPolicy.Behavior))
 		}
 		return hpa
 	default:
 		// case srapi.AutoScalerV2Beta2:
 		hpa := &v2beta2.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
-			ObjectMeta: getObjectMeta(pap),
+			ObjectMeta: getObjectMeta(hpaParams),
 			Spec: v2beta2.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: *((*v2beta2.CrossVersionObjectReference)(unsafe.Pointer(scaleTargetRef))),
-				MaxReplicas:    pap.ScalerPolicy.MaxReplicas,
-				MinReplicas:    pap.ScalerPolicy.MinReplicas,
+				MaxReplicas:    hpaParams.ScalerPolicy.MaxReplicas,
+				MinReplicas:    hpaParams.ScalerPolicy.MinReplicas,
 			},
 		}
-		if pap.ScalerPolicy != nil && pap.ScalerPolicy.HPAPolicy != nil {
-			hpa.Spec.Metrics = pap.ScalerPolicy.HPAPolicy.Metrics
-			hpa.Spec.Behavior = pap.ScalerPolicy.HPAPolicy.Behavior
+		if hpaParams.ScalerPolicy != nil && hpaParams.ScalerPolicy.HPAPolicy != nil {
+			hpa.Spec.Metrics = hpaParams.ScalerPolicy.HPAPolicy.Metrics
+			hpa.Spec.Behavior = hpaParams.ScalerPolicy.HPAPolicy.Behavior
 		}
 		return hpa
 	}
