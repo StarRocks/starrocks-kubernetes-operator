@@ -19,7 +19,6 @@ import (
 	"testing"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
 func TestMakeName(t *testing.T) {
@@ -74,7 +73,7 @@ func TestMakeLabels(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want resource_utils.Labels
+		want map[string]string
 	}{
 		{
 			name: "test Labels for Be",
@@ -82,7 +81,7 @@ func TestMakeLabels(t *testing.T) {
 				ownerReference: "test",
 				spec:           &v1.StarRocksBeSpec{},
 			},
-			want: resource_utils.Labels{
+			want: map[string]string{
 				v1.OwnerReference:    "test",
 				v1.ComponentLabelKey: "be",
 			},
@@ -93,7 +92,7 @@ func TestMakeLabels(t *testing.T) {
 				ownerReference: "test",
 				spec:           &v1.StarRocksCnSpec{},
 			},
-			want: resource_utils.Labels{
+			want: map[string]string{
 				v1.OwnerReference:    "test",
 				v1.ComponentLabelKey: "cn",
 			},
@@ -104,7 +103,7 @@ func TestMakeLabels(t *testing.T) {
 				ownerReference: "test",
 				spec:           &v1.StarRocksFeSpec{},
 			},
-			want: resource_utils.Labels{
+			want: map[string]string{
 				v1.OwnerReference:    "test",
 				v1.ComponentLabelKey: "fe",
 			},

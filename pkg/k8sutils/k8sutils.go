@@ -45,7 +45,7 @@ import (
 type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
-type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) bool
+type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool)
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
@@ -174,10 +174,12 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	}
 	expect.Spec.ServiceName = actual.Spec.ServiceName
 
-	if equal(expect, &actual) {
+	newHashValue, b := equal(expect, &actual)
+	if b {
 		logger.Info("expectHash == actualHash, no need to update statefulset resource")
 		return nil
 	}
+	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
 
 	expect.ResourceVersion = actual.ResourceVersion
 	return k8sClient.Patch(ctx, expect, client.Merge)

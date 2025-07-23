@@ -57,23 +57,29 @@ func LifeCycle(lifeCycle *corev1.Lifecycle, preStopScriptPath string) *corev1.Li
 }
 
 func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
+	addLabels := func(labels map[string]string, additionalLabels map[string]string) {
+		for k, v := range additionalLabels {
+			labels[k] = v
+		}
+	}
 	labels := load.Selector(clusterName, spec)
+
 	switch v := spec.(type) {
 	case *v1.StarRocksBeSpec:
 		if v != nil {
-			labels.AddLabel(v.PodLabels)
+			addLabels(labels, v.PodLabels)
 		}
 	case *v1.StarRocksCnSpec:
 		if v != nil {
-			labels.AddLabel(v.PodLabels)
+			addLabels(labels, v.PodLabels)
 		}
 	case *v1.StarRocksFeSpec:
 		if v != nil {
-			labels.AddLabel(v.PodLabels)
+			addLabels(labels, v.PodLabels)
 		}
 	case *v1.StarRocksFeProxySpec:
 		if v != nil {
-			labels.AddLabel(v.PodLabels)
+			addLabels(labels, v.PodLabels)
 		}
 	}
 	return labels

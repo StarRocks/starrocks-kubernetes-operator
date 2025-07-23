@@ -38,14 +38,13 @@ type hashStatefulsetObject struct {
 }
 
 // statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
-func statefulSetHashObject(sts *appsv1.StatefulSet, excludeReplica bool) hashStatefulsetObject {
+func statefulSetHashObject(sts *appsv1.StatefulSet) hashStatefulsetObject {
 	// set -1 for the initial is zero.
 	replicas := int32(-1)
-	if !excludeReplica {
-		if sts.Spec.Replicas != nil {
-			replicas = *sts.Spec.Replicas
-		}
+	if sts.Spec.Replicas != nil {
+		replicas = *sts.Spec.Replicas
 	}
+
 	selector := metav1.LabelSelector{}
 	if sts.Spec.Selector != nil {
 		selector = *sts.Spec.Selector
@@ -65,13 +64,14 @@ func statefulSetHashObject(sts *appsv1.StatefulSet, excludeReplica bool) hashSta
 	}
 }
 
-// StatefulSetDeepEqual judge two statefulset equal or not.
-func StatefulSetDeepEqual(new *appsv1.StatefulSet, old *appsv1.StatefulSet, excludeReplicas bool) bool {
+// StatefulSetDeepEqual judge two statefulset equal or not, and it will not change the statefulset instance.
+// This function will always return new hash value of the expected statefulset
+func StatefulSetDeepEqual(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool) {
 	var newHashv, oldHashv string
 
-	newHso := statefulSetHashObject(new, excludeReplicas)
-	if _, ok := new.Annotations[srapi.ComponentResourceHash]; ok {
-		newHashv = new.Annotations[srapi.ComponentResourceHash]
+	newHso := statefulSetHashObject(expect)
+	if _, ok := expect.Annotations[srapi.ComponentResourceHash]; ok {
+		newHashv = expect.Annotations[srapi.ComponentResourceHash]
 	} else {
 		newHashv = hash.HashObject(newHso)
 	}
@@ -79,21 +79,14 @@ func StatefulSetDeepEqual(new *appsv1.StatefulSet, old *appsv1.StatefulSet, excl
 	// the hash value calculated from statefulset instance in k8s may will never equal to the hash value from
 	// starrocks cluster. Because statefulset may be updated by k8s controller manager.
 	// Every time you update the statefulset, a new reconcile will be triggered.
-	if _, ok := old.Annotations[srapi.ComponentResourceHash]; ok {
-		oldHashv = old.Annotations[srapi.ComponentResourceHash]
+	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
+		oldHashv = actual.Annotations[srapi.ComponentResourceHash]
 	} else {
-		oldHso := statefulSetHashObject(old, excludeReplicas)
+		oldHso := statefulSetHashObject(actual)
 		oldHashv = hash.HashObject(oldHso)
 	}
 
-	anno := Annotations{}
-	anno.AddAnnotation(new.Annotations)
-	anno.Add(srapi.ComponentResourceHash, newHashv)
-	new.Annotations = anno
-
-	// avoid the update from kubectl.
-	return newHashv == oldHashv &&
-		new.Namespace == old.Namespace
+	return newHashv, newHashv == oldHashv && expect.Namespace == actual.Namespace
 }
 
 // MergeStatefulSets merge exist statefulset and new statefulset.

@@ -16,7 +16,6 @@ package load
 
 import (
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 )
 
 func Name(clusterName string, spec v1.SpecInterface) string {
@@ -33,8 +32,8 @@ func Name(clusterName string, spec v1.SpecInterface) string {
 	return ""
 }
 
-func Labels(ownerReference string, spec v1.SpecInterface) rutils.Labels {
-	labels := rutils.Labels{}
+func Labels(ownerReference string, spec v1.SpecInterface) map[string]string {
+	labels := map[string]string{}
 	labels[v1.OwnerReference] = ownerReference
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
