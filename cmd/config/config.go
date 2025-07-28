@@ -8,9 +8,6 @@ var (
 
 	// VolumeNameWithHash decides whether adding a hash to the volume name
 	VolumeNameWithHash bool
-
-	// EnablePVCRetentionPolicy decides whether supporting the persistentVolumeClaimRetentionPolicy field in Statefulset
-	EnablePVCRetentionPolicy bool
 )
 
 func GetServiceDomainSuffix() string {

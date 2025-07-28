@@ -105,6 +105,3 @@ starrocksOperator:
   # If users plan to use a sidecar or init container to mount the same volume, it will be challenging to get the volume name.
   # In this situation, you can set this value to false.
   volumeNameWithHash: true
-  #	enablePVCRetentionPolicy decides whether supporting the persistentVolumeClaimRetentionPolicy field in Statefulset.
-  enablePVCRetentionPolicy: false
-

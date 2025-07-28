@@ -22,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
@@ -92,25 +91,23 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 		expectSTS.Finalizers = append(expectSTS.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
 	}
 
-	if config.EnablePVCRetentionPolicy {
-		switch v := spec.(type) {
-		case *v1.StarRocksFeSpec:
-			if v.PersistentVolumeClaimRetentionPolicy != nil {
-				expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
-					WhenScaled:  "",
-					WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
-				}
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		if v.PersistentVolumeClaimRetentionPolicy != nil {
+			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenScaled:  "",
+				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
 			}
-		case *v1.StarRocksBeSpec:
-			if v.PersistentVolumeClaimRetentionPolicy != nil {
-				expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
-					WhenScaled:  "",
-					WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
-				}
-			}
-		case *v1.StarRocksCnSpec:
-			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = v.PersistentVolumeClaimRetentionPolicy
 		}
+	case *v1.StarRocksBeSpec:
+		if v.PersistentVolumeClaimRetentionPolicy != nil {
+			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenScaled:  "",
+				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
+			}
+		}
+	case *v1.StarRocksCnSpec:
+		expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = v.PersistentVolumeClaimRetentionPolicy
 	}
 
 	return expectSTS

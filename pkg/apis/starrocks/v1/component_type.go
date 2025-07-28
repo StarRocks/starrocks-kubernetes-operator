@@ -121,7 +121,6 @@ type StarRocksComponentSpec struct {
 	// PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
 	// The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
 	// The WhenScaled field is only supported for the CN component.
-	// Note: you need to add the --enable-pvc-retention-policy parameter for the operator to explicitly enable this feature.
 	//nolint:lll
 	PersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"persistentVolumeClaimRetentionPolicy,omitempty"`
 }
