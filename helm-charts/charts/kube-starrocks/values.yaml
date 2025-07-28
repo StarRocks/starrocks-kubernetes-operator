@@ -11,30 +11,30 @@ operator:
   
   global:
     rbac:
-      # if set true, the clusterrole, clusterrolebinding, serviceaccount resources will be created for
-      # operator. If changed to false later, these resources will be deleted.
+      # If set true, the clusterrole, clusterrolebinding, serviceaccount resources will be created for
+      # the operator. If changed to false later, these resources will be deleted.
       # Note: By default the operator will watch all namespaces, so it needs clusterrole, clusterrolebinding to access resources.
       #       If .Values.starrocksOperator.watchNamespace is set, the role and rolebinding will be created for the specified namespace.
       create: true
       serviceAccount:
         name: "starrocks"
-        # Optional annotations to add to serviceaccount manifest
+        # Optional annotations to add to the serviceaccount manifest
         annotations: {}
-        # Optional labels to add to serviceaccount manifest
+        # Optional labels to add to the serviceaccount manifest
         labels: {}
   
   # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
   timeZone: Asia/Shanghai
   
-  # set the nameOverride values for creating the same resources with parent chart.
+  # Set the nameOverride values for creating the same resources with the parent chart.
   # In version v1.7.1 or before, there is only one chart called kube-starrocks, and the chart name is the prefix
   # of some resources created by the chart.
   # In version v1.8.0, the kube-starrocks chart is split into two charts, and to keep backward compatibility, the
-  # nameOverride is used to set the prefix of the resources created by operator chart.
+  # nameOverride is used to set the prefix of the resources created by the operator chart.
   nameOverride: "kube-starrocks"
   
   starrocksOperator:
-    # If enabled, the operator releated resources will be created, including the operator deployment, service account,
+    # If enabled, the operator-related resources will be created, including the operator deployment, service account,
     # clusterrole, clusterrolebinding, and service account.
     enabled: true
     # annotations for starrocks operator.
@@ -54,7 +54,7 @@ operator:
         cpu: 500m
         memory: 400Mi
     # By default, the operator will only set runAsNonRoot to true, allowPrivilegeEscalation to false, readOnlyRootFilesystem to true.
-    # You can customize the securityContext for operator pod, e.g. drop capabilities, seccompProfile, etc.
+    # You can customize the securityContext for operator pod, e.g., drop capabilities, seccompProfile, etc.
     securityContext:
       runAsNonRoot: true
       allowPrivilegeEscalation: false
@@ -87,9 +87,9 @@ operator:
       #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
     # If specified, it will restrict operator to watch resources in the specified namespace. And
     #  1. You must deploy your StarRocks cluster to the specified namespace.
-    #  2. You can not assign multiple namespaces to watchNamespace field.
+    #  2. You cannot assign multiple namespaces to watchNamespace field.
     # Note: In most cases, you should not set this value. If your kubernetes cluster manages too many nodes, and
-    # operator watching all namespaces use too many memory resources, you can set this value.
+    # the operator watching all namespaces uses too many memory resources, you can set this value.
     # Defaults to all namespaces.
     watchNamespace: ""
     # Additional operator container environment variables
@@ -104,15 +104,14 @@ operator:
       - --zap-encoder=console
       # if you want open debug log, open this option
       # - --zap-log-level 4
-    # Operator need to specify the FQDN in nginx.conf when it set up fe-proxy service.
+    # Operator needs to specify the FQDN in nginx.conf when it set up fe-proxy service.
     # By default, Operator will use cluster.local as the dnsDomainSuffix.
     # If you set up a kubernetes cluster with a different dnsDomainSuffix, you need to set this value.
     dnsDomainSuffix: ""
     # By default, the volume name of secret and configmap created by operator for the FE/BE/CN pods has a hash suffix.
-    # If users plan to use a sidecar or init container to mount the same volume, it will be difficult to get the volume name.
+    # If users plan to use a sidecar or init container to mount the same volume, it will be challenging to get the volume name.
     # In this situation, you can set this value to false.
     volumeNameWithHash: true
-  
 
 starrocks:
   # set the nameOverride values for creating the same resources with the parent chart.
@@ -501,6 +500,11 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
     # the config for start fe. the base information as follows.
     config: |
       LOG_DIR = ${STARROCKS_HOME}/log
@@ -854,6 +858,12 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
+      # whenScaled: Delete
     # the config start for cn, the base information as follows.
     # From StarRocks 3.1, the official documentation uses:
     #   1. be_port instead of thrift_port, but the thrift_port is still supported.
@@ -1169,6 +1179,11 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
     # the config for start be. The base information is as follows.
     # From StarRocks 3.1, the official documentation uses:
     #   1. be_http_port instead of webserver_port, but the webserver_port is still supported.

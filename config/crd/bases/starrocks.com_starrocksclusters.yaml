@@ -2629,6 +2629,28 @@ spec:
                     description: (Optional) If specified, the pod's nodeSelector，displayName="Map
                       of nodeSelectors to match when scheduling pods on nodes"
                     type: object
+                  persistentVolumeClaimRetentionPolicy:
+                    description: |-
+                      PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+                      The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+                      The WhenScaled field is only supported for the CN component.
+                    properties:
+                      whenDeleted:
+                        description: |-
+                          WhenDeleted specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is deleted. The default policy
+                          of `Retain` causes PVCs to not be affected by StatefulSet deletion. The
+                          `Delete` policy causes those PVCs to be deleted.
+                        type: string
+                      whenScaled:
+                        description: |-
+                          WhenScaled specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is scaled down. The default
+                          policy of `Retain` causes PVCs to not be affected by a scaledown. The
+                          `Delete` policy causes the associated PVCs for any excess pods above
+                          the replica count to be deleted.
+                        type: string
+                    type: object
                   podLabels:
                     additionalProperties:
                       type: string
@@ -7631,6 +7653,28 @@ spec:
                       type: string
                     description: (Optional) If specified, the pod's nodeSelector，displayName="Map
                       of nodeSelectors to match when scheduling pods on nodes"
+                    type: object
+                  persistentVolumeClaimRetentionPolicy:
+                    description: |-
+                      PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+                      The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+                      The WhenScaled field is only supported for the CN component.
+                    properties:
+                      whenDeleted:
+                        description: |-
+                          WhenDeleted specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is deleted. The default policy
+                          of `Retain` causes PVCs to not be affected by StatefulSet deletion. The
+                          `Delete` policy causes those PVCs to be deleted.
+                        type: string
+                      whenScaled:
+                        description: |-
+                          WhenScaled specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is scaled down. The default
+                          policy of `Retain` causes PVCs to not be affected by a scaledown. The
+                          `Delete` policy causes the associated PVCs for any excess pods above
+                          the replica count to be deleted.
+                        type: string
                     type: object
                   podLabels:
                     additionalProperties:
@@ -13520,6 +13564,28 @@ spec:
                       type: string
                     description: (Optional) If specified, the pod's nodeSelector，displayName="Map
                       of nodeSelectors to match when scheduling pods on nodes"
+                    type: object
+                  persistentVolumeClaimRetentionPolicy:
+                    description: |-
+                      PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+                      The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+                      The WhenScaled field is only supported for the CN component.
+                    properties:
+                      whenDeleted:
+                        description: |-
+                          WhenDeleted specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is deleted. The default policy
+                          of `Retain` causes PVCs to not be affected by StatefulSet deletion. The
+                          `Delete` policy causes those PVCs to be deleted.
+                        type: string
+                      whenScaled:
+                        description: |-
+                          WhenScaled specifies what happens to PVCs created from StatefulSet
+                          VolumeClaimTemplates when the StatefulSet is scaled down. The default
+                          policy of `Retain` causes PVCs to not be affected by a scaledown. The
+                          `Delete` policy causes the associated PVCs for any excess pods above
+                          the replica count to be deleted.
+                        type: string
                     type: object
                   podLabels:
                     additionalProperties:

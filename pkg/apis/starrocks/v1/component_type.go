@@ -117,6 +117,12 @@ type StarRocksComponentSpec struct {
 	// Sysctls defines a list of namespaced sysctls for the podSecurityContext.sysctls
 	// See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
 	Sysctls []corev1.Sysctl `json:"sysctls,omitempty"`
+
+	// PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+	// The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+	// The WhenScaled field is only supported for the CN component.
+	//nolint:lll
+	PersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"persistentVolumeClaimRetentionPolicy,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.

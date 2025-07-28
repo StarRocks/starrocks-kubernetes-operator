@@ -64,7 +64,7 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 // MakeStatefulset make statefulset
 func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, podTemplateSpec *corev1.PodTemplateSpec) appsv1.StatefulSet {
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
-	expectSts := appsv1.StatefulSet{
+	expectSTS := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            load.Name(object.AliasName, spec),
 			Namespace:       object.Namespace,
@@ -85,11 +85,30 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 		},
 	}
 
-	// When Warehouse CR is deleted, operator need to get some environments from the statefulset to
-	// execute dropping warehouse statement.
+	// When Warehouse CR is deleted, the operator needs to get some environments from the statefulset to
+	// execute the dropping warehouse statement.
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		expectSts.Finalizers = append(expectSts.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
+		expectSTS.Finalizers = append(expectSTS.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
 	}
 
-	return expectSts
+	switch v := spec.(type) {
+	case *v1.StarRocksFeSpec:
+		if v.PersistentVolumeClaimRetentionPolicy != nil {
+			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenScaled:  "",
+				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
+			}
+		}
+	case *v1.StarRocksBeSpec:
+		if v.PersistentVolumeClaimRetentionPolicy != nil {
+			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenScaled:  "",
+				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
+			}
+		}
+	case *v1.StarRocksCnSpec:
+		expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = v.PersistentVolumeClaimRetentionPolicy
+	}
+
+	return expectSTS
 }

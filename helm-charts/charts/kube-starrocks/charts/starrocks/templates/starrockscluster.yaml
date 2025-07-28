@@ -278,7 +278,10 @@ spec:
     {{- end }}
     {{- end }}
     {{- end }}
-
+    {{- if .Values.starrocksFESpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.starrocksFESpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
+    {{- end }}
   {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     {{- if .Values.starrocksBeSpec.initContainers }}
@@ -572,6 +575,10 @@ spec:
         {{- toYaml .hostPath | nindent 8 }}
     {{- end }}
     {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.starrocksBeSpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
     {{- end }}
   {{- end }}
   {{- if .Values.starrocksCluster.enabledCn }}
@@ -874,6 +881,10 @@ spec:
         {{- toYaml .hostPath | nindent 8 }}
     {{- end }}
     {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.starrocksCnSpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
     {{- end }}
   {{- end }}
 
