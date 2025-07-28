@@ -941,4 +941,8 @@ spec:
       mountPath: {{ .mountPath }}
     {{- end }}
     {{- end }}
+    {{- if .Values.starrocksFeProxySpec.podLabels }}
+    podLabels:
+      {{- toYaml .Values.starrocksFeProxySpec.podLabels | nindent 6 }}
+    {{- end }}
   {{- end }}
