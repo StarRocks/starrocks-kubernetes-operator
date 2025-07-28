@@ -48,6 +48,8 @@ func main() {
 		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
 	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
 	flag.BoolVar(&config.VolumeNameWithHash, "volume-name-with-hash", true, "Add a hash to the volume name")
+	flag.BoolVar(&config.EnablePVCRetentionPolicy, "enable-pvc-retention-policy", false,
+		"enable persistentVolumeClaimRetentionPolicy field in Statefulset")
 
 	// Set up logger.
 	opts := zap.Options{}

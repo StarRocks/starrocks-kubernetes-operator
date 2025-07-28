@@ -1599,6 +1599,13 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  persistentVolumeClaimRetentionPolicy:
+                    properties:
+                      whenDeleted:
+                        type: string
+                      whenScaled:
+                        type: string
+                    type: object
                   podLabels:
                     additionalProperties:
                       type: string

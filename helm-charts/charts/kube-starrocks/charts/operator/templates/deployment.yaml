@@ -44,6 +44,7 @@ spec:
         - --dns-domain-suffix={{ .Values.starrocksOperator.dnsDomainSuffix }}
         {{- end }}
         - --volume-name-with-hash={{ .Values.starrocksOperator.volumeNameWithHash }}
+        - --enable-pvc-retention-policy={{ .Values.starrocksOperator.enablePVCRetentionPolicy }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

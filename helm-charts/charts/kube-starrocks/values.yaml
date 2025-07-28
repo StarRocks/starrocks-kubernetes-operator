@@ -112,6 +112,8 @@ operator:
     # If users plan to use a sidecar or init container to mount the same volume, it will be difficult to get the volume name.
     # In this situation, you can set this value to false.
     volumeNameWithHash: true
+    #	enablePVCRetentionPolicy decides whether supporting the persistentVolumeClaimRetentionPolicy field in Statefulset.
+    enablePVCRetentionPolicy: false
   
 
 starrocks:
@@ -501,6 +503,12 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    #	To enable this feature, you need to set the 'enablePVCRetentionPolicy' field to true in the operator Helm Chart
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
     # the config for start fe. the base information as follows.
     config: |
       LOG_DIR = ${STARROCKS_HOME}/log
@@ -854,6 +862,13 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    #	To enable this feature, you need to set the 'enablePVCRetentionPolicy' field to true in the operator Helm Chart
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
+      # whenScaled: Delete
     # the config start for cn, the base information as follows.
     # From StarRocks 3.1, the official documentation uses:
     #   1. be_port instead of thrift_port, but the thrift_port is still supported.
@@ -1169,6 +1184,12 @@ starrocks:
       #     path: /tmp
       #     type: Directory
       #   mountPath: /tmp
+    # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+    # The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+    #	The WhenScaled field is only supported for the CN component.
+    #	To enable this feature, you need to set the 'enablePVCRetentionPolicy' field to true in the operator Helm Chart
+    persistentVolumeClaimRetentionPolicy:
+      # whenDeleted: Delete
     # the config for start be. The base information is as follows.
     # From StarRocks 3.1, the official documentation uses:
     #   1. be_http_port instead of webserver_port, but the webserver_port is still supported.
