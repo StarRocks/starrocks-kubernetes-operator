@@ -2674,8 +2674,9 @@ spec:
                     format: int32
                     type: integer
                   replicas:
+                    default: 1
                     description: |-
-                      Replicas is the number of desired Pod.
+                      Replicas is the number of desired Pods.
                       When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
                       the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
@@ -7699,8 +7700,9 @@ spec:
                     format: int32
                     type: integer
                   replicas:
+                    default: 1
                     description: |-
-                      Replicas is the number of desired Pod.
+                      Replicas is the number of desired Pods.
                       When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
                       the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
@@ -10589,8 +10591,9 @@ spec:
                     format: int32
                     type: integer
                   replicas:
+                    default: 1
                     description: |-
-                      Replicas is the number of desired Pod.
+                      Replicas is the number of desired Pods.
                       When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
                       the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'
@@ -13610,8 +13613,9 @@ spec:
                     format: int32
                     type: integer
                   replicas:
+                    default: 1
                     description: |-
-                      Replicas is the number of desired Pod.
+                      Replicas is the number of desired Pods.
                       When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
                       the starrockscluster CR is applied, the replica count of the StatefulSet
                       object in K8S will be reset to the value specified by the 'Replicas'

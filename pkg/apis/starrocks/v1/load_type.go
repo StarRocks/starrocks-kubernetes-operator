@@ -73,12 +73,13 @@ type StarRocksLoadSpec struct {
 	// the pod labels for user select or classify pods.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 
-	// Replicas is the number of desired Pod.
+	// Replicas is the number of desired Pods.
 	// When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
 	// the starrockscluster CR is applied, the replica count of the StatefulSet
 	// object in K8S will be reset to the value specified by the 'Replicas'
 	// field, erasing the value previously set by HPA.
 	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:default=1
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
 
