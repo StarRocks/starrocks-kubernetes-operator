@@ -1291,3 +1291,5 @@ starrocksFeProxySpec:
       # e.g., mount an emptyDir volume to /tmp
       # - name: tmp-data
       #   mountPath: /tmp
+  # the pod labels for user select or classify pods.
+  podLabels: {}
