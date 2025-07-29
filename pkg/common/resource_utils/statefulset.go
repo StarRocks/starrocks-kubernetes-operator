@@ -25,21 +25,21 @@ import (
 
 // hashStatefulsetObject contains the info for hash comparison.
 type hashStatefulsetObject struct {
-	name                 string
-	namespace            string
-	labels               map[string]string
-	finalizers           []string
-	selector             metav1.LabelSelector
-	podTemplate          corev1.PodTemplateSpec
-	serviceName          string
-	volumeClaimTemplates []corev1.PersistentVolumeClaim
-	replicas             int32
-	updateStrategy       appsv1.StatefulSetUpdateStrategy
+	name                                 string
+	namespace                            string
+	labels                               map[string]string
+	finalizers                           []string
+	selector                             metav1.LabelSelector
+	podTemplate                          corev1.PodTemplateSpec
+	serviceName                          string
+	volumeClaimTemplates                 []corev1.PersistentVolumeClaim
+	replicas                             int32
+	updateStrategy                       appsv1.StatefulSetUpdateStrategy
+	persistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
 }
 
 // statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
 func statefulSetHashObject(sts *appsv1.StatefulSet) hashStatefulsetObject {
-	// set -1 for the initial is zero.
 	replicas := int32(-1)
 	if sts.Spec.Replicas != nil {
 		replicas = *sts.Spec.Replicas
@@ -51,21 +51,22 @@ func statefulSetHashObject(sts *appsv1.StatefulSet) hashStatefulsetObject {
 	}
 
 	return hashStatefulsetObject{
-		name:                 sts.Name,
-		namespace:            sts.Namespace,
-		labels:               sts.Labels,
-		finalizers:           sts.Finalizers,
-		selector:             selector,
-		podTemplate:          sts.Spec.Template,
-		serviceName:          sts.Spec.ServiceName,
-		volumeClaimTemplates: sts.Spec.VolumeClaimTemplates,
-		replicas:             replicas,
-		updateStrategy:       sts.Spec.UpdateStrategy,
+		name:                                 sts.Name,
+		namespace:                            sts.Namespace,
+		labels:                               sts.Labels,
+		finalizers:                           sts.Finalizers,
+		selector:                             selector,
+		podTemplate:                          sts.Spec.Template,
+		serviceName:                          sts.Spec.ServiceName,
+		volumeClaimTemplates:                 sts.Spec.VolumeClaimTemplates,
+		replicas:                             replicas,
+		updateStrategy:                       sts.Spec.UpdateStrategy,
+		persistentVolumeClaimRetentionPolicy: sts.Spec.PersistentVolumeClaimRetentionPolicy,
 	}
 }
 
 // StatefulSetDeepEqual judge two statefulset equal or not, and it will not change the statefulset instance.
-// This function will always return new hash value of the expected statefulset
+// This function will always return a new hash value of the expected statefulset
 func StatefulSetDeepEqual(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool) {
 	var newHashv, oldHashv string
 
@@ -76,9 +77,9 @@ func StatefulSetDeepEqual(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet
 		newHashv = hash.HashObject(newHso)
 	}
 
-	// the hash value calculated from statefulset instance in k8s may will never equal to the hash value from
-	// starrocks cluster. Because statefulset may be updated by k8s controller manager.
-	// Every time you update the statefulset, a new reconcile will be triggered.
+	// The hash value calculated from a statefulset instance in k8s may never equal to the hash value from
+	// the starrocks cluster. Because statefulset may be updated by k8s controller manager.
+	// Every time you update the statefulset, a new reconciling will be triggered.
 	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
 		oldHashv = actual.Annotations[srapi.ComponentResourceHash]
 	} else {

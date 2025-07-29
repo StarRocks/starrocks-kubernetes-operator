@@ -188,3 +188,26 @@ func TestTwoObject2(_ *testing.T) {
 		fmt.Println("two object has the same types and values")
 	}
 }
+
+// TestHashObject_with_nil checks hash consistency between two objects with different structures but identical field values.
+func TestHashObject_with_nil(_ *testing.T) {
+	type t1 struct {
+		name string
+		//nolint:unused
+		age *int
+	}
+	o1 := t1{
+		name: "test",
+	}
+
+	type t2 struct {
+		name string
+	}
+	o2 := t2{
+		name: "test",
+	}
+
+	if hash.HashObject(o1) == hash.HashObject(o2) {
+		fmt.Println("two object has the same types and values")
+	}
+}
