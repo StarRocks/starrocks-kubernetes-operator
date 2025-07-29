@@ -30,8 +30,8 @@ import (
 
 func TestMakeLifeCycle(t *testing.T) {
 	type args struct {
-		lifeCycle         *corev1.Lifecycle
-		preStopScriptPath string
+		lifeCycle      *corev1.Lifecycle
+		preStopCommand []string
 	}
 	tests := []struct {
 		name string
@@ -41,8 +41,8 @@ func TestMakeLifeCycle(t *testing.T) {
 		{
 			name: "test without lifecycle",
 			args: args{
-				lifeCycle:         nil,
-				preStopScriptPath: "/scripts/pre-stop.sh",
+				lifeCycle:      nil,
+				preStopCommand: []string{"/scripts/pre-stop.sh"},
 			},
 			want: &corev1.Lifecycle{
 				PreStop: &corev1.LifecycleHandler{
@@ -67,7 +67,7 @@ func TestMakeLifeCycle(t *testing.T) {
 						},
 					},
 				},
-				preStopScriptPath: "/scripts/pre-stop.sh",
+				preStopCommand: []string{"/scripts/pre-stop.sh"},
 			},
 			want: &corev1.Lifecycle{
 				PreStop: &corev1.LifecycleHandler{
@@ -92,7 +92,7 @@ func TestMakeLifeCycle(t *testing.T) {
 						},
 					},
 				},
-				preStopScriptPath: "/scripts/pre-stop.sh",
+				preStopCommand: []string{"/scripts/pre-stop.sh"},
 			},
 			want: &corev1.Lifecycle{
 				PreStop: &corev1.LifecycleHandler{
@@ -110,7 +110,7 @@ func TestMakeLifeCycle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := LifeCycle(tt.args.lifeCycle, tt.args.preStopScriptPath)
+			actual := LifeCycle(tt.args.lifeCycle, tt.args.preStopCommand)
 			if !reflect.DeepEqual(actual, tt.want) {
 				t.Errorf("LifeCycle() = %v, want %v", actual, tt.want)
 			}
@@ -625,6 +625,36 @@ func TestGetStarRocksRootPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetStarRocksRootPath(tt.args.envVars); got != tt.want {
 				t.Errorf("GetStarRocksRootPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetPreStopCommand(t *testing.T) {
+	type args struct {
+		spec v1.SpecInterface
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "get pre stop command",
+			args: args{
+				spec: &v1.StarRocksCnSpec{},
+			},
+			want: []string{
+				"/bin/bash",
+				"-c",
+				"/opt/starrocks/cn/bin/stop_cn.sh -g",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetPreStopCommand(tt.args.spec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetPreStopCommand() = %v, want %v", got, tt.want)
 			}
 		})
 	}

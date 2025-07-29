@@ -33,10 +33,10 @@ const (
 )
 
 // LifeCycle returns a lifecycle.
-func LifeCycle(lifeCycle *corev1.Lifecycle, preStopScriptPath string) *corev1.Lifecycle {
+func LifeCycle(lifeCycle *corev1.Lifecycle, preStopCommand []string) *corev1.Lifecycle {
 	defaultPreStop := &corev1.LifecycleHandler{
 		Exec: &corev1.ExecAction{
-			Command: []string{preStopScriptPath},
+			Command: preStopCommand,
 		},
 	}
 
@@ -379,18 +379,19 @@ func GetConfigDir(spec v1.SpecInterface) string {
 	return ""
 }
 
-func GetPreStopScriptPath(spec v1.SpecInterface) string {
-	// we do not need set --timeout parameter for stop_xx.sh, because the terminationGracePeriodSeconds configuration
+func GetPreStopCommand(spec v1.SpecInterface) []string {
+	command := []string{"/bin/bash", "-c"}
+	// we do not need to set --timeout parameter for stop_xx.sh, because the terminationGracePeriodSeconds configuration
 	// on Pod will take the same effect
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
-		return fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars))
+		command = append(command, fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars)))
 	case *v1.StarRocksBeSpec:
-		return fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars))
+		command = append(command, fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars)))
 	case *v1.StarRocksCnSpec:
-		return fmt.Sprintf("%s/cn/bin/stop_cn.sh -g", GetStarRocksRootPath(v.CnEnvVars))
+		command = append(command, fmt.Sprintf("%s/cn/bin/stop_cn.sh -g", GetStarRocksRootPath(v.CnEnvVars)))
 	}
-	return ""
+	return command
 }
 
 func GetStarRocksDefaultRootPath() string {
