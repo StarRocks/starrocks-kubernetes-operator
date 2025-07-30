@@ -153,7 +153,7 @@ func handleSyncWarehouseError(ctx context.Context, err error, warehouse *srapi.S
 	logger.Error(err, "sub controller reconciles spec failed")
 	warehouse.Status.Phase = srapi.ComponentFailed
 	warehouse.Status.Reason = err.Error()
-	if errors.Is(err, cn.ErrorSpecIsMissing) || errors.Is(err, cn.ErrStarRocksClusterIsMissing) ||
+	if errors.Is(err, cn.ErrSpecIsMissing) || errors.Is(err, cn.ErrStarRocksClusterIsMissing) ||
 		errors.Is(err, cn.ErrFeIsNotReady) || errors.Is(err, cn.ErrFailedToGetFeFeatureList) {
 		return true
 	}

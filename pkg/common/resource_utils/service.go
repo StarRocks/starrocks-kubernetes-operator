@@ -62,7 +62,7 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      service.ExternalServiceName(object.AliasName, spec),
+			Name:      service.ExternalServiceName(object.SubResourcePrefixName, spec),
 			Namespace: object.GetNamespace(),
 			Labels:    labels,
 		},

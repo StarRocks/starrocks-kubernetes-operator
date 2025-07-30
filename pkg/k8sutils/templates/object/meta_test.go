@@ -37,9 +37,9 @@ func TestNewFromCluster(t *testing.T) {
 				ObjectMeta: &metav1.ObjectMeta{
 					Name: "starrocks",
 				},
-				ClusterName: "starrocks",
-				Kind:        "StarRocksCluster",
-				AliasName:   "starrocks",
+				ClusterName:           "starrocks",
+				Kind:                  "StarRocksCluster",
+				SubResourcePrefixName: "starrocks",
 			},
 		},
 	}
@@ -83,10 +83,10 @@ func TestNewFromWarehouse(t *testing.T) {
 				ObjectMeta: &metav1.ObjectMeta{
 					Name: "starrocks",
 				},
-				ClusterName:       "starrocks",
-				Kind:              "StarRocksWarehouse",
-				AliasName:         "starrocks-warehouse",
-				IsWarehouseObject: true,
+				ClusterName:           "starrocks",
+				Kind:                  "StarRocksWarehouse",
+				SubResourcePrefixName: "starrocks-warehouse",
+				IsWarehouseObject:     true,
 			},
 		},
 	}
@@ -135,10 +135,10 @@ func TestStarRocksObject_GetCNStatefulSetName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			object := &StarRocksObject{
-				ClusterName:       tt.fields.ClusterName,
-				Kind:              tt.fields.Kind,
-				AliasName:         tt.fields.AliasName,
-				IsWarehouseObject: tt.fields.IsWarehouseObject,
+				ClusterName:           tt.fields.ClusterName,
+				Kind:                  tt.fields.Kind,
+				SubResourcePrefixName: tt.fields.AliasName,
+				IsWarehouseObject:     tt.fields.IsWarehouseObject,
 			}
 			if got := object.GetCNStatefulSetName(); got != tt.want {
 				t.Errorf("GetCNStatefulSetName() = %v, want %v", got, tt.want)
@@ -176,11 +176,11 @@ func TestStarRocksObject_GetWarehouseNameInFE(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			object := &StarRocksObject{
-				ObjectMeta:        tt.fields.ObjectMeta,
-				ClusterName:       tt.fields.ClusterName,
-				Kind:              tt.fields.Kind,
-				AliasName:         tt.fields.AliasName,
-				IsWarehouseObject: tt.fields.IsWarehouseObject,
+				ObjectMeta:            tt.fields.ObjectMeta,
+				ClusterName:           tt.fields.ClusterName,
+				Kind:                  tt.fields.Kind,
+				SubResourcePrefixName: tt.fields.AliasName,
+				IsWarehouseObject:     tt.fields.IsWarehouseObject,
 			}
 			if got := object.GetWarehouseNameInFE(); got != tt.want {
 				t.Errorf("GetWarehouseNameInFE() = %v, want %v", got, tt.want)
