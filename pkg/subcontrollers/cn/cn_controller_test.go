@@ -253,7 +253,7 @@ func Test_SyncWarehouse(t *testing.T) {
 	object := object.NewFromWarehouse(warehouse)
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{
-			Name:      service.ExternalServiceName(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Name:      service.ExternalServiceName(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil)),
 			Namespace: "default",
 		},
 		&externalService),
@@ -262,7 +262,7 @@ func Test_SyncWarehouse(t *testing.T) {
 
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{
-			Name:      service.SearchServiceName(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Name:      service.SearchServiceName(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil)),
 			Namespace: "default"},
 		&searchService),
 	)
@@ -270,7 +270,7 @@ func Test_SyncWarehouse(t *testing.T) {
 
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{
-			Name:      load.Name(object.AliasName, (*srapi.StarRocksCnSpec)(nil)),
+			Name:      load.Name(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil)),
 			Namespace: "default"},
 		&sts),
 	)
@@ -326,9 +326,9 @@ func TestCnController_UpdateStatus(t *testing.T) {
 						Name:      "test",
 						Namespace: "default",
 					},
-					ClusterName: "test",
-					Kind:        object.StarRocksClusterKind,
-					AliasName:   "test",
+					ClusterName:           "test",
+					Kind:                  object.StarRocksClusterKind,
+					SubResourcePrefixName: "test",
 				},
 				cnSpec:   &srapi.StarRocksCnSpec{},
 				cnStatus: &srapi.StarRocksCnStatus{},
@@ -819,9 +819,9 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 						Name:      "wh1",
 						Namespace: "default",
 					},
-					ClusterName:       "cluster",
-					AliasName:         "wh1-warehouse",
-					IsWarehouseObject: true,
+					ClusterName:           "cluster",
+					SubResourcePrefixName: "wh1-warehouse",
+					IsWarehouseObject:     true,
 				},
 				expectSTS: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{

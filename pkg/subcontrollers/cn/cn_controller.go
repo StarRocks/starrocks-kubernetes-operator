@@ -65,7 +65,8 @@ func (cc *CnController) GetControllerName() string {
 	return "cnController"
 }
 
-var ErrorSpecIsMissing = errors.New("spec.template or spec.starRocksCluster is missing")
+var ErrWarehouseNameIsNotAllowed = errors.New("warehouse name should not equal to cluster name")
+var ErrSpecIsMissing = errors.New("spec.template or spec.starRocksCluster is missing")
 var ErrStarRocksClusterIsMissing = errors.New("custom resource StarRocksCluster is missing")
 var ErrFeIsNotReady = errors.New("component fe is not ready")
 var ErrShouldRunInSharedDataMode = errors.New("StarRocks Cluster should run in shared_data mode")
@@ -77,7 +78,11 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 
 	template := warehouse.Spec.Template
 	if warehouse.Spec.StarRocksCluster == "" || template == nil {
-		return ErrorSpecIsMissing
+		return ErrSpecIsMissing
+	}
+
+	if warehouse.Name == warehouse.Spec.StarRocksCluster {
+		return ErrWarehouseNameIsNotAllowed
 	}
 
 	logger.Info("get StarRocksCluster CR from kubernetes")
@@ -180,10 +185,10 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	}
 
 	// build and deploy service
-	defaultLabels := load.Labels(object.AliasName, cnSpec)
+	defaultLabels := load.Labels(object.SubResourcePrefixName, cnSpec)
 	externalsvc := rutils.BuildExternalService(object, cnSpec, config,
-		load.Selector(object.AliasName, cnSpec), defaultLabels)
-	searchServiceName := service.SearchServiceName(object.AliasName, cnSpec)
+		load.Selector(object.SubResourcePrefixName, cnSpec), defaultLabels)
+	searchServiceName := service.SearchServiceName(object.SubResourcePrefixName, cnSpec)
 	internalService := service.MakeSearchService(searchServiceName, &externalsvc, []corev1.ServicePort{
 		{
 			Name:       "heartbeat",
@@ -293,7 +298,7 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	var actualSTS appsv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
-	statefulSetName := load.Name(object.AliasName, cnSpec)
+	statefulSetName := load.Name(object.SubResourcePrefixName, cnSpec)
 	namespacedName := types.NamespacedName{Namespace: object.Namespace, Name: statefulSetName}
 	if err := cc.k8sClient.Get(ctx, namespacedName, &actualSTS); apierrors.IsNotFound(err) {
 		logger.Info("cn statefulset is not found")
@@ -301,14 +306,14 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	}
 
 	if cnSpec.AutoScalingPolicy != nil {
-		cnStatus.HorizontalScaler.Name = cc.generateAutoScalerName(object.AliasName, cnSpec)
+		cnStatus.HorizontalScaler.Name = cc.generateAutoScalerName(object.SubResourcePrefixName, cnSpec)
 		cnStatus.HorizontalScaler.Version = cnSpec.AutoScalingPolicy.Version.Complete(k8sutils.KUBE_MAJOR_VERSION,
 			k8sutils.KUBE_MINOR_VERSION)
 	} else {
 		cnStatus.HorizontalScaler = srapi.HorizontalScaler{}
 	}
 
-	cnStatus.ServiceName = service.ExternalServiceName(object.AliasName, cnSpec)
+	cnStatus.ServiceName = service.ExternalServiceName(object.SubResourcePrefixName, cnSpec)
 	cnStatus.ResourceNames = rutils.MergeSlices(cnStatus.ResourceNames, []string{statefulSetName})
 
 	// get the selector and replicas field from statefulset
@@ -321,7 +326,8 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	cnStatus.Selector = selector.String()
 
 	if err := subc.UpdateStatus(&cnStatus.StarRocksComponentStatus, cc.k8sClient,
-		object.Namespace, load.Name(object.AliasName, cnSpec), pod.Labels(object.AliasName, cnSpec), subc.StatefulSetLoadType); err != nil {
+		object.Namespace, load.Name(object.SubResourcePrefixName, cnSpec),
+		pod.Labels(object.SubResourcePrefixName, cnSpec), subc.StatefulSetLoadType); err != nil {
 		return err
 	}
 
@@ -378,7 +384,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context,
 	}
 	hpaParams := &rutils.HPAParams{
 		Namespace:       object.Namespace,
-		Name:            cc.generateAutoScalerName(object.AliasName, cnSpec),
+		Name:            cc.generateAutoScalerName(object.SubResourcePrefixName, cnSpec),
 		Labels:          labels,
 		Version:         cnSpec.AutoScalingPolicy.Version, // cnSpec.AutoScalingPolicy can not be nil
 		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(object, object.GroupVersionKind())},
@@ -423,7 +429,7 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.Star
 	autoScalerVersion srapi.AutoScalerVersion) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
-	autoScalerName := cc.generateAutoScalerName(object.AliasName, (*srapi.StarRocksCnSpec)(nil))
+	autoScalerName := cc.generateAutoScalerName(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil))
 	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, object.Namespace, autoScalerName,
 		autoScalerVersion); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
@@ -599,11 +605,11 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		logger.Error(err, "query SHOW COMPUTE NODES failed", "sql", "SHOW COMPUTE NODES")
 		return err
 	}
-	warehouseName := "default_warehouse"
+	warehouseNameInFE := "default_warehouse"
 	if object.IsWarehouseObject {
-		warehouseName = object.Name()
+		warehouseNameInFE = object.GetWarehouseNameInFE()
 	}
-	computeNodes := result.ComputeNodesByWarehouse[warehouseName]
+	computeNodes := result.ComputeNodesByWarehouse[warehouseNameInFE]
 	if len(computeNodes) > int(expectReplicas) {
 		for i := len(computeNodes) - 1; i >= int(expectReplicas); i-- {
 			err = executor.ExecuteDropComputeNode(ctx, db, computeNodes[i])

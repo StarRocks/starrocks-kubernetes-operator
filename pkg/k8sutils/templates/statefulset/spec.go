@@ -66,20 +66,20 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 	or := metav1.NewControllerRef(object, object.GroupVersionKind())
 	expectSTS := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            load.Name(object.AliasName, spec),
+			Name:            load.Name(object.SubResourcePrefixName, spec),
 			Namespace:       object.Namespace,
 			Annotations:     load.Annotations(),
-			Labels:          load.Labels(object.AliasName, spec),
+			Labels:          load.Labels(object.SubResourcePrefixName, spec),
 			OwnerReferences: []metav1.OwnerReference{*or},
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: spec.GetReplicas(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: load.Selector(object.AliasName, spec),
+				MatchLabels: load.Selector(object.SubResourcePrefixName, spec),
 			},
 			UpdateStrategy:       *spec.GetUpdateStrategy(),
 			Template:             *podTemplateSpec,
-			ServiceName:          service.SearchServiceName(object.AliasName, spec),
+			ServiceName:          service.SearchServiceName(object.SubResourcePrefixName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
 			PodManagementPolicy:  appsv1.ParallelPodManagement,
 		},

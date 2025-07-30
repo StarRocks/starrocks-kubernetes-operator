@@ -66,7 +66,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
-				// the cn_entrypoint.sh in container will use this env to create warehouse. Because of '-' character
+				// the cn_entrypoint.sh in container will use this env to create a warehouse. Because of '-' character
 				// is not allowed in Warehouse SQL, so we replace it with '_'.
 				Value: object.GetWarehouseNameInFE(),
 			})
@@ -108,7 +108,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: annotations,
 			Namespace:   object.Namespace,
-			Labels:      pod.Labels(object.AliasName, cnSpec),
+			Labels:      pod.Labels(object.SubResourcePrefixName, cnSpec),
 		},
 		Spec: podSpec,
 	}, nil
