@@ -40,8 +40,9 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
+	// cannot add Owns(&v2.HorizontalPodAutoscaler{}), because if a kubernetes version is lower than 1.23,
 	// v2.HorizontalPodAutoscaler does not exist.
+	// todo(yandongxiao): watch the HPA resource
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksCluster{}).
 		Owns(&appsv1.StatefulSet{}).
@@ -83,8 +84,9 @@ func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// can not add Owns(&v2.HorizontalPodAutoscaler{}), because if kubernetes version is lower than 1.23,
+	// cannot add Owns(&v2.HorizontalPodAutoscaler{}), because if a kubernetes version is lower than 1.23,
 	// v2.HorizontalPodAutoscaler does not exist.
+	// todo(yandongxiao): watch the HPA resource
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&srapi.StarRocksWarehouse{}).
 		Owns(&appsv1.StatefulSet{}).

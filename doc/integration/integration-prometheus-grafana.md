@@ -8,7 +8,7 @@ environment. From this document, you will learn,
 
 ## 1. Prerequisites
 
-+ Kubernetes: v1.18+ - v1.26
++ Kubernetes: v1.23.0+
 + Prometheus helm chart: latest available version
 + Grafana helm chart: latest available version
 + StarRocks operator and helm chart: v1.7.1+

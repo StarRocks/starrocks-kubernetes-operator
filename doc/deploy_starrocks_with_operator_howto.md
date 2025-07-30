@@ -18,8 +18,8 @@ It includes the following parts:
 
 ## Prerequisites
 
-1. Kubernetes cluster version >= 1.18.3.
-2. kubelet version >= 1.18.3.
+1. Kubernetes cluster version >= 1.23.0+
+2. kubelet version >= 1.23.0+
 
 ## 1. Deploy StarRocks Operator
 

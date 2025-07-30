@@ -17,7 +17,7 @@ as installing, scaling, upgrading etc.
 
 ## Prerequisites
 
-1. Kubernetes version >= 1.18
+1. Kubernetes version >= 1.23.0
 2. Helm version >= 3.0
 
 ## Features
