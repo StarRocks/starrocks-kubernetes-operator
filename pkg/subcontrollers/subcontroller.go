@@ -37,15 +37,13 @@ type ClusterSubController interface {
 	// SyncCluster reconcile for sub controller. bool represent the component have updated.
 	SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error
 
-	// ClearResources clear all resource about sub-component.
-	// todo(yandongxiao): rename to ClearCluster
-	ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error
+	// ClearCluster clear all subresources.
+	ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error
 
 	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string
 
-	// UpdateClusterStatus only update the component status in src.
-	// todo(yandongxiao): better to rename it, because it does not send update request to k8s
+	// UpdateClusterStatus only updates the status locally, but not update it to k8s
 	UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error
 }
 
@@ -59,6 +57,7 @@ type WarehouseSubController interface {
 
 	GetControllerName() string
 
+	// UpdateWarehouseStatus only updates the status locally, but not update it to k8s
 	UpdateWarehouseStatus(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error
 }
 

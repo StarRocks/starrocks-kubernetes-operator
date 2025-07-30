@@ -147,7 +147,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 // UpdateClusterStatus update the all resource status about fe.
 func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRocksCluster) error {
-	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
+	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearCluster.
 	feSpec := src.Spec.StarRocksFeSpec
 	if feSpec == nil {
 		src.Status.StarRocksFeStatus = nil
@@ -182,9 +182,9 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 	return nil
 }
 
-// ClearResources clear resource about fe.
-func (fc *FeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
-	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionClearResources)
+// ClearCluster clears resource about fe.
+func (fc *FeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
 	// if the starrocks is not have fe.

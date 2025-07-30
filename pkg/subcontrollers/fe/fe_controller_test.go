@@ -103,7 +103,7 @@ func Test_ClearResources(t *testing.T) {
 	}
 
 	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc), fake.GetEventRecorderFor(nil))
-	err := fc.ClearResources(context.Background(), src)
+	err := fc.ClearCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 
 	var est appsv1.StatefulSet

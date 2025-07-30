@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
@@ -136,22 +135,6 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 
 		esrc.Status = src.Status
 		return r.Client.Status().Update(ctx, &esrc)
-	})
-}
-
-// UpdateStarRocksCluster update the starrockscluster metadata, spec.
-func (r *StarRocksClusterReconciler) UpdateStarRocksCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
-	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		var esrc srapi.StarRocksCluster
-		client := r.Client
-		if err := client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: src.Name}, &esrc); apierrors.IsNotFound(err) {
-			return nil
-		} else if err != nil {
-			return err
-		}
-
-		src.ResourceVersion = esrc.ResourceVersion
-		return k8sutils.UpdateClientObject(ctx, client, src)
 	})
 }
 

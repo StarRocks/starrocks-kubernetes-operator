@@ -115,7 +115,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	ctx = logr.NewContext(ctx, logger)
 
 	if src.Spec.StarRocksCnSpec == nil {
-		if err := cc.ClearResources(ctx, src); err != nil {
+		if err := cc.ClearCluster(ctx, src); err != nil {
 			logger.Error(err, "clear resource failed")
 		}
 		return nil
@@ -439,7 +439,7 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.Star
 }
 
 // ClearResources clear the deployed resource about cn. statefulset, services, hpa.
-func (cc *CnController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	if src.Spec.StarRocksCnSpec != nil {

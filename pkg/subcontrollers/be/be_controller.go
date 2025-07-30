@@ -64,7 +64,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	ctx = logr.NewContext(ctx, logger)
 
 	if src.Spec.StarRocksBeSpec == nil {
-		if err := be.ClearResources(ctx, src); err != nil {
+		if err := be.ClearCluster(ctx, src); err != nil {
 			logger.Error(err, "clear resource failed")
 			return err
 		}
@@ -144,7 +144,7 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionUpdateClusterStatus)
 	ctx = logr.NewContext(ctx, logger)
 
-	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearResources.
+	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearCluster.
 	beSpec := src.Spec.StarRocksBeSpec
 	if beSpec == nil {
 		src.Status.StarRocksBeStatus = nil
@@ -204,8 +204,8 @@ func (be *BeController) GetBeConfig(ctx context.Context,
 		beSpec.ConfigMaps, pod.GetConfigDir(beSpec), "be.conf", namespace)
 }
 
-func (be *BeController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
-	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionClearResources)
+func (be *BeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
 	beSpec := src.Spec.StarRocksBeSpec
