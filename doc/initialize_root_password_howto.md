@@ -7,7 +7,7 @@ This guide delineates the process to establish a root password when a new instal
 
 ## Prerequisites
 
-- Ensure that you have installed the Kubernetes cluster. 1.18.3+ is recommended.
+- Ensure that you have installed the Kubernetes cluster. v1.23.0+ is recommended.
 - Ensure that you have installed the [Helm](https://helm.sh/) package manager. 3.0.0+ is recommended.
 - Ensure the helm chart repo for StarRocks is added.
   See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
