@@ -139,3 +139,7 @@ spec:
       mountPath: {{template "starrockscluster.cn.log.path" . }}
     {{- end }}
     {{- end }}
+    {{- if .Values.spec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.spec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
+    {{- end }}
