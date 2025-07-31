@@ -1,13 +1,13 @@
 # TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
 timeZone: Asia/Shanghai
 
-# This configuration is used to integrate with external system DataDog.
+# This configuration is used to integrate with an external system DataDog.
 # You can enable the integration by setting the enabled to true, e.g. datalog.log.enabled=true will enable datadog agent
 # to collect the log.
 datadog:
   log:
     enabled: false
-    # besides the attributes you added, chart will append "source" and "service" attributes to the log config.
+    # besides the attributes you added, the chart will append "source" and "service" attributes to the log config.
     # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
     logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
   metrics:
@@ -16,17 +16,17 @@ datadog:
 spec:
   # The name of starrocks cluster, a must-have field.
   # Note:
-  #   1. the starrocks cluster must be enterprise version.
-  #   2. the starrocks cluster must be created before the warehouse by operator
-  #   3. the starrocks cluster must run in shared-data mode.
+  #   1. The starrocks cluster must be an enterprise version.
+  #   2. The starrocks cluster must be created before the warehouse by operator
+  #   3. The starrocks cluster must run in shared-data mode.
   starRocksClusterName:
 
-  # number of replicas to deploy.
+  # Number of replicas to deploy.
   # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the spec
   # field, the replicas field of the statefulset created by the operator will be set to null. This ensures that the replicas
   # field is controlled by HPA. Next, if a user's deployment, for example, does not involve changes to the statefulset,
   # then the pods will not be recreated.
-  # Why should the replicas field in this values.yaml be set to null? This is the default replicas. When the user removes
+  # Why should the replicas field in this values.yaml be set to null? This is the default replica. When the user removes
   # the autoScalingPolicy fields from the spec, the corresponding HPA object will be deleted. And when the replicas
   # field is set, the number of pods will immediately revert to the replicas count, even though the user did not specify
   # the replicas count in their own values.yaml.
@@ -38,15 +38,15 @@ spec:
     tag: 3.5-latest
   # serviceAccount for pod access cloud service.
   serviceAccount: ""
-  # add annotations for pods. example, if you want to config monitor for datadog, you can config the annotations.
+  # add annotations for pods. for example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
-  # If runAsNonRoot is true, the container is run as non-root user.
+  # If runAsNonRoot is true, the container is run as a non-root user.
   # The userId will be set to 1000, and the groupID will be set to 1000.
   runAsNonRoot: false
   # specify the service name and port config and serviceType
-  # the service type refer https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  # the service type refers https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   service:
-    # the service type, only supported ClusterIP, NodePort, LoadBalancer
+    # the service type only supported ClusterIP, NodePort, LoadBalancer
     type: "ClusterIP"
     # the loadBalancerIP for static ip config when the type=LoadBalancer and loadBalancerIp is not empty.
     loadbalancerIP: ""
@@ -58,7 +58,7 @@ spec:
     # if you want to use a dedicated port for service, you can config the port.
     # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
     ports: []
-      # e.g. use a dedicated node port for service. The containerPort and port field can be commented out.
+      # E.g., use a dedicated node port for service. The containerPort and port field can be commented out.
       # - name: webserver
       #   nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
@@ -139,7 +139,7 @@ spec:
     #         periodSeconds: 10
     #     scaleDown:
     #       selectPolicy: Disabled
-  # define resources requests and limits for pods.
+  # define resource requests and limits for pods.
   resources:
     limits:
       cpu: 8
@@ -158,14 +158,14 @@ spec:
   # mount secrets if necessary.
   # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
   secrets: []
-    # e.g. mount my-secret to /etc/my-secret
+    # e.g., mount my-secret to /etc/my-secret
     # - name: my-secret
     #   mountPath: /etc/my-secret
     #   subPath: ""
   # mount configmaps if necessary.
   # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
   configMaps: []
-    # e.g. mount my-configmap to /etc/my-configmap
+    # e.g., mount my-configmap to /etc/my-configmap
     # - name: my-configmap
     #   mountPath: /etc/my-configmap
     #   subPath: ""
@@ -173,28 +173,32 @@ spec:
   storageSpec:
     # the name of volume for mount. if not will use emptyDir.
     name: ""
-    # the storageClassName represent the used storageclass name. If not set will use k8s cluster default storageclass.
-    # you must set name when you set storageClassName
+    # The storageClassName represent the used storageclass name. If not set will use k8s cluster default storageclass.
+    # You must set a name when you set storageClassName
     storageClassName: ""
     storageSize: 100Gi
     # Setting this parameter can persist log storage
     logStorageSize: 1Gi
-
+  # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/ for more information.
+  persistentVolumeClaimRetentionPolicy:
+    # whenDeleted: Delete
+    # whenScaled: Delete
 
 # create secrets if necessary.
 secrets: []
-  # e.g. create my-secret
+  # e.g., create my-secret
   # - name: my-secret
   #   data:
   #     key: |
   #       this is the content of the secret
-  #       when mounted, key will be the name of the file
+  #       when mounted, the key will be the name of the file
 
 # create configmaps if necessary.
 configMaps: []
-  # e.g. create my-configmap
+  # e.g., create my-configmap
   # - name: my-configmap
   #   data:
   #     key: |
   #       this is the content of the configmap
-  #       when mounted, key will be the name of the file
+  #       when mounted, the key will be the name of the file
