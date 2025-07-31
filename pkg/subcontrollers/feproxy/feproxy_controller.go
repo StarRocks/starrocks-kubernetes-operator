@@ -69,7 +69,7 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 
 	if feProxySpec == nil {
 		logger.Info("src.Spec.StarRocksFeProxySpec == nil, clear fe proxy resource")
-		if err := controller.ClearResources(ctx, src); err != nil {
+		if err := controller.ClearCluster(ctx, src); err != nil {
 			logger.Error(err, "clear fe proxy resource failed", "StarRocksCluster", src)
 			return err
 		}
@@ -161,9 +161,9 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 }
 
 // ClearResources clear resource about fe.
-func (controller *FeProxyController) ClearResources(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (controller *FeProxyController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).
-		WithValues(log.ActionKey, log.ActionClearResources)
+		WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
 	if src.Spec.StarRocksFeProxySpec != nil {

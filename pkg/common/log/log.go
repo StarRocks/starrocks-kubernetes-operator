@@ -7,7 +7,7 @@ const (
 
 	ActionSyncCluster         = "SyncCluster"
 	ActionUpdateClusterStatus = "UpdateClusterStatus"
-	ActionClearResources      = "ClearResources"
+	ActionCluster             = "ClearCluster"
 
 	ActionSyncWarehouse  = "SyncWarehouse"
 	ActionClearWarehouse = "ClearWarehouse"
