@@ -13,7 +13,7 @@ spec:
     listKind: StarRocksWarehouseList
     plural: starrockswarehouses
     shortNames:
-    - warehouse
+    - warehouses
     singular: starrockswarehouse
   scope: Namespaced
   versions:

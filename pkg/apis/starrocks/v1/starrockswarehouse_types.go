@@ -65,7 +65,7 @@ type StarRocksWarehouseStatus struct {
 // StarRocksWarehouse defines a starrocks warehouse.
 // +kubebuilder:object:root=true
 // +kubebuilder:metadata:annotations="version=v1.10.2"
-// +kubebuilder:resource:shortName=warehouse
+// +kubebuilder:resource:shortName=warehouses
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.template.replicas,statuspath=.status.replicas,selectorpath=.status.selector
