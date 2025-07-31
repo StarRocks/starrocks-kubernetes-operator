@@ -8,6 +8,9 @@ var (
 
 	// VolumeNameWithHash decides whether adding a hash to the volume name
 	VolumeNameWithHash bool
+
+	// WebhookCertValidityDays is the validity period in days for self-signed certificates
+	WebhookCertValidityDays int
 )
 
 func GetServiceDomainSuffix() string {
