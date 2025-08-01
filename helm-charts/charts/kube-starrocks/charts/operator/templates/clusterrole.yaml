@@ -68,6 +68,18 @@ rules:
   - get
   - patch
   - update
+{{- if .Values.starrocksOperator.webhook.enabled }}
+# Permissions for webhook certificate management
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+{{- end }}
 
 {{- end }}
 {{- end }}

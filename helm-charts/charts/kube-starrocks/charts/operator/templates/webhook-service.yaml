@@ -1,0 +1,17 @@
+{{- if and .Values.starrocksOperator.enabled .Values.starrocksOperator.webhook.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.starrocksOperator.webhook.service.name }}
+  namespace: {{ template "operator.namespace" . }}
+  labels:
+    app: {{ template "operator.name" . }}-operator
+spec:
+  ports:
+    - name: webhook-server
+      port: {{ .Values.starrocksOperator.webhook.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.starrocksOperator.webhook.service.targetPort }}
+  selector:
+    app: {{ template "operator.name" . }}-operator
+{{- end }}

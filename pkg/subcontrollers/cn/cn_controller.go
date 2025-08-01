@@ -540,6 +540,7 @@ func (cc *CnController) getStarRocksCluster(ctx context.Context, namespace, name
 	return src, nil
 }
 
+// generateAutoScalerName creates and returns a unique name for the autoscaler based on the source name and CN specification.
 func (cc *CnController) generateAutoScalerName(srcName string, cnSpec srapi.SpecInterface) string {
 	return load.Name(srcName, cnSpec) + "-autoscaler"
 }

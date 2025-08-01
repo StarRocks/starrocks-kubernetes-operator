@@ -1,0 +1,36 @@
+{{- if and .Values.starrocksOperator.enabled .Values.starrocksOperator.webhook.enabled }}
+{{- if .Capabilities.APIVersions.Has "admissionregistration.k8s.io/v1" }}
+apiVersion: admissionregistration.k8s.io/v1
+{{- else }}
+apiVersion: admissionregistration.k8s.io/v1beta1
+{{- end }}
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ .Values.starrocksOperator.webhook.validatingWebhook.name }}
+  labels:
+    app: {{ template "operator.name" . }}-operator
+webhooks:
+- name: validate.starrockscluster.starrocks.com
+  clientConfig:
+    service:
+      name: {{ .Values.starrocksOperator.webhook.service.name }}
+      namespace: {{ template "operator.namespace" . }}
+      path: {{ .Values.starrocksOperator.webhook.validatingWebhook.path }}
+    {{- if .Values.starrocksOperator.webhook.tls.secretName }}
+    caBundle: {{ .Values.starrocksOperator.webhook.tls.caBundle | b64enc }}
+    {{- end }}
+    # Note: caBundle will be dynamically set by the operator for self-signed certificates
+  failurePolicy: {{ .Values.starrocksOperator.webhook.validatingWebhook.failurePolicy }}
+  rules:
+  - operations: [ "CREATE", "UPDATE" ]
+    apiGroups: ["starrocks.com"]
+    apiVersions: ["v1"]
+    resources: ["starrocksclusters"]
+  {{- if .Capabilities.APIVersions.Has "admissionregistration.k8s.io/v1" }}
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  {{- else }}
+  admissionReviewVersions: ["v1beta1"]
+  sideEffects: None
+  {{- end }}
+{{- end }}

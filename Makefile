@@ -155,10 +155,6 @@ ENVTEST = $(GOBIN)/setup-envtest
 envtest: ## Download envtest-setup locally if necessary.
 	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
-.PHONY: gen-api
-gen-api:
-	cd scripts && ./gen-api-reference-docs.sh
-
 .PHONY: crd-all
 crd-all: generate manifests gen-api
 

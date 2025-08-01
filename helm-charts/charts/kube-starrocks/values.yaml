@@ -112,6 +112,35 @@ operator:
     # If users plan to use a sidecar or init container to mount the same volume, it will be challenging to get the volume name.
     # In this situation, you can set this value to false.
     volumeNameWithHash: true
+    # Webhook configuration
+    webhook:
+      # Whether to enable the admission webhook
+      enabled: false
+      # Service configuration for webhook
+      service:
+        name: webhook-service
+        port: 443
+        targetPort: 9443
+      # ValidatingAdmissionWebhook configuration
+      validatingWebhook:
+        name: starrockscluster-validating-webhook
+        path: /validate-starrocks-com-v1-starrockscluster
+        failurePolicy: Fail
+      # TLS certificate configuration for webhook server
+      # If not provided, the operator will generate self-signed certificates
+      tls:
+        # Secret name containing TLS certificate and key
+        # The secret should contain 'tls.crt' and 'tls.key' keys
+        secretName: ""
+        # Certificate directory path in the container
+        certDir: "/tmp/k8s-webhook-server/serving-certs"
+        # Certificate file name
+        certName: "tls.crt"
+        # Private key file name
+        keyName: "tls.key"
+        # Certificate validity period in days for self-signed certificates
+        # Only used when secretName is empty (auto-generated certificates)
+        validityDays: 365
 
 starrocks:
   # set the nameOverride values for creating the same resources with the parent chart.

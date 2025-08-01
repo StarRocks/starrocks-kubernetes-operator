@@ -44,9 +44,20 @@ spec:
         - --dns-domain-suffix={{ .Values.starrocksOperator.dnsDomainSuffix }}
         {{- end }}
         - --volume-name-with-hash={{ .Values.starrocksOperator.volumeNameWithHash }}
+        {{- if .Values.starrocksOperator.webhook.enabled }}
+        - --enable-webhooks
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}
+        {{- if .Values.starrocksOperator.webhook.enabled }}
+        - name: WEBHOOK_NAMESPACE
+          value: {{ template "operator.namespace" . }}
+        - name: WEBHOOK_SERVICE_NAME
+          value: {{ .Values.starrocksOperator.webhook.service.name }}
+        - name: WEBHOOK_CERT_DIR
+          value: {{ .Values.starrocksOperator.webhook.tls.certDir }}
+        {{- end }}
         {{- if .Values.starrocksOperator.env }}
         {{- toYaml .Values.starrocksOperator.env | nindent 8 }}
         {{- end }}
@@ -69,11 +80,37 @@ spec:
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 10
+        {{- if .Values.starrocksOperator.webhook.enabled }}
+        ports:
+        - containerPort: {{ .Values.starrocksOperator.webhook.service.targetPort }}
+          name: webhook-server
+          protocol: TCP
+        volumeMounts:
+        {{- if .Values.starrocksOperator.webhook.tls.secretName }}
+        - name: webhook-certs
+          mountPath: {{ .Values.starrocksOperator.webhook.tls.certDir }}
+          readOnly: true
+        {{- else }}
+        - name: webhook-certs-temp
+          mountPath: {{ .Values.starrocksOperator.webhook.tls.certDir }}
+        {{- end }}
+        {{- end }}
         # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         resources:
           {{- toYaml .Values.starrocksOperator.resources | nindent 10 }}
       serviceAccountName: {{ template "operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
+      {{- if .Values.starrocksOperator.webhook.enabled }}
+      volumes:
+      {{- if .Values.starrocksOperator.webhook.tls.secretName }}
+      - name: webhook-certs
+        secret:
+          secretName: {{ .Values.starrocksOperator.webhook.tls.secretName }}
+      {{- else }}
+      - name: webhook-certs-temp
+        emptyDir: {}
+      {{- end }}
+      {{- end }}
       {{- if .Values.starrocksOperator.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.starrocksOperator.nodeSelector | nindent 8 }}
