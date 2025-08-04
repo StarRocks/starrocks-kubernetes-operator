@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-    version: v1.10.2
+    version: v1.11.0
   name: starrockswarehouses.starrocks.com
 spec:
   group: starrocks.com

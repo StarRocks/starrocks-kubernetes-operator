@@ -608,7 +608,12 @@ Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 <h3 id="starrocks.com/v1.SpecInterface">SpecInterface
 </h3>
 <div>
-<p>SpecInterface is a common interface for all starrocks component spec.</p>
+<p>SpecInterface defines the common interface that must be implemented by all StarRocks component specs
+(FE, BE, CN, FE Proxy). It provides methods to configure pod and container settings like security context,
+lifecycle hooks, networking, and storage.
+All components including StarRocksFeSpec, StarRocksBeSpec, StarRocksCnSpec, StarRocksFeProxySpec have implemented
+the SpecInterface. If a method has the same implementation, we will implement in StarRocksLoadSpec which implements
+the loadInterface interface.</p>
 </div>
 <h3 id="starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec
 </h3>
@@ -1149,6 +1154,28 @@ HorizontalScaler
 <p>HorizontalAutoscaler have the autoscaler information.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>replicas</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>Replicas is the total number of non-terminated CN pods targeted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>selector</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Selector for CN pods. The HPA will use this selector to know which pods to monitor.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec
@@ -1157,6 +1184,7 @@ HorizontalScaler
 (<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>, <a href="#starrocks.com/v1.WarehouseComponentSpec">WarehouseComponentSpec</a>)
 </p>
 <div>
+<p>StarRocksComponentSpec defines the shared specification for all StarRocks components except FE Proxy</p>
 </div>
 <table>
 <thead>
@@ -1388,6 +1416,21 @@ and does not support read-only root filesystem</p>
 See <a href="https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/">https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/</a> for more details.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>persistentVolumeClaimRetentionPolicy</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#statefulsetpersistentvolumeclaimretentionpolicy-v1-apps">
+Kubernetes apps/v1.StatefulSetPersistentVolumeClaimRetentionPolicy
+</a>
+</em>
+</td>
+<td>
+<p>PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
+The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
+The WhenScaled field is only supported for the CN component.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -1483,7 +1526,6 @@ string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
 <p>Reason represents the reason of not running.</p>
 </td>
 </tr>
@@ -1495,6 +1537,8 @@ string
 (<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
 </p>
 <div>
+<p>StarRocksFeProxySpec defines the specification for FE Proxy
+Note: it includes StarRocksLoadSpec, not StarRocksComponentSpec</p>
 </div>
 <table>
 <thead>
@@ -1707,11 +1751,11 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>Replicas is the number of desired Pod.
-When HPA policy is enabled with a fixed replica count: every time the starrockscluster CR is
-applied, the replica count of the StatefulSet object in K8S will be reset to the value
-specified by the &lsquo;Replicas&rsquo; field, erasing the value previously set by HPA.
-So operator will set it to nil when HPA policy is enabled.</p>
+<p>Replicas is the number of desired Pods.
+When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
+the starrockscluster CR is applied, the replica count of the StatefulSet
+object in K8S will be reset to the value specified by the &lsquo;Replicas&rsquo;
+field, erasing the value previously set by HPA.</p>
 </td>
 </tr>
 <tr>
@@ -2058,7 +2102,7 @@ map[string]string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Annotations store Kubernetes Service annotations. These will be added to the external service
+<p>Annotations&rsquo; store Kubernetes Service annotations. These will be added to the external service
 only (not internal).</p>
 </td>
 </tr>
@@ -2537,5 +2581,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>de25b43</code>.
+on git commit <code>96a60138</code>.
 </em></p>
