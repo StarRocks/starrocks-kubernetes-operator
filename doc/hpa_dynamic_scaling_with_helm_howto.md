@@ -1,6 +1,6 @@
 # HPA Dynamic Scaling for CN Nodes with Helm Charts
 
-This document describes how to implement Horizontal Pod Autoscaler (HPA) based dynamic scaling for CN (Compute Node) nodes in StarRocks clusters using Helm Charts. This feature was introduced in v1.10.2 and addresses critical autoscaling issues including resource cleanup, version compatibility, and graceful scaling operations.
+This document describes how to implement Horizontal Pod Autoscaler (HPA) based dynamic scaling for CN (Compute Node) nodes in StarRocks clusters using Helm Charts. This feature was introduced in v1.11.0 and addresses critical autoscaling issues including resource cleanup, version compatibility, and graceful scaling operations.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ The HPA feature enables automatic scaling of CN nodes based on resource metrics 
 
 ### Key Features Resolved
 
-Since v1.10.2, the following critical issues have been resolved:
+Since v1.11.0, the following critical issues have been resolved:
 - **Resource Cleanup**: Proper HPA resource management when autoscaling policies are removed
 - **Version Compatibility**: Support for multiple HPA API versions across different Kubernetes versions
 - **Graceful Scaling**: Coordinated scaling operations with proper node registration/deregistration
