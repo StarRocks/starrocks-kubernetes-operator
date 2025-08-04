@@ -1,7 +1,7 @@
 # Automatic scaling for CN nodes
 
 This topic describes how to configure automatic scaling for CN nodes in a StarRocks cluster.
-> Note: If you are seeking for help for versions before v1.10.2, this doc is for you. If you are using v1.10.2 or later, please refer to the [HPA Dynamic Scaling](./hpa_dynamic_scaling_with_helm_howto.md) doc.
+> Note: If you are seeking for help for versions before v1.11.0, this doc is for you. If you are using v1.11.0 or later, please refer to the [HPA Dynamic Scaling](./hpa_dynamic_scaling_with_helm_howto.md) doc.
 
 ## Prerequisites
 
