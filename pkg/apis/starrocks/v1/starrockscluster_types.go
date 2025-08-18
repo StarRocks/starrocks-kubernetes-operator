@@ -80,6 +80,10 @@ type SpecInterface interface {
 	// GetUpdateStrategy returns the update strategy for the StatefulSet.
 	// This controls how pods are replaced during updates.
 	GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy
+
+	// GetMinReadySeconds returns the minimum number of seconds for which a newly created pod should be ready
+	// without any of its container crashing, for it to be considered available.
+	GetMinReadySeconds() *int32
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -309,6 +313,12 @@ func (spec *StarRocksFeProxySpec) IsReadOnlyRootFilesystem() *bool {
 // fe proxy does not have field Sysctls, the reason why implementing this method is
 // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetSysctls() []corev1.Sysctl { return nil }
+
+// GetMinReadySeconds
+// fe proxy does not have field MinReadySeconds, the reason why implementing this method is
+func (spec *StarRocksFeProxySpec) GetMinReadySeconds() *int32 {
+	return nil
+}
 
 // Phase is defined under status, e.g.
 // 1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.

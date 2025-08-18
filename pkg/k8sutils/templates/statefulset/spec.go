@@ -84,6 +84,9 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			PodManagementPolicy:  appsv1.ParallelPodManagement,
 		},
 	}
+	if spec.GetMinReadySeconds() != nil && *spec.GetMinReadySeconds() > 0 {
+		expectSTS.Spec.MinReadySeconds = *spec.GetMinReadySeconds()
+	}
 
 	// When Warehouse CR is deleted, the operator needs to get some environments from the statefulset to
 	// execute the dropping warehouse statement.

@@ -2623,6 +2623,13 @@ spec:
                       Note: you can set it to 0 to disable the liveness probe.
                     format: int32
                     type: integer
+                  minReadySeconds:
+                    description: |-
+                      MinReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+                      without any of its container crashing, for it to be considered available.
+                      Defaults to 0 (pod will be considered available as soon as it is ready).
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
@@ -7647,6 +7654,13 @@ spec:
                       the total time of seconds before the container restart. If LivenessProbeFailureSeconds
                       can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
                       Note: you can set it to 0 to disable the liveness probe.
+                    format: int32
+                    type: integer
+                  minReadySeconds:
+                    description: |-
+                      MinReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+                      without any of its container crashing, for it to be considered available.
+                      Defaults to 0 (pod will be considered available as soon as it is ready).
                     format: int32
                     type: integer
                   nodeSelector:
@@ -13560,6 +13574,13 @@ spec:
                       the total time of seconds before the container restart. If LivenessProbeFailureSeconds
                       can't be divided by defaultPeriodSeconds, the failureThreshold will be rounded up.
                       Note: you can set it to 0 to disable the liveness probe.
+                    format: int32
+                    type: integer
+                  minReadySeconds:
+                    description: |-
+                      MinReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+                      without any of its container crashing, for it to be considered available.
+                      Defaults to 0 (pod will be considered available as soon as it is ready).
                     format: int32
                     type: integer
                   nodeSelector:
