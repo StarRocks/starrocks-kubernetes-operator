@@ -36,6 +36,7 @@ type hashStatefulsetObject struct {
 	replicas                             int32
 	updateStrategy                       appsv1.StatefulSetUpdateStrategy
 	persistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
+	minReadySeconds                      int32
 }
 
 // statefulSetHashObject construct the hash spec for deep equals to exist statefulset.
@@ -62,6 +63,7 @@ func statefulSetHashObject(sts *appsv1.StatefulSet) hashStatefulsetObject {
 		replicas:                             replicas,
 		updateStrategy:                       sts.Spec.UpdateStrategy,
 		persistentVolumeClaimRetentionPolicy: sts.Spec.PersistentVolumeClaimRetentionPolicy,
+		minReadySeconds:                      sts.Spec.MinReadySeconds,
 	}
 }
 

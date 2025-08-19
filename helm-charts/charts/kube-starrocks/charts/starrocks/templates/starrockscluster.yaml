@@ -201,6 +201,7 @@ spec:
     {{- if .Values.starrocksFESpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksFESpec.readinessProbeFailureSeconds }}
     {{- end }}
+    minReadySeconds: {{ .Values.starrocksFESpec.minReadySeconds }}
     {{- if .Values.starrocksFESpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
@@ -478,6 +479,7 @@ spec:
     {{- if .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     {{- end }}
+    minReadySeconds: {{ .Values.starrocksBeSpec.minReadySeconds }}
     {{- if .Values.starrocksBeSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
@@ -723,6 +725,7 @@ spec:
     {{- if .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
     readinessProbeFailureSeconds: {{ .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
     {{- end }}
+    minReadySeconds: {{ .Values.starrocksCnSpec.minReadySeconds }}
     {{- if .Values.starrocksCnSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}

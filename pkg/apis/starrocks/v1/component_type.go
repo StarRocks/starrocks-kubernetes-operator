@@ -123,6 +123,12 @@ type StarRocksComponentSpec struct {
 	// The WhenScaled field is only supported for the CN component.
 	//nolint:lll
 	PersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"persistentVolumeClaimRetentionPolicy,omitempty"`
+
+	// MinReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+	// without any of its container crashing, for it to be considered available.
+	// Defaults to 0 (pod will be considered available as soon as it is ready).
+	// +optional
+	MinReadySeconds *int32 `json:"minReadySeconds,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -267,6 +273,10 @@ func (spec *StarRocksComponentSpec) IsReadOnlyRootFilesystem() *bool {
 		return &b
 	}
 	return spec.ReadOnlyRootFilesystem
+}
+
+func (spec *StarRocksComponentSpec) GetMinReadySeconds() *int32 {
+	return spec.MinReadySeconds
 }
 
 // DisasterRecovery is used to determine whether to enter disaster recovery mode.

@@ -48,7 +48,7 @@ func TestStatefulSetDeepEqual(t *testing.T) {
 				actual: &appsv1.StatefulSet{
 					ObjectMeta: metav1.ObjectMeta{
 						Annotations: map[string]string{
-							v1.ComponentResourceHash: "3376346675",
+							v1.ComponentResourceHash: "256676490",
 						},
 					},
 				},

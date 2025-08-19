@@ -561,6 +561,11 @@ starrocks:
     # the default value is 15 seconds
     # You can set it to "0" to disable the probe.
     readinessProbeFailureSeconds:
+    # minReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+    # without any of its container crashing, for it to be considered available.
+    # Defaults to 0 (pod will be considered available as soon as it is ready).
+    # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    minReadySeconds: 0
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
@@ -914,6 +919,11 @@ starrocks:
     # the default value is 15 seconds
     # You can set it to "0" to disable the probe.
     readinessProbeFailureSeconds:
+    # minReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+    # without any of its container crashing, for it to be considered available.
+    # Defaults to 0 (pod will be considered available as soon as it is ready).
+    # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    minReadySeconds: 0
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
@@ -1233,6 +1243,11 @@ starrocks:
     # the default value is 15 seconds
     # You can set it to "0" to disable the probe.
     readinessProbeFailureSeconds:
+    # minReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+    # without any of its container crashing, for it to be considered available.
+    # Defaults to 0 (pod will be considered available as soon as it is ready).
+    # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    minReadySeconds: 0
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,

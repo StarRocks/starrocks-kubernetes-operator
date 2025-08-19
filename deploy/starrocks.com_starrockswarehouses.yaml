@@ -1595,6 +1595,9 @@ spec:
                   livenessProbeFailureSeconds:
                     format: int32
                     type: integer
+                  minReadySeconds:
+                    format: int32
+                    type: integer
                   nodeSelector:
                     additionalProperties:
                       type: string
