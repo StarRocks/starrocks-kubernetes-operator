@@ -1431,6 +1431,20 @@ The WhenDeleted field is supported for all components, and it determines whether
 The WhenScaled field is only supported for the CN component.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>minReadySeconds</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MinReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+without any of its container crashing, for it to be considered available.
+Defaults to 0 (pod will be considered available as soon as it is ready).</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -2581,5 +2595,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>96a60138</code>.
+on git commit <code>15846576</code>.
 </em></p>
