@@ -387,9 +387,21 @@ func GetPreStopCommand(spec v1.SpecInterface) []string {
 	case *v1.StarRocksFeSpec:
 		command = append(command, fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars)))
 	case *v1.StarRocksBeSpec:
-		command = append(command, fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars)))
+		imageVersion := GetImageVersion(spec.GetImage())
+		b, err := IsLowerThanAny(imageVersion, []string{"3.3.19", "3.4.8", "3.5.6"})
+		if err == nil || b {
+			command = append(command, fmt.Sprintf("%s/be/bin/stop_be.sh", GetStarRocksRootPath(v.BeEnvVars)))
+		} else {
+			command = append(command, fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars)))
+		}
 	case *v1.StarRocksCnSpec:
-		command = append(command, fmt.Sprintf("%s/cn/bin/stop_cn.sh -g", GetStarRocksRootPath(v.CnEnvVars)))
+		imageVersion := GetImageVersion(spec.GetImage())
+		b, err := IsLowerThanAny(imageVersion, []string{"3.3.17", "3.4.6", "3.5.2"})
+		if err == nil || b {
+			command = append(command, fmt.Sprintf("%s/cn/bin/stop_cn.sh", GetStarRocksRootPath(v.CnEnvVars)))
+		} else {
+			command = append(command, fmt.Sprintf("%s/cn/bin/stop_cn.sh -g", GetStarRocksRootPath(v.CnEnvVars)))
+		}
 	}
 	return command
 }

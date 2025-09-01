@@ -57,6 +57,9 @@ type loadInterface interface {
 
 	// GetImagePullPolicy returns the image pull policy for containers
 	GetImagePullPolicy() corev1.PullPolicy
+
+	// GetImage returns the container image to use
+	GetImage() string
 }
 
 var _ loadInterface = &StarRocksLoadSpec{}
@@ -200,6 +203,10 @@ type StarRocksLoadSpec struct {
 	// Optional: Default to false.
 	// +optional
 	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
+}
+
+func (spec *StarRocksLoadSpec) GetImage() string {
+	return spec.Image
 }
 
 // StarRocksService defines external service for starrocks component.
