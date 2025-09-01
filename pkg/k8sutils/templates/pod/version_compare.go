@@ -1,7 +1,6 @@
 package pod
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -39,7 +38,7 @@ func IsLowerThanAny(checkVersion string, targetVersions []string) (bool, error) 
 		}
 	}
 
-	return false, errors.New(fmt.Sprintf("version %s not in target versions", checkVersion))
+	return false, fmt.Errorf("version %s not in target versions", checkVersion)
 }
 
 // for version formats like "3.3-latest", it will return invalid format error
