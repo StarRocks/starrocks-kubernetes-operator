@@ -50,6 +50,7 @@ spec:
     tolerations:
       {{- toYaml .Values.spec.tolerations | nindent 6 }}
     {{- end }}
+    minReadySeconds: {{ .Values.spec.minReadySeconds }}
     {{- if .Values.spec.autoScalingPolicy }}
     autoScalingPolicy:
       {{- toYaml .Values.spec.autoScalingPolicy | nindent 6 }}

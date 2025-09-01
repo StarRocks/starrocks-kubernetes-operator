@@ -111,6 +111,11 @@ spec:
     #   operator: "Equal|Exists"
     #   value: "value"
     #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  # minReadySeconds specifies the minimum number of seconds for which a newly created pod should be ready
+  # without any of its container crashing, for it to be considered available.
+  # Defaults to 0 (pod will be considered available as soon as it is ready).
+  # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+  minReadySeconds: 0
   autoScalingPolicy: {}
     # you can select different versions of HPA (Horizontal Pod Autoscaler) based on the Kubernetes version you are
     # using to ensure compatibility and adaptability. the default version is v2beta2.
