@@ -618,6 +618,8 @@ Get the value of the runAsNonRoot field in the starrocksFESpec
 {{- .Values.starrocksFESpec.runAsNonRoot -}}
 {{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
 {{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- else -}}
+false
 {{- end -}}
 {{- end -}}
 
@@ -629,6 +631,8 @@ Get the value of the runAsNonRoot field in the starrocksBeSpec
 {{- .Values.starrocksBeSpec.runAsNonRoot -}}
 {{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
 {{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- else -}}
+false
 {{- end -}}
 {{- end -}}
 
@@ -640,6 +644,8 @@ Get the value of the runAsNonRoot field in the starrocksCnSpec
 {{- .Values.starrocksCnSpec.runAsNonRoot -}}
 {{- else if .Values.starrocksCluster.componentValues.runAsNonRoot -}}
 {{- .Values.starrocksCluster.componentValues.runAsNonRoot -}}
+{{- else -}}
+false
 {{- end -}}
 {{- end -}}
 
