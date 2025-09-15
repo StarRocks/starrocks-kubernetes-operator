@@ -190,6 +190,18 @@ starrocksCluster:
       #     topologyKey: "kubernetes.io/hostname"
     # the pod labels for user select or classify pods.
     podLabels: {}
+    # DNS configuration for all StarRocks components
+    # dnsPolicy defines how DNS resolution is handle for the pods
+    dnsPolicy: "" # Default: ClusterFirst
+
+    # dnsConfig defines custom DNS parameters for the pods
+    dnsConfig: {}
+    #    nameservers:
+    #      - 8.8.8.8
+    #    searches:
+    #    options:
+    #      - name: ndots
+    #        value: "2"
 
 # spec to deploy fe.
 starrocksFESpec:
