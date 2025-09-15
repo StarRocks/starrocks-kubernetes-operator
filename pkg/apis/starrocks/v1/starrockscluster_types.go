@@ -61,6 +61,12 @@ type SpecInterface interface {
 	// Init containers run to completion in order, before the main containers start.
 	GetInitContainers() []corev1.Container
 
+	// GetDNSConfig returns the DNS configuration for the pod.
+	GetDNSConfig() *corev1.PodDNSConfig
+
+	// GetDNSPolicy returns the DNS policy for the pod.
+	GetDNSPolicy() corev1.DNSPolicy
+
 	// IsReadOnlyRootFilesystem returns whether the container's root filesystem should be read-only.
 	// A read-only root filesystem prevents modifications to improve security.
 	IsReadOnlyRootFilesystem() *bool
@@ -281,6 +287,12 @@ func (spec *StarRocksFeProxySpec) GetSidecars() []corev1.Container {
 // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetInitContainers() []corev1.Container {
 	return nil
+}
+
+func (spec *StarRocksFeProxySpec) GetDNSConfig() *corev1.PodDNSConfig { return nil }
+
+func (spec *StarRocksFeProxySpec) GetDNSPolicy() corev1.DNSPolicy {
+	return corev1.DNSClusterFirst
 }
 
 // GetCommand
