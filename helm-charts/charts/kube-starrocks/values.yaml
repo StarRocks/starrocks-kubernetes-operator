@@ -565,7 +565,15 @@ starrocks:
     # without any of its container crashing, for it to be considered available.
     # Defaults to 0 (pod will be considered available as soon as it is ready).
     # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    # Note: If you want to this field take effect, you need set podManagementPolicy to OrderedReady.
     minReadySeconds: 0
+    # podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+    # The default policy is Parallel which is not the same as statefulset's default policy. The reason is that we previously hoped
+    # to execute scale-out and scale-in parallel, which is safe for CN, but does pose data security issues for BE.
+    # Note: If you have changed this field, then the related statefulset object need to be recreated, or there will be an error like this:
+    #       updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy',
+    #       'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+    podManagementPolicy: Parallel
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
@@ -923,7 +931,15 @@ starrocks:
     # without any of its container crashing, for it to be considered available.
     # Defaults to 0 (pod will be considered available as soon as it is ready).
     # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    # Note: If you want to this field take effect, you need set podManagementPolicy to OrderedReady.
     minReadySeconds: 0
+    # podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+    # The default policy is Parallel which is not the same as statefulset's default policy. The reason is that we previously hoped
+    # to execute scale-out and scale-in parallel, which is safe for CN, but does pose data security issues for BE.
+    # Note: If you have changed this field, then the related statefulset object need to be recreated, or there will be an error like this:
+    #       updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy',
+    #       'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+    podManagementPolicy: Parallel
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,
@@ -1247,7 +1263,15 @@ starrocks:
     # without any of its container crashing, for it to be considered available.
     # Defaults to 0 (pod will be considered available as soon as it is ready).
     # see https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minimum-ready-seconds for more details.
+    # Note: If you want to this field take effect, you need set podManagementPolicy to OrderedReady.
     minReadySeconds: 0
+    # podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+    # The default policy is Parallel which is not the same as statefulset's default policy. The reason is that we previously hoped
+    # to execute scale-out and scale-in parallel, which is safe for CN, but does pose data security issues for BE.
+    # Note: If you have changed this field, then the related statefulset object need to be recreated, or there will be an error like this:
+    #       updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy',
+    #       'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+    podManagementPolicy: Parallel
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,

@@ -81,7 +81,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			Template:             *podTemplateSpec,
 			ServiceName:          service.SearchServiceName(object.SubResourcePrefixName, spec),
 			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
-			PodManagementPolicy:  appsv1.ParallelPodManagement,
+			PodManagementPolicy:  spec.GetPodManagementPolicy(),
 		},
 	}
 	if spec.GetMinReadySeconds() != nil && *spec.GetMinReadySeconds() > 0 {

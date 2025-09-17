@@ -202,6 +202,7 @@ spec:
     readinessProbeFailureSeconds: {{ .Values.starrocksFESpec.readinessProbeFailureSeconds }}
     {{- end }}
     minReadySeconds: {{ .Values.starrocksFESpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.starrocksFESpec.podManagementPolicy }}
     {{- if .Values.starrocksFESpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksFESpec.lifecycle | nindent 6 }}
@@ -480,6 +481,7 @@ spec:
     readinessProbeFailureSeconds: {{ .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     {{- end }}
     minReadySeconds: {{ .Values.starrocksBeSpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.starrocksBeSpec.podManagementPolicy }}
     {{- if .Values.starrocksBeSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksBeSpec.lifecycle | nindent 6 }}
@@ -726,6 +728,7 @@ spec:
     readinessProbeFailureSeconds: {{ .Values.starrocksCnSpec.readinessProbeFailureSeconds }}
     {{- end }}
     minReadySeconds: {{ .Values.starrocksCnSpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.starrocksCnSpec.podManagementPolicy }}
     {{- if .Values.starrocksCnSpec.lifecycle }}
     lifecycle:
       {{- toYaml .Values.starrocksCnSpec.lifecycle | nindent 6 }}

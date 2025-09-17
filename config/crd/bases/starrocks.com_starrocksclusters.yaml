@@ -2663,6 +2663,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  podManagementPolicy:
+                    description: |-
+                      podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+                      The default policy is Parallel which is not the same as statefulset's default policy which maybe a not a good choice
+                      to use a different default value.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
@@ -7696,6 +7702,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  podManagementPolicy:
+                    description: |-
+                      podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+                      The default policy is Parallel which is not the same as statefulset's default policy which maybe a not a good choice
+                      to use a different default value.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
@@ -13616,6 +13628,12 @@ spec:
                       type: string
                     description: the pod labels for user select or classify pods.
                     type: object
+                  podManagementPolicy:
+                    description: |-
+                      podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+                      The default policy is Parallel which is not the same as statefulset's default policy which maybe a not a good choice
+                      to use a different default value.
+                    type: string
                   readOnlyRootFilesystem:
                     description: "Whether this container has a read-only root filesystem.\nDefault
                       is false.\nNote that:\n\t1. This field cannot be set when spec.os.name
