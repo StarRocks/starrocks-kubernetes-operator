@@ -129,6 +129,12 @@ type StarRocksComponentSpec struct {
 	// Defaults to 0 (pod will be considered available as soon as it is ready).
 	// +optional
 	MinReadySeconds *int32 `json:"minReadySeconds,omitempty"`
+
+	// podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+	// The default policy is Parallel which is not the same as statefulset's default policy which maybe a not a good choice
+	// to use a different default value.
+	// +optional
+	PodManagementPolicy appsv1.PodManagementPolicyType `json:"podManagementPolicy,omitempty"`
 }
 
 // StarRocksComponentStatus represents the status of a starrocks component.
@@ -277,6 +283,13 @@ func (spec *StarRocksComponentSpec) IsReadOnlyRootFilesystem() *bool {
 
 func (spec *StarRocksComponentSpec) GetMinReadySeconds() *int32 {
 	return spec.MinReadySeconds
+}
+
+func (spec *StarRocksComponentSpec) GetPodManagementPolicy() appsv1.PodManagementPolicyType {
+	if spec.PodManagementPolicy == "" {
+		return appsv1.ParallelPodManagement
+	}
+	return spec.PodManagementPolicy
 }
 
 // DisasterRecovery is used to determine whether to enter disaster recovery mode.

@@ -1299,6 +1299,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  podManagementPolicy:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:
@@ -3683,6 +3685,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  podManagementPolicy:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:
@@ -6420,6 +6424,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  podManagementPolicy:
+                    type: string
                   readOnlyRootFilesystem:
                     type: boolean
                   readinessProbeFailureSeconds:
