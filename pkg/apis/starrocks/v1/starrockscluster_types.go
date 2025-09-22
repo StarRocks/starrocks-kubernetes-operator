@@ -84,6 +84,8 @@ type SpecInterface interface {
 	// GetMinReadySeconds returns the minimum number of seconds for which a newly created pod should be ready
 	// without any of its container crashing, for it to be considered available.
 	GetMinReadySeconds() *int32
+
+	GetPodManagementPolicy() appsv1.PodManagementPolicyType
 }
 
 var _ SpecInterface = &StarRocksFeSpec{}
@@ -316,8 +318,16 @@ func (spec *StarRocksFeProxySpec) GetSysctls() []corev1.Sysctl { return nil }
 
 // GetMinReadySeconds
 // fe proxy does not have field MinReadySeconds, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetMinReadySeconds() *int32 {
 	return nil
+}
+
+// GetPodManagementPolicy
+// fe proxy does not have field PodManagementPolicy, the reason why implementing this method is
+// that StarRocksFeProxySpec needs to implement SpecInterface interface
+func (spec *StarRocksFeProxySpec) GetPodManagementPolicy() appsv1.PodManagementPolicyType {
+	return ""
 }
 
 // Phase is defined under status, e.g.
