@@ -1445,6 +1445,22 @@ without any of its container crashing, for it to be considered available.
 Defaults to 0 (pod will be considered available as soon as it is ready).</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>podManagementPolicy</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#podmanagementpolicytype-v1-apps">
+Kubernetes apps/v1.PodManagementPolicyType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down.
+The default policy is Parallel which is not the same as statefulset&rsquo;s default policy which maybe a not a good choice
+to use a different default value.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
@@ -2595,5 +2611,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>15846576</code>.
+on git commit <code>cf001094</code>.
 </em></p>
