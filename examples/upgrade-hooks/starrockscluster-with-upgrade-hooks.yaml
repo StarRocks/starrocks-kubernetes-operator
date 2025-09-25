@@ -1,0 +1,86 @@
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-upgrade-example
+  namespace: starrocks
+  annotations:
+    # Annotation-based upgrade preparation
+    starrocks.com/prepare-upgrade: "true"
+    starrocks.com/upgrade-hooks: "disable-tablet-clone,disable-balancer"
+spec:
+  # Spec-based upgrade preparation (alternative to annotations)
+  upgradePreparation:
+    enabled: false  # Set to true to use spec-based configuration instead
+    timeoutSeconds: 300
+    hooks:
+    - name: disable-tablet-clone
+      command: 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "0")'
+      critical: true
+    - name: disable-balancer
+      command: 'ADMIN SET FRONTEND CONFIG ("disable_balance"="true")'
+      critical: true
+    - name: custom-backup
+      command: 'BACKUP SNAPSHOT my_db.upgrade_snapshot TO "s3://backup-bucket/snapshots/"'
+      critical: false
+
+  # StarRocks FE configuration
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+    service:
+      type: ClusterIP
+      ports:
+      - name: http-port
+        port: 8030
+        containerPort: 8030
+      - name: rpc-port
+        port: 9020
+        containerPort: 9020
+      - name: query-port
+        port: 9030
+        containerPort: 9030
+      - name: edit-log-port
+        port: 9010
+        containerPort: 9010
+    storageVolumes:
+    - name: fe-storage
+      storageClassName: fast-ssd
+      storageSize: 10Gi
+      mountPath: /opt/starrocks/fe/meta
+
+  # StarRocks BE configuration  
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+    service:
+      type: ClusterIP
+      ports:
+      - name: be-port
+        port: 9060
+        containerPort: 9060
+      - name: webserver-port
+        port: 8040
+        containerPort: 8040
+      - name: heartbeat-port
+        port: 9050
+        containerPort: 9050
+      - name: brpc-port
+        port: 8060
+        containerPort: 8060
+    storageVolumes:
+    - name: be-storage
+      storageClassName: fast-ssd
+      storageSize: 100Gi
+      mountPath: /opt/starrocks/be/storage
