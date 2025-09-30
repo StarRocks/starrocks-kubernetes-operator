@@ -1,0 +1,106 @@
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+  # Enable upgrade preparation via annotations (Method 1)
+  annotations:
+    starrocks.com/prepare-upgrade: "true"
+    starrocks.com/upgrade-hooks: "disable-tablet-clone,disable-balancer"
+spec:
+  # Enable upgrade preparation via spec (Method 2)
+  upgradePreparation:
+    enabled: true
+    timeoutSeconds: 300
+    hooks:
+    - name: disable-tablet-scheduling
+      command: 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "0")'
+      critical: true
+    - name: disable-colocate-balance
+      command: 'ADMIN SET FRONTEND CONFIG ("disable_colocate_balance" = "true")'
+      critical: true
+    - name: set-clone-timeout
+      command: 'ADMIN SET FRONTEND CONFIG ("max_clone_task_timeout_second" = "7200")'
+      critical: false
+  
+  # FE configuration
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 8
+      memory: 16Gi
+    service:
+      type: ClusterIP
+      ports:
+      - name: http
+        port: 8030
+        containerPort: 8030
+      - name: rpc
+        port: 9020
+        containerPort: 9020
+      - name: query
+        port: 9030
+        containerPort: 9030
+    storageSpec:
+      name: fe-storage
+      storageClassName: "fast-ssd"
+      storageSize: 100Gi
+    
+  # BE configuration  
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.2.1
+    replicas: 3
+    requests:
+      cpu: 8
+      memory: 16Gi
+    limits:
+      cpu: 16
+      memory: 64Gi
+    service:
+      type: ClusterIP
+      ports:
+      - name: be
+        port: 9060
+        containerPort: 9060
+      - name: webserver
+        port: 8040
+        containerPort: 8040
+      - name: heartbeat
+        port: 9050
+        containerPort: 9050
+    storageSpec:
+      name: be-storage
+      storageClassName: "fast-ssd"
+      storageSize: 1Ti
+
+  # CN configuration (optional)
+  starRocksCnSpec:
+    image: starrocks/cn-ubuntu:3.2.1
+    replicas: 2
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 8
+      memory: 32Gi
+    autoScalingPolicy:
+      maxReplicas: 10
+      minReplicas: 2
+      hpaPolicy:
+        metrics:
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 60
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
