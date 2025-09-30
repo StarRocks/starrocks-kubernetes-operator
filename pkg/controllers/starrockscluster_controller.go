@@ -36,13 +36,15 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/upgrade"
 )
 
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Recorder record.EventRecorder
-	Scs      []subcontrollers.ClusterSubController
+	Recorder       record.EventRecorder
+	Scs            []subcontrollers.ClusterSubController
+	UpgradeManager *upgrade.Manager
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -87,36 +89,37 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	// Check and execute upgrade preparation hooks if needed
-	upgradeHookController := subcontrollers.NewUpgradeHookController(r.Client)
-	if upgradeHookController.ShouldExecuteUpgradeHooks(ctx, src) {
-		logger.Info("Executing upgrade preparation hooks")
-		if err = upgradeHookController.ExecuteUpgradeHooks(ctx, src); err != nil {
-			logger.Error(err, "upgrade hooks execution failed")
-			// Update status with hook execution error
-			if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
-				logger.Error(updateError, "failed to update StarRocksCluster Status after hook failure")
-			}
-			return requeueIfError(err)
-		}
-		
-		// Update status after successful hook execution
-		if err = r.UpdateStarRocksClusterStatus(ctx, src); err != nil {
-			logger.Error(err, "failed to update StarRocksCluster Status after hook success")
-			return requeueIfError(err)
-		}
-		
-		// If hooks were just executed, requeue to apply the actual upgrade
-		if src.Status.UpgradePreparationStatus.Phase == srapi.UpgradePreparationCompleted {
-			logger.Info("Upgrade preparation completed, requeuing for upgrade execution")
-			return ctrl.Result{Requeue: true}, nil
-		}
+	// Initialize upgrade manager if not already initialized
+	if r.UpgradeManager == nil {
+		r.UpgradeManager = upgrade.NewManager(r.Client)
 	}
 
-	// Check if upgrade can proceed (hooks must be completed if configured)
-	if !upgradeHookController.IsUpgradeReady(ctx, src) {
-		logger.Info("Upgrade not ready, upgrade preparation still in progress")
-		return ctrl.Result{RequeueAfter: time.Second * 30}, nil
+	// Handle automatic upgrade detection and pre-upgrade hooks
+	shouldRequeue, err := r.UpgradeManager.ReconcileUpgrade(ctx, src)
+	if err != nil {
+		logger.Error(err, "Upgrade reconciliation failed")
+		if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
+			logger.Error(updateError, "failed to update StarRocksCluster Status after upgrade error")
+		}
+		return requeueIfError(err)
+	}
+
+	// Update status after upgrade reconciliation
+	if err = r.UpdateStarRocksClusterStatus(ctx, src); err != nil {
+		logger.Error(err, "failed to update StarRocksCluster Status after upgrade reconciliation")
+		return requeueIfError(err)
+	}
+
+	// If upgrade manager says to requeue, do it
+	if shouldRequeue {
+		logger.Info("Upgrade manager requested requeue")
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	// If upgrade preparation is blocking, wait before proceeding with normal reconciliation
+	if r.UpgradeManager.ShouldBlockReconciliation(src) {
+		logger.Info("Upgrade preparation in progress, blocking normal reconciliation")
+		return ctrl.Result{RequeueAfter: time.Second * 10}, nil
 	}
 
 	// subControllers reconcile for create or update component.
@@ -148,14 +151,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	logger.Info("update StarRocksCluster level status")
 	r.reconcileStatus(ctx, src)
-	
-	// Clean up upgrade annotations if cluster is running successfully
-	if src.Status.Phase == srapi.ClusterRunning {
-		if err := upgradeHookController.CleanupAnnotations(ctx, src); err != nil {
-			logger.Error(err, "failed to cleanup upgrade annotations")
-		}
-	}
-	
+
 	err = r.UpdateStarRocksClusterStatus(ctx, src)
 	if err != nil {
 		logger.Error(err, "update StarRocksCluster status failed")

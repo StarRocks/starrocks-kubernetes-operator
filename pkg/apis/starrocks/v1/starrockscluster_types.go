@@ -118,10 +118,6 @@ type StarRocksClusterSpec struct {
 	// +optional
 	// DisasterRecovery is used to determine whether to enter disaster recovery mode.
 	DisasterRecovery *DisasterRecovery `json:"disasterRecovery,omitempty"`
-
-	// UpgradePreparation defines pre-upgrade hooks and preparation steps
-	// +optional
-	UpgradePreparation *UpgradePreparation `json:"upgradePreparation,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.
@@ -148,9 +144,9 @@ type StarRocksClusterStatus struct {
 	// DisasterRecoveryStatus represents the status of disaster recovery.
 	DisasterRecoveryStatus *DisasterRecoveryStatus `json:"disasterRecoveryStatus,omitempty"`
 
-	// UpgradePreparationStatus tracks the status of upgrade preparation
 	// +optional
-	UpgradePreparationStatus *UpgradePreparationStatus `json:"upgradePreparationStatus,omitempty"`
+	// UpgradeState tracks internal upgrade state managed by the operator
+	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 // StarRocksFeSpec defines the desired state of fe.
@@ -470,66 +466,67 @@ func (storageVolume *StorageVolume) Validate() error {
 	return nil
 }
 
-// UpgradeHook defines pre-upgrade commands to execute
-type UpgradeHook struct {
-	// Name of the hook for identification
-	Name string `json:"name"`
-
-	// SQL command to execute on FE
-	Command string `json:"command"`
-
-	// Whether this hook is critical (upgrade fails if hook fails)
-	Critical bool `json:"critical,omitempty"`
-}
-
-// UpgradePreparation defines upgrade preparation configuration
-type UpgradePreparation struct {
-	// Enable upgrade preparation hooks
-	Enabled bool `json:"enabled,omitempty"`
-
-	// List of pre-upgrade hooks to execute
-	Hooks []UpgradeHook `json:"hooks,omitempty"`
-
-	// Timeout for hook execution (default: 300s)
-	TimeoutSeconds int32 `json:"timeoutSeconds,omitempty"`
-}
-
-// UpgradePreparationStatus tracks upgrade preparation state
-type UpgradePreparationStatus struct {
-	// Phase of upgrade preparation
-	Phase UpgradePreparationPhase `json:"phase,omitempty"`
+// UpgradeState tracks internal upgrade state managed by the operator
+// This is purely for operator internal use and should not be configured by users
+type UpgradeState struct {
+	// Phase of the upgrade process
+	Phase UpgradePhase `json:"phase,omitempty"`
 
 	// Reason for current phase
 	Reason string `json:"reason,omitempty"`
 
-	// Completed hooks
-	CompletedHooks []string `json:"completedHooks,omitempty"`
+	// TargetVersion being upgraded to (for tracking)
+	TargetVersion ComponentVersions `json:"targetVersion,omitempty"`
 
-	// Failed hooks
-	FailedHooks []string `json:"failedHooks,omitempty"`
+	// CurrentVersion before upgrade started
+	CurrentVersion ComponentVersions `json:"currentVersion,omitempty"`
 
-	// Timestamp when preparation started
+	// HooksExecuted tracks which pre-upgrade hooks have been executed
+	HooksExecuted []string `json:"hooksExecuted,omitempty"`
+
+	// Timestamp when upgrade preparation started
 	StartTime *metav1.Time `json:"startTime,omitempty"`
 
-	// Timestamp when preparation completed
+	// Timestamp when upgrade preparation completed
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
 }
 
-// UpgradePreparationPhase represents the phase of upgrade preparation
-type UpgradePreparationPhase string
+// ComponentVersions tracks versions of each component
+type ComponentVersions struct {
+	// FE image version
+	FeVersion string `json:"feVersion,omitempty"`
+
+	// BE image version
+	BeVersion string `json:"beVersion,omitempty"`
+
+	// CN image version
+	CnVersion string `json:"cnVersion,omitempty"`
+}
+
+// UpgradePhase represents the phase of upgrade process
+type UpgradePhase string
 
 const (
-	// UpgradePreparationPending indicates preparation is pending
-	UpgradePreparationPending UpgradePreparationPhase = "Pending"
+	// UpgradePhaseNone indicates no upgrade in progress
+	UpgradePhaseNone UpgradePhase = ""
 
-	// UpgradePreparationRunning indicates preparation is in progress
-	UpgradePreparationRunning UpgradePreparationPhase = "Running"
+	// UpgradePhaseDetected indicates an upgrade has been detected
+	UpgradePhaseDetected UpgradePhase = "Detected"
 
-	// UpgradePreparationCompleted indicates preparation completed successfully
-	UpgradePreparationCompleted UpgradePreparationPhase = "Completed"
+	// UpgradePhasePreparing indicates pre-upgrade hooks are being executed
+	UpgradePhasePreparing UpgradePhase = "Preparing"
 
-	// UpgradePreparationFailed indicates preparation failed
-	UpgradePreparationFailed UpgradePreparationPhase = "Failed"
+	// UpgradePhaseReady indicates preparation is complete and upgrade can proceed
+	UpgradePhaseReady UpgradePhase = "Ready"
+
+	// UpgradePhaseInProgress indicates upgrade is in progress
+	UpgradePhaseInProgress UpgradePhase = "InProgress"
+
+	// UpgradePhaseCompleted indicates upgrade completed successfully
+	UpgradePhaseCompleted UpgradePhase = "Completed"
+
+	// UpgradePhaseFailed indicates upgrade failed
+	UpgradePhaseFailed UpgradePhase = "Failed"
 )
 
 // StarRocksClusterList contains a list of StarRocksCluster
