@@ -33,8 +33,15 @@ func NewManager(k8sClient client.Client) *Manager {
 
 // ReconcileUpgrade handles the upgrade reconciliation logic
 // Returns: (shouldRequeue, error)
+// Security: This function is the main entry point for upgrade management and ensures
+// all upgrade operations are performed safely and securely
 func (m *Manager) ReconcileUpgrade(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	logger := logr.FromContextOrDiscard(ctx).WithName("UpgradeManager")
+
+	// Security: Validate input
+	if src == nil {
+		return false, fmt.Errorf("cluster object cannot be nil")
+	}
 
 	// Check if automatic upgrade management is enabled
 	if !m.Detector.IsFeatureEnabled(src) {
@@ -115,7 +122,7 @@ func (m *Manager) handleUpgradeInProgress(ctx context.Context, src *srapi.StarRo
 	}
 }
 
-// executePreUpgradeHooks executes pre-upgrade hooks
+// executePreUpgradeHooks executes pre-upgrade hooks with security validations
 func (m *Manager) executePreUpgradeHooks(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	logger := logr.FromContextOrDiscard(ctx).WithName("UpgradeManager")
 	logger.Info("Executing pre-upgrade hooks")
@@ -123,14 +130,19 @@ func (m *Manager) executePreUpgradeHooks(ctx context.Context, src *srapi.StarRoc
 	// Update phase to preparing
 	src.Status.UpgradeState.Phase = srapi.UpgradePhasePreparing
 
-	// Get FE connection
+	// Security: Get FE connection with validation
 	db, err := m.HookExecutor.GetFEConnection(ctx, src)
 	if err != nil {
 		logger.Error(err, "Failed to connect to FE for pre-upgrade hooks")
-		// If FE is not ready, requeue and try again
+		// If FE is not ready, requeue and try again (don't fail immediately)
 		return true, nil
 	}
-	defer db.Close()
+	// Security: Ensure database connection is always closed
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			logger.Error(closeErr, "Failed to close database connection")
+		}
+	}()
 
 	// Validate FE is ready
 	if err := m.HookExecutor.ValidateFEReady(ctx, db); err != nil {
@@ -155,12 +167,12 @@ func (m *Manager) executePreUpgradeHooks(ctx context.Context, src *srapi.StarRoc
 	return true, nil
 }
 
-// executePostUpgradeHooks executes post-upgrade cleanup hooks
+// executePostUpgradeHooks executes post-upgrade cleanup hooks (non-critical)
 func (m *Manager) executePostUpgradeHooks(ctx context.Context, src *srapi.StarRocksCluster) (bool, error) {
 	logger := logr.FromContextOrDiscard(ctx).WithName("UpgradeManager")
 	logger.Info("Executing post-upgrade hooks")
 
-	// Get FE connection
+	// Security: Get FE connection with validation
 	db, err := m.HookExecutor.GetFEConnection(ctx, src)
 	if err != nil {
 		logger.Error(err, "Failed to connect to FE for post-upgrade hooks")
@@ -168,7 +180,12 @@ func (m *Manager) executePostUpgradeHooks(ctx context.Context, src *srapi.StarRo
 		m.Detector.MarkUpgradeComplete(src)
 		return false, nil
 	}
-	defer db.Close()
+	// Security: Ensure database connection is always closed
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			logger.Error(closeErr, "Failed to close database connection")
+		}
+	}()
 
 	// Execute post-upgrade hooks (non-critical)
 	if err := m.HookExecutor.ExecutePostUpgradeHooks(ctx, src, db); err != nil {
