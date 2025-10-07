@@ -40,8 +40,11 @@ import (
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Recorder record.EventRecorder
-	Scs      []subcontrollers.ClusterSubController
+	Recorder          record.EventRecorder
+	FeController      subcontrollers.ClusterSubController
+	BeController      subcontrollers.ClusterSubController
+	CnController      subcontrollers.ClusterSubController
+	FeProxyController subcontrollers.ClusterSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -86,8 +89,11 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
+	// Get controllers in appropriate order based on deployment scenario
+	controllers := getControllersInOrder(ctx, r.Client, src, r.FeController, r.BeController, r.CnController, r.FeProxyController)
+
 	// subControllers reconcile for create or update component.
-	for _, rc := range r.Scs {
+	for _, rc := range controllers {
 		kvs := []interface{}{"subController", rc.GetControllerName()}
 		logger.Info("sub controller sync spec", kvs...)
 		if err = rc.SyncCluster(ctx, src); err != nil {
@@ -100,7 +106,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
-	for _, rc := range r.Scs {
+	for _, rc := range controllers {
 		kvs := []interface{}{"subController", rc.GetControllerName()}
 		logger.Info("sub controller update status", kvs...)
 		if err = rc.UpdateClusterStatus(ctx, src); err != nil {
