@@ -91,9 +91,9 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	// Get controllers in appropriate order based on deployment scenario
-	controllers := getControllersInOrder(ctx, r.Client, src, r.FeController, r.BeController, r.CnController, r.FeProxyController)
+	// Determine if this is an upgrade scenario and get controllers in appropriate order
 	isUpgradeScenario := isUpgrade(ctx, r.Client, src)
+	controllers := getControllersInOrder(isUpgradeScenario, r.FeController, r.BeController, r.CnController, r.FeProxyController)
 
 	// subControllers reconcile for create or update component.
 	for _, rc := range controllers {
@@ -106,18 +106,12 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			if src.Spec.StarRocksBeSpec != nil && !isComponentReady(ctx, r.Client, src, "be") {
 				logger.Info("upgrade: waiting for BE rollout to complete before updating FE",
 					"controller", controllerName)
-				if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
-					logger.Error(updateError, "failed to update StarRocksCluster Status")
-				}
 				return ctrl.Result{}, nil
 			}
 			// Check CN readiness if CN exists in spec
 			if src.Spec.StarRocksCnSpec != nil && !isComponentReady(ctx, r.Client, src, "cn") {
 				logger.Info("upgrade: waiting for CN rollout to complete before updating FE",
 					"controller", controllerName)
-				if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
-					logger.Error(updateError, "failed to update StarRocksCluster Status")
-				}
 				return ctrl.Result{}, nil
 			}
 		}
@@ -138,9 +132,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		if !isUpgradeScenario && controllerName == "feController" {
 			if src.Spec.StarRocksFeSpec != nil && !isComponentReady(ctx, r.Client, src, "fe") {
 				logger.Info("initial deployment: waiting for FE to be ready before creating BE/CN", "controller", controllerName)
-				if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
-					logger.Error(updateError, "failed to update StarRocksCluster Status")
-				}
 				return ctrl.Result{}, nil
 			}
 		}
@@ -157,9 +148,6 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 				logger.Info("upgrade: waiting for component rollout to complete before proceeding",
 					"controller", controllerName,
 					"component", componentType)
-				if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
-					logger.Error(updateError, "failed to update StarRocksCluster Status")
-				}
 				return ctrl.Result{}, nil
 			}
 		}

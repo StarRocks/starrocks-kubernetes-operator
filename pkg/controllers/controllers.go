@@ -49,15 +49,14 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 
 // getControllersInOrder returns controllers in the appropriate order based on deployment scenario
 func getControllersInOrder(
-	ctx context.Context,
-	client client.Client,
-	cluster *srapi.StarRocksCluster,
+	isUpgradeScenario bool,
 	fe, be, cn, feproxy subcontrollers.ClusterSubController,
 ) []subcontrollers.ClusterSubController {
-	if isUpgrade(ctx, client, cluster) {
+	if isUpgradeScenario {
 		return []subcontrollers.ClusterSubController{be, cn, fe, feproxy}
 	}
 
+	// default order
 	return []subcontrollers.ClusterSubController{fe, be, cn, feproxy}
 }
 

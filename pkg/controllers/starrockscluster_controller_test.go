@@ -251,7 +251,8 @@ func TestGetControllersInOrder(t *testing.T) {
 		cluster := newTestCluster("", "starrocks/fe:3.1.0")
 		client := fake.NewFakeClient(srapi.Scheme)
 
-		controllers := getControllersInOrder(ctx, client, cluster, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
+		isUpgradeScenario := isUpgrade(ctx, client, cluster)
+		controllers := getControllersInOrder(isUpgradeScenario, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
 
 		// Check FE is first
 		require.Equal(t, "fe", controllers[0].GetControllerName())
@@ -266,7 +267,8 @@ func TestGetControllersInOrder(t *testing.T) {
 		sts := newTestStatefulSet("test-cluster-fe")
 		client := fake.NewFakeClient(srapi.Scheme, sts)
 
-		controllers := getControllersInOrder(ctx, client, cluster, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
+		isUpgradeScenario := isUpgrade(ctx, client, cluster)
+		controllers := getControllersInOrder(isUpgradeScenario, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
 
 		// Check BE is first
 		require.Equal(t, "be", controllers[0].GetControllerName())
