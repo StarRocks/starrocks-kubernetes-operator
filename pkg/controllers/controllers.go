@@ -3,13 +3,16 @@ package controllers
 import (
 	"context"
 
+	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
@@ -17,25 +20,77 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
+const (
+	componentTypeFE = "fe"
+	componentTypeBE = "be"
+	componentTypeCN = "cn"
+)
+
 func SetupClusterReconciler(mgr ctrl.Manager) error {
 	feController := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	beController := be.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	cnController := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	feProxyController := feproxy.New(mgr.GetClient(), mgr.GetEventRecorderFor)
-	subcs := []subcontrollers.ClusterSubController{
-		feController, beController, cnController, feProxyController,
-	}
 
 	reconciler := &StarRocksClusterReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("starrockscluster-controller"),
-		Scs:      subcs,
+		Client:            mgr.GetClient(),
+		Recorder:          mgr.GetEventRecorderFor("starrockscluster-controller"),
+		FeController:      feController,
+		BeController:      beController,
+		CnController:      cnController,
+		FeProxyController: feProxyController,
 	}
 
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		return err
 	}
 	return nil
+}
+
+// getControllersInOrder returns controllers in the appropriate order based on deployment scenario
+func getControllersInOrder(
+	isUpgradeScenario bool,
+	fe, be, cn, feproxy subcontrollers.ClusterSubController,
+) []subcontrollers.ClusterSubController {
+	if isUpgradeScenario {
+		return []subcontrollers.ClusterSubController{be, cn, fe, feproxy}
+	}
+
+	// default order
+	return []subcontrollers.ClusterSubController{fe, be, cn, feproxy}
+}
+
+// isUpgrade determines if the current reconciliation is an upgrade scenario.
+func isUpgrade(ctx context.Context, kubeClient client.Client, cluster *srapi.StarRocksCluster) bool {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	// Check FE first (always required in StarRocks)
+	feSts := &appsv1.StatefulSet{}
+	feExists := kubeClient.Get(ctx, types.NamespacedName{
+		Namespace: cluster.Namespace,
+		Name:      cluster.Name + "-fe",
+	}, feSts) == nil
+
+	beSts := &appsv1.StatefulSet{}
+	beExists := kubeClient.Get(ctx, types.NamespacedName{
+		Namespace: cluster.Namespace,
+		Name:      cluster.Name + "-be",
+	}, beSts) == nil
+
+	// Corrupted state safeguard: BE exists but FE doesn't (invalid configuration).
+	// Treat as initial deployment so FE is reconciled first.
+	// Rationale: FE is a prerequisite for BE/CN; prioritizing FE allows recovery without misordering.
+	if beExists && !feExists {
+		logger.Info("WARNING: BE StatefulSet exists without FE - treating as initial deployment to recreate FE first")
+		return false
+	}
+
+	if feExists {
+		return true
+	}
+
+	// No StatefulSets found - this is initial deployment
+	return false
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -80,6 +135,109 @@ func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
 		return err
 	}
 	return nil
+}
+
+// isComponentReady checks if a component is ready by verifying:
+// 1. Its service endpoints have ready addresses (pods are healthy)
+// 2. Its StatefulSet rollout is complete (no pending updates)
+func isComponentReady(ctx context.Context, k8sClient client.Client, cluster *srapi.StarRocksCluster, componentType string) bool {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	var serviceName string
+	var statefulSetName string
+
+	switch componentType {
+	case componentTypeFE:
+		if cluster.Spec.StarRocksFeSpec == nil {
+			return true // Component not configured, consider it ready
+		}
+		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksFeSpec)(nil))
+		statefulSetName = cluster.Name + "-fe"
+	case componentTypeBE:
+		if cluster.Spec.StarRocksBeSpec == nil {
+			return true
+		}
+		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksBeSpec)(nil))
+		statefulSetName = cluster.Name + "-be"
+	case componentTypeCN:
+		if cluster.Spec.StarRocksCnSpec == nil {
+			return true
+		}
+		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksCnSpec)(nil))
+		statefulSetName = cluster.Name + "-cn"
+	default:
+		return true
+	}
+
+	// Check 1: Service endpoints must have ready addresses
+	endpoints := corev1.Endpoints{}
+	if err := k8sClient.Get(ctx, types.NamespacedName{
+		Namespace: cluster.Namespace,
+		Name:      serviceName,
+	}, &endpoints); err != nil {
+		logger.V(5).Info("get component service endpoints failed", "component", componentType, "serviceName", serviceName, "error", err)
+		return false
+	}
+
+	hasReadyEndpoints := false
+	for _, sub := range endpoints.Subsets {
+		if len(sub.Addresses) > 0 {
+			hasReadyEndpoints = true
+			break
+		}
+	}
+
+	if !hasReadyEndpoints {
+		logger.Info("component not ready: no ready endpoints", "component", componentType, "serviceName", serviceName)
+		return false
+	}
+
+	// Check 2: StatefulSet rollout must be complete (currentRevision == updateRevision)
+	sts := &appsv1.StatefulSet{}
+	if err := k8sClient.Get(ctx, types.NamespacedName{
+		Namespace: cluster.Namespace,
+		Name:      statefulSetName,
+	}, sts); err != nil {
+		logger.V(5).Info("get component StatefulSet failed", "component", componentType, "statefulSetName", statefulSetName, "error", err)
+		return false
+	}
+
+	// Check if StatefulSet controller has observed our latest spec change
+	if sts.Generation != sts.Status.ObservedGeneration {
+		logger.Info("component not ready: StatefulSet spec change not yet observed",
+			"component", componentType,
+			"statefulSetName", statefulSetName,
+			"generation", sts.Generation,
+			"observedGeneration", sts.Status.ObservedGeneration)
+		return false
+	}
+
+	// Check if rollout is complete
+	if sts.Status.CurrentRevision != sts.Status.UpdateRevision {
+		logger.Info("component not ready: StatefulSet rollout in progress",
+			"component", componentType,
+			"statefulSetName", statefulSetName,
+			"currentRevision", sts.Status.CurrentRevision,
+			"updateRevision", sts.Status.UpdateRevision)
+		return false
+	}
+
+	// Check if all replicas are ready
+	if sts.Status.ReadyReplicas != *sts.Spec.Replicas {
+		logger.Info("component not ready: waiting for replicas",
+			"component", componentType,
+			"statefulSetName", statefulSetName,
+			"readyReplicas", sts.Status.ReadyReplicas,
+			"desiredReplicas", *sts.Spec.Replicas)
+		return false
+	}
+
+	logger.Info("component is ready",
+		"component", componentType,
+		"serviceName", serviceName,
+		"readyAddresses", len(endpoints.Subsets[0].Addresses),
+		"revision", sts.Status.CurrentRevision)
+	return true
 }
 
 // SetupWithManager sets up the controller with the Manager.

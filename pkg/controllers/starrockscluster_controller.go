@@ -40,8 +40,11 @@ import (
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Recorder record.EventRecorder
-	Scs      []subcontrollers.ClusterSubController
+	Recorder          record.EventRecorder
+	FeController      subcontrollers.ClusterSubController
+	BeController      subcontrollers.ClusterSubController
+	CnController      subcontrollers.ClusterSubController
+	FeProxyController subcontrollers.ClusterSubController
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -62,6 +65,8 @@ type StarRocksClusterReconciler struct {
 // move the current state of the cluster closer to the desired state.
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
+//
+//nolint:gocyclo,funlen // Complexity is inherent to orchestrating multiple controllers with upgrade sequencing
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.Log.WithName("StarRocksClusterReconciler").WithValues("name", req.Name, "namespace", req.Namespace)
 	ctx = logr.NewContext(ctx, logger)
@@ -86,10 +91,32 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
+	// Determine if this is an upgrade scenario and get controllers in appropriate order
+	isUpgradeScenario := isUpgrade(ctx, r.Client, src)
+	controllers := getControllersInOrder(isUpgradeScenario, r.FeController, r.BeController, r.CnController, r.FeProxyController)
+
 	// subControllers reconcile for create or update component.
-	for _, rc := range r.Scs {
+	for _, rc := range controllers {
 		kvs := []interface{}{"subController", rc.GetControllerName()}
-		logger.Info("sub controller sync spec", kvs...)
+		controllerName := rc.GetControllerName()
+
+		// During upgrades, check BE and CN are ready BEFORE syncing FE
+		if isUpgradeScenario && controllerName == "feController" {
+			// Check BE readiness if BE exists in spec
+			if src.Spec.StarRocksBeSpec != nil && !isComponentReady(ctx, r.Client, src, "be") {
+				logger.Info("upgrade: waiting for BE rollout to complete before updating FE",
+					"controller", controllerName)
+				return ctrl.Result{}, nil
+			}
+			// Check CN readiness if CN exists in spec
+			if src.Spec.StarRocksCnSpec != nil && !isComponentReady(ctx, r.Client, src, "cn") {
+				logger.Info("upgrade: waiting for CN rollout to complete before updating FE",
+					"controller", controllerName)
+				return ctrl.Result{}, nil
+			}
+		}
+
+		// Sync the controller (create or update resources)
 		if err = rc.SyncCluster(ctx, src); err != nil {
 			logger.Error(err, "sub controller reconciles spec failed", kvs...)
 			handleSyncClusterError(src, rc, err)
@@ -98,9 +125,35 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			}
 			return requeueIfError(err)
 		}
+
+		// After syncing, check if we need to wait for this component to be ready before proceeding
+		// Initial deployment: Wait for FE to be ready before creating BE/CN
+		// Upgrade: Wait for BE and CN to be ready before updating FE
+		if !isUpgradeScenario && controllerName == "feController" {
+			if src.Spec.StarRocksFeSpec != nil && !isComponentReady(ctx, r.Client, src, "fe") {
+				logger.Info("initial deployment: waiting for FE to be ready before creating BE/CN", "controller", controllerName)
+				return ctrl.Result{}, nil
+			}
+		}
+
+		if isUpgradeScenario && (controllerName == "beController" || controllerName == "cnController") {
+			componentType := ""
+			if controllerName == "beController" {
+				componentType = "be"
+			} else {
+				componentType = "cn"
+			}
+
+			if !isComponentReady(ctx, r.Client, src, componentType) {
+				logger.Info("upgrade: waiting for component rollout to complete before proceeding",
+					"controller", controllerName,
+					"component", componentType)
+				return ctrl.Result{}, nil
+			}
+		}
 	}
 
-	for _, rc := range r.Scs {
+	for _, rc := range controllers {
 		kvs := []interface{}{"subController", rc.GetControllerName()}
 		logger.Info("sub controller update status", kvs...)
 		if err = rc.UpdateClusterStatus(ctx, src); err != nil {
