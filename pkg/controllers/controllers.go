@@ -77,10 +77,12 @@ func isUpgrade(ctx context.Context, kubeClient client.Client, cluster *srapi.Sta
 		Name:      cluster.Name + "-be",
 	}, beSts) == nil
 
-	// Detect corrupted state: BE exists but FE doesn't (invalid configuration)
+	// Corrupted state safeguard: BE exists but FE doesn't (invalid configuration).
+	// Treat as initial deployment so FE is reconciled first.
+	// Rationale: FE is a prerequisite for BE/CN; prioritizing FE allows recovery without misordering.
 	if beExists && !feExists {
-		logger.Info("WARNING: BE StatefulSet exists without FE - corrupted state detected, will attempt recovery")
-		return true // Treat as upgrade to attempt recovery by creating FE
+		logger.Info("WARNING: BE StatefulSet exists without FE - treating as initial deployment to recreate FE first")
+		return false
 	}
 
 	if feExists {

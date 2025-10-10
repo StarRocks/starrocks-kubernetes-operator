@@ -187,14 +187,14 @@ func TestIsUpgrade(t *testing.T) {
 		require.True(t, result, "running cluster with StatefulSet should be upgrade")
 	})
 
-	// Test 4: Running phase with BE StatefulSet (no FE) - upgrade
-	t.Run("running cluster with BE statefulset is upgrade", func(t *testing.T) {
+	// Test 4: BE StatefulSet present but FE missing (corrupted state) - treated as initial deployment (FE must be created first)
+	t.Run("be statefulset without fe treated as initial deployment", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/be:3.2.0")
 		sts := newTestStatefulSet("test-cluster-be")
 		client := fake.NewFakeClient(srapi.Scheme, sts)
 
 		result := isUpgrade(ctx, client, cluster)
-		require.True(t, result, "running cluster with BE StatefulSet should be upgrade")
+		require.False(t, result, "BE without FE should not trigger upgrade ordering; FE must be reconciled first")
 	})
 
 	// Test 5: Running phase with both FE and BE StatefulSets - upgrade
