@@ -97,23 +97,23 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 
 	logger.V(log.DebugLevel).Info("get be/fe config to resolve ports", "ConfigMapInfo", beSpec.ConfigMapInfo)
-	config, err := be.GetBeConfig(ctx, beSpec, src.Namespace)
+	beConfig, err := be.GetBeConfig(ctx, beSpec, src.Namespace)
 	if err != nil {
 		logger.Error(err, "get be config failed", "ConfigMapInfo", beSpec.ConfigMapInfo)
 		return err
 	}
 
 	// add query port from fe config.
-	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feConfig, rutils.QUERY_PORT)), 10)
+	beConfig[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feConfig, rutils.QUERY_PORT)), 10)
 	// generate new be external service.
 	defaultLabels := load.Labels(src.Name, beSpec)
 	externalsvc := rutils.BuildExternalService(object.NewFromCluster(src),
-		beSpec, config, load.Selector(src.Name, beSpec), defaultLabels)
+		beSpec, beConfig, load.Selector(src.Name, beSpec), defaultLabels)
 	// generate internal fe service, update the status of cn on src.
-	internalService := be.generateInternalService(src, &externalsvc, config, defaultLabels)
+	internalService := be.generateInternalService(src, &externalsvc, beConfig, defaultLabels)
 
 	// create be statefulset
-	podTemplateSpec, err := be.buildPodTemplate(src, config)
+	podTemplateSpec, err := be.buildPodTemplate(src, beConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")
 		return err
@@ -183,16 +183,25 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 }
 
 func (be *BeController) generateInternalService(src *srapi.StarRocksCluster,
-	externalService *corev1.Service, config map[string]interface{}, labels map[string]string) *corev1.Service {
+	externalService *corev1.Service, beConfig map[string]interface{}, labels map[string]string) *corev1.Service {
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
 	searchSvc := service.MakeSearchService(searchServiceName, externalService, []corev1.ServicePort{
 		{
 			Name:       "heartbeat",
-			Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
-			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
+			Port:       rutils.GetPort(beConfig, rutils.HEARTBEAT_SERVICE_PORT),
+			TargetPort: intstr.FromInt(int(rutils.GetPort(beConfig, rutils.HEARTBEAT_SERVICE_PORT))),
 		},
 	}, labels)
+
+	arrowFlightPort := rutils.GetPort(beConfig, rutils.ARROW_FLIGHT_PORT)
+	if arrowFlightPort != 0 {
+		searchSvc.Spec.Ports = append(searchSvc.Spec.Ports, corev1.ServicePort{
+			Name:       rutils.BEArrowFlightPortName,
+			Port:       arrowFlightPort,
+			TargetPort: intstr.FromInt(int(arrowFlightPort)),
+		})
+	}
 
 	return searchSvc
 }

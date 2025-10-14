@@ -22,10 +22,11 @@ import (
 
 // the fe ports key
 const (
-	HTTP_PORT     = "http_port"
-	RPC_PORT      = "rpc_port"
-	QUERY_PORT    = "query_port"
-	EDIT_LOG_PORT = "edit_log_port"
+	HTTP_PORT         = "http_port"
+	RPC_PORT          = "rpc_port"
+	QUERY_PORT        = "query_port"
+	EDIT_LOG_PORT     = "edit_log_port"
+	ARROW_FLIGHT_PORT = "arrow_flight_port"
 )
 
 // the cn or be ports key

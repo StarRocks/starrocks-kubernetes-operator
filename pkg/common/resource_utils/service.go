@@ -26,20 +26,23 @@ import (
 )
 
 const (
-	FeHTTPPortName    = "http"
-	FeRPCPortName     = "rpc"
-	FeQueryPortName   = "query"
-	FeEditLogPortName = "edit-log"
+	FeHTTPPortName        = "http"
+	FeRPCPortName         = "rpc"
+	FeQueryPortName       = "query"
+	FeEditLogPortName     = "edit-log"
+	FEArrowFlightPortName = "arrow-flight"
 
-	BePortName          = "be"
-	BeWebserverPortName = "webserver"
-	BeHeartbeatPortName = "heartbeat"
-	BeBrpcPortName      = "brpc"
+	BePortName            = "be"
+	BeWebserverPortName   = "webserver"
+	BeHeartbeatPortName   = "heartbeat"
+	BeBrpcPortName        = "brpc"
+	BEArrowFlightPortName = "arrow-flight"
 
-	CnThriftPortName    = "thrift"
-	CnWebserverPortName = "webserver"
-	CnHeartbeatPortName = "heartbeat"
-	CnBrpcPortName      = "brpc"
+	CnThriftPortName      = "thrift"
+	CnWebserverPortName   = "webserver"
+	CnHeartbeatPortName   = "heartbeat"
+	CnBrpcPortName        = "brpc"
+	CnArrowFlightPortName = "arrow-flight"
 )
 
 // HashService service hash components
@@ -148,6 +151,13 @@ func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 	}), mergePort(service, srapi.StarRocksServicePort{
 		Port: editPort, ContainerPort: editPort, Name: FeEditLogPortName,
 	}))
+
+	arrowFlightPort := GetPort(config, ARROW_FLIGHT_PORT)
+	if arrowFlightPort != 0 {
+		srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+			Port: arrowFlightPort, ContainerPort: arrowFlightPort, Name: FEArrowFlightPortName,
+		}))
+	}
 
 	return srPorts
 }
