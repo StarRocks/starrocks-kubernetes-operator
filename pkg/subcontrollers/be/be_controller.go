@@ -110,7 +110,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	externalsvc := rutils.BuildExternalService(object.NewFromCluster(src),
 		beSpec, beConfig, load.Selector(src.Name, beSpec), defaultLabels)
 	// generate internal fe service, update the status of cn on src.
-	internalService := be.generateInternalService(src, &externalsvc, beConfig, defaultLabels)
+	internalService := GenerateInternalService(src, &externalsvc, beConfig, defaultLabels)
 
 	// create be statefulset
 	podTemplateSpec, err := be.buildPodTemplate(src, beConfig)
@@ -182,7 +182,7 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 	return nil
 }
 
-func (be *BeController) generateInternalService(src *srapi.StarRocksCluster,
+func GenerateInternalService(src *srapi.StarRocksCluster,
 	externalService *corev1.Service, beConfig map[string]interface{}, labels map[string]string) *corev1.Service {
 	spec := src.Spec.StarRocksBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)

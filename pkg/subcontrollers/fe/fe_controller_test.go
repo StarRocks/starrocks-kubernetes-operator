@@ -19,6 +19,7 @@ package fe_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -41,8 +42,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	srapi.Register()
+	os.Exit(m.Run())
 }
 
 func TestFeController_updateStatus(_ *testing.T) {

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 
@@ -18,8 +19,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 )
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	v1.Register()
+	os.Exit(m.Run())
 }
 
 func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWarehouseReconciler {
@@ -124,7 +126,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 				reconciler: newStarRocksWarehouseController(
 					&v1.StarRocksWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test",
+							Name:      "wh",
 							Namespace: "test",
 						},
 						Spec: v1.StarRocksWarehouseSpec{
@@ -189,7 +191,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 				reconciler: newStarRocksWarehouseController(
 					&v1.StarRocksWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test",
+							Name:      "wh",
 							Namespace: "test",
 						},
 						Spec: v1.StarRocksWarehouseSpec{
