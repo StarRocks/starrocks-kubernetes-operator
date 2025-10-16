@@ -16,10 +16,12 @@ package be_test
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -27,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -37,8 +40,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 )
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	srapi.Register()
+	os.Exit(m.Run())
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -325,6 +329,70 @@ func TestBeController_GetBeConfig(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetBeConfig() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestGenerateInternalService(t *testing.T) {
+	type args struct {
+		cluster         *srapi.StarRocksCluster
+		externalService *corev1.Service
+		beConfig        map[string]interface{}
+		labels          map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *corev1.Service
+	}{
+		{
+			name: "test1",
+			args: args{
+				cluster: &srapi.StarRocksCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test-cluster",
+					},
+					Spec: srapi.StarRocksClusterSpec{
+						StarRocksBeSpec: &srapi.StarRocksBeSpec{},
+					},
+				},
+				externalService: &corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "test-cluster-be-service",
+						Namespace:   "default",
+						Labels:      map[string]string{"l1": "l1"},
+						Annotations: map[string]string{"a": "a"},
+					},
+				},
+				beConfig: map[string]interface{}{
+					"heartbeat_service_port": "1234",
+					rutils.ARROW_FLIGHT_PORT: "5678",
+				},
+				labels: map[string]string{
+					"l2": "l2",
+				},
+			},
+			want: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "test-cluster-be-search",
+					Namespace:   "default",
+					Labels:      map[string]string{"l2": "l2"},
+					Annotations: nil,
+				},
+				Spec: corev1.ServiceSpec{
+					Ports: []corev1.ServicePort{
+						{Name: "heartbeat", Port: 1234, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 1234}},
+						{Name: "arrow-flight", Port: 5678, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 5678}},
+					},
+					ClusterIP:                "None",
+					PublishNotReadyAddresses: true,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, be.GenerateInternalService(tt.args.cluster, tt.args.externalService, tt.args.beConfig, tt.args.labels), "generateInternalService(%v, %v, %v, %v)", tt.args.cluster, tt.args.externalService, tt.args.beConfig, tt.args.labels)
 		})
 	}
 }

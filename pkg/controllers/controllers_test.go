@@ -91,8 +91,6 @@ func TestSetupWarehouseReconciler(t *testing.T) {
 		},
 	}
 
-	v1.Register()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := SetupWarehouseReconciler(tt.args.mgr, tt.args.namespace); (err != nil) != tt.wantErr {

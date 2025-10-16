@@ -16,6 +16,7 @@ package k8sutils_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -32,8 +33,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	srapi.Register()
+	os.Exit(m.Run())
 }
 
 func Test_getValueFromConfigmap(t *testing.T) {
