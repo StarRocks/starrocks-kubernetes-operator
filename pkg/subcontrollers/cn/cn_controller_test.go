@@ -19,6 +19,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -32,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -43,8 +45,9 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 )
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	srapi.Register()
+	os.Exit(m.Run())
 }
 
 func Test_ClearResources(t *testing.T) {
@@ -204,7 +207,7 @@ func Test_SyncWarehouse(t *testing.T) {
 
 	warehouse := &srapi.StarRocksWarehouse{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
+			Name:      "wh1",
 			Namespace: "default",
 		},
 		Spec: srapi.StarRocksWarehouseSpec{
@@ -236,8 +239,6 @@ func Test_SyncWarehouse(t *testing.T) {
 		}},
 	}
 
-	srapi.Register()
-
 	cc := New(fake.NewFakeClient(srapi.Scheme, src, feConfigMap, warehouse, ep), fake.GetEventRecorderFor(nil))
 	cc.addEnvForWarehouse = true
 
@@ -258,7 +259,7 @@ func Test_SyncWarehouse(t *testing.T) {
 		},
 		&externalService),
 	)
-	require.Equal(t, "test-warehouse-cn-service", externalService.Name)
+	require.Equal(t, "wh1-warehouse-cn-service", externalService.Name)
 
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{
@@ -266,7 +267,7 @@ func Test_SyncWarehouse(t *testing.T) {
 			Namespace: "default"},
 		&searchService),
 	)
-	require.Equal(t, "test-warehouse-cn-search", searchService.Name)
+	require.Equal(t, "wh1-warehouse-cn-search", searchService.Name)
 
 	require.NoError(t, cc.k8sClient.Get(context.Background(),
 		types.NamespacedName{
@@ -274,7 +275,7 @@ func Test_SyncWarehouse(t *testing.T) {
 			Namespace: "default"},
 		&sts),
 	)
-	require.Equal(t, "test-warehouse-cn", sts.Name)
+	require.Equal(t, "wh1-warehouse-cn", sts.Name)
 }
 
 func TestCnController_UpdateStatus(t *testing.T) {
@@ -892,6 +893,71 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 			}
 
 			tt.wantErr(t, cc.SyncComputeNodesInFE(tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods, tt.args.db), fmt.Sprintf("SyncComputeNodesInFE(%v, %v, %v, %v, %v)", tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods))
+		})
+	}
+}
+
+func TestGenerateInternalService(t *testing.T) {
+	type args struct {
+		object          object.StarRocksObject
+		cnSpec          *srapi.StarRocksCnSpec
+		externalService *corev1.Service
+		cnConfig        map[string]interface{}
+		labels          map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *corev1.Service
+	}{
+		{
+			name: "test1",
+			args: args{
+				object: object.NewFromCluster(
+					&srapi.StarRocksCluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "test-cluster",
+						},
+					},
+				),
+				cnSpec: &srapi.StarRocksCnSpec{},
+				externalService: &corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "test-cluster-cn-service",
+						Namespace:   "default",
+						Labels:      map[string]string{"l1": "l1"},
+						Annotations: map[string]string{"a": "a"},
+					},
+				},
+				cnConfig: map[string]interface{}{
+					"heartbeat_service_port": "1234",
+					rutils.ARROW_FLIGHT_PORT: "5678",
+				},
+				labels: map[string]string{
+					"l2": "l2",
+				},
+			},
+			want: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "test-cluster-cn-search",
+					Namespace:   "default",
+					Labels:      map[string]string{"l2": "l2"},
+					Annotations: nil,
+				},
+				Spec: corev1.ServiceSpec{
+					Ports: []corev1.ServicePort{
+						{Name: "heartbeat", Port: 1234, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 1234}},
+						{Name: "arrow-flight", Port: 5678, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 5678}},
+					},
+					ClusterIP:                "None",
+					PublishNotReadyAddresses: true,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, generateInternalService(tt.args.object, tt.args.cnSpec, tt.args.externalService, tt.args.cnConfig, tt.args.labels), "generateInternalService(%v, %v, %v, %v, %v)", tt.args.object, tt.args.cnSpec, tt.args.externalService, tt.args.cnConfig, tt.args.labels)
 		})
 	}
 }

@@ -160,7 +160,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	}
 
 	logger.V(log.DebugLevel).Info("get cn config to resolve ports", "ConfigMapInfo", cnSpec.ConfigMapInfo)
-	config, err := cc.GetCnConfig(ctx, cnSpec, object.Namespace)
+	cnConfig, err := cc.GetCnConfig(ctx, cnSpec, object.Namespace)
 	if err != nil {
 		return err
 	}
@@ -169,11 +169,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	if err != nil {
 		return err
 	}
-	config[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
-	config[rutils.HTTP_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.HTTP_PORT)), 10)
+	cnConfig[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.QUERY_PORT)), 10)
+	cnConfig[rutils.HTTP_PORT] = strconv.FormatInt(int64(rutils.GetPort(feconfig, rutils.HTTP_PORT)), 10)
 
 	// build and deploy statefulset
-	podTemplateSpec, err := cc.buildPodTemplate(ctx, object, cnSpec, config)
+	podTemplateSpec, err := cc.buildPodTemplate(ctx, object, cnSpec, cnConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")
 		return err
@@ -186,16 +186,9 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	// build and deploy service
 	defaultLabels := load.Labels(object.SubResourcePrefixName, cnSpec)
-	externalsvc := rutils.BuildExternalService(object, cnSpec, config,
+	externalsvc := rutils.BuildExternalService(object, cnSpec, cnConfig,
 		load.Selector(object.SubResourcePrefixName, cnSpec), defaultLabels)
-	searchServiceName := service.SearchServiceName(object.SubResourcePrefixName, cnSpec)
-	internalService := service.MakeSearchService(searchServiceName, &externalsvc, []corev1.ServicePort{
-		{
-			Name:       "heartbeat",
-			Port:       rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT),
-			TargetPort: intstr.FromInt(int(rutils.GetPort(config, rutils.HEARTBEAT_SERVICE_PORT))),
-		},
-	}, defaultLabels)
+	internalService := generateInternalService(object, cnSpec, &externalsvc, cnConfig, defaultLabels)
 
 	if err := k8sutils.ApplyService(ctx, cc.k8sClient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "sync CN external service failed")
@@ -622,4 +615,27 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 	}
 
 	return nil
+}
+
+func generateInternalService(object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
+	externalService *corev1.Service, cnConfig map[string]interface{}, labels map[string]string) *corev1.Service {
+	searchServiceName := service.SearchServiceName(object.SubResourcePrefixName, cnSpec)
+	searchSvc := service.MakeSearchService(searchServiceName, externalService, []corev1.ServicePort{
+		{
+			Name:       "heartbeat",
+			Port:       rutils.GetPort(cnConfig, rutils.HEARTBEAT_SERVICE_PORT),
+			TargetPort: intstr.FromInt(int(rutils.GetPort(cnConfig, rutils.HEARTBEAT_SERVICE_PORT))),
+		},
+	}, labels)
+
+	arrowFlightPort := rutils.GetPort(cnConfig, rutils.ARROW_FLIGHT_PORT)
+	if arrowFlightPort != 0 {
+		searchSvc.Spec.Ports = append(searchSvc.Spec.Ports, corev1.ServicePort{
+			Name:       rutils.CnArrowFlightPortName,
+			Port:       arrowFlightPort,
+			TargetPort: intstr.FromInt(int(arrowFlightPort)),
+		})
+	}
+
+	return searchSvc
 }
