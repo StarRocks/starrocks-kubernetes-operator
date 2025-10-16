@@ -158,7 +158,6 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result)
 	})
 
-	// Test 1: No StatefulSets, empty phase - initial deployment
 	t.Run("empty phase with no statefulsets is initial deployment", func(t *testing.T) {
 		cluster := newTestCluster("", "starrocks/fe:3.1.0")
 		client := fake.NewFakeClient(srapi.Scheme)
@@ -167,7 +166,6 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result, "empty phase should be initial deployment")
 	})
 
-	// Test 2: Reconciling phase with StatefulSets - still initial deployment
 	t.Run("reconciling phase is initial deployment even with statefulsets", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterReconciling, "starrocks/fe:3.1.0")
 		sts := newTestStatefulSet("test-cluster-fe")
@@ -177,17 +175,16 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result, "reconciling phase should be initial deployment")
 	})
 
-	// Test 3: Running phase with FE StatefulSet - upgrade
-	t.Run("running cluster with FE statefulset is upgrade", func(t *testing.T) {
+	t.Run("fe statefulset with image change triggers upgrade", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/fe:3.2.0")
 		sts := newTestStatefulSet("test-cluster-fe")
+		sts.Spec.Template.Spec.Containers[0].Image = "starrocks/fe:3.1.0" // Different image
 		client := fake.NewFakeClient(srapi.Scheme, sts)
 
 		result := isUpgrade(ctx, client, cluster)
-		require.True(t, result, "running cluster with StatefulSet should be upgrade")
+		require.True(t, result, "FE StatefulSet with image change should trigger upgrade")
 	})
 
-	// Test 4: BE StatefulSet present but FE missing (corrupted state) - treated as initial deployment (FE must be created first)
 	t.Run("be statefulset without fe treated as initial deployment", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/be:3.2.0")
 		sts := newTestStatefulSet("test-cluster-be")
@@ -197,18 +194,18 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result, "BE without FE should not trigger upgrade ordering; FE must be reconciled first")
 	})
 
-	// Test 5: Running phase with both FE and BE StatefulSets - upgrade
-	t.Run("running cluster with multiple statefulsets is upgrade", func(t *testing.T) {
+	t.Run("multiple statefulsets with image change triggers upgrade", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/fe:3.2.0")
 		feSts := newTestStatefulSet("test-cluster-fe")
+		feSts.Spec.Template.Spec.Containers[0].Image = "starrocks/fe:3.1.0" // Different
 		beSts := newTestStatefulSet("test-cluster-be")
+		beSts.Spec.Template.Spec.Containers[0].Image = "starrocks/be:3.1.0"
 		client := fake.NewFakeClient(srapi.Scheme, feSts, beSts)
 
 		result := isUpgrade(ctx, client, cluster)
-		require.True(t, result, "running cluster with multiple StatefulSets should be upgrade")
+		require.True(t, result, "multiple StatefulSets with image change should trigger upgrade")
 	})
 
-	// Test 6: Running phase without StatefulSets - defensive check catches corruption
 	t.Run("running cluster without statefulsets is treated as initial deployment", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/fe:3.1.0")
 		client := fake.NewFakeClient(srapi.Scheme) // No StatefulSets
@@ -217,7 +214,6 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result, "running phase without StatefulSets should be treated as initial deployment (status corruption)")
 	})
 
-	// Test 7: Failed phase with StatefulSets - initial deployment
 	t.Run("failed phase is initial deployment even with statefulsets", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterFailed, "starrocks/fe:3.1.0")
 		sts := newTestStatefulSet("test-cluster-fe")
@@ -227,15 +223,282 @@ func TestIsUpgrade(t *testing.T) {
 		require.False(t, result, "failed phase should be initial deployment")
 	})
 
-	// Test 8: Running phase with same image - still upgrade (generic detection)
-	t.Run("running cluster with same image is still upgrade scenario", func(t *testing.T) {
+	t.Run("statefulset with same image does not trigger upgrade", func(t *testing.T) {
 		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/fe:3.1.0")
 		sts := newTestStatefulSet("test-cluster-fe")
 		sts.Spec.Template.Spec.Containers[0].Image = "starrocks/fe:3.1.0" // Same image
 		client := fake.NewFakeClient(srapi.Scheme, sts)
 
 		result := isUpgrade(ctx, client, cluster)
-		require.True(t, result, "running cluster uses upgrade ordering even if no image change (config/volume changes)")
+		require.False(t, result, "same image version should use initial deployment ordering (no upgrade needed)")
+	})
+
+	t.Run("be image change triggers upgrade", func(t *testing.T) {
+		cluster := &srapi.StarRocksCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cluster",
+				Namespace: "default",
+			},
+			Spec: srapi.StarRocksClusterSpec{
+				StarRocksFeSpec: &srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/fe:3.1.0",
+						},
+					},
+				},
+				StarRocksBeSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/be:3.2.0", // New version
+						},
+					},
+				},
+			},
+		}
+		feSts := newTestStatefulSet("test-cluster-fe")
+		feSts.Spec.Template.Spec.Containers[0].Image = "starrocks/fe:3.1.0" // Same
+		beSts := newTestStatefulSet("test-cluster-be")
+		beSts.Spec.Template.Spec.Containers[0].Image = "starrocks/be:3.1.0" // Old version
+		client := fake.NewFakeClient(srapi.Scheme, feSts, beSts)
+
+		result := isUpgrade(ctx, client, cluster)
+		require.True(t, result, "BE image change should trigger upgrade")
+	})
+
+	t.Run("downgrade treated as upgrade for safety", func(t *testing.T) {
+		cluster := newTestCluster(srapi.ClusterRunning, "starrocks/fe:3.0.0") // Downgrade to 3.0.0
+		sts := newTestStatefulSet("test-cluster-fe")
+		sts.Spec.Template.Spec.Containers[0].Image = "starrocks/fe:3.1.0" // Currently on 3.1.0
+		client := fake.NewFakeClient(srapi.Scheme, sts)
+
+		result := isUpgrade(ctx, client, cluster)
+		require.True(t, result, "downgrade should use upgrade ordering")
+	})
+}
+
+// TestGetCurrentImageFromStatefulSet tests the image retrieval logic from StatefulSets
+func TestGetCurrentImageFromStatefulSet(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("returns empty string when StatefulSet not found", func(t *testing.T) {
+		client := fake.NewFakeClient(srapi.Scheme)
+		result := getCurrentImageFromStatefulSet(ctx, client, "default", "missing-sts")
+		require.Equal(t, "", result)
+	})
+
+	t.Run("returns empty string when StatefulSet has no containers", func(t *testing.T) {
+		sts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-sts",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, sts)
+		result := getCurrentImageFromStatefulSet(ctx, client, "default", "test-sts")
+		require.Equal(t, "", result)
+	})
+
+	t.Run("returns image from fe container by name", func(t *testing.T) {
+		sts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-fe",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{Name: "fe", Image: "starrocks/fe:3.1.0"},
+						},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, sts)
+		result := getCurrentImageFromStatefulSet(ctx, client, "default", "test-fe")
+		require.Equal(t, "starrocks/fe:3.1.0", result)
+	})
+
+	t.Run("returns image from be container by name", func(t *testing.T) {
+		sts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-be",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{Name: "be", Image: "starrocks/be:3.1.0"},
+						},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, sts)
+		result := getCurrentImageFromStatefulSet(ctx, client, "default", "test-be")
+		require.Equal(t, "starrocks/be:3.1.0", result)
+	})
+
+	t.Run("returns image from cn container by name", func(t *testing.T) {
+		sts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cn",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{Name: "cn", Image: "starrocks/cn:3.1.0"},
+						},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, sts)
+		result := getCurrentImageFromStatefulSet(ctx, client, "default", "test-cn")
+		require.Equal(t, "starrocks/cn:3.1.0", result)
+	})
+}
+
+// TestCheckForImageChanges tests the image comparison logic
+func TestCheckForImageChanges(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("no changes when all images match", func(t *testing.T) {
+		cluster := &srapi.StarRocksCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cluster",
+				Namespace: "default",
+			},
+			Spec: srapi.StarRocksClusterSpec{
+				StarRocksFeSpec: &srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/fe:3.1.0",
+						},
+					},
+				},
+				StarRocksBeSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/be:3.1.0",
+						},
+					},
+				},
+				StarRocksCnSpec: &srapi.StarRocksCnSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/cn:3.1.0",
+						},
+					},
+				},
+			},
+		}
+		feSts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "test-cluster-fe", Namespace: "default"},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{Name: "fe", Image: "starrocks/fe:3.1.0"}},
+					},
+				},
+			},
+		}
+		beSts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "test-cluster-be", Namespace: "default"},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{Name: "be", Image: "starrocks/be:3.1.0"}},
+					},
+				},
+			},
+		}
+		cnSts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "test-cluster-cn", Namespace: "default"},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{Name: "cn", Image: "starrocks/cn:3.1.0"}},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, feSts, beSts, cnSts)
+		result := checkForImageChanges(ctx, client, cluster)
+		require.False(t, result, "no changes when all images match")
+	})
+
+	t.Run("detects FE image change", func(t *testing.T) {
+		cluster := &srapi.StarRocksCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cluster",
+				Namespace: "default",
+			},
+			Spec: srapi.StarRocksClusterSpec{
+				StarRocksFeSpec: &srapi.StarRocksFeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/fe:3.2.0",
+						},
+					},
+				},
+			},
+		}
+		feSts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "test-cluster-fe", Namespace: "default"},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{Name: "fe", Image: "starrocks/fe:3.1.0"}},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, feSts)
+		result := checkForImageChanges(ctx, client, cluster)
+		require.True(t, result, "should detect FE image change")
+	})
+
+	t.Run("detects BE image change", func(t *testing.T) {
+		cluster := &srapi.StarRocksCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-cluster",
+				Namespace: "default",
+			},
+			Spec: srapi.StarRocksClusterSpec{
+				StarRocksBeSpec: &srapi.StarRocksBeSpec{
+					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+							Image: "starrocks/be:3.2.0",
+						},
+					},
+				},
+			},
+		}
+		beSts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "test-cluster-be", Namespace: "default"},
+			Spec: appsv1.StatefulSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{Name: "be", Image: "starrocks/be:3.1.0"}},
+					},
+				},
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, beSts)
+		result := checkForImageChanges(ctx, client, cluster)
+		require.True(t, result, "should detect BE image change")
 	})
 }
 

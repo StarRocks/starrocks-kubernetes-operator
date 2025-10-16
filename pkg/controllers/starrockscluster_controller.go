@@ -66,7 +66,7 @@ type StarRocksClusterReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 //
-//nolint:gocyclo,funlen // Complexity is inherent to orchestrating multiple controllers with upgrade sequencing
+//nolint:gocyclo // Complexity is inherent to orchestrating multiple controllers with upgrade sequencing
 func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.Log.WithName("StarRocksClusterReconciler").WithValues("name", req.Name, "namespace", req.Namespace)
 	ctx = logr.NewContext(ctx, logger)
@@ -128,26 +128,9 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 		// After syncing, check if we need to wait for this component to be ready before proceeding
 		// Initial deployment: Wait for FE to be ready before creating BE/CN
-		// Upgrade: Wait for BE and CN to be ready before updating FE
 		if !isUpgradeScenario && controllerName == "feController" {
 			if src.Spec.StarRocksFeSpec != nil && !isComponentReady(ctx, r.Client, src, "fe") {
 				logger.Info("initial deployment: waiting for FE to be ready before creating BE/CN", "controller", controllerName)
-				return ctrl.Result{}, nil
-			}
-		}
-
-		if isUpgradeScenario && (controllerName == "beController" || controllerName == "cnController") {
-			componentType := ""
-			if controllerName == "beController" {
-				componentType = "be"
-			} else {
-				componentType = "cn"
-			}
-
-			if !isComponentReady(ctx, r.Client, src, componentType) {
-				logger.Info("upgrade: waiting for component rollout to complete before proceeding",
-					"controller", controllerName,
-					"component", componentType)
 				return ctrl.Result{}, nil
 			}
 		}

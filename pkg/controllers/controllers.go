@@ -61,6 +61,7 @@ func getControllersInOrder(
 }
 
 // isUpgrade determines if the current reconciliation is an upgrade scenario.
+// Returns true only if StatefulSets exist AND there are image changes detected.
 func isUpgrade(ctx context.Context, kubeClient client.Client, cluster *srapi.StarRocksCluster) bool {
 	logger := logr.FromContextOrDiscard(ctx)
 
@@ -85,12 +86,68 @@ func isUpgrade(ctx context.Context, kubeClient client.Client, cluster *srapi.Sta
 		return false
 	}
 
-	if feExists {
-		return true
+	if !feExists {
+		return false
 	}
 
-	// No StatefulSets found - this is initial deployment
+	return checkForImageChanges(ctx, kubeClient, cluster)
+}
+
+// checkForImageChanges compares the desired StarRocks component images
+// against the currently deployed StatefulSet images.
+// Returns true if any component image differs.
+func checkForImageChanges(ctx context.Context, kubeClient client.Client, cluster *srapi.StarRocksCluster) bool {
+	if cluster.Spec.StarRocksFeSpec != nil {
+		desiredImage := cluster.Spec.StarRocksFeSpec.Image
+		currentImage := getCurrentImageFromStatefulSet(ctx, kubeClient, cluster.Namespace, cluster.Name+"-fe")
+		if currentImage != "" && desiredImage != currentImage {
+			return true
+		}
+	}
+
+	if cluster.Spec.StarRocksBeSpec != nil {
+		desiredImage := cluster.Spec.StarRocksBeSpec.Image
+		currentImage := getCurrentImageFromStatefulSet(ctx, kubeClient, cluster.Namespace, cluster.Name+"-be")
+		if currentImage != "" && desiredImage != currentImage {
+			return true
+		}
+	}
+
+	if cluster.Spec.StarRocksCnSpec != nil {
+		desiredImage := cluster.Spec.StarRocksCnSpec.Image
+		currentImage := getCurrentImageFromStatefulSet(ctx, kubeClient, cluster.Namespace, cluster.Name+"-cn")
+		if currentImage != "" && desiredImage != currentImage {
+			return true
+		}
+	}
+
 	return false
+}
+
+// getCurrentImageFromStatefulSet returns the container image used in a StatefulSet.
+// Returns an empty string if the StatefulSet is missing or has no containers.
+func getCurrentImageFromStatefulSet(ctx context.Context, kubeClient client.Client, namespace, name string) string {
+	var sts appsv1.StatefulSet
+	if err := kubeClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts); err != nil {
+		// StatefulSet does not exist
+		return ""
+	}
+
+	containers := sts.Spec.Template.Spec.Containers
+	if len(containers) == 0 {
+		return ""
+	}
+
+	// Prefer a named match for known StarRocks components
+	for _, c := range containers {
+		switch c.Name {
+		case "fe", "be", "cn":
+			return c.Image
+		}
+	}
+
+	// Fallback for backward compatibility
+	return containers[0].Image
 }
 
 // SetupWithManager sets up the controller with the Manager.
