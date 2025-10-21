@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/go-logr/logr"
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
@@ -184,12 +185,31 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 
 	// The FQDN format is like kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local
 	// Sorting the compute nodes by FQDN can help us to remove the last several compute nodes if scale-in operation happens.
-	for _, computeNodes := range result.ComputeNodesByWarehouse {
+	sortComputeNodesByFQDN(result.ComputeNodesByWarehouse)
+	return &result, nil
+}
+
+func sortComputeNodesByFQDN(computeNodesByWarehouse map[string][]ComputeNode) {
+	for _, computeNodes := range computeNodesByWarehouse {
 		sort.Slice(computeNodes, func(i, j int) bool {
-			return computeNodes[i].FQDN < computeNodes[j].FQDN
+			// the FQDN looks like: kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local,
+			// kube-starrocks-cn-1.kube-starrocks-cn-search.default.svc.cluster.local,
+			// kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local
+			// kube-starrocks-cn-10 should be after kube-starrocks-cn-2 when sorting.
+			partsI := strings.SplitN(computeNodes[i].FQDN, ".", 2)
+			partsJ := strings.SplitN(computeNodes[j].FQDN, ".", 2)
+			nameI := partsI[0]
+			nameJ := partsJ[0]
+			partsI = strings.Split(nameI, "-")
+			partsJ = strings.Split(nameJ, "-")
+			indexStrI := partsI[len(partsI)-1]
+			indexStrJ := partsJ[len(partsJ)-1]
+			var indexI, indexJ int
+			_, _ = fmt.Sscanf(indexStrI, "%d", &indexI)
+			_, _ = fmt.Sscanf(indexStrJ, "%d", &indexJ)
+			return indexI < indexJ
 		})
 	}
-	return &result, nil
 }
 
 // ExecuteDropComputeNode executes the SQL statement to drop a compute node from a warehouse.

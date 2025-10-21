@@ -324,3 +324,82 @@ func TestSQLExecutor_ExecuteDropWarehouse(t *testing.T) {
 		})
 	}
 }
+
+func Test_sortComputeNodesByFQDN(t *testing.T) {
+	type args struct {
+		computeNodesByWarehouse map[string][]ComputeNode
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string][]ComputeNode
+	}{
+		{
+			name: "test sortComputeNodesByFQDN-1",
+			args: args{
+				computeNodesByWarehouse: map[string][]ComputeNode{
+					"wh1": {
+						{FQDN: "cn-1"},
+						{FQDN: "cn-0"},
+						{FQDN: "cn-2"},
+					},
+				},
+			},
+			want: map[string][]ComputeNode{
+				"wh1": {
+					{FQDN: "cn-0"},
+					{FQDN: "cn-1"},
+					{FQDN: "cn-2"},
+				},
+			},
+		},
+		{
+			name: "test sortComputeNodesByFQDN - 2",
+			args: args{
+				computeNodesByWarehouse: map[string][]ComputeNode{
+					"wh1": {
+						{FQDN: "cn-2"},
+						{FQDN: "cn-1"},
+						{FQDN: "cn-0"},
+					},
+				},
+			},
+			want: map[string][]ComputeNode{
+				"wh1": {
+					{FQDN: "cn-0"},
+					{FQDN: "cn-1"},
+					{FQDN: "cn-2"},
+				},
+			},
+		},
+		{
+			name: "test sortComputeNodesByFQDN - 3",
+			args: args{
+				computeNodesByWarehouse: map[string][]ComputeNode{
+					"wh1": {
+						{FQDN: "cn-1"},
+						{FQDN: "cn-10"},
+						{FQDN: "cn-0"},
+						{FQDN: "cn-20"},
+						{FQDN: "cn-2"},
+					},
+				},
+			},
+			want: map[string][]ComputeNode{
+				"wh1": {
+					{FQDN: "cn-0"},
+					{FQDN: "cn-1"},
+					{FQDN: "cn-2"},
+					{FQDN: "cn-10"},
+					{FQDN: "cn-20"},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sortComputeNodesByFQDN(tt.args.computeNodesByWarehouse)
+			assert.Equal(t, tt.want, tt.args.computeNodesByWarehouse)
+		})
+	}
+}
