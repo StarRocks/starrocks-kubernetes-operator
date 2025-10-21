@@ -19,8 +19,10 @@ package k8sutils
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"unicode"
 
@@ -180,8 +182,23 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 		return nil
 	}
 	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
-
 	expect.ResourceVersion = actual.ResourceVersion
+
+	actualSel := actual.Spec.Template.Spec.NodeSelector
+	expectSel := expect.Spec.Template.Spec.NodeSelector
+	patchBytes, err := BuildNodeSelectorPatch(expectSel, actualSel)
+	if err != nil {
+		return err
+	}
+	// If patchBytes is not nil and indeed contains changes, we first do a RawPatch for nodeSelector
+	if patchBytes != nil {
+		if err := k8sClient.Patch(ctx, &actual, client.RawPatch(types.MergePatchType, patchBytes)); err != nil {
+			return fmt.Errorf("failed to patch nodeSelector: %w", err)
+		}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
+			return err
+		}
+	}
 	return k8sClient.Patch(ctx, expect, client.Merge)
 }
 
@@ -577,4 +594,43 @@ func getConfigFromConfigMaps(ctx context.Context, k8sClient client.Client,
 	}
 	res, err := ResolveConfigMap(configMap, expectKey)
 	return res, err
+}
+
+// BuildNodeSelectorPatch builds a JSON patch that sets keys to new values
+// and sets keys that exist in actual but missing in expect to null.
+func BuildNodeSelectorPatch(expectSel, actualSel map[string]string) ([]byte, error) {
+	if expectSel == nil && actualSel == nil || reflect.DeepEqual(expectSel, actualSel) {
+		return nil, nil
+	}
+
+	// map that will be marshaled: missing keys -> nil (json null)
+	nodeMap := map[string]interface{}{}
+
+	// set expected keys to their values
+	for k, v := range expectSel {
+		nodeMap[k] = v
+	}
+
+	// for keys present in actual but not in expect, set to nil -> will become null in JSON
+	for k := range actualSel {
+		if _, ok := expectSel[k]; !ok {
+			nodeMap[k] = nil
+		}
+	}
+
+	patch := map[string]interface{}{
+		"spec": map[string]interface{}{
+			"template": map[string]interface{}{
+				"spec": map[string]interface{}{
+					"nodeSelector": nodeMap,
+				},
+			},
+		},
+	}
+
+	b, err := json.Marshal(patch)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
