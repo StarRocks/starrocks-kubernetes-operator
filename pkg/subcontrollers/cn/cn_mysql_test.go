@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -164,14 +165,17 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 		FeServicePort      string
 	}
 	type args struct {
-		ctx context.Context
-		db  *sql.DB
+		ctx  context.Context
+		db   *sql.DB
+		rows *sqlmock.Rows
 	}
+
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
+		name     string
+		fields   fields
+		args     args
+		wantErr  assert.ErrorAssertionFunc
+		wantData *ShowComputeNodesResult
 	}{
 		{
 			name: "test ExecuteContext",
@@ -182,8 +186,25 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
+				rows: sqlmock.NewRows([]string{"ComputeNodeId", "IP", "WarehouseName"}).
+					AddRow([]byte("id"), []byte("cn-1"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-0"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-20"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-10"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-15"), []byte("wh1")),
 			},
 			wantErr: assert.NoError,
+			wantData: &ShowComputeNodesResult{
+				ComputeNodesByWarehouse: map[string][]ComputeNode{
+					"wh1": {
+						{ComputeNodeId: "id", FQDN: "cn-0", WarehouseName: "wh1", index: 0},
+						{ComputeNodeId: "id", FQDN: "cn-1", WarehouseName: "wh1", index: 1},
+						{ComputeNodeId: "id", FQDN: "cn-10", WarehouseName: "wh1", index: 10},
+						{ComputeNodeId: "id", FQDN: "cn-15", WarehouseName: "wh1", index: 15},
+						{ComputeNodeId: "id", FQDN: "cn-20", WarehouseName: "wh1", index: 20},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -194,22 +215,17 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 				FeServiceNamespace: tt.fields.FeServiceNamespace,
 				FeServicePort:      tt.fields.FeServicePort,
 			}
+
+			// set expected behavior on mock db
 			// create mock db
 			db, mock, err := sqlmock.New()
 			require.NoError(t, err)
 			defer db.Close()
-
-			// set expected behavior on mock db
-			mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(
-				sqlmock.NewRows([]string{"ComputeNodeId", "IP", "WarehouseName"}).AddRow([]byte("id"), []byte("fqdn"), []byte("wh1")),
-			)
+			mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(tt.args.rows)
 
 			result, err := executor.QueryShowComputeNodes(tt.args.ctx, db)
 			tt.wantErr(t, err, fmt.Sprintf("ShowComputeNodes(%v, %v)", tt.args.ctx, tt.args.db))
-			assert.Equal(t, 1, len(result.ComputeNodesByWarehouse))
-			assert.Equal(t, "id", result.ComputeNodesByWarehouse["wh1"][0].ComputeNodeId)
-			assert.Equal(t, "fqdn", result.ComputeNodesByWarehouse["wh1"][0].FQDN)
-			assert.Equal(t, "wh1", result.ComputeNodesByWarehouse["wh1"][0].WarehouseName)
+			assert.True(t, reflect.DeepEqual(tt.wantData.ComputeNodesByWarehouse, result.ComputeNodesByWarehouse))
 		})
 	}
 }
@@ -321,85 +337,6 @@ func TestSQLExecutor_ExecuteDropWarehouse(t *testing.T) {
 				FeServicePort:      tt.fields.FeServicePort,
 			}
 			tt.wantErr(t, executor.ExecuteDropWarehouse(tt.args.ctx, tt.args.db, tt.args.warehouseName), fmt.Sprintf("ExecuteDropWarehouse(%v, %v, %v)", tt.args.ctx, tt.args.db, tt.args.warehouseName))
-		})
-	}
-}
-
-func Test_sortComputeNodesByFQDN(t *testing.T) {
-	type args struct {
-		computeNodesByWarehouse map[string][]ComputeNode
-	}
-	tests := []struct {
-		name string
-		args args
-		want map[string][]ComputeNode
-	}{
-		{
-			name: "test sortComputeNodesByFQDN-1",
-			args: args{
-				computeNodesByWarehouse: map[string][]ComputeNode{
-					"wh1": {
-						{FQDN: "cn-1"},
-						{FQDN: "cn-0"},
-						{FQDN: "cn-2"},
-					},
-				},
-			},
-			want: map[string][]ComputeNode{
-				"wh1": {
-					{FQDN: "cn-0", index: 0},
-					{FQDN: "cn-1", index: 1},
-					{FQDN: "cn-2", index: 2},
-				},
-			},
-		},
-		{
-			name: "test sortComputeNodesByFQDN - 2",
-			args: args{
-				computeNodesByWarehouse: map[string][]ComputeNode{
-					"wh1": {
-						{FQDN: "cn-2"},
-						{FQDN: "cn-1"},
-						{FQDN: "cn-0"},
-					},
-				},
-			},
-			want: map[string][]ComputeNode{
-				"wh1": {
-					{FQDN: "cn-0", index: 0},
-					{FQDN: "cn-1", index: 1},
-					{FQDN: "cn-2", index: 2},
-				},
-			},
-		},
-		{
-			name: "test sortComputeNodesByFQDN - 3",
-			args: args{
-				computeNodesByWarehouse: map[string][]ComputeNode{
-					"wh1": {
-						{FQDN: "cn-1"},
-						{FQDN: "cn-10"},
-						{FQDN: "cn-0"},
-						{FQDN: "cn-20"},
-						{FQDN: "cn-2"},
-					},
-				},
-			},
-			want: map[string][]ComputeNode{
-				"wh1": {
-					{FQDN: "cn-0", index: 0},
-					{FQDN: "cn-1", index: 1},
-					{FQDN: "cn-2", index: 2},
-					{FQDN: "cn-10", index: 10},
-					{FQDN: "cn-20", index: 20},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sortComputeNodesByFQDN(tt.args.computeNodesByWarehouse)
-			assert.Equal(t, tt.want, tt.args.computeNodesByWarehouse)
 		})
 	}
 }
