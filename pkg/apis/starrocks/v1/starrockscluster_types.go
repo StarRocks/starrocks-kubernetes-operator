@@ -377,7 +377,7 @@ type HorizontalScaler struct {
 
 // StarRocksCluster defines a starrocks cluster deployment.
 // +kubebuilder:object:root=true
-// +kubebuilder:metadata:annotations="version=v1.11.2"
+// +kubebuilder:metadata:annotations="version=v1.11.3"
 // +kubebuilder:resource:shortName=src
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
