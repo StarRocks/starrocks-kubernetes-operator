@@ -143,6 +143,10 @@ type StarRocksClusterStatus struct {
 	// +optional
 	// DisasterRecoveryStatus represents the status of disaster recovery.
 	DisasterRecoveryStatus *DisasterRecoveryStatus `json:"disasterRecoveryStatus,omitempty"`
+
+	// +optional
+	// UpgradeState tracks internal upgrade state managed by the operator
+	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 // StarRocksFeSpec defines the desired state of fe.
@@ -461,6 +465,69 @@ func (storageVolume *StorageVolume) Validate() error {
 	}
 	return nil
 }
+
+// UpgradeState tracks internal upgrade state managed by the operator
+// This is purely for operator internal use and should not be configured by users
+type UpgradeState struct {
+	// Phase of the upgrade process
+	Phase UpgradePhase `json:"phase,omitempty"`
+
+	// Reason for current phase
+	Reason string `json:"reason,omitempty"`
+
+	// TargetVersion being upgraded to (for tracking)
+	TargetVersion ComponentVersions `json:"targetVersion,omitempty"`
+
+	// CurrentVersion before upgrade started
+	CurrentVersion ComponentVersions `json:"currentVersion,omitempty"`
+
+	// HooksExecuted tracks which pre-upgrade hooks have been executed
+	HooksExecuted []string `json:"hooksExecuted,omitempty"`
+
+	// Timestamp when upgrade preparation started
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
+	// Timestamp when upgrade preparation completed
+	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
+}
+
+// ComponentVersions tracks versions of each component
+type ComponentVersions struct {
+	// FE image version
+	FeVersion string `json:"feVersion,omitempty"`
+
+	// BE image version
+	BeVersion string `json:"beVersion,omitempty"`
+
+	// CN image version
+	CnVersion string `json:"cnVersion,omitempty"`
+}
+
+// UpgradePhase represents the phase of upgrade process
+type UpgradePhase string
+
+const (
+	// UpgradePhaseNone indicates no upgrade in progress
+	UpgradePhaseNone UpgradePhase = ""
+
+	// UpgradePhaseDetected indicates an upgrade has been detected
+	UpgradePhaseDetected UpgradePhase = "Detected"
+
+	// UpgradePhasePreparing indicates pre-upgrade hooks are being executed
+	UpgradePhasePreparing UpgradePhase = "Preparing"
+
+	// UpgradePhaseReady indicates preparation is complete and upgrade can proceed
+	UpgradePhaseReady UpgradePhase = "Ready"
+
+	// UpgradePhaseInProgress indicates upgrade is in progress
+	UpgradePhaseInProgress UpgradePhase = "InProgress"
+
+	// UpgradePhaseCompleted indicates upgrade completed successfully
+	UpgradePhaseCompleted UpgradePhase = "Completed"
+
+	// UpgradePhaseFailed indicates upgrade failed
+	UpgradePhaseFailed UpgradePhase = "Failed"
+)
 
 // StarRocksClusterList contains a list of StarRocksCluster
 // +kubebuilder:object:root=true
