@@ -347,9 +347,9 @@ func Test_sortComputeNodesByFQDN(t *testing.T) {
 			},
 			want: map[string][]ComputeNode{
 				"wh1": {
-					{FQDN: "cn-0"},
-					{FQDN: "cn-1"},
-					{FQDN: "cn-2"},
+					{FQDN: "cn-0", index: 0},
+					{FQDN: "cn-1", index: 1},
+					{FQDN: "cn-2", index: 2},
 				},
 			},
 		},
@@ -366,9 +366,9 @@ func Test_sortComputeNodesByFQDN(t *testing.T) {
 			},
 			want: map[string][]ComputeNode{
 				"wh1": {
-					{FQDN: "cn-0"},
-					{FQDN: "cn-1"},
-					{FQDN: "cn-2"},
+					{FQDN: "cn-0", index: 0},
+					{FQDN: "cn-1", index: 1},
+					{FQDN: "cn-2", index: 2},
 				},
 			},
 		},
@@ -387,11 +387,11 @@ func Test_sortComputeNodesByFQDN(t *testing.T) {
 			},
 			want: map[string][]ComputeNode{
 				"wh1": {
-					{FQDN: "cn-0"},
-					{FQDN: "cn-1"},
-					{FQDN: "cn-2"},
-					{FQDN: "cn-10"},
-					{FQDN: "cn-20"},
+					{FQDN: "cn-0", index: 0},
+					{FQDN: "cn-1", index: 1},
+					{FQDN: "cn-2", index: 2},
+					{FQDN: "cn-10", index: 10},
+					{FQDN: "cn-20", index: 20},
 				},
 			},
 		},

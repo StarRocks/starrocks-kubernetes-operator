@@ -129,6 +129,8 @@ type ComputeNode struct {
 	FQDN          string
 	HeartbeatPort string
 	WarehouseName string
+
+	index int // the index is from FQDN, used for sorting
 }
 
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
@@ -189,25 +191,23 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 	return &result, nil
 }
 
+// sortComputeNodesByFQDN the FQDN looks like: kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local,
+// kube-starrocks-cn-1.kube-starrocks-cn-search.default.svc.cluster.local,
+// kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local
+// kube-starrocks-cn-10 should be after kube-starrocks-cn-2 when sorting.
 func sortComputeNodesByFQDN(computeNodesByWarehouse map[string][]ComputeNode) {
 	for _, computeNodes := range computeNodesByWarehouse {
+		for i := range computeNodes {
+			firstPart := strings.Split(computeNodes[i].FQDN, ".")[0]
+			parts := strings.Split(firstPart, "-")
+			indexStr := parts[len(parts)-1]
+			var index int
+			_, _ = fmt.Sscanf(indexStr, "%d", &index)
+			computeNodes[i].index = index
+		}
+
 		sort.Slice(computeNodes, func(i, j int) bool {
-			// the FQDN looks like: kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local,
-			// kube-starrocks-cn-1.kube-starrocks-cn-search.default.svc.cluster.local,
-			// kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local
-			// kube-starrocks-cn-10 should be after kube-starrocks-cn-2 when sorting.
-			partsI := strings.SplitN(computeNodes[i].FQDN, ".", 2)
-			partsJ := strings.SplitN(computeNodes[j].FQDN, ".", 2)
-			nameI := partsI[0]
-			nameJ := partsJ[0]
-			partsI = strings.Split(nameI, "-")
-			partsJ = strings.Split(nameJ, "-")
-			indexStrI := partsI[len(partsI)-1]
-			indexStrJ := partsJ[len(partsJ)-1]
-			var indexI, indexJ int
-			_, _ = fmt.Sscanf(indexStrI, "%d", &indexI)
-			_, _ = fmt.Sscanf(indexStrJ, "%d", &indexJ)
-			return indexI < indexJ
+			return computeNodes[i].index < computeNodes[j].index
 		})
 	}
 }
