@@ -191,7 +191,14 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 					AddRow([]byte("id"), []byte("cn-0"), []byte("wh1")).
 					AddRow([]byte("id"), []byte("cn-20"), []byte("wh1")).
 					AddRow([]byte("id"), []byte("cn-10"), []byte("wh1")).
-					AddRow([]byte("id"), []byte("cn-15"), []byte("wh1")),
+					AddRow([]byte("id"), []byte("cn-15"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-3"), []byte("wh1")).
+					AddRow([]byte("id"), []byte("cn-1"), []byte("wh2")).
+					AddRow([]byte("id"), []byte("cn-0"), []byte("wh2")).
+					AddRow([]byte("id"), []byte("cn-20"), []byte("wh2")).
+					AddRow([]byte("id"), []byte("cn-10"), []byte("wh2")).
+					AddRow([]byte("id"), []byte("cn-15"), []byte("wh2")).
+					AddRow([]byte("id"), []byte("cn-3"), []byte("wh2")),
 			},
 			wantErr: assert.NoError,
 			wantData: &ShowComputeNodesResult{
@@ -199,9 +206,18 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 					"wh1": {
 						{ComputeNodeId: "id", FQDN: "cn-0", WarehouseName: "wh1", index: 0},
 						{ComputeNodeId: "id", FQDN: "cn-1", WarehouseName: "wh1", index: 1},
+						{ComputeNodeId: "id", FQDN: "cn-3", WarehouseName: "wh1", index: 3},
 						{ComputeNodeId: "id", FQDN: "cn-10", WarehouseName: "wh1", index: 10},
 						{ComputeNodeId: "id", FQDN: "cn-15", WarehouseName: "wh1", index: 15},
 						{ComputeNodeId: "id", FQDN: "cn-20", WarehouseName: "wh1", index: 20},
+					},
+					"wh2": {
+						{ComputeNodeId: "id", FQDN: "cn-0", WarehouseName: "wh2", index: 0},
+						{ComputeNodeId: "id", FQDN: "cn-1", WarehouseName: "wh2", index: 1},
+						{ComputeNodeId: "id", FQDN: "cn-3", WarehouseName: "wh2", index: 3},
+						{ComputeNodeId: "id", FQDN: "cn-10", WarehouseName: "wh2", index: 10},
+						{ComputeNodeId: "id", FQDN: "cn-15", WarehouseName: "wh2", index: 15},
+						{ComputeNodeId: "id", FQDN: "cn-20", WarehouseName: "wh2", index: 20},
 					},
 				},
 			},
