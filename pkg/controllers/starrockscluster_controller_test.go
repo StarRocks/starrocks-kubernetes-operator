@@ -505,10 +505,11 @@ func TestCheckForImageChanges(t *testing.T) {
 // TestGetControllersInOrder tests controller ordering based on deployment scenario
 func TestGetControllersInOrder(t *testing.T) {
 	ctx := context.Background()
-	feCtrl := fe.New(nil, nil)
-	beCtrl := be.New(nil, nil)
-	cnCtrl := cn.New(nil, nil)
-	feProxyCtrl := feproxy.New(nil, nil)
+	client := fake.NewFakeClient(srapi.Scheme)
+	feCtrl := fe.New(client, fake.GetEventRecorderFor(nil))
+	beCtrl := be.New(client, fake.GetEventRecorderFor(nil))
+	cnCtrl := cn.New(client, fake.GetEventRecorderFor(nil))
+	feProxyCtrl := feproxy.New(client, fake.GetEventRecorderFor(nil))
 
 	t.Run("initial deployment uses FE-first order", func(t *testing.T) {
 		cluster := newTestCluster("", "starrocks/fe:3.1.0")
@@ -518,11 +519,11 @@ func TestGetControllersInOrder(t *testing.T) {
 		controllers := getControllersInOrder(isUpgradeScenario, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
 
 		// Check FE is first
-		require.Equal(t, "fe", controllers[0].GetControllerName())
+		require.Equal(t, "feController", controllers[0].GetControllerName())
 		// Verify order: FE -> BE -> CN -> FeProxy
-		require.Equal(t, "be", controllers[1].GetControllerName())
-		require.Equal(t, "cn", controllers[2].GetControllerName())
-		require.Equal(t, "feproxy", controllers[3].GetControllerName())
+		require.Equal(t, "beController", controllers[1].GetControllerName())
+		require.Equal(t, "cnController", controllers[2].GetControllerName())
+		require.Equal(t, "feProxyController", controllers[3].GetControllerName())
 	})
 
 	t.Run("upgrade uses BE-first order", func(t *testing.T) {
@@ -534,11 +535,11 @@ func TestGetControllersInOrder(t *testing.T) {
 		controllers := getControllersInOrder(isUpgradeScenario, feCtrl, beCtrl, cnCtrl, feProxyCtrl)
 
 		// Check BE is first
-		require.Equal(t, "be", controllers[0].GetControllerName())
+		require.Equal(t, "beController", controllers[0].GetControllerName())
 		// Verify order: BE -> CN -> FE -> FeProxy (StarRocks upgrade procedure)
-		require.Equal(t, "cn", controllers[1].GetControllerName())
-		require.Equal(t, "fe", controllers[2].GetControllerName())
-		require.Equal(t, "feproxy", controllers[3].GetControllerName())
+		require.Equal(t, "cnController", controllers[1].GetControllerName())
+		require.Equal(t, "feController", controllers[2].GetControllerName())
+		require.Equal(t, "feProxyController", controllers[3].GetControllerName())
 	})
 }
 
@@ -593,7 +594,23 @@ func TestIsComponentReady(t *testing.T) {
 				},
 			},
 		}
-		client := fake.NewFakeClient(srapi.Scheme, endpoints)
+		sts := &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "test-cluster-fe",
+				Namespace:  "default",
+				Generation: 1,
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Replicas: rutils.GetInt32Pointer(1),
+			},
+			Status: appsv1.StatefulSetStatus{
+				ObservedGeneration: 1,
+				CurrentRevision:    "rev1",
+				UpdateRevision:     "rev1",
+				ReadyReplicas:      1,
+			},
+		}
+		client := fake.NewFakeClient(srapi.Scheme, endpoints, sts)
 		result := isComponentReady(ctx, client, cluster, "fe")
 		require.True(t, result)
 	})

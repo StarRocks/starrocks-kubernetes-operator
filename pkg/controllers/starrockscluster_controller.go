@@ -101,15 +101,15 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		controllerName := rc.GetControllerName()
 
 		// During upgrades, check BE and CN are ready BEFORE syncing FE
-		if isUpgradeScenario && controllerName == "feController" {
+		if isUpgradeScenario && controllerName == r.FeController.GetControllerName() {
 			// Check BE readiness if BE exists in spec
-			if src.Spec.StarRocksBeSpec != nil && !isComponentReady(ctx, r.Client, src, "be") {
+			if src.Spec.StarRocksBeSpec != nil && !isComponentReady(ctx, r.Client, src, componentTypeBE) {
 				logger.Info("upgrade: waiting for BE rollout to complete before updating FE",
 					"controller", controllerName)
 				return ctrl.Result{}, nil
 			}
 			// Check CN readiness if CN exists in spec
-			if src.Spec.StarRocksCnSpec != nil && !isComponentReady(ctx, r.Client, src, "cn") {
+			if src.Spec.StarRocksCnSpec != nil && !isComponentReady(ctx, r.Client, src, componentTypeCN) {
 				logger.Info("upgrade: waiting for CN rollout to complete before updating FE",
 					"controller", controllerName)
 				return ctrl.Result{}, nil
@@ -128,8 +128,8 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 		// After syncing, check if we need to wait for this component to be ready before proceeding
 		// Initial deployment: Wait for FE to be ready before creating BE/CN
-		if !isUpgradeScenario && controllerName == "feController" {
-			if src.Spec.StarRocksFeSpec != nil && !isComponentReady(ctx, r.Client, src, "fe") {
+		if !isUpgradeScenario && controllerName == r.FeController.GetControllerName() {
+			if src.Spec.StarRocksFeSpec != nil && !isComponentReady(ctx, r.Client, src, componentTypeFE) {
 				logger.Info("initial deployment: waiting for FE to be ready before creating BE/CN", "controller", controllerName)
 				return ctrl.Result{}, nil
 			}

@@ -208,19 +208,19 @@ func isComponentReady(ctx context.Context, k8sClient client.Client, cluster *sra
 		if cluster.Spec.StarRocksFeSpec == nil {
 			return true // Component not configured, consider it ready
 		}
-		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksFeSpec)(nil))
+		serviceName = rutils.ExternalServiceName(cluster.Name, cluster.Spec.StarRocksFeSpec)
 		statefulSetName = cluster.Name + "-fe"
 	case componentTypeBE:
 		if cluster.Spec.StarRocksBeSpec == nil {
 			return true
 		}
-		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksBeSpec)(nil))
+		serviceName = rutils.ExternalServiceName(cluster.Name, cluster.Spec.StarRocksBeSpec)
 		statefulSetName = cluster.Name + "-be"
 	case componentTypeCN:
 		if cluster.Spec.StarRocksCnSpec == nil {
 			return true
 		}
-		serviceName = rutils.ExternalServiceName(cluster.Name, (*srapi.StarRocksCnSpec)(nil))
+		serviceName = rutils.ExternalServiceName(cluster.Name, cluster.Spec.StarRocksCnSpec)
 		statefulSetName = cluster.Name + "-cn"
 	default:
 		return true
