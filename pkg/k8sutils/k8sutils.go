@@ -231,14 +231,16 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	}
 
 	// 5. update annotation only
-	retry.RetryOnConflict(retry.DefaultRetry, func() error {
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual)
 		if actual.Annotations == nil {
 			actual.Annotations = make(map[string]string)
 		}
 		actual.Annotations[LastAppliedConfigAnnotation] = string(expectBytes)
 		return k8sClient.Update(ctx, &actual)
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to update annotation for statefulset: %w", err)
+	}
 
 	return nil
 }
