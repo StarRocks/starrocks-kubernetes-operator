@@ -1,7 +1,7 @@
 # Scale in FE nodes Howto
 
 FE nodes in a StarRocks cluster are used to store metadata. Normally, users do not need to scale in the FE nodes.
-Incorrect operator may cause metadata inconsistency and malfunctioning. Be sure for every scale-in op, the number of the
+Incorrect operator may cause metadata inconsistency and malfunction. Be sure for every scale-in op, the number of the
 offline FE nodes shall not be larger than the quorum. E.g. Don't try to scale-in directly from 7->3, user should first
 scale-in 7->5, and then 5->3. For each scale in op, user should carefully check all the status of the remaining FE,
 connect to the remaining FE node directly and run `SHOW FRONTENDS`, make sure all the FE nodes have consistent view of
