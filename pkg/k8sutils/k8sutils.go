@@ -232,7 +232,9 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 
 	// 5. update annotation only
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual)
+		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
+			return fmt.Errorf("failed to get statefulset for annotation update: %w", err)
+		}
 		if actual.Annotations == nil {
 			actual.Annotations = make(map[string]string)
 		}
