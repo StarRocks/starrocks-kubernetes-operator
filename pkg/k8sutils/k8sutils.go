@@ -28,6 +28,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
+	"k8s.io/client-go/util/retry"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -48,6 +50,10 @@ type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
 type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool)
+
+const (
+	LastAppliedConfigAnnotation = "starrocks.kubernetes.operator/last-applied-configuration"
+)
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
@@ -184,23 +190,57 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
 	expect.ResourceVersion = actual.ResourceVersion
 
-	actualSel := actual.Spec.Template.Spec.NodeSelector
-	expectSel := expect.Spec.Template.Spec.NodeSelector
-	patchBytes, err := BuildNodeSelectorPatch(expectSel, actualSel)
+	// Use Client-Side Three-Way Merge
+
+	// 1. Get the last applied configuration
+	// If there is no last applied configuration, we let it be an empty JSON object, which means all fields in the
+	// actual statefulset are user-modified, but not operator-modified.
+	var lastAppliedBytes []byte
+	if lastAppliedConfig, ok := actual.Annotations[LastAppliedConfigAnnotation]; ok {
+		lastAppliedBytes = []byte(lastAppliedConfig)
+	}
+
+	// 2. Marshal the expected state, and actual state
+	expectBytes, err := json.Marshal(expect)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal expected state: %w", err)
 	}
-	// If patchBytes is not nil and indeed contains changes, we first do a RawPatch for nodeSelector
-	if patchBytes != nil {
-		if err := k8sClient.Patch(ctx, &actual, client.RawPatch(types.MergePatchType, patchBytes)); err != nil {
-			return fmt.Errorf("failed to patch nodeSelector: %w", err)
-		}
-		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
-			return err
-		}
-		expect.ResourceVersion = actual.ResourceVersion
+	actualBytes, err := json.Marshal(actual)
+	if err != nil {
+		return fmt.Errorf("failed to marshal actual state: %w", err)
 	}
-	return k8sClient.Patch(ctx, expect, client.Merge)
+
+	// 3. calculate the strategic merge patch
+	schema, err := strategicpatch.NewPatchMetaFromStruct(&appsv1.StatefulSet{})
+	if err != nil {
+		return fmt.Errorf("failed to create patch meta: %w", err)
+	}
+	// if overwrite is true, the fields in expectBytes will overwrite the fields in actualBytes
+	patchBytes, err := strategicpatch.CreateThreeWayMergePatch(lastAppliedBytes, expectBytes, actualBytes, schema, true)
+	if err != nil {
+		return fmt.Errorf("failed to create merge patch: %w", err)
+	}
+	if string(patchBytes) == "{}" {
+		logger.Info("no changes detected, skipping update")
+		return nil
+	}
+
+	// 4. apply patch. Note: we need to use RawPatch and StrategicMergePatchType here
+	if err := k8sClient.Patch(ctx, &actual, client.RawPatch(types.StrategicMergePatchType, patchBytes)); err != nil {
+		return fmt.Errorf("failed to patch statefulset: %w", err)
+	}
+
+	// 5. update annotation only
+	retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual)
+		if actual.Annotations == nil {
+			actual.Annotations = make(map[string]string)
+		}
+		actual.Annotations[LastAppliedConfigAnnotation] = string(expectBytes)
+		return k8sClient.Update(ctx, &actual)
+	})
+
+	return nil
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
