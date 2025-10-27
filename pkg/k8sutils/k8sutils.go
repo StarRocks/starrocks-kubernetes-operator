@@ -198,6 +198,7 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
 			return err
 		}
+		expect.ResourceVersion = actual.ResourceVersion
 	}
 	return k8sClient.Patch(ctx, expect, client.Merge)
 }
