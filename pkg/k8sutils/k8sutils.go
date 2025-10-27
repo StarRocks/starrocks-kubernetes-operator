@@ -599,7 +599,7 @@ func getConfigFromConfigMaps(ctx context.Context, k8sClient client.Client,
 // BuildNodeSelectorPatch builds a JSON patch that sets keys to new values
 // and sets keys that exist in actual but missing in expect to null.
 func BuildNodeSelectorPatch(expectSel, actualSel map[string]string) ([]byte, error) {
-	if expectSel == nil && actualSel == nil || reflect.DeepEqual(expectSel, actualSel) {
+	if (expectSel == nil && actualSel == nil) || reflect.DeepEqual(expectSel, actualSel) {
 		return nil, nil
 	}
 
