@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"unicode"
 
@@ -190,7 +189,19 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
 	expect.ResourceVersion = actual.ResourceVersion
 
-	// Use Client-Side Three-Way Merge
+	return PatchByThreeWayMerge(ctx, k8sClient, expect, &actual)
+}
+
+// PatchByThreeWayMerge Use Client-Side Three-Way Merge
+// The reason why we use Three-Way Merge Patch is that:
+//   1. avoid the fields managed by other controllers being overwritten.
+//   2. allow users to delete some fields they set in the previous reconciliation, e.g., nodeSelector, tolerations, etc.
+// First we changed the method from Update to Patch, and used the json merge patch strategy. But json merge patch does not
+// support removing fields from map, also it use a complete new list to replace the old list.
+// So we changed to use Strategic Merge Patch, which supports removing fields from map, and merging lists based on the
+// last applied configuration, expected state, and actual state.
+func PatchByThreeWayMerge(ctx context.Context, k8sClient client.Client, expect, actual *appsv1.StatefulSet) error {
+	logger := logr.FromContextOrDiscard(ctx)
 
 	// 1. Get the last applied configuration
 	// If there is no last applied configuration, we let it be an empty JSON object, which means all fields in the
@@ -230,20 +241,20 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	}
 
 	// 4. apply patch. Note: we need to use RawPatch and StrategicMergePatchType here
-	if err := k8sClient.Patch(ctx, &actual, client.RawPatch(types.StrategicMergePatchType, patchBytes)); err != nil {
+	if err := k8sClient.Patch(ctx, actual, client.RawPatch(types.StrategicMergePatchType, patchBytes)); err != nil {
 		return fmt.Errorf("failed to patch statefulset: %w", err)
 	}
 
 	// 5. update annotation only
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, &actual); err != nil {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Namespace: expect.Namespace, Name: expect.Name}, actual); err != nil {
 			return fmt.Errorf("failed to get statefulset for annotation update: %w", err)
 		}
 		if actual.Annotations == nil {
 			actual.Annotations = make(map[string]string)
 		}
 		actual.Annotations[LastAppliedConfigAnnotation] = string(expectBytes)
-		return k8sClient.Update(ctx, &actual)
+		return k8sClient.Update(ctx, actual)
 	}); err != nil {
 		return fmt.Errorf("failed to update annotation for statefulset: %w", err)
 	}
@@ -643,43 +654,4 @@ func getConfigFromConfigMaps(ctx context.Context, k8sClient client.Client,
 	}
 	res, err := ResolveConfigMap(configMap, expectKey)
 	return res, err
-}
-
-// BuildNodeSelectorPatch builds a JSON patch that sets keys to new values
-// and sets keys that exist in actual but missing in expect to null.
-func BuildNodeSelectorPatch(expectSel, actualSel map[string]string) ([]byte, error) {
-	if (expectSel == nil && actualSel == nil) || reflect.DeepEqual(expectSel, actualSel) {
-		return nil, nil
-	}
-
-	// map that will be marshaled: missing keys -> nil (json null)
-	nodeMap := map[string]interface{}{}
-
-	// set expected keys to their values
-	for k, v := range expectSel {
-		nodeMap[k] = v
-	}
-
-	// for keys present in actual but not in expect, set to nil -> will become null in JSON
-	for k := range actualSel {
-		if _, ok := expectSel[k]; !ok {
-			nodeMap[k] = nil
-		}
-	}
-
-	patch := map[string]interface{}{
-		"spec": map[string]interface{}{
-			"template": map[string]interface{}{
-				"spec": map[string]interface{}{
-					"nodeSelector": nodeMap,
-				},
-			},
-		},
-	}
-
-	b, err := json.Marshal(patch)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
 }
