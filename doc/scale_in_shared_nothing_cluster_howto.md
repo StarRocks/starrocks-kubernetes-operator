@@ -145,4 +145,4 @@ If users really want to scale in the FE nodes, they should:
 
 
 4. Repeat the above steps to remove other FE nodes until the desired number of FE nodes is reached. 4-->3
-   allowed to scale in the FE nodes to 1.
+   Note: You are not allowed to scale in the FE nodes to 1.
