@@ -215,7 +215,11 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 	if err != nil {
 		return fmt.Errorf("failed to create patch meta: %w", err)
 	}
-	// if overwrite is true, the fields in expectBytes will overwrite the fields in actualBytes
+	// If overwrite is true, the fields in expectBytes will overwrite the fields in actualBytes.
+	// This means that operator-defined fields (from expectBytes) will always take precedence over any user modifications
+	// made directly to the resource. In other words, user changes to these fields will be overwritten by the operator,
+	// which is a critical behavioral difference from the default (overwrite=false), where user modifications are preserved
+	// unless explicitly changed by the operator.
 	patchBytes, err := strategicpatch.CreateThreeWayMergePatch(lastAppliedBytes, expectBytes, actualBytes, schema, true)
 	if err != nil {
 		return fmt.Errorf("failed to create merge patch: %w", err)
