@@ -83,7 +83,7 @@ example, if users want to scale in the BE nodes from 6 to 3, they should:
    ```
 
 4. Execute the `show backends` command to check the decommission status of the BE node(
-   kube-starrocks-be-5.kube-starrocks-be-search.default.svc.cluster.local). If the of `SystemDecommissioned` filed is
+   kube-starrocks-be-5.kube-starrocks-be-search.default.svc.cluster.local). If the value of `SystemDecommissioned` field is
    true and `TabletNum` is 0, the BE node is decommissioned successfully.
    ```sql
    mysql> SHOW BACKENDS;
