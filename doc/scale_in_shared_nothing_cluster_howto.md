@@ -70,7 +70,7 @@ example, if users want to scale in the BE nodes from 6 to 3, they should scale i
 
 2. Set the `drop_backend_after_decommission` configuration to `false` to avoid automatic deletion of the backend after
    decommissioning.
-   ```yaml
+   ```sql
    ADMIN SET FRONTEND CONFIG ("drop_backend_after_decommission" = "false");
    ```
 
