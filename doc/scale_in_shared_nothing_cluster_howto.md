@@ -1,6 +1,6 @@
 # Scale in Shared Nothing Cluster Howto
 
-Now, if users want to scale in the shared-nothing cluster, they will adjust the `replicas` filed. For example,
+Now, if users want to scale in the shared-nothing cluster, they will adjust the `replicas` field. For example,
 
 ```yaml
 spec:
