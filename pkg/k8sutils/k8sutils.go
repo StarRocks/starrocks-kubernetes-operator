@@ -200,9 +200,8 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 
 // PatchByThreeWayMerge applies a client-side three-way merge patch to any Kubernetes object.
 // Supports both map and list merging/deletion, based on last applied configuration.
-// The reason why we use Three-Way Merge Patch is that:
-//   1. avoid the fields managed by other controllers being overwritten.
-//   2. allow users to delete some fields they set in the previous reconciliation, e.g., nodeSelector, tolerations, etc.
+// The reason why we use Three-Way Merge Patch is that: 1. avoid the fields managed by other controllers being
+// overwritten. 2. allow users to delete some fields they set in the previous reconciliation, e.g., nodeSelector etc.
 // First we changed the method from Update to Patch, and used the json merge patch strategy. But json merge patch does not
 // support removing fields from map, also it use a complete new list to replace the old list. So we changed to use
 // Strategic Merge Patch, which supports removing fields from map, and merging lists based on the last applied
