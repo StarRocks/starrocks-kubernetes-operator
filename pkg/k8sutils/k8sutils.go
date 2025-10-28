@@ -19,6 +19,7 @@ package k8sutils
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
+	"k8s.io/client-go/util/retry"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -42,10 +45,14 @@ import (
 )
 
 // ServiceEqual judges two services equal or not in some fields. developer can custom the function.
-type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) bool
+type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) (string, bool)
 
 // StatefulSetEqual judges two statefulset equal or not in some fields. developer can custom the function.
 type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool)
+
+const (
+	LastAppliedConfigAnnotation = "starrocks.kubernetes.operator/last-applied-configuration"
+)
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
 	// As stated in the RetryOnConflict's documentation, the returned error shouldn't be wrapped.
@@ -60,13 +67,18 @@ func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev
 		return err
 	}
 
-	if equal(expectSvc, &actualSvc) {
+	newHashValue, b := equal(expectSvc, &actualSvc)
+	if b {
 		logger.Info("expectHash == actualHash, no need to update service resource")
 		return nil
 	}
 
 	expectSvc.ResourceVersion = actualSvc.ResourceVersion
-	return k8sClient.Patch(ctx, expectSvc, client.Merge)
+	if expectSvc.Annotations == nil {
+		expectSvc.Annotations = map[string]string{}
+	}
+	expectSvc.Annotations[srapi.ComponentResourceHash] = newHashValue
+	return PatchByThreeWayMerge(ctx, k8sClient, expectSvc, &actualSvc)
 }
 
 func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appsv1.Deployment) error {
@@ -103,7 +115,8 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appsv
 		deploy.Annotations = map[string]string{}
 	}
 	deploy.Annotations[srapi.ComponentResourceHash] = expectHash
-	return k8sClient.Patch(ctx, deploy, client.Merge)
+
+	return PatchByThreeWayMerge(ctx, k8sClient, deploy, &actual)
 }
 
 func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *corev1.ConfigMap) error {
@@ -180,9 +193,87 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 		return nil
 	}
 	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
-
 	expect.ResourceVersion = actual.ResourceVersion
-	return k8sClient.Patch(ctx, expect, client.Merge)
+
+	return PatchByThreeWayMerge(ctx, k8sClient, expect, &actual)
+}
+
+// PatchByThreeWayMerge applies a client-side three-way merge patch to any Kubernetes object.
+// Supports both map and list merging/deletion, based on last applied configuration.
+// The reason why we use Three-Way Merge Patch is that: 1. avoid the fields managed by other controllers being
+// overwritten. 2. allow users to delete some fields they set in the previous reconciliation, e.g., nodeSelector etc.
+// First we changed the method from Update to Patch, and used the json merge patch strategy. But json merge patch does not
+// support removing fields from map, also it use a complete new list to replace the old list. So we changed to use
+// Strategic Merge Patch, which supports removing fields from map, and merging lists based on the last applied
+// configuration, expected state, and actual state.
+func PatchByThreeWayMerge(ctx context.Context, k8sClient client.Client, expect, actual client.Object) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	// 1. Get last applied configuration
+	// If there is no last applied configuration, we let it be an empty JSON object, which means all fields in the
+	// actual statefulset are user-modified, but not operator-modified.
+	var lastAppliedBytes []byte
+	if actual.GetAnnotations() != nil {
+		if lastAppliedConfig, ok := actual.GetAnnotations()[LastAppliedConfigAnnotation]; ok {
+			lastAppliedBytes = []byte(lastAppliedConfig)
+		}
+	}
+
+	// 2. Marshal expected and actual objects
+	expectBytes, err := json.Marshal(expect)
+	if err != nil {
+		return fmt.Errorf("failed to marshal expected state: %w", err)
+	}
+	actualBytes, err := json.Marshal(actual)
+	if err != nil {
+		return fmt.Errorf("failed to marshal actual state: %w", err)
+	}
+
+	// 3. Determine patch meta based on object's Go type
+	if actual.GetAnnotations() == nil {
+		actual.SetAnnotations(make(map[string]string))
+	}
+	actual.GetAnnotations()[LastAppliedConfigAnnotation] = string(expectBytes)
+	patchMeta, err := strategicpatch.NewPatchMetaFromStruct(expect)
+	if err != nil {
+		return fmt.Errorf("failed to create patch meta: %w", err)
+	}
+
+	// 4. Create three-way merge patch
+	// If overwrite is true, the fields in expectBytes will overwrite the fields in actualBytes.
+	// This means that operator-defined fields (from expectBytes) will always take precedence over any user modifications
+	// made directly to the resource. In other words, user changes to these fields will be overwritten by the operator,
+	// which is a critical behavioral difference from the default (overwrite=false), where user modifications are preserved
+	// unless explicitly changed by the operator.
+	patchBytes, err := strategicpatch.CreateThreeWayMergePatch(lastAppliedBytes, expectBytes, actualBytes, patchMeta, true)
+	if err != nil {
+		return fmt.Errorf("failed to create merge patch: %w", err)
+	}
+	if string(patchBytes) == "{}" {
+		logger.Info("no changes detected, skipping patch", "name", expect.GetName(), "namespace", expect.GetNamespace())
+		return nil
+	}
+
+	// 5. Apply patch
+	if err := k8sClient.Patch(ctx, actual, client.RawPatch(types.StrategicMergePatchType, patchBytes)); err != nil {
+		return fmt.Errorf("failed to apply merge patch: %w", err)
+	}
+
+	// 6. Update last applied annotation
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(expect), actual); err != nil {
+			return fmt.Errorf("failed to get object for annotation update: %w", err)
+		}
+		if actual.GetAnnotations() == nil {
+			actual.SetAnnotations(make(map[string]string))
+		}
+		actual.GetAnnotations()[LastAppliedConfigAnnotation] = string(expectBytes)
+		return k8sClient.Update(ctx, actual)
+	}); err != nil {
+		return fmt.Errorf("failed to update last applied annotation: %w", err)
+	}
+
+	return nil
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {

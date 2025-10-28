@@ -267,7 +267,7 @@ func getExternalServiceLabels(svc *srapi.StarRocksService) map[string]string {
 	return map[string]string{}
 }
 
-func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
+func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) (string, bool) {
 	var expectHashValue string
 	if _, ok := expectSvc.Annotations[srapi.ComponentResourceHash]; ok {
 		expectHashValue = expectSvc.Annotations[srapi.ComponentResourceHash]
@@ -284,7 +284,7 @@ func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
 		actualHashValue = hash.HashObject(serviceHashObject(actualSvc))
 	}
 
-	return expectHashValue == actualHashValue && expectSvc.Namespace == actualSvc.Namespace
+	return expectHashValue, expectHashValue == actualHashValue && expectSvc.Namespace == actualSvc.Namespace
 }
 
 func serviceHashObject(svc *corev1.Service) hashService {
