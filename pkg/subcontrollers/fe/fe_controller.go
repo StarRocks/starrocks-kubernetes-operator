@@ -23,6 +23,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
@@ -94,14 +95,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	defaultLabels := load.Labels(src.Name, feSpec)
 	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), defaultLabels)
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
-	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
-		{
-			Name:        "query-port",
-			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
-			TargetPort:  intstr.FromInt(int(rutils.GetPort(feConfig, rutils.QUERY_PORT))),
-			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
-		},
-	}, defaultLabels)
+	internalService := service.MakeSearchService(searchServiceName, &svc, getFEInternalServicePort(feConfig, svc), defaultLabels)
 
 	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)
 	if err != nil {
@@ -256,4 +250,23 @@ func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace
 	}
 
 	return false
+}
+
+func getFEInternalServicePort(feConfig map[string]interface{}, external *corev1.Service) []corev1.ServicePort {
+	internalServicePorts := []corev1.ServicePort{
+		{
+			Name:        "query-port",
+			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
+			TargetPort:  intstr.FromInt(int(rutils.GetPort(feConfig, rutils.QUERY_PORT))),
+			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
+		},
+	}
+
+	for _, sp := range external.Spec.Ports {
+		if sp.Name == rutils.FEArrowFlightPortName {
+			internalServicePorts = append(internalServicePorts, sp)
+		}
+	}
+
+	return internalServicePorts
 }
