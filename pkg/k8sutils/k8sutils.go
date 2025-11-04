@@ -277,6 +277,20 @@ func PatchByThreeWayMerge(ctx context.Context, k8sClient client.Client, expect, 
 }
 
 func CreateClientObject(ctx context.Context, k8sClient client.Client, object client.Object) error {
+	annotations := object.GetAnnotations()
+	if annotations == nil {
+		object.SetAnnotations(make(map[string]string))
+		annotations = object.GetAnnotations()
+	}
+
+	if annotations[LastAppliedConfigAnnotation] == "" {
+		data, err := json.Marshal(object)
+		if err != nil {
+			return err
+		}
+		annotations[LastAppliedConfigAnnotation] = string(data)
+	}
+
 	if err := k8sClient.Create(ctx, object); err != nil {
 		return err
 	}
