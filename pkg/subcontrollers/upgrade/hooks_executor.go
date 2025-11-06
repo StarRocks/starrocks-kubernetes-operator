@@ -51,23 +51,17 @@ func (h *HookExecutor) ExecutePreUpgradeHooks(ctx context.Context, src *srapi.St
 	// Define standard pre-upgrade hooks that should run for all upgrades
 	hooks := h.getStandardPreUpgradeHooks()
 
-	if src.Status.UpgradeState == nil {
-		src.Status.UpgradeState = &srapi.UpgradeState{}
-	}
-
 	// Execute each hook with retry logic
 	for _, hook := range hooks {
 		logger.Info("Executing pre-upgrade hook", "name", hook.Name)
 		// Security: Do NOT log the actual SQL command to prevent sensitive info leakage
 
-		err := h.executeHookWithRetry(ctx, db, hook)
+		err := h.ExecuteHookWithRetry(ctx, db, hook)
 		if err != nil {
 			logger.Error(err, "Pre-upgrade hook failed after retries", "hook", hook.Name)
 
 			if hook.Critical {
-				src.Status.UpgradeState.Phase = srapi.UpgradePhaseFailed
 				// Security: Sanitize error message to avoid leaking sensitive information
-				src.Status.UpgradeState.Reason = fmt.Sprintf("Critical pre-upgrade hook %s failed", hook.Name)
 				return fmt.Errorf("critical pre-upgrade hook %s failed: %w", hook.Name, err)
 			}
 
@@ -76,8 +70,6 @@ func (h *HookExecutor) ExecutePreUpgradeHooks(ctx context.Context, src *srapi.St
 			continue
 		}
 
-		// Track successful hook execution
-		src.Status.UpgradeState.HooksExecuted = append(src.Status.UpgradeState.HooksExecuted, hook.Name)
 		logger.Info("Pre-upgrade hook completed successfully", "hook", hook.Name)
 	}
 
@@ -98,7 +90,7 @@ func (h *HookExecutor) ExecutePostUpgradeHooks(ctx context.Context, src *srapi.S
 		logger.Info("Executing post-upgrade hook", "name", hook.Name)
 		// Security: Do NOT log the actual SQL command
 
-		err := h.executeHookWithRetry(ctx, db, hook)
+		err := h.ExecuteHookWithRetry(ctx, db, hook)
 		if err != nil {
 			// Post-upgrade hooks are typically non-critical
 			logger.Error(err, "Post-upgrade hook failed (non-critical)", "hook", hook.Name)
@@ -144,8 +136,9 @@ func (h *HookExecutor) getStandardPostUpgradeHooks() []Hook {
 	}
 }
 
-// executeHookWithRetry executes a single hook with timeout and retry logic
-func (h *HookExecutor) executeHookWithRetry(ctx context.Context, db *sql.DB, hook Hook) error {
+// ExecuteHookWithRetry executes a single hook with timeout and retry logic
+// Made public to allow Manager to execute predefined hooks
+func (h *HookExecutor) ExecuteHookWithRetry(ctx context.Context, db *sql.DB, hook Hook) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName("HookExecutor")
 
 	var lastErr error

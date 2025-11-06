@@ -28,114 +28,150 @@ func NewDetector(k8sClient client.Client) *Detector {
 	}
 }
 
+// ComponentType represents the type of component
+type ComponentType string
+
+const (
+	ComponentTypeFE ComponentType = "FE"
+	ComponentTypeBE ComponentType = "BE"
+	ComponentTypeCN ComponentType = "CN"
+)
+
+// ComponentUpgradeInfo holds upgrade information for a component
+type ComponentUpgradeInfo struct {
+	ComponentType  ComponentType
+	CurrentVersion string
+	DesiredVersion string
+}
+
 // DetectUpgrade checks if an upgrade is happening by comparing spec images with status images
-func (d *Detector) DetectUpgrade(ctx context.Context, src *srapi.StarRocksCluster) (bool, *srapi.ComponentVersions, error) {
+// Returns: (upgradeDetected, upgradeInfoList, error)
+func (d *Detector) DetectUpgrade(ctx context.Context, src *srapi.StarRocksCluster) (bool, []ComponentUpgradeInfo, error) {
 	logger := logr.FromContextOrDiscard(ctx).WithName("UpgradeDetector")
 
-	// Get current versions from running pods/statefulsets
-	currentVersions, err := d.getCurrentVersions(ctx, src)
-	if err != nil {
-		return false, nil, err
-	}
+	upgradeInfoList := []ComponentUpgradeInfo{}
 
-	// Get desired versions from spec
-	desiredVersions := d.getDesiredVersions(src)
-
-	// Check if there's a version mismatch (upgrade needed)
-	upgradeDetected := false
-
-	if currentVersions.FeVersion != "" && desiredVersions.FeVersion != "" {
-		if currentVersions.FeVersion != desiredVersions.FeVersion {
-			logger.Info("FE upgrade detected",
-				"current", currentVersions.FeVersion,
-				"desired", desiredVersions.FeVersion)
-			upgradeDetected = true
-		}
-	}
-
-	if currentVersions.BeVersion != "" && desiredVersions.BeVersion != "" {
-		if currentVersions.BeVersion != desiredVersions.BeVersion {
-			logger.Info("BE upgrade detected",
-				"current", currentVersions.BeVersion,
-				"desired", desiredVersions.BeVersion)
-			upgradeDetected = true
-		}
-	}
-
-	if currentVersions.CnVersion != "" && desiredVersions.CnVersion != "" {
-		if currentVersions.CnVersion != desiredVersions.CnVersion {
-			logger.Info("CN upgrade detected",
-				"current", currentVersions.CnVersion,
-				"desired", desiredVersions.CnVersion)
-			upgradeDetected = true
-		}
-	}
-
-	if upgradeDetected {
-		return true, &desiredVersions, nil
-	}
-
-	return false, nil, nil
-}
-
-// getCurrentVersions retrieves the current running versions from the upgrade state or empty if none
-func (d *Detector) getCurrentVersions(ctx context.Context, src *srapi.StarRocksCluster) (srapi.ComponentVersions, error) {
-	versions := srapi.ComponentVersions{}
-
-	// If we have an upgrade state, use the current version from there
-	if src.Status.UpgradeState != nil {
-		return src.Status.UpgradeState.CurrentVersion, nil
-	}
-
-	// Otherwise, if components are running, assume current version is what's in spec
-	// (this means no upgrade is in progress)
-	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.Phase == srapi.ComponentRunning {
-		if src.Spec.StarRocksFeSpec != nil {
-			versions.FeVersion = src.Spec.StarRocksFeSpec.Image
-		}
-	}
-
-	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.Phase == srapi.ComponentRunning {
-		if src.Spec.StarRocksBeSpec != nil {
-			versions.BeVersion = src.Spec.StarRocksBeSpec.Image
-		}
-	}
-
-	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.Phase == srapi.ComponentRunning {
-		if src.Spec.StarRocksCnSpec != nil {
-			versions.CnVersion = src.Spec.StarRocksCnSpec.Image
-		}
-	}
-
-	return versions, nil
-}
-
-// getDesiredVersions gets the desired versions from the spec
-func (d *Detector) getDesiredVersions(src *srapi.StarRocksCluster) srapi.ComponentVersions {
-	versions := srapi.ComponentVersions{}
-
+	// Check FE upgrade
 	if src.Spec.StarRocksFeSpec != nil {
-		versions.FeVersion = src.Spec.StarRocksFeSpec.Image
+		currentVersion := d.getCurrentComponentVersion(src, ComponentTypeFE)
+		desiredVersion := src.Spec.StarRocksFeSpec.Image
+
+		if currentVersion != "" && desiredVersion != "" && currentVersion != desiredVersion {
+			logger.Info("FE upgrade detected",
+				"current", currentVersion,
+				"desired", desiredVersion)
+			upgradeInfoList = append(upgradeInfoList, ComponentUpgradeInfo{
+				ComponentType:  ComponentTypeFE,
+				CurrentVersion: currentVersion,
+				DesiredVersion: desiredVersion,
+			})
+		}
 	}
 
+	// Check BE upgrade
 	if src.Spec.StarRocksBeSpec != nil {
-		versions.BeVersion = src.Spec.StarRocksBeSpec.Image
+		currentVersion := d.getCurrentComponentVersion(src, ComponentTypeBE)
+		desiredVersion := src.Spec.StarRocksBeSpec.Image
+
+		if currentVersion != "" && desiredVersion != "" && currentVersion != desiredVersion {
+			logger.Info("BE upgrade detected",
+				"current", currentVersion,
+				"desired", desiredVersion)
+			upgradeInfoList = append(upgradeInfoList, ComponentUpgradeInfo{
+				ComponentType:  ComponentTypeBE,
+				CurrentVersion: currentVersion,
+				DesiredVersion: desiredVersion,
+			})
+		}
 	}
 
+	// Check CN upgrade
 	if src.Spec.StarRocksCnSpec != nil {
-		versions.CnVersion = src.Spec.StarRocksCnSpec.Image
+		currentVersion := d.getCurrentComponentVersion(src, ComponentTypeCN)
+		desiredVersion := src.Spec.StarRocksCnSpec.Image
+
+		if currentVersion != "" && desiredVersion != "" && currentVersion != desiredVersion {
+			logger.Info("CN upgrade detected",
+				"current", currentVersion,
+				"desired", desiredVersion)
+			upgradeInfoList = append(upgradeInfoList, ComponentUpgradeInfo{
+				ComponentType:  ComponentTypeCN,
+				CurrentVersion: currentVersion,
+				DesiredVersion: desiredVersion,
+			})
+		}
 	}
 
-	return versions
+	return len(upgradeInfoList) > 0, upgradeInfoList, nil
 }
 
-// IsUpgradeInProgress checks if an upgrade is currently in progress
-func (d *Detector) IsUpgradeInProgress(src *srapi.StarRocksCluster) bool {
-	if src.Status.UpgradeState == nil {
-		return false
+// getCurrentComponentVersion retrieves the current running version for a specific component
+func (d *Detector) getCurrentComponentVersion(src *srapi.StarRocksCluster, componentType ComponentType) string {
+	switch componentType {
+	case ComponentTypeFE:
+		if src.Status.StarRocksFeStatus != nil {
+			if src.Status.StarRocksFeStatus.UpgradeState != nil {
+				return src.Status.StarRocksFeStatus.UpgradeState.CurrentVersion
+			}
+			// If no upgrade state, and component is running, assume current version is what's in spec
+			if src.Status.StarRocksFeStatus.Phase == srapi.ComponentRunning && src.Spec.StarRocksFeSpec != nil {
+				return src.Spec.StarRocksFeSpec.Image
+			}
+		}
+
+	case ComponentTypeBE:
+		if src.Status.StarRocksBeStatus != nil {
+			if src.Status.StarRocksBeStatus.UpgradeState != nil {
+				return src.Status.StarRocksBeStatus.UpgradeState.CurrentVersion
+			}
+			if src.Status.StarRocksBeStatus.Phase == srapi.ComponentRunning && src.Spec.StarRocksBeSpec != nil {
+				return src.Spec.StarRocksBeSpec.Image
+			}
+		}
+
+	case ComponentTypeCN:
+		if src.Status.StarRocksCnStatus != nil {
+			if src.Status.StarRocksCnStatus.UpgradeState != nil {
+				return src.Status.StarRocksCnStatus.UpgradeState.CurrentVersion
+			}
+			if src.Status.StarRocksCnStatus.Phase == srapi.ComponentRunning && src.Spec.StarRocksCnSpec != nil {
+				return src.Spec.StarRocksCnSpec.Image
+			}
+		}
 	}
 
-	switch src.Status.UpgradeState.Phase {
+	return ""
+}
+
+// IsUpgradeInProgress checks if an upgrade is currently in progress for any component
+func (d *Detector) IsUpgradeInProgress(src *srapi.StarRocksCluster) bool {
+	// Check FE
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if d.isUpgradePhaseActive(src.Status.StarRocksFeStatus.UpgradeState.Phase) {
+			return true
+		}
+	}
+
+	// Check BE
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if d.isUpgradePhaseActive(src.Status.StarRocksBeStatus.UpgradeState.Phase) {
+			return true
+		}
+	}
+
+	// Check CN
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if d.isUpgradePhaseActive(src.Status.StarRocksCnStatus.UpgradeState.Phase) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// isUpgradePhaseActive checks if a phase represents an active upgrade
+func (d *Detector) isUpgradePhaseActive(phase srapi.UpgradePhase) bool {
+	switch phase {
 	case srapi.UpgradePhaseDetected,
 		srapi.UpgradePhasePreparing,
 		srapi.UpgradePhaseReady,
@@ -146,16 +182,41 @@ func (d *Detector) IsUpgradeInProgress(src *srapi.StarRocksCluster) bool {
 	}
 }
 
-// InitializeUpgradeState initializes the upgrade state in the cluster status
-func (d *Detector) InitializeUpgradeState(src *srapi.StarRocksCluster, targetVersions *srapi.ComponentVersions) {
-	currentVersions, _ := d.getCurrentVersions(context.Background(), src)
+// InitializeUpgradeState initializes the upgrade state for the specified components
+func (d *Detector) InitializeUpgradeState(src *srapi.StarRocksCluster, upgradeInfoList []ComponentUpgradeInfo) {
+	for _, info := range upgradeInfoList {
+		d.initializeComponentUpgradeState(src, info)
+	}
+}
 
-	src.Status.UpgradeState = &srapi.UpgradeState{
+// initializeComponentUpgradeState initializes upgrade state for a single component
+func (d *Detector) initializeComponentUpgradeState(src *srapi.StarRocksCluster, info ComponentUpgradeInfo) {
+	upgradeState := &srapi.UpgradeState{
 		Phase:          srapi.UpgradePhaseDetected,
 		Reason:         "Upgrade detected, preparing to execute pre-upgrade hooks",
-		TargetVersion:  *targetVersions,
-		CurrentVersion: currentVersions,
+		TargetVersion:  info.DesiredVersion,
+		CurrentVersion: info.CurrentVersion,
 		StartTime:      &metav1.Time{Time: metav1.Now().Time},
+	}
+
+	switch info.ComponentType {
+	case ComponentTypeFE:
+		if src.Status.StarRocksFeStatus == nil {
+			src.Status.StarRocksFeStatus = &srapi.StarRocksFeStatus{}
+		}
+		src.Status.StarRocksFeStatus.UpgradeState = upgradeState
+
+	case ComponentTypeBE:
+		if src.Status.StarRocksBeStatus == nil {
+			src.Status.StarRocksBeStatus = &srapi.StarRocksBeStatus{}
+		}
+		src.Status.StarRocksBeStatus.UpgradeState = upgradeState
+
+	case ComponentTypeCN:
+		if src.Status.StarRocksCnStatus == nil {
+			src.Status.StarRocksCnStatus = &srapi.StarRocksCnStatus{}
+		}
+		src.Status.StarRocksCnStatus.UpgradeState = upgradeState
 	}
 }
 
@@ -163,78 +224,190 @@ func (d *Detector) InitializeUpgradeState(src *srapi.StarRocksCluster, targetVer
 func (d *Detector) ShouldExecutePreUpgradeHooks(ctx context.Context, src *srapi.StarRocksCluster) bool {
 	logger := logr.FromContextOrDiscard(ctx).WithName("UpgradeDetector")
 
-	// Only execute hooks if upgrade is detected or preparing
-	if src.Status.UpgradeState == nil {
-		return false
-	}
-
-	if src.Status.UpgradeState.Phase == srapi.UpgradePhaseDetected {
-		logger.Info("Upgrade detected, pre-upgrade hooks should be executed")
+	// Check if any component is in detected phase
+	components := d.getComponentsInPhase(src, srapi.UpgradePhaseDetected)
+	if len(components) > 0 {
+		logger.Info("Upgrade detected for components, pre-upgrade hooks should be executed", "components", components)
 		return true
 	}
 
 	return false
 }
 
-// MarkPreparationComplete marks the upgrade preparation as complete
+// getComponentsInPhase returns a list of components in a specific phase
+func (d *Detector) getComponentsInPhase(src *srapi.StarRocksCluster, phase srapi.UpgradePhase) []ComponentType {
+	components := []ComponentType{}
+
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == phase {
+			components = append(components, ComponentTypeFE)
+		}
+	}
+
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == phase {
+			components = append(components, ComponentTypeBE)
+		}
+	}
+
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == phase {
+			components = append(components, ComponentTypeCN)
+		}
+	}
+
+	return components
+}
+
+// MarkPreparationComplete marks the upgrade preparation as complete for all components in detected phase
 func (d *Detector) MarkPreparationComplete(src *srapi.StarRocksCluster) {
-	if src.Status.UpgradeState != nil {
-		src.Status.UpgradeState.Phase = srapi.UpgradePhaseReady
-		src.Status.UpgradeState.Reason = "Pre-upgrade hooks executed successfully, ready to proceed"
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhasePreparing ||
+			src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhaseDetected {
+			src.Status.StarRocksFeStatus.UpgradeState.Phase = srapi.UpgradePhaseReady
+			src.Status.StarRocksFeStatus.UpgradeState.Reason = "Pre-upgrade hooks executed successfully, ready to proceed"
+		}
+	}
+
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhasePreparing ||
+			src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhaseDetected {
+			src.Status.StarRocksBeStatus.UpgradeState.Phase = srapi.UpgradePhaseReady
+			src.Status.StarRocksBeStatus.UpgradeState.Reason = "Pre-upgrade hooks executed successfully, ready to proceed"
+		}
+	}
+
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhasePreparing ||
+			src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhaseDetected {
+			src.Status.StarRocksCnStatus.UpgradeState.Phase = srapi.UpgradePhaseReady
+			src.Status.StarRocksCnStatus.UpgradeState.Reason = "Pre-upgrade hooks executed successfully, ready to proceed"
+		}
 	}
 }
 
-// MarkUpgradeInProgress marks the upgrade as in progress
+// MarkUpgradeInProgress marks the upgrade as in progress for ready components
 func (d *Detector) MarkUpgradeInProgress(src *srapi.StarRocksCluster) {
-	if src.Status.UpgradeState != nil {
-		src.Status.UpgradeState.Phase = srapi.UpgradePhaseInProgress
-		src.Status.UpgradeState.Reason = "Upgrade in progress"
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhaseReady {
+			src.Status.StarRocksFeStatus.UpgradeState.Phase = srapi.UpgradePhaseInProgress
+			src.Status.StarRocksFeStatus.UpgradeState.Reason = "Upgrade in progress"
+		}
+	}
+
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhaseReady {
+			src.Status.StarRocksBeStatus.UpgradeState.Phase = srapi.UpgradePhaseInProgress
+			src.Status.StarRocksBeStatus.UpgradeState.Reason = "Upgrade in progress"
+		}
+	}
+
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhaseReady {
+			src.Status.StarRocksCnStatus.UpgradeState.Phase = srapi.UpgradePhaseInProgress
+			src.Status.StarRocksCnStatus.UpgradeState.Reason = "Upgrade in progress"
+		}
 	}
 }
 
-// CheckUpgradeCompletion checks if the upgrade has completed
+// CheckUpgradeCompletion checks if upgrades have completed for all components
 func (d *Detector) CheckUpgradeCompletion(ctx context.Context, src *srapi.StarRocksCluster) bool {
-	if src.Status.UpgradeState == nil {
-		return false
+	allCompleted := true
+
+	// Check FE
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeFE)
+			targetVersion := src.Status.StarRocksFeStatus.UpgradeState.TargetVersion
+			if currentVersion != targetVersion {
+				allCompleted = false
+			}
+		}
 	}
 
-	// Check if all components have reached their target versions
-	currentVersions, _ := d.getCurrentVersions(ctx, src)
-	targetVersions := src.Status.UpgradeState.TargetVersion
-
-	feComplete := true
-	beComplete := true
-	cnComplete := true
-
-	if targetVersions.FeVersion != "" {
-		feComplete = currentVersions.FeVersion == targetVersions.FeVersion
+	// Check BE
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeBE)
+			targetVersion := src.Status.StarRocksBeStatus.UpgradeState.TargetVersion
+			if currentVersion != targetVersion {
+				allCompleted = false
+			}
+		}
 	}
 
-	if targetVersions.BeVersion != "" {
-		beComplete = currentVersions.BeVersion == targetVersions.BeVersion
+	// Check CN
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeCN)
+			targetVersion := src.Status.StarRocksCnStatus.UpgradeState.TargetVersion
+			if currentVersion != targetVersion {
+				allCompleted = false
+			}
+		}
 	}
 
-	if targetVersions.CnVersion != "" {
-		cnComplete = currentVersions.CnVersion == targetVersions.CnVersion
-	}
-
-	return feComplete && beComplete && cnComplete
+	return allCompleted
 }
 
-// MarkUpgradeComplete marks the upgrade as complete and clears the upgrade state
+// MarkUpgradeComplete marks upgrades as complete for all components that finished
 func (d *Detector) MarkUpgradeComplete(src *srapi.StarRocksCluster) {
-	if src.Status.UpgradeState != nil {
-		src.Status.UpgradeState.Phase = srapi.UpgradePhaseCompleted
-		src.Status.UpgradeState.Reason = "Upgrade completed successfully"
-		src.Status.UpgradeState.CompletionTime = &metav1.Time{Time: metav1.Now().Time}
+	now := &metav1.Time{Time: metav1.Now().Time}
+
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeFE)
+			if currentVersion == src.Status.StarRocksFeStatus.UpgradeState.TargetVersion {
+				src.Status.StarRocksFeStatus.UpgradeState.Phase = srapi.UpgradePhaseCompleted
+				src.Status.StarRocksFeStatus.UpgradeState.Reason = "Upgrade completed successfully"
+				src.Status.StarRocksFeStatus.UpgradeState.CompletionTime = now
+			}
+		}
+	}
+
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeBE)
+			if currentVersion == src.Status.StarRocksBeStatus.UpgradeState.TargetVersion {
+				src.Status.StarRocksBeStatus.UpgradeState.Phase = srapi.UpgradePhaseCompleted
+				src.Status.StarRocksBeStatus.UpgradeState.Reason = "Upgrade completed successfully"
+				src.Status.StarRocksBeStatus.UpgradeState.CompletionTime = now
+			}
+		}
+	}
+
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhaseInProgress {
+			currentVersion := d.getCurrentComponentVersion(src, ComponentTypeCN)
+			if currentVersion == src.Status.StarRocksCnStatus.UpgradeState.TargetVersion {
+				src.Status.StarRocksCnStatus.UpgradeState.Phase = srapi.UpgradePhaseCompleted
+				src.Status.StarRocksCnStatus.UpgradeState.Reason = "Upgrade completed successfully"
+				src.Status.StarRocksCnStatus.UpgradeState.CompletionTime = now
+			}
+		}
 	}
 }
 
 // ClearUpgradeState clears the upgrade state after successful completion
 func (d *Detector) ClearUpgradeState(src *srapi.StarRocksCluster) {
-	// Keep the state for observability but mark as complete
-	// Alternatively, you could set it to nil to fully clear it
-	// src.Status.UpgradeState = nil
+	// Clear completed upgrade states
+	if src.Status.StarRocksFeStatus != nil && src.Status.StarRocksFeStatus.UpgradeState != nil {
+		if src.Status.StarRocksFeStatus.UpgradeState.Phase == srapi.UpgradePhaseCompleted {
+			src.Status.StarRocksFeStatus.UpgradeState = nil
+		}
+	}
+
+	if src.Status.StarRocksBeStatus != nil && src.Status.StarRocksBeStatus.UpgradeState != nil {
+		if src.Status.StarRocksBeStatus.UpgradeState.Phase == srapi.UpgradePhaseCompleted {
+			src.Status.StarRocksBeStatus.UpgradeState = nil
+		}
+	}
+
+	if src.Status.StarRocksCnStatus != nil && src.Status.StarRocksCnStatus.UpgradeState != nil {
+		if src.Status.StarRocksCnStatus.UpgradeState.Phase == srapi.UpgradePhaseCompleted {
+			src.Status.StarRocksCnStatus.UpgradeState = nil
+		}
+	}
 }
 
 // IsFeatureEnabled checks if the automatic upgrade feature is enabled

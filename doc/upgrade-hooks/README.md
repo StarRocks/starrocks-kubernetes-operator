@@ -78,25 +78,26 @@ The implementation tracks upgrade preparation through distinct phases:
 - `Completed`: All hooks executed successfully
 - `Failed`: One or more critical hooks failed
 
-## Configuration Methods
+## Configuration Method
 
-### Method 1: Annotations
-```yaml
-metadata:
-  annotations:
-    starrocks.com/prepare-upgrade: "true"
-    starrocks.com/upgrade-hooks: "disable-tablet-clone,disable-balancer"
-```
+Upgrade hooks are configured in the component spec using the `upgradeHooks` field:
 
-### Method 2: Spec Configuration
 ```yaml
 spec:
-  upgradePreparation:
-    enabled: true
-    hooks:
-    - name: disable-tablet-clone
-      command: 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "0")'
-      critical: true
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.2
+    upgradeHooks:
+      # Option 1: Predefined hooks (recommended, safe)
+      predefined:
+        - disable-tablet-clone
+        - disable-balancer
+
+      # Option 2: Custom hooks from ConfigMap (advanced)
+      custom:
+        configMapName: fe-upgrade-hooks
+        scriptKey: hooks.sh
+
+      timeoutSeconds: 300
 ```
 
 ## Predefined Hooks

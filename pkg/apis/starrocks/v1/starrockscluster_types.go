@@ -143,10 +143,6 @@ type StarRocksClusterStatus struct {
 	// +optional
 	// DisasterRecoveryStatus represents the status of disaster recovery.
 	DisasterRecoveryStatus *DisasterRecoveryStatus `json:"disasterRecoveryStatus,omitempty"`
-
-	// +optional
-	// UpgradeState tracks internal upgrade state managed by the operator
-	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 // StarRocksFeSpec defines the desired state of fe.
@@ -156,6 +152,14 @@ type StarRocksFeSpec struct {
 	// +optional
 	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
+
+	// +optional
+	// UpgradeHooks defines hooks to execute during component upgrades
+	// WARNING: This is an advanced feature that executes custom scripts with operator privileges.
+	// Scripts can perform arbitrary SQL commands and shell operations.
+	// Only use hooks from trusted sources and review all scripts before deployment.
+	// See documentation for security considerations: doc/upgrade-hooks/SECURITY_ANALYSIS.md
+	UpgradeHooks *ComponentUpgradeHooks `json:"upgradeHooks,omitempty"`
 }
 
 // StarRocksBeSpec defines the desired state of be.
@@ -165,6 +169,12 @@ type StarRocksBeSpec struct {
 	// +optional
 	// beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	BeEnvVars []corev1.EnvVar `json:"beEnvVars,omitempty"`
+
+	// +optional
+	// UpgradeHooks defines hooks to execute during component upgrades
+	// WARNING: This is an advanced feature that executes custom scripts with operator privileges.
+	// See documentation for security considerations: doc/upgrade-hooks/SECURITY_ANALYSIS.md
+	UpgradeHooks *ComponentUpgradeHooks `json:"upgradeHooks,omitempty"`
 }
 
 // StarRocksCnSpec defines the desired state of cn.
@@ -177,6 +187,12 @@ type StarRocksCnSpec struct {
 
 	// AutoScalingPolicy auto scaling strategy
 	AutoScalingPolicy *AutoScalingPolicy `json:"autoScalingPolicy,omitempty"`
+
+	// +optional
+	// UpgradeHooks defines hooks to execute during component upgrades
+	// WARNING: This is an advanced feature that executes custom scripts with operator privileges.
+	// See documentation for security considerations: doc/upgrade-hooks/SECURITY_ANALYSIS.md
+	UpgradeHooks *ComponentUpgradeHooks `json:"upgradeHooks,omitempty"`
 }
 
 // StarRocksFeProxySpec defines the specification for FE Proxy
@@ -190,11 +206,19 @@ type StarRocksFeProxySpec struct {
 // StarRocksFeStatus represents the status of starrocks fe.
 type StarRocksFeStatus struct {
 	StarRocksComponentStatus `json:",inline"`
+
+	// +optional
+	// UpgradeState tracks internal upgrade state for FE component
+	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 // StarRocksBeStatus represents the status of starrocks be.
 type StarRocksBeStatus struct {
 	StarRocksComponentStatus `json:",inline"`
+
+	// +optional
+	// UpgradeState tracks internal upgrade state for BE component
+	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 type StarRocksFeProxyStatus struct {
@@ -217,6 +241,10 @@ type StarRocksCnStatus struct {
 
 	// Selector for CN pods. The HPA will use this selector to know which pods to monitor.
 	Selector string `json:"selector,omitempty"`
+
+	// +optional
+	// UpgradeState tracks internal upgrade state for CN component
+	UpgradeState *UpgradeState `json:"upgradeState,omitempty"`
 }
 
 func (spec *StarRocksFeSpec) GetReplicas() *int32 {
@@ -466,7 +494,48 @@ func (storageVolume *StorageVolume) Validate() error {
 	return nil
 }
 
-// UpgradeState tracks internal upgrade state managed by the operator
+// ComponentUpgradeHooks defines upgrade hooks for a component (FE, BE, or CN)
+// This allows executing custom logic before and after upgrades
+// SECURITY WARNING: Hooks execute with operator privileges and can run arbitrary commands
+type ComponentUpgradeHooks struct {
+	// +optional
+	// Predefined is a list of predefined hook names to execute
+	// Predefined hooks are safer as they use hardcoded, reviewed SQL commands
+	// Available hooks: disable-tablet-clone, disable-balancer, enable-tablet-clone, enable-balancer
+	Predefined []string `json:"predefined,omitempty"`
+
+	// +optional
+	// Custom defines a custom shell script hook from a ConfigMap
+	// WARNING: Custom scripts execute with operator privileges and can perform arbitrary operations
+	// Only use scripts from trusted sources and review all content before deployment
+	// Scripts should define pre_upgrade() and post_upgrade() bash functions
+	Custom *CustomHookSource `json:"custom,omitempty"`
+
+	// +optional
+	// TimeoutSeconds is the maximum time allowed for hook execution (default: 300s)
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=3600
+	TimeoutSeconds *int32 `json:"timeoutSeconds,omitempty"`
+}
+
+// CustomHookSource defines the source of a custom hook script
+type CustomHookSource struct {
+	// ConfigMapName is the name of the ConfigMap containing the hook script
+	// The ConfigMap must be in the same namespace as the StarRocksCluster
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=253
+	ConfigMapName string `json:"configMapName"`
+
+	// +optional
+	// ScriptKey is the key in the ConfigMap containing the script (default: "hooks.sh")
+	// The script must be a valid bash script defining pre_upgrade() and post_upgrade() functions
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=253
+	ScriptKey string `json:"scriptKey,omitempty"`
+}
+
+// UpgradeState tracks internal upgrade state for a single component
 // This is purely for operator internal use and should not be configured by users
 type UpgradeState struct {
 	// Phase of the upgrade process
@@ -475,32 +544,20 @@ type UpgradeState struct {
 	// Reason for current phase
 	Reason string `json:"reason,omitempty"`
 
-	// TargetVersion being upgraded to (for tracking)
-	TargetVersion ComponentVersions `json:"targetVersion,omitempty"`
+	// TargetVersion being upgraded to (image string)
+	TargetVersion string `json:"targetVersion,omitempty"`
 
-	// CurrentVersion before upgrade started
-	CurrentVersion ComponentVersions `json:"currentVersion,omitempty"`
+	// CurrentVersion before upgrade started (image string)
+	CurrentVersion string `json:"currentVersion,omitempty"`
 
-	// HooksExecuted tracks which pre-upgrade hooks have been executed
-	HooksExecuted []string `json:"hooksExecuted,omitempty"`
+	// HooksExecuted tracks execution status of hooks
+	HooksExecuted bool `json:"hooksExecuted,omitempty"`
 
 	// Timestamp when upgrade preparation started
 	StartTime *metav1.Time `json:"startTime,omitempty"`
 
 	// Timestamp when upgrade preparation completed
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
-}
-
-// ComponentVersions tracks versions of each component
-type ComponentVersions struct {
-	// FE image version
-	FeVersion string `json:"feVersion,omitempty"`
-
-	// BE image version
-	BeVersion string `json:"beVersion,omitempty"`
-
-	// CN image version
-	CnVersion string `json:"cnVersion,omitempty"`
 }
 
 // UpgradePhase represents the phase of upgrade process

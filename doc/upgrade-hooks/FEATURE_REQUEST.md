@@ -12,22 +12,31 @@ Currently, the StarRocks Kubernetes Operator only handles image upgrades by patc
 4. Set colocate balance: `ADMIN SET FRONTEND CONFIG ("disable_colocate_balance"="true");`
 
 ## Proposed Solution
-Add annotation-based trigger mechanism for pre-upgrade hooks:
+Add spec-based configuration for upgrade hooks with support for both predefined and custom scripts:
 
-### Annotation Trigger
+### Spec Configuration
 ```yaml
-metadata:
-  annotations:
-    starrocks.com/prepare-upgrade: "true"
-    starrocks.com/upgrade-hooks: "disable-tablet-clone,disable-balancer"
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.2
+    upgradeHooks:
+      # Predefined hooks (safe, recommended)
+      predefined:
+        - disable-tablet-clone
+        - disable-balancer
+
+      # Custom hooks from ConfigMap (advanced)
+      custom:
+        configMapName: fe-upgrade-hooks
+        scriptKey: hooks.sh
 ```
 
 ### Implementation Areas
 
-1. **API Enhancement** - Add new fields to StarRocksCluster CRD
-2. **Controller Logic** - Detect annotation changes and execute SQL commands
-3. **SQL Execution** - Connect to FE and run ADMIN SET commands
-4. **State Management** - Track upgrade preparation status
+1. **API Enhancement** - Add ComponentUpgradeHooks to component specs (FE, BE, CN)
+2. **Controller Logic** - Detect image changes and execute hooks per component
+3. **Hook Execution** - Support both SQL commands and shell scripts from ConfigMap
+4. **State Management** - Track upgrade state per component (not cluster-wide)
 
 ## Benefits
 - Automated upgrade preparation
@@ -63,37 +72,64 @@ See attached code modifications for detailed implementation.
 
 ## Usage Examples
 
-### Method 1: Using Annotations
-```bash
-# Trigger upgrade preparation
-kubectl annotate starrockscluster starrockscluster-sample \
-  starrocks.com/prepare-upgrade=true \
-  starrocks.com/upgrade-hooks=disable-tablet-clone,disable-balancer
-
-# Proceed with image upgrade
-kubectl patch starrockscluster starrockscluster-sample \
-  --type='merge' \
-  -p '{"spec":{"starRocksFeSpec":{"image":"starrocks/fe-ubuntu:latest"}}}'
-```
-
-### Method 2: Using Spec Configuration
+### Example 1: Predefined Hooks (Recommended)
 ```yaml
 apiVersion: starrocks.com/v1
 kind: StarRocksCluster
 metadata:
   name: starrockscluster-sample
+  namespace: starrocks
 spec:
-  upgradePreparation:
-    enabled: true
-    timeoutSeconds: 300
-    hooks:
-    - name: disable-tablet-clone
-      command: 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "0")'
-      critical: true
-    - name: disable-balancer
-      command: 'ADMIN SET FRONTEND CONFIG ("disable_balance"="true")'
-      critical: true
-  # ... rest of cluster spec
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.2
+    replicas: 3
+    upgradeHooks:
+      predefined:
+        - disable-tablet-clone
+        - disable-balancer
+      timeoutSeconds: 300
+
+  starRocksBeSpec:
+    image: starrocks/be-ubuntu:3.2.2
+    replicas: 3
+    upgradeHooks:
+      predefined:
+        - disable-tablet-clone
+```
+
+### Example 2: Custom Hooks from ConfigMap
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fe-upgrade-hooks
+  namespace: starrocks
+data:
+  hooks.sh: |
+    #!/bin/bash
+    pre_upgrade() {
+        mysql -h${SR_FE_HOST} -P${SR_FE_PORT} -u${SR_FE_USER} \
+          -e 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "0")'
+        return $?
+    }
+    post_upgrade() {
+        mysql -h${SR_FE_HOST} -P${SR_FE_PORT} -u${SR_FE_USER} \
+          -e 'ADMIN SET FRONTEND CONFIG ("tablet_sched_max_scheduling_tablets" = "2000")'
+        return $?
+    }
+---
+apiVersion: starrocks.com/v1
+kind: StarRocksCluster
+metadata:
+  name: starrockscluster-sample
+  namespace: starrocks
+spec:
+  starRocksFeSpec:
+    image: starrocks/fe-ubuntu:3.2.2
+    upgradeHooks:
+      custom:
+        configMapName: fe-upgrade-hooks
+        scriptKey: hooks.sh
 ```
 
 ## Monitoring
