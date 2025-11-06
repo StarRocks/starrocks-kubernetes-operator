@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -35,13 +36,15 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/upgrade"
 )
 
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Recorder record.EventRecorder
-	Scs      []subcontrollers.ClusterSubController
+	Recorder       record.EventRecorder
+	Scs            []subcontrollers.ClusterSubController
+	UpgradeManager *upgrade.Manager
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete
@@ -86,6 +89,39 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
+	// Initialize upgrade manager if not already initialized
+	if r.UpgradeManager == nil {
+		r.UpgradeManager = upgrade.NewManager(r.Client)
+	}
+
+	// Handle automatic upgrade detection and pre-upgrade hooks
+	shouldRequeue, err := r.UpgradeManager.ReconcileUpgrade(ctx, src)
+	if err != nil {
+		logger.Error(err, "Upgrade reconciliation failed")
+		if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {
+			logger.Error(updateError, "failed to update StarRocksCluster Status after upgrade error")
+		}
+		return requeueIfError(err)
+	}
+
+	// Update status after upgrade reconciliation
+	if err = r.UpdateStarRocksClusterStatus(ctx, src); err != nil {
+		logger.Error(err, "failed to update StarRocksCluster Status after upgrade reconciliation")
+		return requeueIfError(err)
+	}
+
+	// If upgrade manager says to requeue, do it
+	if shouldRequeue {
+		logger.Info("Upgrade manager requested requeue")
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	// If upgrade preparation is blocking, wait before proceeding with normal reconciliation
+	if r.UpgradeManager.ShouldBlockReconciliation(src) {
+		logger.Info("Upgrade preparation in progress, blocking normal reconciliation")
+		return ctrl.Result{RequeueAfter: time.Second * 10}, nil
+	}
+
 	// subControllers reconcile for create or update component.
 	for _, rc := range r.Scs {
 		kvs := []interface{}{"subController", rc.GetControllerName()}
@@ -115,6 +151,7 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	logger.Info("update StarRocksCluster level status")
 	r.reconcileStatus(ctx, src)
+
 	err = r.UpdateStarRocksClusterStatus(ctx, src)
 	if err != nil {
 		logger.Error(err, "update StarRocksCluster status failed")
