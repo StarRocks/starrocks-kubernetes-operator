@@ -11,7 +11,7 @@ The StarRocks Kubernetes Operator supports **upgrade hooks** to execute custom l
 
 ## Feature Status
 
-✅ **Available in**: v1.12.0+
+✅ **Validated for future versions like**: v1.12.0+
 ⚠️ **Security Level**: HIGH - Requires administrator privileges
 📚 **Maturity**: Beta
 
