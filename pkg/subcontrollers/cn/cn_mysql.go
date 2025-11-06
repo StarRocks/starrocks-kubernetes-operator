@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/go-logr/logr"
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
@@ -128,6 +129,8 @@ type ComputeNode struct {
 	FQDN          string
 	HeartbeatPort string
 	WarehouseName string
+
+	index int // the index is from FQDN, used for sorting
 }
 
 func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.DB) (*ShowComputeNodesResult, error) {
@@ -170,6 +173,15 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 				computeNode.ComputeNodeId = string(values[i].([]byte))
 			case "IP":
 				computeNode.FQDN = string(values[i].([]byte))
+				firstPart := strings.Split(computeNode.FQDN, ".")[0]
+				parts := strings.Split(firstPart, "-")
+				indexStr := parts[len(parts)-1]
+				var index int
+				_, err = fmt.Sscanf(indexStr, "%d", &index)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse index from FQDN %s: %v", computeNode.FQDN, err)
+				}
+				computeNode.index = index
 			case "HeartbeatPort":
 				computeNode.HeartbeatPort = string(values[i].([]byte))
 			case "WarehouseName":
@@ -182,13 +194,16 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 		return nil, err
 	}
 
-	// The FQDN format is like kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local
-	// Sorting the compute nodes by FQDN can help us to remove the last several compute nodes if scale-in operation happens.
+	// the FQDN looks like: kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local,
+	// kube-starrocks-cn-1.kube-starrocks-cn-search.default.svc.cluster.local,
+	// kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local
+	// kube-starrocks-cn-10 should be after kube-starrocks-cn-2 when sorting.
 	for _, computeNodes := range result.ComputeNodesByWarehouse {
 		sort.Slice(computeNodes, func(i, j int) bool {
-			return computeNodes[i].FQDN < computeNodes[j].FQDN
+			return computeNodes[i].index < computeNodes[j].index
 		})
 	}
+
 	return &result, nil
 }
 

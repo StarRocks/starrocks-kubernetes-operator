@@ -26,20 +26,23 @@ import (
 )
 
 const (
-	FeHTTPPortName    = "http"
-	FeRPCPortName     = "rpc"
-	FeQueryPortName   = "query"
-	FeEditLogPortName = "edit-log"
+	FeHTTPPortName        = "http"
+	FeRPCPortName         = "rpc"
+	FeQueryPortName       = "query"
+	FeEditLogPortName     = "edit-log"
+	FEArrowFlightPortName = "arrow-flight"
 
-	BePortName          = "be"
-	BeWebserverPortName = "webserver"
-	BeHeartbeatPortName = "heartbeat"
-	BeBrpcPortName      = "brpc"
+	BePortName            = "be"
+	BeWebserverPortName   = "webserver"
+	BeHeartbeatPortName   = "heartbeat"
+	BeBrpcPortName        = "brpc"
+	BEArrowFlightPortName = "arrow-flight"
 
-	CnThriftPortName    = "thrift"
-	CnWebserverPortName = "webserver"
-	CnHeartbeatPortName = "heartbeat"
-	CnBrpcPortName      = "brpc"
+	CnThriftPortName      = "thrift"
+	CnWebserverPortName   = "webserver"
+	CnHeartbeatPortName   = "heartbeat"
+	CnBrpcPortName        = "brpc"
+	CnArrowFlightPortName = "arrow-flight"
 )
 
 // HashService service hash components
@@ -149,6 +152,13 @@ func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 		Port: editPort, ContainerPort: editPort, Name: FeEditLogPortName,
 	}))
 
+	arrowFlightPort := GetPort(config, ARROW_FLIGHT_PORT)
+	if arrowFlightPort != 0 {
+		srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+			Port: arrowFlightPort, ContainerPort: arrowFlightPort, Name: FEArrowFlightPortName,
+		}))
+	}
+
 	return srPorts
 }
 
@@ -257,7 +267,7 @@ func getExternalServiceLabels(svc *srapi.StarRocksService) map[string]string {
 	return map[string]string{}
 }
 
-func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
+func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) (string, bool) {
 	var expectHashValue string
 	if _, ok := expectSvc.Annotations[srapi.ComponentResourceHash]; ok {
 		expectHashValue = expectSvc.Annotations[srapi.ComponentResourceHash]
@@ -274,7 +284,7 @@ func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) bool {
 		actualHashValue = hash.HashObject(serviceHashObject(actualSvc))
 	}
 
-	return expectHashValue == actualHashValue && expectSvc.Namespace == actualSvc.Namespace
+	return expectHashValue, expectHashValue == actualHashValue && expectSvc.Namespace == actualSvc.Namespace
 }
 
 func serviceHashObject(svc *corev1.Service) hashService {

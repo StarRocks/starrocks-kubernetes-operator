@@ -178,10 +178,13 @@ func (r *StarRocksClusterReconciler) UpdateStarRocksClusterStatus(ctx context.Co
 func (r *StarRocksClusterReconciler) reconcileStatus(_ context.Context, src *srapi.StarRocksCluster) {
 	src.Status.Phase = srapi.ClusterRunning
 	src.Status.Reason = ""
-	phase := GetPhaseFromComponent(&src.Status.StarRocksFeStatus.StarRocksComponentStatus)
-	if phase != "" {
-		src.Status.Phase = phase
-		return
+	var phase srapi.Phase
+	if src.Status.StarRocksFeStatus != nil {
+		phase = GetPhaseFromComponent(&src.Status.StarRocksFeStatus.StarRocksComponentStatus)
+		if phase != "" {
+			src.Status.Phase = phase
+			return
+		}
 	}
 	if src.Status.StarRocksBeStatus != nil {
 		phase = GetPhaseFromComponent(&src.Status.StarRocksBeStatus.StarRocksComponentStatus)
