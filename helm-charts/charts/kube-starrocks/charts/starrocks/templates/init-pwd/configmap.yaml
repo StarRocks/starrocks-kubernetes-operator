@@ -17,28 +17,155 @@ metadata:
 data:
   fe_initpwd.sh: |-
     #!/bin/bash
-
-    # ensure `mysql` command can be ended with 30 seconds
-    # Change the root password during initial installation
-    init_pwd_sql="SET PASSWORD = PASSWORD('$INIT_PWD');"
-    success=`mysql --connect-timeout 30 -h $1 -P $2 -u root --skip-column-names --batch -e "$init_pwd_sql" 2>&1`
-    if [ $? -ne 0 ] ; then
-      echo $success
-      errcode=`echo $success | awk -F " " '{print $2}'`
-      echo "error code: $errcode"
-
-      # Password error, believed to have been changed, exiting normally
-      if [[ $errcode = '1045' || $errcode = '1064' ]] ; then
-        echo "Password error, believed to have been changed, exiting normally"
+    
+    # ==============================================================================
+    # Description:  Idempotently sets the StarRocks user password. It includes blocking
+    #               wait for server startup, idempotency check, and retry mechanism
+    #               for password execution.
+    # Author:       tshiyuoo@gmail.com
+    # Creation Date: 2025-09-30
+    # Last Modified: 2025-09-30
+    # Version:      1.1 (Optimized check_password_set for empty password)
+    # License:      Apache License 2.0 (Commonly used in StarRocks projects)
+    #
+    # ==============================================================================
+    
+    # --- Configuration Parameters ---
+    SR_HOST="${1:-127.0.0.1}"         # StarRocks FE or Compute Node address 
+    SR_PORT="${2:-9030}"              # StarRocks query port
+    SR_USER="root"                    # User whose password will be set (usually root)
+    NEW_PASSWORD="${INIT_PWD}"        # *** REPLACE with your new password ***
+    CHECK_USER="${SR_USER}"           # User for connection verification (usually root)
+    CHECK_PASSWORD="${NEW_PASSWORD}"  # Password for connection verification
+    
+    MAX_RETRY=3                       # Max retries for SQL execution
+    RETRY_DELAY=5                     # Retry interval for SQL execution (seconds)
+    MAX_WAIT_TIME=3600                # Max wait time for server startup (seconds)
+    WAIT_INTERVAL=5                   # Server check interval during wait (seconds)
+    
+    # --- Function Definitions ---
+    
+    # 1. Blocks until the StarRocks service is up and connectable.
+    wait_for_server() {
+        echo "--- 1. Checking StarRocks service connection status ---"
+        local elapsed=0
+        local success=0
+    
+        while [ $elapsed -lt $MAX_WAIT_TIME ]; do
+            # Use nc (netcat) to check if the port is listening
+            if nc -z -w 3 "${SR_HOST}" "${SR_PORT}"; then
+                echo "✅ StarRocks service (${SR_HOST}:${SR_PORT}) is up and connectable."
+                success=1
+                break
+            else
+                echo "❌ StarRocks service not ready, waiting ${WAIT_INTERVAL} seconds... (Elapsed ${elapsed}/${MAX_WAIT_TIME} seconds)"
+                sleep ${WAIT_INTERVAL}
+                elapsed=$((elapsed + WAIT_INTERVAL))
+            fi
+        done
+    
+        if [ $success -eq 0 ]; then
+            echo "❌ FATAL: StarRocks server startup timed out after ${MAX_WAIT_TIME} seconds. Exiting." >&2
+            exit 1
+        fi
+    }
+    
+    # 2. Checks if the password has already been set successfully (Idempotency check).
+    #    It first checks for an empty password (initial state) and then the new password (target state).
+    check_password_set() {
+        echo "--- 2. Checking if password is already set (Idempotency) ---"
+        
+        # --- 2a. Attempt to connect using NO password (Initial State Check) ---
+        # If this succeeds, the password HAS NOT been set yet.
+        echo "  -> Attempting connection with NO password..."
+        export MYSQL_PWD=""
+        if mysql -h "${SR_HOST}" -P "${SR_PORT}" -u "${CHECK_USER}" --connect-timeout=5 -e "SELECT 1;" 2>/dev/null; then
+            echo "⚠️ WARNING: Connection successful with empty password. Password has NOT been set yet." >&2
+            unset MYSQL_PWD
+            return 1 # Password is NOT set
+        fi
+        unset MYSQL_PWD # Clear environment variable
+    
+        # --- 2b. Attempt to connect using the NEW password (Target State Check) ---
+        # If this succeeds, the password HAS been set (Target state reached).
+        local retries=0
+        echo "  -> Attempting connection with NEW password..."
+    
+        while [ $retries -lt $MAX_RETRY ]; do
+            # Attempt to connect using the new password via MYSQL_PWD environment variable
+            export MYSQL_PWD="${CHECK_PASSWORD}"
+            
+            # Execute a simple query (SELECT 1) to test the connection
+            if mysql -h "${SR_HOST}" -P "${SR_PORT}" -u "${CHECK_USER}" --connect-timeout=5 -e "SELECT 1;" 2>/dev/null; then
+                echo "✅ New password check passed: User ${CHECK_USER} can successfully connect."
+                unset MYSQL_PWD # Clear environment variable
+                return 0 # Password IS set (Target state reached)
+            else
+                retries=$((retries + 1))
+                echo "❌ New password failed (Attempt ${retries}/${MAX_RETRY}). Retrying connection in ${RETRY_DELAY} seconds..." >&2
+                sleep ${RETRY_DELAY}
+            fi
+        done
+        
+        unset MYSQL_PWD # Clear environment variable
+        # If empty password failed AND new password failed, the system is likely secured but with a different password.
+        # We still treat this as 'NOT SET' for this script's purpose (since we can't connect with the target password).
+        echo "❌ Both empty password and new password failed. Assume password is NOT set or connection failed." >&2
+        return 1 
+    }
+    
+    # 3. Executes the password setting SQL (with error retry).
+    set_password() {
+        echo "--- 3. Setting password for user ${SR_USER} ---"
+        local sql_command="ALTER USER ${SR_USER} IDENTIFIED BY '${NEW_PASSWORD}';"
+        local retries=0
+        local success=0
+    
+        # We must rely on the empty password connection for the first execution
+        export MYSQL_PWD=""
+    
+        while [ $retries -lt $MAX_RETRY ]; do
+            # Attempt to connect and execute the SQL
+            if mysql -h "${SR_HOST}" -P "${SR_PORT}" -u "${SR_USER}" --connect-timeout=10 -e "${sql_command}"; then
+                echo "✅ Password setting SQL executed successfully."
+                success=1
+                break
+            else
+                retries=$((retries + 1))
+                echo "❌ Password setting SQL failed (Attempt ${retries}/${MAX_RETRY}). Retrying in ${RETRY_DELAY} seconds..." >&2
+                sleep ${RETRY_DELAY}
+            fi
+        done
+        
+        if [ $success -eq 0 ]; then
+            echo "❌ FATAL: Password setting failed after ${MAX_RETRY} retries. Exiting." >&2
+            exit 1
+        fi
+    }
+    
+    # --- Main Execution Logic ---
+    
+    echo "--- StarRocks Password Setup Script Start ---"
+    
+    # 1. Wait until the service is up (Blocking)
+    wait_for_server
+    
+    # 2. Idempotency Check: If password is set, exit successfully
+    if check_password_set; then
+        echo "👍 Idempotency check passed: Password is already set. Exiting safely."
         exit 0
-      fi
-
-      # Other unsuccessful errors, abnormal exit
-      echo "Other unsuccessful errors, abnormal exit"
-      exit 1
-
     fi
-
-    echo "Successfully modified password"
-    exit 0
+    
+    # 3. If password is NOT set, execute the setting SQL (with retry)
+    set_password
+    
+    # 4. Final verification after setting the password
+    echo "--- 4. Final verification after password setting ---"
+    if check_password_set; then
+        echo "🎉 Password set and verified successfully!"
+        exit 0
+    else
+        echo "❌ Final verification failed: Password was set but connection failed. Check logs and configuration." >&2
+        exit 1
+    fi
 {{- end }}
