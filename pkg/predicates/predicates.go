@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
@@ -64,11 +64,12 @@ func shouldReconcile(obj client.Object) bool {
 // ignoreNamespacePredicate returns false if the object is in a denied namespace
 func ignoreNamespacePredicate(obj client.Object) bool {
 	namespaces := getEnvAsSlice("DENY_LIST", nil, ",")
+	logger := log.Log.WithName("predicates")
 
 	for _, namespace := range namespaces {
 		if obj.GetNamespace() == namespace {
-			msg := fmt.Sprintf("starrocks operator will not reconcile namespace [%s], alter DENY_LIST to reconcile", obj.GetNamespace())
-			klog.Info(msg)
+			logger.Info("starrocks operator will not reconcile namespace, alter DENY_LIST to reconcile",
+				"namespace", obj.GetNamespace())
 			return false
 		}
 	}
@@ -82,9 +83,11 @@ func ignoreIgnoredObjectPredicate(obj client.Object) bool {
 		if runtimeObj, ok := obj.(runtime.Object); ok {
 			objType = fmt.Sprintf("%T", runtimeObj)
 		}
-		msg := fmt.Sprintf("starrocks operator will not reconcile ignored %s [%s/%s], remove annotation to reconcile",
-			objType, obj.GetNamespace(), obj.GetName())
-		klog.Info(msg)
+		logger := log.Log.WithName("predicates")
+		logger.Info("starrocks operator will not reconcile ignored resource, remove annotation to reconcile",
+			"type", objType,
+			"namespace", obj.GetNamespace(),
+			"name", obj.GetName())
 		return false
 	}
 	return true
