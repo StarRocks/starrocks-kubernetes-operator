@@ -85,11 +85,15 @@ starrocksOperator:
   # the operator watching all namespaces uses too many memory resources, you can set this value.
   # Defaults to all namespaces.
   watchNamespace: ""
+  # Comma-separated list of namespaces to exclude from reconciliation
+  # Example: "kube-system,kube-public,monitoring"
+  denyList: ""
   # Additional operator container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
   # operator supports the following environment variables:
   # KUBE_STARROCKS_UNSUPPORTED_ENVS: "XXX,YYY" # The environment variables that will not be passed to starrocks container.
+  # DENY_LIST: "namespace1,namespace2" # Comma-separated list of namespaces to exclude from reconciliation
   env: []
   # setting log related parameter
   log:
