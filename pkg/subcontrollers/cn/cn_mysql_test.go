@@ -73,6 +73,10 @@ func TestNewSQLExecutor(t *testing.T) {
 													Name:  "FE_QUERY_PORT",
 													Value: "9030",
 												},
+												{
+													Name:  "FE_TLS_MODE",
+													Value: "true",
+												},
 											},
 										},
 									},
@@ -89,6 +93,7 @@ func TestNewSQLExecutor(t *testing.T) {
 				FeServiceName:      "fe",
 				FeServiceNamespace: "default",
 				FeServicePort:      "9030",
+				FeTlsMode:          "true",
 			},
 			wantErr: assert.NoError,
 		},
@@ -100,6 +105,97 @@ func TestNewSQLExecutor(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "NewSQLExecutor(%v, %v, %v, %v)", tt.args.ctx, tt.args.k8sClient, tt.args.namespace, tt.args.name)
+		})
+	}
+}
+
+func TestSQLExecutor_DSN(t *testing.T) {
+	type fields struct {
+		RootPassword       string
+		FeServiceName      string
+		FeServiceNamespace string
+		FeServicePort      string
+		FeTlsMode          string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "tls enabled",
+			fields: fields{
+				RootPassword:       "123",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				FeTlsMode:          "true",
+			},
+			want: "root:123@tcp(fe.default:9030)/?tls=true",
+		},
+		{
+			name: "tls skip-verify",
+			fields: fields{
+				RootPassword:       "123",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				FeTlsMode:          "skip-verify",
+			},
+			want: "root:123@tcp(fe.default:9030)/?tls=skip-verify",
+		},
+		{
+			name: "tls preferred",
+			fields: fields{
+				RootPassword:       "123",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				FeTlsMode:          "preferred",
+			},
+			want: "root:123@tcp(fe.default:9030)/?tls=preferred",
+		},
+		{
+			name: "tls disabled",
+			fields: fields{
+				RootPassword:       "123",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				FeTlsMode:          "false",
+			},
+			want: "root:123@tcp(fe.default:9030)/",
+		},
+		{
+			name: "tls empty",
+			fields: fields{
+				RootPassword:       "123",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				FeTlsMode:          "",
+			},
+			want: "root:123@tcp(fe.default:9030)/",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &SQLExecutor{
+				RootPassword:       tt.fields.RootPassword,
+				FeServiceName:      tt.fields.FeServiceName,
+				FeServiceNamespace: tt.fields.FeServiceNamespace,
+				FeServicePort:      tt.fields.FeServicePort,
+				FeTlsMode:          tt.fields.FeTlsMode,
+			}
+			var dsn string
+			if executor.FeTlsMode == "true" || executor.FeTlsMode == "skip-verify" || executor.FeTlsMode == "preferred" {
+				dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/?tls=%s",
+					executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort, executor.FeTlsMode)
+			} else {
+				dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
+					executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort)
+			}
+			assert.Equal(t, tt.want, dsn)
 		})
 	}
 }
