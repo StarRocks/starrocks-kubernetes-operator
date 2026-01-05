@@ -13601,6 +13601,9 @@ spec:
                     description: (Optional) If specified, the pod's nodeSelector，displayName="Map
                       of nodeSelectors to match when scheduling pods on nodes"
                     type: object
+                  observerNumber:
+                    format: int32
+                    type: integer
                   persistentVolumeClaimRetentionPolicy:
                     description: |-
                       PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
