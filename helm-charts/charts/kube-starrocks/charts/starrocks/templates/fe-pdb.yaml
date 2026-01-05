@@ -1,0 +1,28 @@
+{{- if .Values.starrocksFESpec.pdb.enabled }}
+{{- if and .Values.starrocksFESpec.pdb.minAvailable .Values.starrocksFESpec.pdb.maxUnavailable }}
+  {{- fail "starrocksFESpec.pdb: Cannot set both minAvailable and maxUnavailable. Please specify only one." }}
+{{- end }}
+{{- if not (or .Values.starrocksFESpec.pdb.minAvailable .Values.starrocksFESpec.pdb.maxUnavailable) }}
+  {{- fail "starrocksFESpec.pdb: Must set either minAvailable or maxUnavailable when pdb.enabled is true." }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "starrockscluster.fe.name" . }}-pdb
+  namespace: {{ include "starrockscluster.namespace" . }}
+  labels:
+    app.kubernetes.io/component: fe
+    {{- include "starrockscluster.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.starrocksFESpec.pdb.minAvailable }}
+  minAvailable: {{ .Values.starrocksFESpec.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.starrocksFESpec.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.starrocksFESpec.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: fe
+      app.starrocks.ownerreference/name: {{ include "starrockscluster.fe.name" . }}
+{{- end }}
+

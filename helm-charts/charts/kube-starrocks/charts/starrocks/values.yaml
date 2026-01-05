@@ -513,6 +513,17 @@ starrocksFESpec:
   # When this is set, containers will be able to view and signal processes from other containers
   # in the same pod, and the first process in each container will not be assigned PID 1.
   shareProcessNamespace:
+  # PodDisruptionBudget configuration for FE pods.
+  # This ensures high availability during voluntary disruptions like node upgrades or cluster autoscaling.
+  # Note: You should set either minAvailable or maxUnavailable, but not both.
+  pdb:
+    enabled: false
+    # Minimum number of pods that must remain available during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # minAvailable: 1
+    # Maximum number of pods that can be unavailable during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # maxUnavailable: 1
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:
@@ -882,6 +893,17 @@ starrocksCnSpec:
   # When this is set, containers will be able to view and signal processes from other containers
   # in the same pod, and the first process in each container will not be assigned PID 1.
   shareProcessNamespace:
+  # PodDisruptionBudget configuration for CN pods.
+  # This ensures high availability during voluntary disruptions like node upgrades or cluster autoscaling.
+  # Note: You should set either minAvailable or maxUnavailable, but not both.
+  pdb:
+    enabled: false
+    # Minimum number of pods that must remain available during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # minAvailable: 1
+    # Maximum number of pods that can be unavailable during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # maxUnavailable: 1
 
 # spec for component be, provide storage and compute function.
 starrocksBeSpec:
@@ -1211,6 +1233,17 @@ starrocksBeSpec:
   # When this is set, containers will be able to view and signal processes from other containers
   # in the same pod, and the first process in each container will not be assigned PID 1.
   shareProcessNamespace:
+  # PodDisruptionBudget configuration for BE pods.
+  # This ensures high availability during voluntary disruptions like node upgrades or cluster autoscaling.
+  # Note: You should set either minAvailable or maxUnavailable, but not both.
+  pdb:
+    enabled: false
+    # Minimum number of pods that must remain available during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # minAvailable: 1
+    # Maximum number of pods that can be unavailable during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # maxUnavailable: 1
 
 # create secrets if necessary.
 secrets: []
@@ -1332,3 +1365,14 @@ starrocksFeProxySpec:
       #   mountPath: /tmp
   # the pod labels for user select or classify pods.
   podLabels: {}
+  # PodDisruptionBudget configuration for FE Proxy pods.
+  # This ensures high availability during voluntary disruptions like node upgrades or cluster autoscaling.
+  # Note: You should set either minAvailable or maxUnavailable, but not both.
+  pdb:
+    enabled: false
+    # Minimum number of pods that must remain available during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # minAvailable: 1
+    # Maximum number of pods that can be unavailable during a disruption.
+    # Can be an absolute number (e.g., 1) or a percentage (e.g., "50%").
+    # maxUnavailable: 1
