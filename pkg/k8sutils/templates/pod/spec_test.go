@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -236,6 +237,10 @@ func TestEnvs(t *testing.T) {
 				{
 					Name:  v1.FE_SERVICE_NAME,
 					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
+				},
+				{
+					Name:  v1.OBSERVER_NUMBER,
+					Value: strconv.FormatInt(int64(0), 10),
 				},
 			}...),
 			unsupportedEnvs: "",

@@ -141,10 +141,9 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		addEnv(envVar)
 	}
 
-	switch spec.(type) {
-
+	switch s := spec.(type) {
 	case *v1.StarRocksFeSpec:
-		observerNumber := spec.(*v1.StarRocksFeSpec).GetObserverNumber()
+		observerNumber := s.GetObserverNumber()
 		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
