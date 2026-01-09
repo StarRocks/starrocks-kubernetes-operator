@@ -34,6 +34,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feobserver"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
@@ -149,6 +150,13 @@ func (r *StarRocksClusterReconciler) reconcileStatus(_ context.Context, src *sra
 			return
 		}
 	}
+	if src.Status.StarRocksFeObserverStatus != nil {
+		phase = GetPhaseFromComponent(&src.Status.StarRocksFeObserverStatus.StarRocksComponentStatus)
+		if phase != "" {
+			src.Status.Phase = phase
+			return
+		}
+	}
 	if src.Status.StarRocksBeStatus != nil {
 		phase = GetPhaseFromComponent(&src.Status.StarRocksBeStatus.StarRocksComponentStatus)
 		if phase != "" {
@@ -171,6 +179,8 @@ func handleSyncClusterError(src *srapi.StarRocksCluster, subController subcontro
 	switch subController.(type) {
 	case *fe.FeController:
 		reason = fmt.Sprintf("error from FE controller: %v", reason)
+	case *feobserver.FeObserverController:
+		reason = fmt.Sprintf("error from FE observer controller: %v", reason)
 	case *be.BeController:
 		reason = fmt.Sprintf("error from BE controller: %v", reason)
 	case *cn.CnController:
