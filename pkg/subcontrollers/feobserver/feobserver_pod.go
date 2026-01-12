@@ -35,7 +35,8 @@ const (
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe observer.
-func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
+func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster,
+	config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	metaName := src.Name + "-" + srapi.DEFAULT_FE_OBSERVER
 	observerSpec := src.Spec.StarRocksFeObserverSpec
 
