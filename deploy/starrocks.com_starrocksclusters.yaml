@@ -8468,9 +8468,6 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
-                  observerNumber:
-                    format: int32
-                    type: integer
                   persistentVolumeClaimRetentionPolicy:
                     properties:
                       whenDeleted:

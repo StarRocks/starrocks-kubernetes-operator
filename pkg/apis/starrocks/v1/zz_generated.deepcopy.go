@@ -624,11 +624,6 @@ func (in *StarRocksFeProxyStatus) DeepCopy() *StarRocksFeProxyStatus {
 func (in *StarRocksFeSpec) DeepCopyInto(out *StarRocksFeSpec) {
 	*out = *in
 	in.StarRocksComponentSpec.DeepCopyInto(&out.StarRocksComponentSpec)
-	if in.ObserverNumber != nil {
-		in, out := &in.ObserverNumber, &out.ObserverNumber
-		*out = new(int32)
-		**out = **in
-	}
 	if in.FeEnvVars != nil {
 		in, out := &in.FeEnvVars, &out.FeEnvVars
 		*out = make([]corev1.EnvVar, len(*in))

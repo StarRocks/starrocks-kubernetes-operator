@@ -145,9 +145,8 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		addEnv(envVar)
 	}
 
-	switch s := spec.(type) {
+	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
-		observerNumber := s.GetObserverNumber()
 		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
@@ -156,10 +155,6 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 			{
 				Name:  v1.FE_SERVICE_NAME,
 				Value: feExternalServiceName + "." + namespace,
-			},
-			{
-				Name:  v1.OBSERVER_NUMBER,
-				Value: strconv.FormatInt(int64(*observerNumber), 10),
 			},
 		} {
 			addEnv(envVar)
@@ -173,6 +168,10 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 			{
 				Name:  v1.FE_SERVICE_NAME,
 				Value: feExternalServiceName + "." + namespace,
+			},
+			{
+				Name:  v1.IS_FE_OBSERVER,
+				Value: "true",
 			},
 		} {
 			addEnv(envVar)

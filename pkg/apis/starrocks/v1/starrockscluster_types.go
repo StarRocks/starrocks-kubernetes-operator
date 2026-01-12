@@ -156,9 +156,6 @@ type StarRocksClusterStatus struct {
 // StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
-
-	ObserverNumber *int32 `json:"observerNumber,omitempty"`
-
 	// +optional
 	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
@@ -272,14 +269,6 @@ func (spec *StarRocksFeProxySpec) GetReplicas() *int32 {
 		return nil
 	}
 	return spec.StarRocksLoadSpec.GetReplicas()
-}
-
-func (spec *StarRocksFeSpec) GetObserverNumber() *int32 {
-	var DefaultObserverNumber int32 = 0
-	if spec.ObserverNumber != nil {
-		return spec.ObserverNumber
-	}
-	return &DefaultObserverNumber
 }
 
 // GetHostAliases
