@@ -195,7 +195,6 @@ starrocksCluster:
 starrocksFESpec:
   # number of replicas to deploy for a FE statefulset.
   replicas: 1
-  # the number of observer for FE.
   image:
     # image sliced by "repository:tag"
     repository: starrocks/fe-ubuntu
