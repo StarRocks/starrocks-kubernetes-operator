@@ -14,6 +14,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feobserver"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
@@ -21,9 +22,10 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 	feController := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	beController := be.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	cnController := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)
+	feObserverController := feobserver.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	feProxyController := feproxy.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	subcs := []subcontrollers.ClusterSubController{
-		feController, beController, cnController, feProxyController,
+		feController, feObserverController, beController, cnController, feProxyController,
 	}
 
 	reconciler := &StarRocksClusterReconciler{

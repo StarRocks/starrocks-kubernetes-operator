@@ -30,14 +30,16 @@ const (
 
 // the labels value. default statefulset name
 const (
-	DEFAULT_FE       = "fe"
-	DEFAULT_BE       = "be"
-	DEFAULT_CN       = "cn"
-	DEFAULT_FE_PROXY = "fe-proxy"
+	DEFAULT_FE          = "fe"
+	DEFAULT_BE          = "be"
+	DEFAULT_CN          = "cn"
+	DEFAULT_FE_PROXY    = "fe-proxy"
+	DEFAULT_FE_OBSERVER = "fe-observer"
 )
 
 // the env of container
 const (
 	COMPONENT_NAME  = "COMPONENT_NAME"
 	FE_SERVICE_NAME = "FE_SERVICE_NAME"
+	IS_FE_OBSERVER  = "IS_FE_OBSERVER"
 )

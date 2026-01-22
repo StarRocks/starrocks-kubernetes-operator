@@ -90,6 +90,8 @@ type SpecInterface interface {
 
 var _ SpecInterface = &StarRocksFeSpec{}
 
+var _ SpecInterface = &StarRocksFeObserverSpec{}
+
 var _ SpecInterface = &StarRocksBeSpec{}
 
 var _ SpecInterface = &StarRocksCnSpec{}
@@ -105,6 +107,9 @@ type StarRocksClusterSpec struct {
 
 	// StarRocksFeSpec define fe configuration for start fe service.
 	StarRocksFeSpec *StarRocksFeSpec `json:"starRocksFeSpec,omitempty"`
+
+	// StarRocksFeObserverSpec define fe observer configuration for start fe observer service.
+	StarRocksFeObserverSpec *StarRocksFeObserverSpec `json:"starRocksFeObserverSpec,omitempty"`
 
 	// StarRocksBeSpec define be configuration for start be service.
 	StarRocksBeSpec *StarRocksBeSpec `json:"starRocksBeSpec,omitempty"`
@@ -131,6 +136,9 @@ type StarRocksClusterStatus struct {
 	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
 
+	// Represents the status of fe observer. the status have running, failed and creating pods.
+	StarRocksFeObserverStatus *StarRocksFeObserverStatus `json:"starRocksFeObserverStatus,omitempty"`
+
 	// Represents the status of be. the status have running, failed and creating pods.
 	StarRocksBeStatus *StarRocksBeStatus `json:"starRocksBeStatus,omitempty"`
 
@@ -147,6 +155,14 @@ type StarRocksClusterStatus struct {
 
 // StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
+	StarRocksComponentSpec `json:",inline"`
+	// +optional
+	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
+	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
+}
+
+// StarRocksFeObserverSpec defines the desired state of fe observer.
+type StarRocksFeObserverSpec struct {
 	StarRocksComponentSpec `json:",inline"`
 
 	// +optional
@@ -188,6 +204,11 @@ type StarRocksFeStatus struct {
 	StarRocksComponentStatus `json:",inline"`
 }
 
+// StarRocksFeObserverStatus represents the status of starrocks fe observer.
+type StarRocksFeObserverStatus struct {
+	StarRocksComponentStatus `json:",inline"`
+}
+
 // StarRocksBeStatus represents the status of starrocks be.
 type StarRocksBeStatus struct {
 	StarRocksComponentStatus `json:",inline"`
@@ -216,6 +237,13 @@ type StarRocksCnStatus struct {
 }
 
 func (spec *StarRocksFeSpec) GetReplicas() *int32 {
+	if spec == nil {
+		return nil
+	}
+	return spec.StarRocksComponentSpec.GetReplicas()
+}
+
+func (spec *StarRocksFeObserverSpec) GetReplicas() *int32 {
 	if spec == nil {
 		return nil
 	}

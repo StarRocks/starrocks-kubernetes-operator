@@ -85,7 +85,6 @@ type StarRocksLoadSpec struct {
 	// +kubebuilder:default=1
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
-
 	// Image for a starrocks deployment.
 	// +optional
 	Image string `json:"image"`
@@ -304,7 +303,6 @@ type StarRocksProbe struct {
 func (spec *StarRocksLoadSpec) GetReplicas() *int32 {
 	return spec.Replicas
 }
-
 func (spec *StarRocksLoadSpec) GetStorageVolumes() []StorageVolume {
 	return spec.StorageVolumes
 }

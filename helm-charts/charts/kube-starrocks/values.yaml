@@ -630,6 +630,210 @@ starrocks:
     # in the same pod, and the first process in each container will not be assigned PID 1.
     shareProcessNamespace:
   
+  # spec to deploy fe observer.
+  starrocksFeObserverSpec:
+    # specify the FE observer deployment or not.
+    enabled: false
+    # number of replicas to deploy for a FE observer deployment.
+    replicas: 1
+    image:
+      # image sliced by "repository:tag"
+      repository: starrocks/fe-ubuntu
+      tag: ""
+    imagePullPolicy: IfNotPresent
+    # add annotations for FE observer pods.
+    annotations: {}
+    # If runAsNonRoot is true, the container is run as a non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    # Whether this container has a read-only root filesystem.
+    readOnlyRootFilesystem: false
+    # add/drop capabilities for FE observer container.
+    capabilities: {}
+    # set sysctls for FE observer pod.
+    sysctls: []
+    # specify the service name and port config and serviceType
+    service:
+      # the FE observer service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: "ClusterIP"
+      # the loadBalancerIP for static ip config when the type=LoadBalancer and loadbalancerIp is not empty.
+      loadbalancerIP: ""
+      # add annotations for external FE observer service.
+      annotations: {}
+      # Add labels for external FE observer service. The operator may add its own default labels.
+      labels: {}
+      # Config the service port for FE observer service.
+      # To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
+      # containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
+      # For fe, port name can be http, query, rpc, edit-log, and their default container port is 8030, 9030, 9020, 9010.
+      ports: []
+        # e.g., specify a dedicated node port for FE observer service by containerPort.
+        # - nodePort: 30030 # The range of valid ports is 30000-32767
+        #   containerPort: 8030 # The port exported on the container
+      # specifies the source IP ranges for the load balancer when the type=LoadBalancer.
+      loadBalancerSourceRanges: []
+        # - 10.0.0.0/8
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+      # - name: "image-pull-secret"
+    # serviceAccount for FE observer access cloud service.
+    serviceAccount: ""
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # hostAliases allows adding entries to /etc/hosts inside the containers
+    hostAliases: []
+      # - ip: "127.0.0.1"
+      #   hostnames:
+      #   - "example.com"
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # Additional FE observer container environment variables.
+    # See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/ for how to define environment variables.
+    # Note: If you use slice to define environment variables, and if there are multiple values files, the values in the last values file will take effect.
+    #       If you use a map to define environment variables, the values will be merged.
+    #       You can only use one of the manners to define environment variables.
+    # To avoid the different types of feEnvVars, we do not define the default value of feEnvVars, e.g., feEnvVars: [] or feEnvVars: {}.
+    #feEnvVars:
+      # define environment variables by slice.
+      # E.g., static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g., secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: mysecret
+      #       key: username
+    # affinity for FE observer pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+      # podAntiAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #   - labelSelector:
+      #       matchExpressions:
+      #       - key: app.kubernetes.io/component
+      #         operator: In
+      #         values:
+      #         - fe-observer
+      #     topologyKey: "kubernetes.io/hostname"
+    # Node tolerations for FE observer pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # topologySpreadConstraints for scheduling pods across failure-domains.
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+    topologySpreadConstraints: []
+      # - maxSkew: 1
+      #   topologyKey: topology.kubernetes.io/zone
+      #   whenUnsatisfiable: DoNotSchedule|ScheduleAnyway
+      #   labelSelector:
+      #     matchLabels:
+      #       foo: bar
+    # resources for FE observer pod.
+    resources:
+      requests:
+        cpu: 4
+        memory: 4Gi
+      # If you want to remove one resource limit, e.g., cpu, you can set it to cpu: "unlimited".
+      limits:
+        cpu: 8
+        memory: 8Gi
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#secret for more details.
+    secrets: []
+      # e.g., mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g., mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+    # terminationGracePeriodSeconds defines duration in seconds the FE observer pod needs to terminate gracefully.
+    # the default value is 120 seconds
+    terminationGracePeriodSeconds: 120
+  
+    # Please upgrade the CRD with v1.8.7 released version if you want to use the following configuration.
+    # including: startupProbeFailureSeconds, livenessProbeFailureSeconds, readinessProbeFailureSeconds
+  
+    # StartupProbeFailureSeconds defines the total failure seconds of a startup Probe.
+    # the default value is 300 seconds
+    # You can set it to "0" to disable the probe.
+    startupProbeFailureSeconds:
+    # LivenessProbeFailureSeconds defines the total failure seconds of a liveness Probe.
+    # the default value is 15 seconds
+    # You can set it to "0" to disable the probe.
+    livenessProbeFailureSeconds:
+    # ReadinessProbeFailureSeconds defines the total failure seconds of a readiness Probe.
+    # the default value is 15 seconds
+    # You can set it to "0" to disable the probe.
+    readinessProbeFailureSeconds:
+    # Lifecycle describes actions that the management system should take in response to container lifecycle events.
+    # By default, Operator will add corresponding preStop hooks for different components. You can set postStart hook.
+    lifecycle: {}
+      # postStart:
+      #   exec:
+      #     command:
+      #     - /bin/sh
+      #     - -c
+      #     - echo "Hello, world!"
+    # Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+    # You can use this field to launch helper containers that provide additional functionality to the main container.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to define sidecars.
+    sidecars: []
+      # - name: sidecar-container
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/fe/meta/sidecar-data.txt && sleep 3600']
+    # sidecarsMap is an optional map of containers that are run in the same pod as the starrocks component.
+    # The reason for using sidecarsMap please refer to https://github.com/StarRocks/starrocks-kubernetes-operator/issues/618
+    # sidecarsMap has higher priority than sidecars, and the key of sidecarsMap is the name of the sidecar container.
+    sidecarsMap: {}
+      # sidecar-container:
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo "hello from the sidecar container" >/opt/starrocks/fe/meta/sidecar-data.txt && sleep 3600']
+    # initContainers is an optional list of containers that are run in the same pod as the starrocks component.
+    # You can use this to launch helper containers that run before the main container starts.
+    # See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
+    initContainers: []
+      # - name: init-container
+      #   image: busybox
+      #   command: ['sh', '-c', 'echo "hello from the init container" >/opt/starrocks/fe/meta/init-data.txt']
+    # Share a single process namespace between all the containers in a pod.
+    # When this is set, containers will be able to view and signal processes from other containers
+    # in the same pod, and the first process in each container will not be assigned PID 1.
+    shareProcessNamespace:
+    # Note: will create emptyDir volume for FE observer, PVC is not supported.
+    emptyDirs: []
+      # e.g., mount an emptyDir volume to /tmp
+      # - name: tmp-data
+      #   mountPath: /tmp
+    # mount host paths if necessary.
+    # Note: This should be used with caution.
+    hostPaths: []
+      # - name: host-data
+      #   mountPath: /var/lib/starrocks
+      #   hostPath:
+      #     path: /data/starrocks
+      #     type: DirectoryOrCreate
+  
   # spec for compute node, compute node provide compute function.
   starrocksCnSpec:
     # Number of replicas to deploy for the CN component.
