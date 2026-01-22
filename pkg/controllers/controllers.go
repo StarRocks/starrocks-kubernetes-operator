@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/predicates"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
@@ -49,6 +50,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		WithEventFilter(predicates.GenericPredicates{}).
 		Complete(r)
 }
 
@@ -92,5 +94,6 @@ func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		WithEventFilter(predicates.GenericPredicates{}).
 		Complete(r)
 }

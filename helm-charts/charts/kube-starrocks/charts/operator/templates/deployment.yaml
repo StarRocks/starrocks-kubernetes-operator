@@ -47,6 +47,10 @@ spec:
         env:
         - name: TZ
           value: {{ .Values.timeZone }}
+        {{- if .Values.starrocksOperator.denyList }}
+        - name: DENY_LIST
+          value: {{ .Values.starrocksOperator.denyList | quote }}
+        {{- end }}
         {{- if .Values.starrocksOperator.env }}
         {{- toYaml .Values.starrocksOperator.env | nindent 8 }}
         {{- end }}
