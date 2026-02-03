@@ -1,7 +1,6 @@
 package predicates
 
 import (
-	"os"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +14,7 @@ func TestGenericPredicates_Create(t *testing.T) {
 		name        string
 		namespace   string
 		annotations map[string]string
-		envDenyList string
+		denyList    string
 		want        bool
 	}{
 		{
@@ -24,10 +23,10 @@ func TestGenericPredicates_Create(t *testing.T) {
 			want:      true,
 		},
 		{
-			name:        "deny object in denied namespace",
-			namespace:   "kube-system",
-			envDenyList: "kube-system",
-			want:        false,
+			name:      "deny object in denied namespace",
+			namespace: "kube-system",
+			denyList:  "kube-system",
+			want:      false,
 		},
 		{
 			name:        "deny object with ignored annotation",
@@ -42,21 +41,27 @@ func TestGenericPredicates_Create(t *testing.T) {
 			want:        true,
 		},
 		{
-			name:        "deny object in one of multiple denied namespaces",
-			namespace:   "monitoring",
-			envDenyList: "kube-system,monitoring,logging",
-			want:        false,
+			name:      "deny object in one of multiple denied namespaces",
+			namespace: "monitoring",
+			denyList:  "kube-system,monitoring,logging",
+			want:      false,
+		},
+		{
+			name:      "allow object when namespace not in deny list",
+			namespace: "production",
+			denyList:  "kube-system,monitoring",
+			want:      true,
+		},
+		{
+			name:      "handle deny list with spaces",
+			namespace: "monitoring",
+			denyList:  "kube-system, monitoring , logging",
+			want:      false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set environment variable if needed
-			if tt.envDenyList != "" {
-				os.Setenv("DENY_LIST", tt.envDenyList)
-				defer os.Unsetenv("DENY_LIST")
-			}
-
 			// Create test object
 			obj := &srapi.StarRocksCluster{
 				ObjectMeta: metav1.ObjectMeta{
@@ -71,8 +76,8 @@ func TestGenericPredicates_Create(t *testing.T) {
 				Object: obj,
 			}
 
-			// Test predicate
-			gp := GenericPredicates{}
+			// Test predicate with constructor
+			gp := NewGenericPredicates(tt.denyList)
 			if got := gp.Create(e); got != tt.want {
 				t.Errorf("GenericPredicates.Create() = %v, want %v", got, tt.want)
 			}
@@ -85,7 +90,7 @@ func TestGenericPredicates_Update(t *testing.T) {
 		name        string
 		namespace   string
 		annotations map[string]string
-		envDenyList string
+		denyList    string
 		want        bool
 	}{
 		{
@@ -94,10 +99,10 @@ func TestGenericPredicates_Update(t *testing.T) {
 			want:      true,
 		},
 		{
-			name:        "deny update in denied namespace",
-			namespace:   "kube-system",
-			envDenyList: "kube-system",
-			want:        false,
+			name:      "deny update in denied namespace",
+			namespace: "kube-system",
+			denyList:  "kube-system",
+			want:      false,
 		},
 		{
 			name:        "deny update with ignored annotation",
@@ -109,12 +114,6 @@ func TestGenericPredicates_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set environment variable if needed
-			if tt.envDenyList != "" {
-				os.Setenv("DENY_LIST", tt.envDenyList)
-				defer os.Unsetenv("DENY_LIST")
-			}
-
 			// Create test objects
 			oldObj := &srapi.StarRocksCluster{
 				ObjectMeta: metav1.ObjectMeta{
@@ -136,8 +135,8 @@ func TestGenericPredicates_Update(t *testing.T) {
 				ObjectNew: newObj,
 			}
 
-			// Test predicate
-			gp := GenericPredicates{}
+			// Test predicate with constructor
+			gp := NewGenericPredicates(tt.denyList)
 			if got := gp.Update(e); got != tt.want {
 				t.Errorf("GenericPredicates.Update() = %v, want %v", got, tt.want)
 			}
@@ -145,62 +144,126 @@ func TestGenericPredicates_Update(t *testing.T) {
 	}
 }
 
-func TestGetEnvAsSlice(t *testing.T) {
+func TestGenericPredicates_Delete(t *testing.T) {
 	tests := []struct {
-		name       string
-		envValue   string
-		defaultVal []string
-		separator  string
-		want       []string
+		name      string
+		namespace string
+		denyList  string
+		want      bool
 	}{
 		{
-			name:      "single value",
-			envValue:  "namespace1",
-			separator: ",",
-			want:      []string{"namespace1"},
+			name:      "allow delete in allowed namespace",
+			namespace: "default",
+			want:      true,
 		},
 		{
-			name:      "multiple values",
-			envValue:  "namespace1,namespace2,namespace3",
-			separator: ",",
-			want:      []string{"namespace1", "namespace2", "namespace3"},
-		},
-		{
-			name:      "values with spaces",
-			envValue:  "namespace1, namespace2 , namespace3",
-			separator: ",",
-			want:      []string{"namespace1", "namespace2", "namespace3"},
-		},
-		{
-			name:       "empty value returns default",
-			envValue:   "",
-			defaultVal: []string{"default1", "default2"},
-			separator:  ",",
-			want:       []string{"default1", "default2"},
-		},
-		{
-			name:      "empty elements are filtered",
-			envValue:  "namespace1,,namespace2,",
-			separator: ",",
-			want:      []string{"namespace1", "namespace2"},
+			name:      "deny delete in denied namespace",
+			namespace: "kube-system",
+			denyList:  "kube-system",
+			want:      false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set environment variable
-			os.Setenv("TEST_ENV", tt.envValue)
-			defer os.Unsetenv("TEST_ENV")
-
-			got := getEnvAsSlice("TEST_ENV", tt.defaultVal, tt.separator)
-			if len(got) != len(tt.want) {
-				t.Errorf("getEnvAsSlice() returned %d values, want %d", len(got), len(tt.want))
-				return
+			obj := &srapi.StarRocksCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-cluster",
+					Namespace: tt.namespace,
+				},
 			}
-			for i := range got {
-				if got[i] != tt.want[i] {
-					t.Errorf("getEnvAsSlice()[%d] = %v, want %v", i, got[i], tt.want[i])
-				}
+
+			e := event.DeleteEvent{
+				Object: obj,
+			}
+
+			gp := NewGenericPredicates(tt.denyList)
+			if got := gp.Delete(e); got != tt.want {
+				t.Errorf("GenericPredicates.Delete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGenericPredicates_Generic(t *testing.T) {
+	tests := []struct {
+		name      string
+		namespace string
+		denyList  string
+		want      bool
+	}{
+		{
+			name:      "allow generic in allowed namespace",
+			namespace: "default",
+			want:      true,
+		},
+		{
+			name:      "deny generic in denied namespace",
+			namespace: "kube-system",
+			denyList:  "kube-system",
+			want:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			obj := &srapi.StarRocksCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-cluster",
+					Namespace: tt.namespace,
+				},
+			}
+
+			e := event.GenericEvent{
+				Object: obj,
+			}
+
+			gp := NewGenericPredicates(tt.denyList)
+			if got := gp.Generic(e); got != tt.want {
+				t.Errorf("GenericPredicates.Generic() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewGenericPredicates(t *testing.T) {
+	tests := []struct {
+		name     string
+		denyList string
+		wantLen  int
+	}{
+		{
+			name:     "empty deny list",
+			denyList: "",
+			wantLen:  0,
+		},
+		{
+			name:     "single namespace",
+			denyList: "kube-system",
+			wantLen:  1,
+		},
+		{
+			name:     "multiple namespaces",
+			denyList: "kube-system,monitoring,logging",
+			wantLen:  3,
+		},
+		{
+			name:     "namespaces with spaces",
+			denyList: "kube-system, monitoring , logging",
+			wantLen:  3,
+		},
+		{
+			name:     "empty elements filtered",
+			denyList: "kube-system,,monitoring,",
+			wantLen:  2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gp := NewGenericPredicates(tt.denyList)
+			if len(gp.denyList) != tt.wantLen {
+				t.Errorf("NewGenericPredicates() denyList len = %d, want %d", len(gp.denyList), tt.wantLen)
 			}
 		})
 	}
@@ -208,7 +271,7 @@ func TestGetEnvAsSlice(t *testing.T) {
 
 func TestShouldReconcile_WithNilObject(t *testing.T) {
 	// Test that nil objects are handled gracefully
-	gp := GenericPredicates{}
+	gp := NewGenericPredicates("")
 
 	// Test Create with nil object
 	e1 := event.CreateEvent{Object: nil}

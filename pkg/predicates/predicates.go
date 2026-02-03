@@ -2,7 +2,6 @@ package predicates
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,67 +16,84 @@ const (
 	ignoredAnnotation = "starrocks.com/ignored"
 )
 
-// GenericPredicates implements predicate.Predicate for filtering events
+// GenericPredicates implements predicate.Predicate for filtering events.
+// The deny list is cached at initialization time for better performance.
 type GenericPredicates struct {
 	predicate.Funcs
+	denyList map[string]struct{}
+}
+
+// NewGenericPredicates creates a new GenericPredicates with the given deny list.
+// The denyList parameter is a comma-separated string of namespace names.
+func NewGenericPredicates(denyList string) GenericPredicates {
+	denyMap := make(map[string]struct{})
+	if denyList != "" {
+		for _, ns := range strings.Split(denyList, ",") {
+			trimmed := strings.TrimSpace(ns)
+			if trimmed != "" {
+				denyMap[trimmed] = struct{}{}
+			}
+		}
+	}
+	return GenericPredicates{denyList: denyMap}
 }
 
 // Create returns true if the Create event should be processed
-func (GenericPredicates) Create(e event.CreateEvent) bool {
-	return shouldReconcile(e.Object)
+func (gp GenericPredicates) Create(e event.CreateEvent) bool {
+	return gp.shouldReconcile(e.Object)
 }
 
 // Update returns true if the Update event should be processed
-func (GenericPredicates) Update(e event.UpdateEvent) bool {
-	return shouldReconcile(e.ObjectNew)
+func (gp GenericPredicates) Update(e event.UpdateEvent) bool {
+	return gp.shouldReconcile(e.ObjectNew)
 }
 
 // Delete returns true if the Delete event should be processed
-func (GenericPredicates) Delete(e event.DeleteEvent) bool {
-	return shouldReconcile(e.Object)
+func (gp GenericPredicates) Delete(e event.DeleteEvent) bool {
+	return gp.shouldReconcile(e.Object)
 }
 
 // Generic returns true if the Generic event should be processed
-func (GenericPredicates) Generic(e event.GenericEvent) bool {
-	return shouldReconcile(e.Object)
+func (gp GenericPredicates) Generic(e event.GenericEvent) bool {
+	return gp.shouldReconcile(e.Object)
 }
 
 // shouldReconcile checks if an object should be reconciled based on namespace and annotation filters
-func shouldReconcile(obj client.Object) bool {
+func (gp GenericPredicates) shouldReconcile(obj client.Object) bool {
 	if obj == nil {
 		return false
 	}
 
 	// Check namespace deny list
-	if !ignoreNamespacePredicate(obj) {
+	if !gp.isNamespaceAllowed(obj) {
 		return false
 	}
 
 	// Check ignored annotation
-	if !ignoreIgnoredObjectPredicate(obj) {
+	if !isObjectAllowed(obj) {
 		return false
 	}
 
 	return true
 }
 
-// ignoreNamespacePredicate returns false if the object is in a denied namespace
-func ignoreNamespacePredicate(obj client.Object) bool {
-	namespaces := getEnvAsSlice("DENY_LIST", nil, ",")
-	logger := log.Log.WithName("predicates")
+// isNamespaceAllowed returns true if the object's namespace is not in the deny list
+func (gp GenericPredicates) isNamespaceAllowed(obj client.Object) bool {
+	if len(gp.denyList) == 0 {
+		return true
+	}
 
-	for _, namespace := range namespaces {
-		if obj.GetNamespace() == namespace {
-			logger.Info("starrocks operator will not reconcile namespace, alter DENY_LIST to reconcile",
-				"namespace", obj.GetNamespace())
-			return false
-		}
+	if _, denied := gp.denyList[obj.GetNamespace()]; denied {
+		logger := log.Log.WithName("predicates")
+		logger.Info("starrocks operator will not reconcile namespace, update --deny-list to reconcile",
+			"namespace", obj.GetNamespace())
+		return false
 	}
 	return true
 }
 
-// ignoreIgnoredObjectPredicate returns false if the object has the ignored annotation set to "true"
-func ignoreIgnoredObjectPredicate(obj client.Object) bool {
+// isObjectAllowed returns true if the object does not have the ignored annotation set to "true"
+func isObjectAllowed(obj client.Object) bool {
 	if ignoredStatus := obj.GetAnnotations()[ignoredAnnotation]; ignoredStatus == "true" {
 		objType := "StarRocks resource"
 		if runtimeObj, ok := obj.(runtime.Object); ok {
@@ -91,24 +107,4 @@ func ignoreIgnoredObjectPredicate(obj client.Object) bool {
 		return false
 	}
 	return true
-}
-
-// getEnvAsSlice returns an environment variable as a slice of strings
-func getEnvAsSlice(name string, defaultVal []string, separator string) []string {
-	valStr := os.Getenv(name)
-	if valStr == "" {
-		return defaultVal
-	}
-
-	// Split by separator and trim spaces
-	parts := strings.Split(valStr, separator)
-	result := make([]string, 0, len(parts))
-	for _, part := range parts {
-		trimmed := strings.TrimSpace(part)
-		if trimmed != "" {
-			result = append(result, trimmed)
-		}
-	}
-
-	return result
 }
