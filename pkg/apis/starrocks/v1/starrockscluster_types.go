@@ -118,6 +118,15 @@ type StarRocksClusterSpec struct {
 	// +optional
 	// DisasterRecovery is used to determine whether to enter disaster recovery mode.
 	DisasterRecovery *DisasterRecovery `json:"disasterRecovery,omitempty"`
+
+	// +optional
+	// WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+	// will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+	// same revision) before updating BE/CN components. This prevents cascading failures
+	// if a bad FE version is deployed.
+	// When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+	// Defaults to false for backward compatibility.
+	WaitForFullRollout bool `json:"waitForFullRollout,omitempty"`
 }
 
 // StarRocksClusterStatus defines the observed state of StarRocksCluster.

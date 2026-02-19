@@ -85,8 +85,16 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	if !fe.CheckFEReady(ctx, be.Client, src.Namespace, src.Name) {
-		return nil
+	// Check FE readiness based on WaitForFullRollout setting
+	if src.Spec.WaitForFullRollout {
+		if !fe.CheckFEFullyRolledOut(ctx, be.Client, src.Namespace, src.Name) {
+			logger.Info("FE StatefulSet is not fully rolled out, skipping BE sync to prevent cascading updates")
+			return nil
+		}
+	} else {
+		if !fe.CheckFEReady(ctx, be.Client, src.Namespace, src.Name) {
+			return nil
+		}
 	}
 
 	feSpec := src.Spec.StarRocksFeSpec

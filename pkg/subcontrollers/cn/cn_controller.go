@@ -121,8 +121,16 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	if !fe.CheckFEReady(ctx, cc.k8sClient, src.Namespace, src.Name) {
-		return nil
+	// Check FE readiness based on WaitForFullRollout setting
+	if src.Spec.WaitForFullRollout {
+		if !fe.CheckFEFullyRolledOut(ctx, cc.k8sClient, src.Namespace, src.Name) {
+			logger.Info("FE StatefulSet is not fully rolled out, skipping CN sync to prevent cascading updates")
+			return nil
+		}
+	} else {
+		if !fe.CheckFEReady(ctx, cc.k8sClient, src.Namespace, src.Name) {
+			return nil
+		}
 	}
 
 	feConfig, err := cc.getFeConfig(ctx, src.Namespace, src.Name)
