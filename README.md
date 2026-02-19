@@ -6,14 +6,14 @@
 
 ## Overview
 
-CelerData Kubernetes Operator is a project that implements the deployment and operation of StarRocks, a next-generation
-sub-second MPP OLAP database, on Kubernetes. It facilitates the deployment of StarRocks' Frontend (FE), Backend (BE),
+CelerData Kubernetes Operator is a project that implements the deployment and operation of CelerData, a next-generation
+sub-second MPP OLAP database, on Kubernetes. It facilitates the deployment of CelerData' Frontend (FE), Backend (BE),
 and Compute Node (CN) components within your Kubernetes environment. It also includes Helm chart for easy installation
 and configuration. With CelerData Kubernetes Operator, you can easily manage the lifecycle of CelerData clusters, such
 as installing, scaling, upgrading etc.
 
 > [!NOTE]  
-> The StarRocks k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
+> The CelerData k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
 
 ## Prerequisites
 
@@ -24,24 +24,24 @@ as installing, scaling, upgrading etc.
 
 ### Operator Features
 
-- Support deploying StarRocks FE, BE and CN components separately
+- Support deploying CelerData FE, BE and CN components separately
   FE component is a must-have component, BE and CN components can be optionally deployed
 - Support multiple CelerData clusters in one Kubernetes cluster
-- Support external clients outside the network of kubernetes to load data into StarRocks using STREAM LOAD
+- Support external clients outside the network of kubernetes to load data into CelerData using STREAM LOAD
 - Support automatic scaling for CN nodes based on CPU and memory usage
-- Support mounting persistent volumes for StarRocks containers
+- Support mounting persistent volumes for CelerData containers
 
 ### Helm Chart Features
 
 - Support Helm Chart for easy installation and configuration
     - using kube-celerdata Helm chart to install both operator and CelerData cluster
-    - using operator Helm Chart to install operator, and using starrocks Helm Chart to install celerdata cluster
+    - using operator Helm Chart to install operator, and using CelerData Helm Chart to install celerdata cluster
 - Support initializing the password of root in your CelerData cluster during installation.
 - Support integration with other components in the Kubernetes ecosystem, such as Prometheus, Datadog, etc.
 
 ## Installation
 
-In order to use StarRocks in Kubernetes, you need to install:
+In order to use CelerData in Kubernetes, you need to install:
 
 1. CelerDataCluster CRD
 2. CelerData Operator
@@ -57,7 +57,7 @@ There are two ways to install Operator and CelerData Cluster.
 
 ## Installation by yaml Manifest
 
-Please see [Deploy StarRocks With Operator](./doc/deploy_celerdata_with_operator_howto.md) document for more details.
+Please see [Deploy CelerData With Operator](./doc/deploy_celerdata_with_operator_howto.md) document for more details.
 
 ### 1. Apply the CelerDataCluster CRD
 
@@ -67,10 +67,10 @@ kubectl apply -f https://raw.githubusercontent.com/celerdata/celerdata-kubernete
 
 ### 2. Apply the Operator manifest
 
-Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace. To use the
+Apply the Operator manifest. By default, the Operator is configured to install in the CelerData namespace. To use the
 Operator in a custom namespace, download
 the [Operator manifest](https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/operator.yaml)
-and edit all instances of namespace: starrocks to specify your custom namespace.
+and edit all instances of namespace: CelerData to specify your custom namespace.
 Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the
 command below.
 
@@ -80,7 +80,7 @@ kubectl apply -f https://raw.githubusercontent.com/celerdata/celerdata-kubernete
 
 ### 3. Deploy the CelerData cluster
 
-You need to prepare a separate yaml file to deploy the StarRocks. The celerdata cluster CRD fields explains
+You need to prepare a separate yaml file to deploy the CelerData. The celerdata cluster CRD fields explains
 in [api.md](./doc/api.md). The [examples](./examples/celerdata) directory contains some simple example for reference.
 
 You can use any of the template yaml file as a starting point. You can further add more configurations into the template
@@ -89,7 +89,7 @@ yaml file following this deployment documentation.
 For demonstration purpose, we use the [celerdata-fe-and-be.yaml](./examples/celerdata/celerdata-fe-and-be.yaml) example
 template to start a 3 FE and 3 BE CelerData cluster.
 
-Here's an example yaml for Docker Desktop with local desktop access with StarRocks 3.2.1 so you can upgrade in later steps.
+Here's an example yaml for Docker Desktop with local desktop access with CelerData 3.2.1 so you can upgrade in later steps.
 ```
 atwong@Albert-CelerData celerdatatest % cat celerdata-fe-and-be.yaml
 apiVersion: celerdata.com/v1
@@ -188,7 +188,7 @@ kubectl delete celerdatacluster celerdatacluster-sample -n celerdata
 
 ### 8. Delete/stop the CelerData Operator
 
-To delete/stop the StarRocks Operate, just execute the delete command.
+To delete/stop the CelerData Operate, just execute the delete command.
 
 ```console
 kubectl delete -f https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/operator.yaml
@@ -201,11 +201,10 @@ Please see [kube-celerdata](./helm-charts/charts/kube-celerdata/README.md) for h
 CelerData cluster by Helm Chart.
 
 If you want more flexibility in managing your CelerData clusters, you can deploy Operator
-using [operator](./helm-charts/charts/kube-celerdata/charts/operator) Helm Chart and StarRocks
+using [operator](./helm-charts/charts/kube-celerdata/charts/operator) Helm Chart and CelerData
 using [celerdata](./helm-charts/charts/kube-celerdata/charts/celerdata) Helm Chart separately.
 
 ## Other Documents
 
 - In [doc](./doc) directory, you can find more documents about how to use CelerData Operator.
 - In [examples](./examples/celerdata) directory, you can find more examples about how to write CelerDataCluster CR.
-- [Documentation on docs.starrocks.io](https://docs.starrocks.io/docs/deployment/sr_operator/)

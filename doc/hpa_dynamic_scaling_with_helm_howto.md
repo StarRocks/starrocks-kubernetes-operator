@@ -22,7 +22,7 @@ Since v1.11.0, the following critical issues have been resolved:
 
 ## Deployment Architecture
 
-There are two ways to deploy StarRocks with HPA-enabled CN nodes:
+There are two ways to deploy CelerData with HPA-enabled CN nodes:
 
 ### 1. Integrated CelerData Cluster with CN Nodes
 Deploy a complete CelerData cluster including FE and CN nodes with HPA in a single chart.
@@ -37,7 +37,7 @@ Deploy the main CelerData cluster first, then deploy separate Warehouse instance
 Create a `celerdata cluster-values.yaml` file:
 
 ```yaml
-starrocks:
+celerdata:
   # Main cluster configuration
   celerDataCluster:
     enabledCn: true  # Enable CN nodes
@@ -127,7 +127,7 @@ starrocks:
 
 # Operator Configuration
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.11.0-rc5
@@ -137,7 +137,7 @@ operator:
 ### Step 2: Deploy CelerData Cluster
 
 ```bash
-# Add StarRocks Helm repository
+# Add CelerData Helm repository
 $ helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
 $ helm repo update
 
@@ -179,7 +179,7 @@ Note: warehouse is an enterprise feature.
 Create `cluster-values.yaml`:
 
 ```yaml
-starrocks:
+celerdata:
   # Main cluster configuration
   celerDataCluster:
     enabledCn: false
@@ -218,7 +218,7 @@ starrocks:
 
 # Operator Configuration
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.11.0-rc5

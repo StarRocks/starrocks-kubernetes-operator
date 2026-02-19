@@ -1,6 +1,6 @@
 # Disaster Recovery for shared-data mode Cluster
 
-From StarRocks 3.4.1, the shared-data mode cluster supports disaster recovery. The Operator can configure the disaster
+From CelerData 3.4.1, the shared-data mode cluster supports disaster recovery. The Operator can configure the disaster
 recovery for the shared-data mode cluster to ensure the data security and high availability.
 
 The following describes:
@@ -59,7 +59,7 @@ The reconcile process for FE is as follows:
     4. Modify the Readiness configuration. The configuration for normal cluster is to send an HTTP request to FE 8030;
        the new configuration is used to detect whether the FE 9030 port is connected. Once connected, it means that the
        FE Pod disaster recovery operation is complete.
-3. After the FE Pod disaster recovery is complete, according to the configuration of the CelerDataCluster, StarRocks
+3. After the FE Pod disaster recovery is complete, according to the configuration of the CelerDataCluster, CelerData
    is started normally.
 
 ### How does Operator update the disaster recovery phase?
@@ -83,17 +83,17 @@ Inorder to keep it simple and easy for users to follow this document, we use the
 Please note:
 
 1. Be sure to use at least v1.10.0 version of Operator and CRD.
-2. Be sure to use at least 3.4.1 version of the StarRocks image to do disaster recovery.
+2. Be sure to use at least 3.4.1 version of the CelerData image to do disaster recovery.
 3. Sensitive information is replaced by xxx, please set it to a reasonable value.
 
 ### 1. Create a normal working cluster
 
-Prepare the `./starrocks-values.yaml` file:
+Prepare the `./celerdata-values.yaml` file:
 > Note: we set `automated_cluster_snapshot_interval_seconds` to configure every minute to take a snapshot.
 
 ```yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.10.0
@@ -103,7 +103,7 @@ operator:
       requests:
         cpu: 1m
         memory: 20Mi
-starrocks:
+celerdata:
   celerDataCluster:
     enabledBe: false
     enabledCn: true
@@ -320,11 +320,11 @@ persistentvolumeclaim "fe-storage-meta-kube-celerdata-fe-2" deleted
 
 ### 5. Create a new cluster for disaster recovery
 
-We will reuse the previous `starrocks-values.yaml` file, so be sure to ensure the security of this configuration file.
+We will reuse the previous `celerdata-values.yaml` file, so be sure to ensure the security of this configuration file.
 Prepare a new file named `override.yaml`, which contains the configuration required for disaster recovery.
 
 ```yaml
-starrocks:
+celerdata:
   celerDataCluster: # enable disaster recovery
     disasterRecovery:
       enabled: true

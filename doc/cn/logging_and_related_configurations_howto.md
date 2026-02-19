@@ -1,6 +1,6 @@
-# StarRock 的日志及相关配置
+# CelerData 的日志及相关配置
 
-StarRocks 包含了三个组件，FE、BE、CN，其中，FE 是必须的组件。这篇文档将介绍 StarRocks 组件的日志及相关配置。主要包括：
+CelerData 包含了三个组件，FE、BE、CN，其中，FE 是必须的组件。这篇文档将介绍 CelerData 组件的日志及相关配置。主要包括：
 
 1. [日志的存储位置](./logging_and_related_configurations_howto.md#1-日志的存储位置)；
 2. [默认存储介质](./logging_and_related_configurations_howto.md#2-默认存储介质)；
@@ -40,16 +40,16 @@ spec:
 `storageClassName` 如果为空，Kubernetes 将使用默认的存储卷类型。你也可以通过 `kubectl get storageclass` 查看 Kubernetes
 集群内可使用的存储卷类型的列表。**注意：选择一个合适的存储卷类型非常重要。**
 详情参见：https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes
-> 注意：Operator 会为 StarRocks 集群创建 PVC 资源，storageclass 的控制器会自动地创建具体的存储卷。
+> 注意：Operator 会为 CelerData 集群创建 PVC 资源，storageclass 的控制器会自动地创建具体的存储卷。
 
 ### 3.1 Helm Chart 支持持久化日志
 
-如果使用了 Helm Chart 的方式部署 StarRocks 集群，可以通过修改 `values.yaml` 来持久化日志。以 FE 组件为例：
+如果使用了 Helm Chart 的方式部署 CelerData 集群，可以通过修改 `values.yaml` 来持久化日志。以 FE 组件为例：
 
 针对 kube-celerdata Helm Chart，可以这样配置：
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeSpec:
     storageSpec:
       name: "fe"
@@ -58,7 +58,7 @@ starrocks:
       # storageClassName: ""  # 如果 storageClassName 为空，Kubernetes 将使用默认的存储卷类型。
 ```
 
-针对 starrocks Helm Chart，可以这样配置：
+针对 celerdata Helm Chart，可以这样配置：
 
 ```yaml
 celerDataFeSpec:
@@ -87,19 +87,19 @@ spec:
 
 ### 4.1 Helm Chart 支持设置环境变量
 
-如果使用了 Helm Chart 的方式部署 StarRocks 集群，可以修改 `values.yaml` 的内容，来设置环境变量。下面以 FE 组件为例：
+如果使用了 Helm Chart 的方式部署 CelerData 集群，可以修改 `values.yaml` 的内容，来设置环境变量。下面以 FE 组件为例：
 
 针对 kube-celerdata Helm Chart，配置如下：
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeSpec:
     feEnvVars:
       - name: LOG_CONSOLE
         value: "1"
 ```
 
-针对 starrocks Helm Chart，配置如下：
+针对 celerdata Helm Chart，配置如下：
 
 ```yaml
 celerDataFeSpec:

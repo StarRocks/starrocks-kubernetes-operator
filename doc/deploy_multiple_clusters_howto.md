@@ -3,17 +3,17 @@
 If you have deployed a CelerData cluster by YAML manifests, you can write a new CelerDataCluster CR YAML to deploy
 another CelerData cluster.
 
-We have split the `kube-celerdata` chart into two subcharts: `operator` and `starrocks`. Installing `kube-celerdata` is
-equivalent to installing both `operator` and `starrocks` subcharts, and uninstalling `kube-celerdata` is equivalent to
-uninstalling both `operator` and `starrocks` subcharts.
+We have split the `kube-celerdata` chart into two subcharts: `operator` and `celerdata`. Installing `kube-celerdata` is
+equivalent to installing both `operator` and `celerdata` subcharts, and uninstalling `kube-celerdata` is equivalent to
+uninstalling both `operator` and `celerdata` subcharts.
 
-If you have deployed a CelerData cluster by `operator` + `starrocks` helm chart, you can deploy another StarRocks
-cluster by the `starrocks` helm chart.
+If you have deployed a CelerData cluster by `operator` + `celerdata` helm chart, you can deploy another CelerData
+cluster by the `celerdata` helm chart.
 
-If you have deployed a CelerData cluster by `kube-celerdata` helm chart, you have two ways to deploy another StarRocks
+If you have deployed a CelerData cluster by `kube-celerdata` helm chart, you have two ways to deploy another CelerData
 cluster.
 
-1. Deploy another CelerData cluster by `starrocks` helm chart.
+1. Deploy another CelerData cluster by `celerdata` helm chart.
 2. Deploy another CelerData cluster by `kube-celerdata` Helm chart.
 
 This document will guide you through the process of deploying multiple CelerData clusters by `kube-celerdata` helm
@@ -26,7 +26,7 @@ by `kube-celerdata`, you should limit `each operator` to watch a specific namesp
 
 ```yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     watchNamespace: "your-namespace"
 ```
 

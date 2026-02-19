@@ -1,17 +1,17 @@
 # Deploy CelerData with Multiple Volumes
 
-This document describes how to use multiple volumes to store StarRocks data.
+This document describes how to use multiple volumes to store CelerData data.
 > Note: After installation, you are not allowed to modify the volume related fields no matter in the CRD or Helm Chart.
 
 # Deploy CelerData with Multiple Volumes By Helm Chart
 
 Based on the `storageSpec` field
 in [values.yaml](https://github.com/celerdata/celerdata-kubernetes-operator/blob/main/helm-charts/charts/kube-celerdata/values.yaml),
-we will give an example of how to use multiple volumes to store StarRocks data.
+we will give an example of how to use multiple volumes to store CelerData data.
 
 ```yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.9.8
@@ -20,10 +20,10 @@ operator:
       requests:
         cpu: 1m
         memory: 20Mi
-starrocks:
+celerdata:
   celerDataBeSpec:
     beEnvVars:
-    # add storage_root_path in StarRocks config
+    # add storage_root_path in CelerData config
     config: |
       be_port = 9060
       webserver_port = 8040
@@ -66,7 +66,7 @@ starrocks:
 ```
 
 Note:
-1. add `storage_root_path` field in StarRocks config.
+1. add `storage_root_path` field in CelerData config.
 2. use `storageCount` to specify the number of volumes.
 3. the `storage` directory still exists in the container, but will not be used to store data.
 

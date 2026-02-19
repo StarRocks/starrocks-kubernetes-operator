@@ -7,8 +7,8 @@ This topic describes how to configure automatic scaling for CN nodes in a CelerD
 
 - Ensure that you have installed the Kubernetes cluster. v1.23.0+ is recommended.
 - Ensure that you have installed the [Helm](https://helm.sh/) package manager. 3.0.0+ is recommended.
-- Ensure that the helm chart repo for StarRocks is added.
-  See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
+- Ensure that the helm chart repo for CelerData is added.
+  See [Add the Helm Chart Repo for CelerData](./add_helm_repo_howto.md).
 - Ensure that you have deployed a CelerData cluster.
   See [Deploy CelerData With Operator](./deploy_celerdata_with_operator_howto.md)
   or [Deploy CelerData With Helm](./deploy_celerdata_with_helm_howto.md)

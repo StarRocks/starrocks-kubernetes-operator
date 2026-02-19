@@ -3,15 +3,13 @@
 From CelerData Operator v1.9.0, CelerDataWarehouse CRD is introduced to manage the warehouse. This document describes
 how to deploy a warehouse.
 
-> Note: Warehouse is an enterprise feature for StarRocks.
-
 ## 1. Prerequisites
 
 1. CelerData Operator >= v1.9.0. The latest version of the operator is recommended.
 2. An installed CelerData Cluster.
    See [deploy_celerdata_with_operator_howto.md](./deploy_celerdata_with_operator_howto.md)
    or [deploy_celerdata_with_helm_howto.md](./deploy_celerdata_with_helm_howto.md) for more details.
-3. Starrocks enterprise version >= v3.2.0.
+3. CelerData enterprise version >= v3.2.0.
 
 ## 2. Deploy Warehouse
 
@@ -20,7 +18,7 @@ You can choose one of the following methods to deploy a warehouse:
 1. Deploy Warehouse by YAML Manifest
 2. Deploy Warehouse by Helm Chart
 
-> If you deploy CelerData Cluster with BE and CN nodes, they are added to the `default_warehouse` in StarRocks by
+> If you deploy CelerData Cluster with BE and CN nodes, they are added to the `default_warehouse` in CelerData by
 > default. You can also define a Warehouse CR named `default-warehouse` to add more BE and CN nodes to the warehouse.
 
 ### 2.1 Deploy Warehouse by YAML Manifest
@@ -43,7 +41,7 @@ apiVersion: celerdata.com/v1
 kind: CelerDataWarehouse
 metadata:
   # A warehouse will be created with this name in CelerData Cluster. If you are using dash(-) in the name, the warehouse
-  # name created by StarRocks will be replaced with underscore(_).
+  # name created by CelerData will be replaced with underscore(_).
   name: wh1
 
 spec:
@@ -145,7 +143,7 @@ apiVersion: celerdata.com/v1
 kind: CelerDataWarehouse
 metadata:
   # A warehouse will be created with this name in CelerData Cluster. If you are using dash(-) in the name, the warehouse
-  # name created by StarRocks will be replaced with underscore(_).
+  # name created by CelerData will be replaced with underscore(_).
   name: wh1
 
 spec:

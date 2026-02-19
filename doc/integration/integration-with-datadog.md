@@ -1,5 +1,5 @@
 Datadog provides easy integration of log and metrics collection in the kubernetes environment.
-This document describes how to integrate the Datadog with StarRocks.
+This document describes how to integrate the Datadog with CelerData.
 
 > see https://docs.datadoghq.com/containers/kubernetes/installation/?tab=helm for more details.
 
@@ -70,7 +70,7 @@ helm install -n celerdata celerdata -f sr-values.yaml celerdata/kube-celerdata
 helm upgrade -n celerdata celerdata -f sr-values.yaml celerdata/kube-celerdata
 ```
 
-When you execute `helm install` or `helm upgrade` command, the rendered configuration will be passed to the starrocks
+When you execute `helm install` or `helm upgrade` command, the rendered configuration will be passed to the celerdata
 cluster, like the following:
 
 ```yaml

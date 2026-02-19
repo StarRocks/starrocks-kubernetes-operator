@@ -1,10 +1,10 @@
 # Mount external configMaps or secrets
 
-StarRocks Kubernetes Operator supports mounting multiple external configmaps or secrets into StarRocks. This document
-describes how to mount configmaps into StarRocks.
+CelerData Kubernetes Operator supports mounting multiple external configmaps or secrets into CelerData. This document
+describes how to mount configmaps into CelerData.
 > You can mount secrets in the same way.
 
-## 1. Mount configMaps by starRocks CRD YAML file
+## 1. Mount configMaps by CelerData CRD YAML file
 
 You can specify `configMaps` in the corresponding component spec. The following is an example
 
@@ -33,7 +33,7 @@ spec:
 
 ## 2. Mount configMaps by helm chart
 
-By using Helm chart, you can also mount multiple external configmaps into StarRocks. You can specify `configMaps` in
+By using Helm chart, you can also mount multiple external configmaps into CelerData. You can specify `configMaps` in
 the corresponding component spec. The following is an example by using `kube-celerdata` Helm chart.
 
 ```shell
@@ -55,7 +55,7 @@ celerdata:
 
 ## 3. Mount configMaps to a subPath by Helm Chart
 
-You can also mount external configmaps into StarRocks with a subPath. The following is an example by
+You can also mount external configmaps into CelerData with a subPath. The following is an example by
 using `kube-celerdata` Helm chart.
 
 ```shell

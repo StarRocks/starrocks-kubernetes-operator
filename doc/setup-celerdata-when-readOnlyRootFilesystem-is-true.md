@@ -1,7 +1,7 @@
 # Background
 
-StarRocks has three components: Frontend (FE), Backend (BE), and Compute Node(CN). When the `readOnlyRootFilesystem` is
-set to `true`, the components of StarRocks cannot start normally. This is because the components of StarRocks write data
+CelerData has three components: Frontend (FE), Backend (BE), and Compute Node(CN). When the `readOnlyRootFilesystem` is
+set to `true`, the components of CelerData cannot start normally. This is because the components of CelerData write data
 to the disk, and the `readOnlyRootFilesystem` setting prevents the components from writing data to the disk.
 
 For the FE component, FE writes data to the following directories:
@@ -42,7 +42,7 @@ This document describes how to set up CelerData when the `readOnlyRootFilesystem
 # How
 
 We create and mount a volume, and in the entrypoint script, we will copy everything from the original directory to the
-mounted volume. This way, the components of StarRocks can write data to the mounted volume.
+mounted volume. This way, the components of CelerData can write data to the mounted volume.
 
 > Note: you should use the operator version `v1.9.9` or later.
 
@@ -177,7 +177,7 @@ If you are using the `kube-celerdata` Helm chart, add the following snippets to 
 
 ```yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.9.9
@@ -186,7 +186,7 @@ operator:
       requests:
         cpu: 1m
         memory: 20Mi
-starrocks:
+celerdata:
   celerDataFeSpec:
     readOnlyRootFilesystem: true
     runAsNonRoot: true

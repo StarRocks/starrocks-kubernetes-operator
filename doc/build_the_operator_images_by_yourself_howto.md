@@ -19,7 +19,7 @@ DOCKER_BUILDKIT=1 docker build -t us-west1-docker.pkg.dev/phrasal-verve-350013/c
 ### Publish celerdata operator docker image
 
 ```console
-docker push starrocksr/operator:latest
+docker push celerdata/operator:latest
 ```
 
 E.g. Publish image to dockerhub

@@ -1,13 +1,13 @@
-StarRocks 是一款高性能分析型数据仓库，使用向量化、MPP 架构、CBO、智能物化视图、可实时更新的列式存储引擎等技术实现多维、实时、高并发的数据分析。
+CelerData 是一款高性能分析型数据仓库，使用向量化、MPP 架构、CBO、智能物化视图、可实时更新的列式存储引擎等技术实现多维、实时、高并发的数据分析。
 
 本节将介绍：
 
-1. 如何在本地安装包含 1 个 FE、1 个 BE 和 1 个 FE Proxy 的 StarRocks。
-2. 如何将本地数据加载到 StarRocks。
+1. 如何在本地安装包含 1 个 FE、1 个 BE 和 1 个 FE Proxy 的 CelerData。
+2. 如何将本地数据加载到 CelerData。
 
 > 我们假设你已经对 Kubernetes 有基本的了解。
 
-下表列出了部署 StarRocks 的最小和推荐的硬件配置。
+下表列出了部署 CelerData 的最小和推荐的硬件配置。
 
 | 资源  | 最小值   | 推荐值   |
 |-----|-------|-------|
@@ -17,15 +17,15 @@ StarRocks 是一款高性能分析型数据仓库，使用向量化、MPP 架构
 
 以下部分将涵盖：
 
-1. [前提条件](./local_installation_how_to.md#1-前提条件) - 安装 StarRocks 的前提条件。
-2. [手动从零开始安装](./local_installation_how_to.md#2-从零开始手动安装) - 从零开始使用 helm 安装 StarRocks。
-3. [通过脚本安装](./local_installation_how_to.md#3-通过脚本安装) - 使用脚本安装 StarRocks。
-4. [将数据加载到 StarRocks](./local_installation_how_to.md#4-将数据加载到-starrocks) - 将数据加载到 StarRocks。
-5. [卸载 StarRocks](./local_installation_how_to.md#5-卸载-starrocks) - 卸载 StarRocks。
+1. [前提条件](./local_installation_how_to.md#1-前提条件) - 安装 CelerData 的前提条件。
+2. [手动从零开始安装](./local_installation_how_to.md#2-从零开始手动安装) - 从零开始使用 helm 安装 CelerData。
+3. [通过脚本安装](./local_installation_how_to.md#3-通过脚本安装) - 使用脚本安装 CelerData。
+4. [将数据加载到 CelerData](./local_installation_how_to.md#4-将数据加载到-celerdata) - 将数据加载到 CelerData。
+5. [卸载 CelerData](./local_installation_how_to.md#5-卸载-celerdata) - 卸载 CelerData。
 
 ## 1. 前提条件
 
-为了安装 StarRocks，你需要满足以下前提条件：
+为了安装 CelerData，你需要满足以下前提条件：
 
 1. 安装 [docker](https://docs.docker.com/get-docker/)
 2. 安装 [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
@@ -156,11 +156,11 @@ kind version
 
 ### 2.1 通过 Kind 安装 Kubernetes 集群
 
-在安装了上述工具后，你可以使用以下步骤手动安装 StarRocks。
+在安装了上述工具后，你可以使用以下步骤手动安装 CelerData。
 
 ```bash
 # prepare a kind configuration file `kind.yaml`:
-# 为 `kind` 集群设置端口映射，这样你就可以从 kubernetes 集群外部访问 `StarRocks` 集群了。
+# 为 `kind` 集群设置端口映射，这样你就可以从 kubernetes 集群外部访问 `CelerData` 集群了。
 cat <<EOF > kind.yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -198,9 +198,9 @@ kube-system          kube-scheduler-celerdata-control-plane            1/1     R
 local-path-storage   local-path-provisioner-5ddd94ff66-9l2km           1/1     Running   0          4m26s
 ```
 
-### 2.2 通过 Helm 安装 StarRocks
+### 2.2 通过 Helm 安装 CelerData
 
-你可以在 https://github.com/celerdata/celerdata-kubernetes-operator/releases 获取 StarRocks Helm Chart 的最新版本。
+你可以在 https://github.com/celerdata/celerdata-kubernetes-operator/releases 获取 CelerData Helm Chart 的最新版本。
 
 ```shell
 # Add the Helm Chart Repo
@@ -222,12 +222,12 @@ to [values.yaml](../../helm-charts/charts/kube-celerdata/values.yaml) to see the
 ```shell
 cat <<EOF >values.yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.8.6
 
-starrocks:
+celerdata:
   celerDataFeSpec:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
@@ -304,8 +304,8 @@ kube-celerdata-operator-7498c7fbd-qsbgb 1/1 Running 0 3m
 默认情况下，[script](../../scripts/local-install.sh) 将会做以下事情：
 
 1. 在你的机器上安装 kubectl、helm、kind。
-2. 创建一个名为 `starrocks` 的 kind 集群。
-3. 通过 [kube-celerdata](../../helm-charts/charts/kube-celerdata/README.md) chart 安装 starrocks。
+2. 创建一个名为 `celerdata` 的 kind 集群。
+3. 通过 [kube-celerdata](../../helm-charts/charts/kube-celerdata/README.md) chart 安装 CelerData。
 
 执行下面的命令：
 
@@ -313,9 +313,9 @@ kube-celerdata-operator-7498c7fbd-qsbgb 1/1 Running 0 3m
 sudo bash local-install.sh --helm-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kind-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kubectl-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --helm-chart-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-celerdata-1.8.6.tgz
 ```
 
-## 4. 将数据加载到 StarRocks
+## 4. 将数据加载到 CelerData
 
-在 starrocks 集群运行正常后，你可以将数据加载到 starrocks。
+在 CelerData 集群运行正常后，你可以将数据加载到 CelerData。
 
 ```shell
 # set alias for kubectl
@@ -361,7 +361,7 @@ curl --location-trusted -u root:"" -H "label:123" \
     http://localhost:30001/api/test_db/table1/_stream_load
 ```
 
-## 5. 卸载 StarRocks
+## 5. 卸载 CelerData
 
 ```shell
 # uninstall celerdata

@@ -4,7 +4,7 @@ This document describes how to integrate CelerData cluster with Prometheus and G
 environment. From this document, you will learn,
 
 * How to turn on prometheus metrics scrape for the CelerData cluster
-* How to import StarRocks Grafana dashboard
+* How to import CelerData Grafana dashboard
 
 ## 1. Prerequisites
 
@@ -24,7 +24,7 @@ There are two ways to turn on the prometheus metrics scrape for the CelerData cl
 
 ### 2.1 Turn on the prometheus metrics scrape by adding annotations
 
-Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
+Follow the instructions from [CelerData Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
 with some customized values.
 
 Following is an example of the content of the `sr-values.yaml`.
@@ -64,8 +64,7 @@ celerDataBeSpec:
 * For chart v1.8.0 and above,
 
 ```yaml
-# sr-values.yaml
-starrocks:
+celerdata:
   celerDataFeSpec:
     service:
       annotations:
@@ -95,10 +94,10 @@ starrocks:
 ```
 
 Note that `"prometheus.io/*` annotations are the must items to be added, this will allow prometheus to auto discover
-StarRocks PODs and to collect the metrics.
+CelerData PODs and to collect the metrics.
 This method will restart the CelerData cluster.
 
-An equivalent StarRocks CRD may look like,
+An equivalent CelerData CRD may look like,
 
 ```yaml
 apiVersion: celerdata.com/v1
@@ -158,7 +157,7 @@ in the future.
 > Make
 > sure [Deploy Prometheus and Grafana Service by Operator](./deploy-prometheus-grafana.md#2-deploy-prometheus-and-grafana-service-by-operator)
 
-Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
+Follow the instructions from [CelerData Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
 with some customized values.
 
 ```shell
@@ -170,10 +169,10 @@ celerdata:
 
 Note: This only works for chart v1.8.4 and above.
 
-## 3. Import StarRocks Grafana Dashboard
+## 3. Import CelerData Grafana Dashboard
 
-StarRocks grafana dashboard configuration for kubernetes environment is available
-at https://github.com/StarRocks/starrocks/blob/main/extra/grafana/kubernetes/StarRocks-Overview-kubernetes-3.0.json
+CelerData grafana dashboard configuration for kubernetes environment is available
+at https://github.com/CelerData/celerdata-kubernetes-operator/blob/main/extra/grafana/kubernetes/CelerData-Overview-kubernetes-3.0.json
 
 Detailed instruction can be
 found [here](https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/#import-a-dashboard).

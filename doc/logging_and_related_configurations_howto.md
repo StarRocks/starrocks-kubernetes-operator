@@ -1,7 +1,7 @@
-# StarRocks Logging and Related Configurations
+# CelerData Logging and Related Configurations
 
-StarRocks is composed of three components: FE, BE, and CN. Among them, FE is essential. This document describes the
-logging and associated configurations for StarRocks components, including:
+CelerData is composed of three components: FE, BE, and CN. Among them, FE is essential. This document describes the
+logging and associated configurations for CelerData components, including:
 
 1. Location of log storage;
 2. Default storage volume;
@@ -58,7 +58,7 @@ an example for the FE component:
 For the kube-celerdata Helm Chart, you can configure as:
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeSpec:
     storageSpec:
       name: "fe"
@@ -67,7 +67,7 @@ starrocks:
       # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
 ```
 
-For the starrocks Helm Chart, configure as:
+For the celerdata Helm Chart, configure as:
 
 ```yaml
 celerDataFeSpec:
@@ -105,14 +105,14 @@ variables. An example for the FE component:
 For the kube-celerdata Helm Chart, configure as:
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeSpec:
     feEnvVars:
       - name: LOG_CONSOLE
         value: "1"
 ```
 
-For the starrocks Helm Chart, configure as:
+For the celerdata Helm Chart, configure as:
 
 ```yaml
 celerDataFeSpec:

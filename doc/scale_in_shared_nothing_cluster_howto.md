@@ -10,7 +10,7 @@ spec:
 
 Unfortunately, the current implementation of CelerData Operator does not
 follow [the standard operation](https://docs.starrocks.io/docs/administration/management/Scale_up_down/) defined by
-StarRocks. So this document introduces:
+CelerData. So this document introduces:
 
 - How does CelerData Operator scale in BE nodes for the `shared-nothing` cluster
 - How to fix the issue if users incorrectly scale in BE nodes for the `shared-nothing` cluster
@@ -38,7 +38,7 @@ When the user scale in the cluster to 3 BE nodes, `kube-celerdata-be-5`, `kube-c
 
 ## 2. How to fix the issue if users incorrectly scale in BE nodes for the `shared-nothing` cluster
 
-Because CelerData Operator does not follow the standard operation defined by StarRocks, if users scale in the
+Because CelerData Operator does not follow the standard operation defined by CelerData, if users scale in the
 `shared-nothing` cluster, e.g. 6-->3, the data in the deleted BE nodes will be lost.
 
 Because Operator did not delete the persistent volume claims (PVCs) of the deleted BE nodes, users can
@@ -46,7 +46,7 @@ recover the data by resetting the replicas field to the original number, e.g. 3-
 
 ## 3. How to correctly scale in BE nodes for the `shared-nothing` cluster
 
-To scale in the `shared-nothing` cluster correctly, users should follow the standard operation defined by StarRocks. For
+To scale in the `shared-nothing` cluster correctly, users should follow the standard operation defined by CelerData. For
 example, if users want to scale in the BE nodes from 6 to 3, they should scale in the BE nodes one by one.
 
 1. Execute the `SHOW BACKENDS` command to get the BE nodes information, and must choose the

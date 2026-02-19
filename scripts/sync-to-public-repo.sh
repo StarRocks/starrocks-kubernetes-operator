@@ -14,24 +14,24 @@ if [ ! -d "$TARGET_PATH" ]; then
   exit 1
 fi
 
-# List of directories to sync
-DIRS=("doc" "examples" "helm-charts" "deploy", "scripts")
+# List of items to sync (directories or files)
+ITEMS=("doc" "examples" "helm-charts" "deploy" "scripts" "README.md" "README_ZH-CN.md")
 
 echo "Starting synchronization from $HOME_PATH to $TARGET_PATH..."
 
-for dir in "${DIRS[@]}"; do
-  if [ -d "$HOME_PATH/$dir" ]; then
-    echo "Processing directory: $dir"
+for item in "${ITEMS[@]}"; do
+  if [ -e "$HOME_PATH/$item" ]; then
+    echo "Processing: $item"
     
-    # Remove the old directory in target to ensure a clean copy
-    rm -rf "$TARGET_PATH/$dir"
+    # Remove the old item in target to ensure a clean copy
+    rm -rf "$TARGET_PATH/$item"
     
-    # Copy the directory recursively
-    cp -R "$HOME_PATH/$dir" "$TARGET_PATH/"
+    # Copy the item recursively
+    cp -R "$HOME_PATH/$item" "$TARGET_PATH/"
     
-    echo "Successfully synced $dir"
+    echo "Successfully synced $item"
   else
-    echo "Warning: Source directory $HOME_PATH/$dir does not exist, skipping."
+    echo "Warning: Source $HOME_PATH/$item does not exist, skipping."
   fi
 done
 

@@ -1,13 +1,13 @@
 You can install the CelerData operator and CelerData cluster by kubectl or helm. No matter which way you choose, you
 may need the following permissions:
 
-> Note: Operator will use its own service account, cluster role and cluster role binding to create and manage StarRocks
+> Note: Operator will use its own service account, cluster role and cluster role binding to create and manage CelerData
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: install-starrocks-rb
+  name: install-celerdata-rb
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -22,7 +22,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: install-starrocks-role
+  name: install-celerdata-role
 rules:
   - apiGroups:
       - ""

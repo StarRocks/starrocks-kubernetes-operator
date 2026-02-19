@@ -18,12 +18,12 @@ The following solutions for other read and write data scenarios are listed (will
 
 ## Deploy Fe Proxy Using Helm
 
-If you install StarRocks with Helm, you can add the following configuration to the `values.yaml` file:
+If you install CelerData with Helm, you can add the following configuration to the `values.yaml` file:
 
 For `kube-celerdata` Helm chart:
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeProxySpec:
     enabled: true
     replicas: 1
@@ -44,7 +44,7 @@ starrocks:
           port: 8080
 ```
 
-For `starrocks` Helm chart:
+For `celerdata` Helm chart:
 
 ```yaml
 celerDataFeProxySpec:
@@ -73,5 +73,5 @@ for more details about how to configure `celerDataFeProxySpec`.
 
 ## Deploy Fe Proxy Using CelerDataCluster CR
 
-If you install StarRocks with CelerDataCluster CR yaml, please see
+If you install CelerData with CelerDataCluster CR yaml, please see
 [deploy_a_celerdata_cluster_with_fe_proxy.md](../examples/celerdata/deploy_a_celerdata_cluster_with_fe_proxy.yaml)

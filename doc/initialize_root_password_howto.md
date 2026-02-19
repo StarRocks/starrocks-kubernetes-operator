@@ -1,4 +1,4 @@
-# Initializing the Root User Password in StarRocks
+# Initializing the Root User Password in CelerData
 
 Upon deploying a fresh CelerData cluster, the `root` user's password remains unset, potentially posing a security risk.
 This guide delineates the process to establish a root password when a new installation.
@@ -9,10 +9,10 @@ This guide delineates the process to establish a root password when a new instal
 
 - Ensure that you have installed the Kubernetes cluster. v1.23.0+ is recommended.
 - Ensure that you have installed the [Helm](https://helm.sh/) package manager. 3.0.0+ is recommended.
-- Ensure the helm chart repo for StarRocks is added.
-  See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
+- Ensure the helm chart repo for CelerData is added.
+  See [Add the Helm Chart Repo for CelerData](./add_helm_repo_howto.md).
 
-In this guide, we will use `starrocks/kube-celerdata` chart to deploy both CelerData operator and cluster.
+In this guide, we will use `CelerData/kube-celerdata` chart to deploy both CelerData operator and cluster.
 
 ## 1. Download the values.yaml file for the kube-celerdata chart
 
@@ -25,7 +25,7 @@ helm show values celerdata/kube-celerdata > values.yaml
 The following is a snippet of the values.yaml file:
 
 ```yaml
-starrocks:
+celerdata:
   # This configuration is used to modify the root password during initial deployment.
   # After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
   # It also supports providing secret name that contains password, using the password in the secret instead of the plaintext in the values.yaml.
@@ -50,7 +50,7 @@ with any preferred password.
 To initialize the root password, embed the following snippet:
 
 ```yaml
-starrocks:
+celerdata:
   initPassword:
     enabled: true
     password: "mysql_password"
@@ -69,7 +69,7 @@ kubectl create secret generic celerdata-root-password --from-literal=password=my
 To initialize the root password, embed the following snippet:
 
 ```yaml
-starrocks:
+celerdata:
   initPassword:
     enabled: true
     passwordSecret: celerdata-root-password

@@ -44,6 +44,6 @@ dependencies:
     repository: "file://charts/celerdata"
 
 sources:
-  - https://github.com/StarRocks/starrocks
+  - https://github.com/CelerData/celerdata-enterprise
 
 home: https://github.com/celerdata/celerdata-kubernetes-operator

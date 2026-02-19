@@ -1,6 +1,6 @@
 # Deploy CelerData Cluster with Operator
 
-This document introduces how to use the CelerData Operator to automate the deployment and management of a StarRocks
+This document introduces how to use the CelerData Operator to automate the deployment and management of a CelerData
 cluster on a Kubernetes cluster.
 
 It includes the following parts:
@@ -14,7 +14,7 @@ It includes the following parts:
     4. Using ConfigMap to configure your CelerData cluster
   
 > [!NOTE]  
-> The StarRocks k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
+> The CelerData k8s operator was designed to be a level 2 operator.   See https://sdk.operatorframework.io/docs/overview/operator-capabilities/ to understand more about the capabilities of a level 2 operator. 
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ You can choose to deploy the CelerData Operator by using a default configuration
     deployment.apps/kube-celerdata-operator created
     ```
 2. **Deploy the CelerData Operator by using a custom configuration file.** By default, the Operator is configured to
-   install in the starrocks namespace. To use the Operator in a custom namespace, download the Operator manifest and
+   install in the celerdata namespace. To use the Operator in a custom namespace, download the Operator manifest and
    substitute all instances of namespace to your custom namespace.
     1. Download the configuration file **operator.yaml**, which is used to deploy the CelerData Operator.
        ```bash
@@ -83,9 +83,9 @@ You can choose to deploy the CelerData Operator by using a default configuration
 
 ## 2. Deploy CelerData Cluster
 
-You need to prepare a separate yaml file to deploy the StarRocks FE, BE and CN components. You can directly use
+You need to prepare a separate yaml file to deploy the CelerData FE, BE and CN components. You can directly use
 the [sample configuration files](https://github.com/celerdata/celerdata-kubernetes-operator/tree/main/examples/celerdata)
-provided by StarRocks to deploy a CelerData cluster (an object instantiated by using the custom resource StarRocks
+provided by CelerData to deploy a CelerData cluster (an object instantiated by using the custom resource CelerData
 Cluster). For example, you can use **celerdata-fe-and-be.yaml** to deploy a CelerData cluster that consists of three FE
 nodes and three BE nodes.
 
@@ -110,7 +110,7 @@ the `Running` state and all containers inside the pods are `READY`, the CelerDat
 
 > **NOTE**
 >
-> If you customize the namespace in which the CelerData cluster is located, you need to replace `starrocks` with the
+> If you customize the namespace in which the CelerData cluster is located, you need to replace `celerdata` with the
 > name of your customized namespace.
 
 ```bash
@@ -141,7 +141,7 @@ see [api.md](https://github.com/celerdata/celerdata-kubernetes-operator/blob/mai
 and [Services](https://kubernetes.io/docs/concepts/services-networking/service/).
 
 The following table describes the FE Services of the CelerData cluster. `celerdatacluster-sample-fe-service` is the
-Service that user can configure it from CelerDataCluster CR, and user should only use it to access the StarRocks.
+Service that user can configure it from CelerDataCluster CR, and user should only use it to access the CelerData.
 `celerdatacluster-sample-fe-search` is the internal Service that is used by CelerData Cluster to discover the FE nodes.
 
 ```bash
@@ -278,7 +278,7 @@ FE nodes can be scaled-in, but there are some limitations:
 The official images contains default application configuration file, however, they can be overwritten by configuring
 kubernetes configmap deployment crd.
 
-You can generate the configmap from an StarRocks configuration file.
+You can generate the configmap from an CelerData configuration file.
 Below is an example of creating a Kubernetes configmap `fe-config-map` from the `fe.conf` configuration file. You can do
 the same with BE and CN.
 

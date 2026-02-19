@@ -1,22 +1,22 @@
 # Mount Persistent Volume
 
-StarRocks Kubernetes Operator supports mounting persistent volumes to StarRocks FE and BE pods. If not specified, the
+CelerData Kubernetes Operator supports mounting persistent volumes to CelerData FE and BE pods. If not specified, the
 operator will use emptyDir mode to store FE meta and BE data. **When container restarts, the data will be lost.**
 
-This document describes how to mount persistent volumes to StarRocks FE and BE pods. There are two ways to mount
-persistent volumes to StarRocks FE and BE pods:
+This document describes how to mount persistent volumes to CelerData FE and BE pods. There are two ways to mount
+persistent volumes to CelerData FE and BE pods:
 
-1. Mounting persistent volumes to StarRocks FE and BE pods by the StarRocks CRD YAML file.
-2. Mounting persistent volumes to StarRocks FE and BE pods by Helm chart.
+1. Mounting persistent volumes to CelerData FE and BE pods by the CelerData CRD YAML file.
+2. Mounting persistent volumes to CelerData FE and BE pods by Helm chart.
 
 > Note: celerdata operator will create a new PVC for each storageVolume. You should not create PVC manually.
 
-## 1. Mounting Persistent Volumes by StarRocks CRD YAML File
+## 1. Mounting Persistent Volumes by CelerData CRD YAML File
 
 If you want to use external storage to store FE meta and BE data for persistence, you can specify `storageVolumes` in
 the corresponding component spec.
 
-The following is an example of mounting persistent volumes to StarRocks FE and BE.
+The following is an example of mounting persistent volumes to CelerData FE and BE.
 
 ```bash
 apiVersion: celerdata.com/v1
@@ -60,8 +60,8 @@ BE data.
 
 ## 2. Mounting Persistent Volumes by Helm Chart
 
-See [helm_repo_add_howto](./add_helm_repo_howto.md) to learn how to add the Helm Chart Repo for StarRocks. In this
-guide, we will use `starrocks/kube-celerdata` chart to deploy both CelerData operator and cluster.
+See [helm_repo_add_howto](./add_helm_repo_howto.md) to learn how to add the Helm Chart Repo for CelerData. In this
+guide, we will use `celerdata/kube-celerdata` chart to deploy both CelerData operator and cluster.
 
 ### 2.1. Download the values.yaml file for the kube-celerdata chart
 
@@ -74,7 +74,7 @@ helm show values celerdata/kube-celerdata > values.yaml
 The following is a snippet of the values.yaml file:
 
 ```yaml
-starrocks:
+celerdata:
   celerDataFeSpec: # fe storageSpec for persistent metadata.
     storageSpec:
       name: ""
@@ -103,7 +103,7 @@ starrocks:
 The following is an example of a custom values.yaml with storageSpec settings:
 
 ```yaml
-starrocks:
+celerdata:
    celerDataFeSpec:
       image:
          repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
@@ -127,7 +127,7 @@ starrocks:
 
 ### 2.3. Deploy CelerData Operator and Cluster
 
-See [Install StarRocks by kube-celerdata chart](../helm-charts/charts/kube-celerdata/README.md) to learn how to deploy
+See [Install CelerData by kube-celerdata chart](../helm-charts/charts/kube-celerdata/README.md) to learn how to deploy
 CelerData Operator and Cluster
 
 ## 3. Some Special storageClassName

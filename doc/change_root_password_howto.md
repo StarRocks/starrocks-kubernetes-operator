@@ -13,7 +13,7 @@ password chosen for the root.
 
 ## 1. Change the password for root user
 
-Connect to StarRocks FE with a MySQL client and change the root user password.
+Connect to CelerData FE with a MySQL client and change the root user password.
 
 ```SQL
 mysql
@@ -23,14 +23,14 @@ mysql
 MySQL [(none)]> SET PASSWORD = PASSWORD('mysql_password');
 ```
 
-## 2. Inject MYSQL_PWD environment variable to StarRocks components
+## 2. Inject MYSQL_PWD environment variable to CelerData components
 
 There are two ways to deploy CelerData cluster:
 
 1. Deploy CelerData cluster with `CelerDataCluster` CR yaml.
 2. Deploy CelerData cluster with Helm chart.
 
-Therefore, there are two ways to inject the MYSQL_PWD environment variable into StarRocks components.
+Therefore, there are two ways to inject the MYSQL_PWD environment variable into CelerData components.
 
 ### 2.1 inject MYSQL_PWD environment variable with CelerDataCluster CRD yaml
 
@@ -83,7 +83,7 @@ If you are using the `kube-celerdata` Helm chart, add the following snippets to 
 
 ```yaml
 
-starrocks:
+celerdata:
   # create secrets if necessary.
   secrets:
     - name: rootcredential
@@ -115,7 +115,7 @@ starrocks:
             key: password
 ```
 
-If you are using the `starrocks` Helm chart, add the following snippets to `values.yaml`.
+If you are using the `celerdata` Helm chart, add the following snippets to `values.yaml`.
 
 ```yaml
 # create secrets if necessary.
