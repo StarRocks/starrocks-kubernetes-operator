@@ -1,0 +1,60 @@
+# This manifest deploys a CelerData cluster running in shared data mode.
+# see https://docs.starrocks.io/docs/cover_pages/shared_data_deployment/ for more information about shared-data mode.
+#
+# You will have to download and edit this YAML file to specify the details for your shared storage. See the 
+# examples in the docs, and add your customizations to the ConfigMap `celerdatacluster-sample-fe-cm` at the 
+# bottom of this file.
+# https://docs.starrocks.io/docs/deployment/shared_data/s3/#configure-fe-nodes-for-shared-data-celerdata
+
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: a-celerdata-in-share-data-mode   # change the name if needed.
+spec:
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest
+    replicas: 3
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+    configMapInfo:
+      configMapName: celerdatacluster-sample-fe-cm
+      resolveKey: fe.conf
+  celerDataCnSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+
+---
+
+# fe config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celerdatacluster-sample-fe-cm
+  labels:
+    cluster: celerdatacluster-sample
+data:
+  fe.conf: |
+    LOG_DIR = ${STARROCKS_HOME}/log
+    DATE = "$(date +%Y%m%d-%H%M%S)"
+    JAVA_OPTS="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseG1GC -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    http_port = 8030
+    rpc_port = 9020
+    query_port = 9030
+    edit_log_port = 9010
+    mysql_service_nio_enabled = true
+    sys_log_level = INFO
+    # config for shared-data mode
+    run_mode = shared_data
+    cloud_native_meta_port = 6090
+    # Whether volume can be created from conf. If it is enabled, a builtin storage volume may be created.
+    enable_load_volume_from_conf = false

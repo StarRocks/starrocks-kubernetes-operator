@@ -15,18 +15,18 @@
 package load
 
 import (
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func Name(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return clusterName + "-" + v1.DEFAULT_FE
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return clusterName + "-" + v1.DEFAULT_BE
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return clusterName + "-" + v1.DEFAULT_CN
-	case *v1.StarRocksFeProxySpec:
+	case *v1.CelerDataFeProxySpec:
 		return clusterName + "-" + v1.DEFAULT_FE_PROXY
 	}
 	return ""
@@ -36,13 +36,13 @@ func Labels(ownerReference string, spec v1.SpecInterface) map[string]string {
 	labels := map[string]string{}
 	labels[v1.OwnerReference] = ownerReference
 	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_BE
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_CN
-	case *v1.StarRocksFeProxySpec:
+	case *v1.CelerDataFeProxySpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE_PROXY
 	}
 	return labels

@@ -6,12 +6,12 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestNewFromCluster(t *testing.T) {
 	type args struct {
-		cluster *srapi.StarRocksCluster
+		cluster *cdapi.CelerDataCluster
 	}
 	tests := []struct {
 		name string
@@ -21,25 +21,25 @@ func TestNewFromCluster(t *testing.T) {
 		{
 			name: "test NewFromCluster",
 			args: args{
-				cluster: &srapi.StarRocksCluster{
+				cluster: &cdapi.CelerDataCluster{
 					TypeMeta: metav1.TypeMeta{
-						Kind: "StarRocksCluster",
+						Kind: "CelerDataCluster",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "starrocks",
+						Name: "celerdata",
 					},
 				},
 			},
 			want: StarRocksObject{
 				TypeMeta: &metav1.TypeMeta{
-					Kind: "StarRocksCluster",
+					Kind: "CelerDataCluster",
 				},
 				ObjectMeta: &metav1.ObjectMeta{
-					Name: "starrocks",
+					Name: "celerdata",
 				},
-				ClusterName:           "starrocks",
-				Kind:                  "StarRocksCluster",
-				SubResourcePrefixName: "starrocks",
+				ClusterName:           "celerdata",
+				Kind:                  "CelerDataCluster",
+				SubResourcePrefixName: "celerdata",
 			},
 		},
 	}
@@ -54,7 +54,7 @@ func TestNewFromCluster(t *testing.T) {
 
 func TestNewFromWarehouse(t *testing.T) {
 	type args struct {
-		warehouse *srapi.StarRocksWarehouse
+		warehouse *cdapi.CelerDataWarehouse
 	}
 	tests := []struct {
 		name string
@@ -64,28 +64,28 @@ func TestNewFromWarehouse(t *testing.T) {
 		{
 			name: "test NewFromWarehouse",
 			args: args{
-				warehouse: &srapi.StarRocksWarehouse{
+				warehouse: &cdapi.CelerDataWarehouse{
 					TypeMeta: metav1.TypeMeta{
-						Kind: "StarRocksWarehouse",
+						Kind: "CelerDataWarehouse",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "starrocks",
+						Name: "celerdata",
 					},
-					Spec: srapi.StarRocksWarehouseSpec{
-						StarRocksCluster: "starrocks",
+					Spec: cdapi.CelerDataWarehouseSpec{
+						CelerDataCluster: "celerdata",
 					},
 				},
 			},
 			want: StarRocksObject{
 				TypeMeta: &metav1.TypeMeta{
-					Kind: "StarRocksWarehouse",
+					Kind: "CelerDataWarehouse",
 				},
 				ObjectMeta: &metav1.ObjectMeta{
-					Name: "starrocks",
+					Name: "celerdata",
 				},
-				ClusterName:           "starrocks",
-				Kind:                  "StarRocksWarehouse",
-				SubResourcePrefixName: "starrocks-warehouse",
+				ClusterName:           "celerdata",
+				Kind:                  "CelerDataWarehouse",
+				SubResourcePrefixName: "celerdata-warehouse",
 				IsWarehouseObject:     true,
 			},
 		},
@@ -112,10 +112,10 @@ func TestStarRocksObject_GetCNStatefulSetName(t *testing.T) {
 		want   string
 	}{
 		{
-			name: "test GetCNStatefulSetName for StarRocksCluster",
+			name: "test GetCNStatefulSetName for CelerDataCluster",
 			fields: fields{
 				ClusterName:       "cluster",
-				Kind:              "StarRocksCluster",
+				Kind:              "CelerDataCluster",
 				AliasName:         "cluster",
 				IsWarehouseObject: false,
 			},
@@ -125,7 +125,7 @@ func TestStarRocksObject_GetCNStatefulSetName(t *testing.T) {
 			name: "test GetCNStatefulSetName for Warehouse",
 			fields: fields{
 				ClusterName:       "cluster",
-				Kind:              "StarRocksCluster",
+				Kind:              "CelerDataCluster",
 				AliasName:         "wh1-warehouse",
 				IsWarehouseObject: true,
 			},
@@ -166,7 +166,7 @@ func TestStarRocksObject_GetWarehouseNameInFE(t *testing.T) {
 					Name: "wh-1",
 				},
 				ClusterName:       "cluster",
-				Kind:              "StarRocksCluster",
+				Kind:              "CelerDataCluster",
 				AliasName:         "wh-1-warehouse",
 				IsWarehouseObject: true,
 			},

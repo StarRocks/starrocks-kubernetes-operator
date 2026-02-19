@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"testing"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestMakeName(t *testing.T) {
@@ -35,7 +35,7 @@ func TestMakeName(t *testing.T) {
 			name: "test Name for Be",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksBeSpec{},
+				spec:        &v1.CelerDataBeSpec{},
 			},
 			want: "test-be",
 		},
@@ -43,7 +43,7 @@ func TestMakeName(t *testing.T) {
 			name: "test Name for Cn",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksCnSpec{},
+				spec:        &v1.CelerDataCnSpec{},
 			},
 			want: "test-cn",
 		},
@@ -51,7 +51,7 @@ func TestMakeName(t *testing.T) {
 			name: "test Name for Fe",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksFeSpec{},
+				spec:        &v1.CelerDataFeSpec{},
 			},
 			want: "test-fe",
 		},
@@ -79,7 +79,7 @@ func TestMakeLabels(t *testing.T) {
 			name: "test Labels for Be",
 			args: args{
 				ownerReference: "test",
-				spec:           &v1.StarRocksBeSpec{},
+				spec:           &v1.CelerDataBeSpec{},
 			},
 			want: map[string]string{
 				v1.OwnerReference:    "test",
@@ -90,7 +90,7 @@ func TestMakeLabels(t *testing.T) {
 			name: "test Labels for Cn",
 			args: args{
 				ownerReference: "test",
-				spec:           &v1.StarRocksCnSpec{},
+				spec:           &v1.CelerDataCnSpec{},
 			},
 			want: map[string]string{
 				v1.OwnerReference:    "test",
@@ -101,7 +101,7 @@ func TestMakeLabels(t *testing.T) {
 			name: "test Labels for Fe",
 			args: args{
 				ownerReference: "test",
-				spec:           &v1.StarRocksFeSpec{},
+				spec:           &v1.CelerDataFeSpec{},
 			},
 			want: map[string]string{
 				v1.OwnerReference:    "test",

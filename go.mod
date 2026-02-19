@@ -1,4 +1,4 @@
-module github.com/StarRocks/starrocks-kubernetes-operator
+module github.com/CelerData/celerdata-kubernetes-operator-internal
 
 go 1.22
 

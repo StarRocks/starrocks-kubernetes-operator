@@ -9,17 +9,17 @@ datadog:
     enabled: false
     # besides the attributes you added, the chart will append "source" and "service" attributes to the log config.
     # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
-    logConfig: '{}' # e.g. '{"app": "starrocks", "tags": ["aa", "bb"]}'
+    logConfig: '{}' # e.g. '{"app": "celerdata", "tags": ["aa", "bb"]}'
   metrics:
     enabled: false
 
 spec:
-  # The name of starrocks cluster, a must-have field.
+  # The name of celerdata cluster, a must-have field.
   # Note:
-  #   1. The starrocks cluster must be an enterprise version.
-  #   2. The starrocks cluster must be created before the warehouse by operator
-  #   3. The starrocks cluster must run in shared-data mode.
-  starRocksClusterName:
+  #   1. The celerdata cluster must be an enterprise version.
+  #   2. The celerdata cluster must be created before the warehouse by operator
+  #   3. The celerdata cluster must run in shared-data mode.
+  celerDataClusterName:
 
   # Number of replicas to deploy.
   # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the spec
@@ -33,7 +33,7 @@ spec:
   # replicas: 1
   image:
     # image sliced by "repository:tag"
-    repository: starrocks/cn-ubuntu
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
     # Note: the image tag must be greater than or equal to 3.2.0
     tag: 3.5-latest
   # serviceAccount for pod access cloud service.

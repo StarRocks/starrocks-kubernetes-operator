@@ -23,7 +23,7 @@ HOME_PATH=$(
   pwd
 )
 
-cd "$HOME_PATH/helm-charts/charts/kube-starrocks/charts/operator"
+cd "$HOME_PATH/helm-charts/charts/kube-celerdata/charts/operator"
 
 # create values.yaml for the parent chart
 cat <<EOF >$HOME_PATH/deploy/operator.yaml
@@ -31,7 +31,7 @@ cat <<EOF >$HOME_PATH/deploy/operator.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: starrocks
+  name: celerdata
 EOF
 
-helm template -n starrocks . >>$HOME_PATH/deploy/operator.yaml
+helm template -n celerdata . >>$HOME_PATH/deploy/operator.yaml

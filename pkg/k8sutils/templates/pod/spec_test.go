@@ -23,9 +23,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
 )
 
 func TestMakeLifeCycle(t *testing.T) {
@@ -132,9 +132,9 @@ func TestLabels(t *testing.T) {
 			name: "test labels",
 			args: args{
 				clusterName: "test",
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							PodLabels: map[string]string{
 								"l1": "v1",
 							},
@@ -226,7 +226,7 @@ func TestEnvs(t *testing.T) {
 			args: args{
 				clusterName: "test",
 				namespace:   "ns",
-				spec:        &v1.StarRocksFeSpec{},
+				spec:        &v1.CelerDataFeSpec{},
 			},
 			want: append(append([]corev1.EnvVar(nil), envs...), []corev1.EnvVar{
 				{
@@ -235,7 +235,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
+					Value: service.ExternalServiceName("test", &v1.CelerDataFeSpec{}) + "." + "ns",
 				},
 			}...),
 			unsupportedEnvs: "",
@@ -245,7 +245,7 @@ func TestEnvs(t *testing.T) {
 			args: args{
 				clusterName: "test",
 				namespace:   "ns",
-				spec:        &v1.StarRocksBeSpec{},
+				spec:        &v1.CelerDataBeSpec{},
 			},
 			want: append(append([]corev1.EnvVar(nil), envs...), []corev1.EnvVar{
 				{
@@ -254,7 +254,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.CelerDataFeSpec{}),
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -268,7 +268,7 @@ func TestEnvs(t *testing.T) {
 			args: args{
 				clusterName: "test",
 				namespace:   "ns",
-				spec:        &v1.StarRocksCnSpec{},
+				spec:        &v1.CelerDataCnSpec{},
 			},
 			want: append(append([]corev1.EnvVar(nil), envs...), []corev1.EnvVar{
 				{
@@ -277,7 +277,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.CelerDataFeSpec{}),
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -291,7 +291,7 @@ func TestEnvs(t *testing.T) {
 			args: args{
 				clusterName: "test",
 				namespace:   "ns",
-				spec:        &v1.StarRocksBeSpec{},
+				spec:        &v1.CelerDataBeSpec{},
 			},
 			want: append(append([]corev1.EnvVar(nil), envsWithoutIP...), []corev1.EnvVar{
 				{
@@ -300,7 +300,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.CelerDataFeSpec{}),
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -311,7 +311,7 @@ func TestEnvs(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		feExternalServiceName := service.ExternalServiceName("test", &v1.StarRocksFeSpec{})
+		feExternalServiceName := service.ExternalServiceName("test", &v1.CelerDataFeSpec{})
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv("KUBE_STARROCKS_UNSUPPORTED_ENVS", tt.unsupportedEnvs)
 			defer func() {
@@ -348,9 +348,9 @@ func TestSpec(t *testing.T) {
 		{
 			name: "test service account name in spec",
 			args: args{
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							ServiceAccount: "test",
 						},
 					},
@@ -368,7 +368,7 @@ func TestSpec(t *testing.T) {
 		{
 			name: "test service account name 2 in spec",
 			args: args{
-				spec:      &v1.StarRocksFeSpec{},
+				spec:      &v1.CelerDataFeSpec{},
 				container: corev1.Container{},
 				volumes:   nil,
 			},
@@ -402,8 +402,8 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "test security context",
 			args: args{
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{},
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{},
 				},
 			},
 			want: &corev1.PodSecurityContext{
@@ -413,7 +413,7 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "test security context 2",
 			args: args{
-				spec: &v1.StarRocksFeSpec{},
+				spec: &v1.CelerDataFeSpec{},
 			},
 			want: &corev1.PodSecurityContext{
 				FSGroupChangePolicy: &onrootMismatch,
@@ -441,9 +441,9 @@ func TestAnnotations(t *testing.T) {
 		{
 			name: "test annotations",
 			args: args{
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							Annotations: map[string]string{"v1": "v1"},
 						},
 					},
@@ -485,7 +485,7 @@ func TestContainerSecurityContext(t *testing.T) {
 		{
 			name: "no capabilities",
 			args: args{
-				spec: &v1.StarRocksComponentSpec{
+				spec: &v1.CelerDataComponentSpec{
 					RunAsNonRoot: nil,
 					Capabilities: nil,
 				},
@@ -499,7 +499,7 @@ func TestContainerSecurityContext(t *testing.T) {
 		{
 			name: "add capabilities",
 			args: args{
-				spec: &v1.StarRocksComponentSpec{
+				spec: &v1.CelerDataComponentSpec{
 					RunAsNonRoot: nil,
 					Capabilities: &addCapabilities,
 				},
@@ -513,7 +513,7 @@ func TestContainerSecurityContext(t *testing.T) {
 		{
 			name: "add/drop capabilities",
 			args: args{
-				spec: &v1.StarRocksComponentSpec{
+				spec: &v1.CelerDataComponentSpec{
 					RunAsNonRoot: nil,
 					Capabilities: &addDropCapabilities,
 				},
@@ -550,7 +550,7 @@ func TestK8sYamlMarshal(t *testing.T) {
 				data: map[string]string{
 					"hello": `metadata:
   annotations:
-    app.starrocks.io/fe-config-hash: e615d940
+    app.celerdata.io/fe-config-hash: e615d940
   creationTimestamp: "2023-12-13T05:25:55Z"
 `,
 				},
@@ -558,7 +558,7 @@ func TestK8sYamlMarshal(t *testing.T) {
 			want: `hello: |
   metadata:
     annotations:
-      app.starrocks.io/fe-config-hash: e615d940
+      app.celerdata.io/fe-config-hash: e615d940
     creationTimestamp: "2023-12-13T05:25:55Z"
 `,
 		},
@@ -568,7 +568,7 @@ func TestK8sYamlMarshal(t *testing.T) {
 				data: []string{
 					`metadata:
   annotations:
-    app.starrocks.io/fe-config-hash: e615d940
+    app.celerdata.io/fe-config-hash: e615d940
   creationTimestamp: "2023-12-13T05:25:55Z"
 `,
 				},
@@ -576,7 +576,7 @@ func TestK8sYamlMarshal(t *testing.T) {
 			want: `- |
   metadata:
     annotations:
-      app.starrocks.io/fe-config-hash: e615d940
+      app.celerdata.io/fe-config-hash: e615d940
     creationTimestamp: "2023-12-13T05:25:55Z"
 `,
 		},
@@ -602,14 +602,14 @@ func TestGetStarRocksRootPath(t *testing.T) {
 		want string
 	}{
 		{
-			name: "test get starrocks root path - 1",
+			name: "test get celerdata root path - 1",
 			args: args{
 				envVars: nil,
 			},
 			want: "/opt/starrocks",
 		},
 		{
-			name: "test get starrocks root path - 2",
+			name: "test get celerdata root path - 2",
 			args: args{
 				envVars: []corev1.EnvVar{
 					{
@@ -642,7 +642,7 @@ func TestGetPreStopCommand(t *testing.T) {
 		{
 			name: "get pre stop command",
 			args: args{
-				spec: &v1.StarRocksCnSpec{},
+				spec: &v1.CelerDataCnSpec{},
 			},
 			want: []string{
 				"/bin/bash",

@@ -1,0 +1,50 @@
+{{- range .Values.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .name }}
+data:
+  {{- range $key, $value := .data }}
+  {{- if $value }}
+  {{ $key }}: |
+    {{- $value | nindent 4 }}
+  {{- end }}
+  {{- end }}
+---
+{{- end }}
+
+---
+
+{{- if .Values.celerDataFeSpec.entrypoint }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "celerdatacluster.fe.entrypoint.script.configmap.name" .}}
+data:
+  {{ template "celerdatacluster.entrypoint.script.name" .}}: |
+    {{- .Values.celerDataFeSpec.entrypoint.script | nindent 4 }}
+{{- end }}
+
+---
+
+{{- if .Values.celerDataBeSpec.entrypoint }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "celerdatacluster.be.entrypoint.script.configmap.name" .}}
+data:
+  {{ template "celerdatacluster.entrypoint.script.name" .}}: |
+    {{- .Values.celerDataBeSpec.entrypoint.script | nindent 4 }}
+{{- end }}
+
+---
+
+{{- if .Values.celerDataCnSpec.entrypoint }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "celerdatacluster.cn.entrypoint.script.configmap.name" .}}
+data:
+  {{ template "celerdatacluster.entrypoint.script.name" .}}: |
+    {{- .Values.celerDataCnSpec.entrypoint.script | nindent 4 }}
+{{- end }}

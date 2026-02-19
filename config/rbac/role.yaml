@@ -2,8 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
-  name: starrocks-manager-role
+  name: celerdata-manager
 rules:
 - apiGroups:
   - apps
@@ -29,6 +28,58 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdatawarehouses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdatawarehouses/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdatawarehouses/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - ""
   resources:
@@ -109,29 +160,3 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - starrocks.com
-  resources:
-  - starrocksclusters
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - starrocks.com
-  resources:
-  - starrocksclusters/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - starrocks.com
-  resources:
-  - starrocksclusters/status
-  verbs:
-  - get
-  - patch
-  - update

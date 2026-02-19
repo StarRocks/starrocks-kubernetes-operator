@@ -1,0 +1,89 @@
+{{- if .Values.celerDataOperator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "operator.name" . }}-operator
+  namespace: {{ template "operator.namespace" . }}
+  labels:
+    app: {{ template "operator.name" . }}-operator
+  {{- if .Values.celerDataOperator.annotations }}
+  annotations:
+    {{- toYaml .Values.celerDataOperator.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "operator.name" . }}-operator
+  replicas: {{ .Values.celerDataOperator.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      {{- if .Values.celerDataOperator.annotations }}
+        {{- toYaml .Values.celerDataOperator.annotations | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ template "operator.name" . }}-operator
+        version: {{ $.Chart.Version }}
+    spec:
+      automountServiceAccountToken: true
+      {{- if .Values.celerDataOperator.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.celerDataOperator.imagePullSecrets | nindent 6 }}
+      {{- end }}
+      containers:
+      - command:
+        - /celerdata-operator
+        args:
+        - --leader-elect
+        {{- toYaml .Values.celerDataOperator.log | nindent 8 }}
+        {{- if .Values.celerDataOperator.watchNamespace }}
+        - --namespace={{ .Values.celerDataOperator.watchNamespace }}
+        {{- end }}
+        {{- if .Values.celerDataOperator.dnsDomainSuffix }}
+        - --dns-domain-suffix={{ .Values.celerDataOperator.dnsDomainSuffix }}
+        {{- end }}
+        - --volume-name-with-hash={{ .Values.celerDataOperator.volumeNameWithHash }}
+        env:
+        - name: TZ
+          value: {{ .Values.timeZone }}
+        {{- if .Values.celerDataOperator.env }}
+        {{- toYaml .Values.celerDataOperator.env | nindent 8 }}
+        {{- end }}
+        image: "{{ .Values.celerDataOperator.image.repository }}:{{ .Values.celerDataOperator.image.tag }}"
+        imagePullPolicy: {{ .Values.celerDataOperator.imagePullPolicy }}
+        name: manager
+        {{- if .Values.celerDataOperator.securityContext }}
+        securityContext:
+          {{- toYaml .Values.celerDataOperator.securityContext | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        resources:
+          {{- toYaml .Values.celerDataOperator.resources | nindent 10 }}
+      serviceAccountName: {{ template "operator.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 10
+      {{- if .Values.celerDataOperator.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.celerDataOperator.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataOperator.affinity }}
+      affinity:
+        {{- toYaml .Values.celerDataOperator.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataOperator.tolerations }}
+      tolerations:
+        {{- toYaml .Values.celerDataOperator.tolerations | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,58 @@
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: kube-celerdata
+  namespace: celerdata
+  labels:
+    cluster: kube-celerdata
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+spec:
+  celerDataFeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest"
+    replicas: 1
+    limits:
+      cpu: 8
+      memory: 8Gi
+    requests:
+      cpu: 4
+      memory: 4Gi
+    service:
+      type: ClusterIP
+    annotations:
+      app.starrocks.io/fe-config-hash: e615d940
+    runAsNonRoot: false
+    feEnvVars:
+      - name: TZ
+        value: Asia/Shanghai
+    terminationGracePeriodSeconds: 120
+    configMapInfo:
+      configMapName: kube-celerdata-fe-cm
+      resolveKey: fe.conf
+  celerDataBeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest"
+    replicas: 1
+    limits:
+      cpu: 8
+      memory: 8Gi
+    requests:
+      cpu: 4
+      memory: 4Gi
+    service:
+      type: ClusterIP
+    annotations:
+      app.starrocks.io/be-config-hash: 951886d3
+    runAsNonRoot: false
+    capabilities:
+      add:
+        - PERFMON
+        - SYS_PTRACE
+      drop:
+        - SYS_ADMIN
+    beEnvVars:
+      - name: TZ
+        value: Asia/Shanghai
+    terminationGracePeriodSeconds: 120
+    configMapInfo:
+      configMapName: kube-celerdata-be-cm
+      resolveKey: be.conf

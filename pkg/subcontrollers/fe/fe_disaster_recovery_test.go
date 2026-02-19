@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
 )
 
 func TestShouldEnterDisasterRecoveryMode(t *testing.T) {
@@ -340,7 +340,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 				ctx:              context.TODO(),
 				k8sClient:        fake.NewFakeClient(v1.Scheme),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 			},
 			want: false,
 		},
@@ -349,7 +349,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 			args: args{
 				ctx:              context.TODO(),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Pods",
@@ -357,10 +357,10 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
-						Name:      "kube-starrocks-fe-0",
+						Name:      "kube-celerdata-fe-0",
 						Labels: map[string]string{
 							v1.ComponentLabelKey: v1.DEFAULT_FE,
-							v1.OwnerReference:    "kube-starrocks",
+							v1.OwnerReference:    "kube-celerdata",
 						},
 					},
 					Status: corev1.PodStatus{
@@ -375,7 +375,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 			args: args{
 				ctx:              context.TODO(),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Pods",
@@ -383,10 +383,10 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
-						Name:      "kube-starrocks-fe-0",
+						Name:      "kube-celerdata-fe-0",
 						Labels: map[string]string{
 							v1.ComponentLabelKey: v1.DEFAULT_FE,
-							v1.OwnerReference:    "kube-starrocks",
+							v1.OwnerReference:    "kube-celerdata",
 						},
 					},
 					Status: corev1.PodStatus{
@@ -406,7 +406,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 			args: args{
 				ctx:              context.TODO(),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Pods",
@@ -414,10 +414,10 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
-						Name:      "kube-starrocks-fe-0",
+						Name:      "kube-celerdata-fe-0",
 						Labels: map[string]string{
 							v1.ComponentLabelKey: v1.DEFAULT_FE,
-							v1.OwnerReference:    "kube-starrocks",
+							v1.OwnerReference:    "kube-celerdata",
 						},
 					},
 					Spec: corev1.PodSpec{
@@ -452,7 +452,7 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 			args: args{
 				ctx:              context.TODO(),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 				k8sClient: fake.NewFakeClient(v1.Scheme, &corev1.Pod{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Pods",
@@ -460,10 +460,10 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
-						Name:      "kube-starrocks-fe-0",
+						Name:      "kube-celerdata-fe-0",
 						Labels: map[string]string{
 							v1.ComponentLabelKey: v1.DEFAULT_FE,
-							v1.OwnerReference:    "kube-starrocks-fe",
+							v1.OwnerReference:    "kube-celerdata-fe",
 						},
 					},
 					Spec: corev1.PodSpec{

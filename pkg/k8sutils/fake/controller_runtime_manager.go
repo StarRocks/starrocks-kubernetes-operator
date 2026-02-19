@@ -8,8 +8,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
 )
 
 type WithCRD func() *apiextensionsv1.CustomResourceDefinition
@@ -17,14 +17,14 @@ type WithCRD func() *apiextensionsv1.CustomResourceDefinition
 var (
 	clusterCRD = &apiextensionsv1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "starrocksclusters.starrocks.com",
+			Name: "celerdataclusters.celerdata.com",
 		},
 		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
-			Group: "starrocks.com",
+			Group: "celerdata.com",
 			Names: apiextensionsv1.CustomResourceDefinitionNames{
-				Plural:   "starrocksclusters",
-				Singular: "starrockscluster",
-				Kind:     "StarRocksCluster",
+				Plural:   "celerdataclusters",
+				Singular: "celerdatacluster",
+				Kind:     "CelerDataCluster",
 			},
 			Scope: apiextensionsv1.NamespaceScoped,
 			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
@@ -44,14 +44,14 @@ var (
 
 	warehouseCRD = &apiextensionsv1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "starrockswarehouses.starrocks.com",
+			Name: "celerdatawarehouses.celerdata.com",
 		},
 		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
-			Group: "starrocks.com",
+			Group: "celerdata.com",
 			Names: apiextensionsv1.CustomResourceDefinitionNames{
-				Plural:   "starrockswarehouses",
-				Singular: "starrockswarehouse",
-				Kind:     "StarRocksWarehouse",
+				Plural:   "celerdatawarehouses",
+				Singular: "celerdatawarehouse",
+				Kind:     "CelerDataWarehouse",
 			},
 			Scope: apiextensionsv1.NamespaceScoped,
 			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{

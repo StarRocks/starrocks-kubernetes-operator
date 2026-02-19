@@ -2,22 +2,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: starrocks
+  name: celerdata
 ---
 # Source: operator/templates/service_account.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: starrocks
-  namespace: starrocks
+  name: celerdata
+  namespace: celerdata
 ---
 # Source: operator/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kube-starrocks-operator
+  name: kube-celerdata-operator
   labels:
-    app: kube-starrocks-operator
+    app: kube-celerdata-operator
 rules:
 - apiGroups:
   - apps
@@ -57,25 +57,25 @@ rules:
   - list
   - watch
 - apiGroups:
-  - starrocks.com
+  - celerdata.com
   resources:
-  - starrocksclusters
-  - starrockswarehouses
+  - celerdataclusters
+  - celerdatawarehouses
   verbs:
   - '*'
 # when deploying to OpenShift, the following permission is also necessary
 - apiGroups:
-  - starrocks.com
+  - celerdata.com
   resources:
-  - starrocksclusters/finalizers
-  - starrockswarehouses/finalizers
+  - celerdataclusters/finalizers
+  - celerdatawarehouses/finalizers
   verbs:
   - update
 - apiGroups:
-  - starrocks.com
+  - celerdata.com
   resources:
-  - starrocksclusters/status
-  - starrockswarehouses/status
+  - celerdataclusters/status
+  - celerdatawarehouses/status
   verbs:
   - get
   - patch
@@ -85,22 +85,22 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kube-starrocks-operator
+  name: kube-celerdata-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kube-starrocks-operator
+  name: kube-celerdata-operator
 subjects:
 - kind: ServiceAccount
-  name: starrocks
-  namespace: starrocks
+  name: celerdata
+  namespace: celerdata
 ---
 # Source: operator/templates/leader-election-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cn-leader-election-role
-  namespace: starrocks
+  name: celerdata-leader-election-role
+  namespace: celerdata
 rules:
 - apiGroups:
   - ""
@@ -138,42 +138,42 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cn-leader-election-rolebinding
-  namespace: starrocks
+  name: celerdata-leader-election-rolebinding
+  namespace: celerdata
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cn-leader-election-role
+  name: celerdata-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: starrocks
-  namespace: starrocks
+  name: celerdata
+  namespace: celerdata
 ---
 # Source: operator/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kube-starrocks-operator
-  namespace: starrocks
+  name: kube-celerdata-operator
+  namespace: celerdata
   labels:
-    app: kube-starrocks-operator
+    app: kube-celerdata-operator
 spec:
   selector:
     matchLabels:
-      app: kube-starrocks-operator
+      app: kube-celerdata-operator
   replicas: 1
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        app: kube-starrocks-operator
+        app: kube-celerdata-operator
         version: 1.11.4
     spec:
       automountServiceAccountToken: true
       containers:
       - command:
-        - /sroperator
+        - /celerdata-operator
         args:
         - --leader-elect
         - --zap-time-encoding=iso8601
@@ -182,7 +182,7 @@ spec:
         env:
         - name: TZ
           value: Asia/Shanghai
-        image: "starrocks/operator:v1.11.4"
+        image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator:v1.11.4"
         imagePullPolicy: Always
         name: manager
         securityContext:
@@ -209,5 +209,5 @@ spec:
           requests:
             cpu: 500m
             memory: 400Mi
-      serviceAccountName: starrocks
+      serviceAccountName: celerdata
       terminationGracePeriodSeconds: 10

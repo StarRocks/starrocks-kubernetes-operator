@@ -1,7 +1,7 @@
 # ComputeNode
 
 ComputeNode(cn) is a compute node in starrocks, without local storage data, can execute queries except OlapScanNode and OlapTableSink. 
-starrocks-operator is a cloud native technology, implement the control of ComputeNode. 
+celerdata-operator is a cloud native technology, implement the control of ComputeNode. 
 
 ## Kubernetes Resources 
 

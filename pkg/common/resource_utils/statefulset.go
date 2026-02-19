@@ -19,8 +19,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/hash"
 )
 
 // hashStatefulsetObject contains the info for hash comparison.
@@ -73,17 +73,17 @@ func StatefulSetDeepEqual(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet
 	var newHashv, oldHashv string
 
 	newHso := statefulSetHashObject(expect)
-	if _, ok := expect.Annotations[srapi.ComponentResourceHash]; ok {
-		newHashv = expect.Annotations[srapi.ComponentResourceHash]
+	if _, ok := expect.Annotations[cdapi.ComponentResourceHash]; ok {
+		newHashv = expect.Annotations[cdapi.ComponentResourceHash]
 	} else {
 		newHashv = hash.HashObject(newHso)
 	}
 
 	// The hash value calculated from a statefulset instance in k8s may never equal to the hash value from
-	// the starrocks cluster. Because statefulset may be updated by k8s controller manager.
+	// the celerdata cluster. Because statefulset may be updated by k8s controller manager.
 	// Every time you update the statefulset, a new reconciling will be triggered.
-	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
-		oldHashv = actual.Annotations[srapi.ComponentResourceHash]
+	if _, ok := actual.Annotations[cdapi.ComponentResourceHash]; ok {
+		oldHashv = actual.Annotations[cdapi.ComponentResourceHash]
 	} else {
 		oldHso := statefulSetHashObject(actual)
 		oldHashv = hash.HashObject(oldHso)

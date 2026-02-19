@@ -1,0 +1,107 @@
+# Default values for operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  rbac:
+    # If set true, the clusterrole, clusterrolebinding, serviceaccount resources will be created for
+    # the operator. If changed to false later, these resources will be deleted.
+    # Note: By default the operator will watch all namespaces, so it needs clusterrole, clusterrolebinding to access resources.
+    #       If .Values.celerDataOperator.watchNamespace is set, the role and rolebinding will be created for the specified namespace.
+    create: true
+    serviceAccount:
+      name: "celerdata"
+      # Optional annotations to add to the serviceaccount manifest
+      annotations: {}
+      # Optional labels to add to the serviceaccount manifest
+      labels: {}
+
+# TimeZone is used to set the environment variable TZ for pod, with Asia/Shanghai as the default.
+timeZone: Asia/Shanghai
+
+# Set the nameOverride values for creating the same resources with the parent chart.
+# In version v1.7.1 or before, there is only one chart called kube-celerdata, and the chart name is the prefix
+# of some resources created by the chart.
+# In version v1.8.0, the kube-celerdata chart is split into two charts, and to keep backward compatibility, the
+# nameOverride is used to set the prefix of the resources created by the operator chart.
+nameOverride: "kube-celerdata"
+
+celerDataOperator:
+  # If enabled, the operator-related resources will be created, including the operator deployment, service account,
+  # clusterrole, clusterrolebinding, and service account.
+  enabled: true
+  # annotations for celerdata operator.
+  annotations: {}
+  namespaceOverride: ""
+  image:
+    # image sliced by "repository:tag"
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
+    tag: v1.11.4
+  imagePullPolicy: Always
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 800Mi
+    requests:
+      cpu: 500m
+      memory: 400Mi
+  # By default, the operator will only set runAsNonRoot to true, allowPrivilegeEscalation to false, readOnlyRootFilesystem to true.
+  # You can customize the securityContext for operator pod, e.g., drop capabilities, seccompProfile, etc.
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    #capabilities:
+    #  drop:
+    #  - ALL
+    #seccompProfile:
+    #  type: "RuntimeDefault"
+  # imagePullSecrets allows you to use secrets to pull images for pods.
+  imagePullSecrets: []
+  # - name: "image-pull-secret"
+  # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+  # affinity for operator pod scheduling.
+  affinity: {}
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #     - matchFields:
+    #       - key: metadata.name
+    #         operator: In
+    #         values:
+    #         - target-host-name
+  tolerations: []
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  # If specified, it will restrict operator to watch resources in the specified namespace. And
+  #  1. You must deploy your CelerData cluster to the specified namespace.
+  #  2. You cannot assign multiple namespaces to watchNamespace field.
+  # Note: In most cases, you should not set this value. If your kubernetes cluster manages too many nodes, and
+  # the operator watching all namespaces uses too many memory resources, you can set this value.
+  # Defaults to all namespaces.
+  watchNamespace: ""
+  # Additional operator container environment variables
+  # You specify this manually like you would a raw deployment manifest.
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # operator supports the following environment variables:
+  # KUBE_CELERDATA_UNSUPPORTED_ENVS: "XXX,YYY" # The environment variables that will not be passed to celerdata container.
+  env: []
+  # setting log related parameter
+  log:
+    - --zap-time-encoding=iso8601
+    - --zap-encoder=console
+    # if you want open debug log, open this option
+    # - --zap-log-level 4
+  # Operator needs to specify the FQDN in nginx.conf when it set up fe-proxy service.
+  # By default, Operator will use cluster.local as the dnsDomainSuffix.
+  # If you set up a kubernetes cluster with a different dnsDomainSuffix, you need to set this value.
+  dnsDomainSuffix: ""
+  # By default, the volume name of secret and configmap created by operator for the FE/BE/CN pods has a hash suffix.
+  # If users plan to use a sidecar or init container to mount the same volume, it will be challenging to get the volume name.
+  # In this situation, you can set this value to false.
+  volumeNameWithHash: true

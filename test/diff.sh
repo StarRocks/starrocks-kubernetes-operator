@@ -1,7 +1,7 @@
 #! /bin/bash
 
-# the script is used to compare resources created by different versions of starrocks-operator
-# call it like this: ./diff.sh starrockscluster-sample v1.6.1 v1.7.0
+# the script is used to compare resources created by different versions of celerdata-operator
+# call it like this: ./diff.sh celerdatacluster-sample v1.6.1 v1.7.0
 
 # check the number of arguments
 if [ $# -ne 3 ]; then

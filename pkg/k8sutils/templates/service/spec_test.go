@@ -21,7 +21,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestMakeSearchService(t *testing.T) {
@@ -109,7 +109,7 @@ func TestSearchServiceName(t *testing.T) {
 			name: "test SearchServiceName for be",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksBeSpec{},
+				spec:        &v1.CelerDataBeSpec{},
 			},
 			want: "test-be-search",
 		},
@@ -117,7 +117,7 @@ func TestSearchServiceName(t *testing.T) {
 			name: "test SearchServiceName for cn",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksCnSpec{},
+				spec:        &v1.CelerDataCnSpec{},
 			},
 			want: "test-cn-search",
 		},
@@ -125,7 +125,7 @@ func TestSearchServiceName(t *testing.T) {
 			name: "test SearchServiceName for fe",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksFeSpec{},
+				spec:        &v1.CelerDataFeSpec{},
 			},
 			want: "test-fe-search",
 		},
@@ -153,7 +153,7 @@ func TestSearchServiceName_WithNil(t *testing.T) {
 			name: "test SearchServiceName for be",
 			args: args{
 				clusterName: "test",
-				spec:        (*v1.StarRocksBeSpec)(nil),
+				spec:        (*v1.CelerDataBeSpec)(nil),
 			},
 			want: "test-be-search",
 		},
@@ -161,7 +161,7 @@ func TestSearchServiceName_WithNil(t *testing.T) {
 			name: "test SearchServiceName for cn",
 			args: args{
 				clusterName: "test",
-				spec:        (*v1.StarRocksCnSpec)(nil),
+				spec:        (*v1.CelerDataCnSpec)(nil),
 			},
 			want: "test-cn-search",
 		},
@@ -169,7 +169,7 @@ func TestSearchServiceName_WithNil(t *testing.T) {
 			name: "test SearchServiceName for fe",
 			args: args{
 				clusterName: "test",
-				spec:        (*v1.StarRocksFeSpec)(nil),
+				spec:        (*v1.CelerDataFeSpec)(nil),
 			},
 			want: "test-fe-search",
 		},
@@ -199,7 +199,7 @@ func TestGetFeExternalServiceName(t *testing.T) {
 		//	name: "test1",
 		//	args: args{
 		//		clusterName: "test",
-		//		spec:        (*StarRocksFeSpec)(nil),
+		//		spec:        (*CelerDataFeSpec)(nil),
 		//	},
 		//	want: "test-fe-service",
 		// },
@@ -207,7 +207,7 @@ func TestGetFeExternalServiceName(t *testing.T) {
 			name: "test2",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksFeSpec{},
+				spec:        &v1.CelerDataFeSpec{},
 			},
 			want: "test-fe-service",
 		},

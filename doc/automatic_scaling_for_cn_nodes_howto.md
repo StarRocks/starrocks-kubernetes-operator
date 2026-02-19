@@ -1,6 +1,6 @@
 # Automatic scaling for CN nodes
 
-This topic describes how to configure automatic scaling for CN nodes in a StarRocks cluster.
+This topic describes how to configure automatic scaling for CN nodes in a CelerData cluster.
 > Note: If you are seeking for help for versions before v1.11.0, this doc is for you. If you are using v1.11.0 or later, please refer to the [HPA Dynamic Scaling](./hpa_dynamic_scaling_with_helm_howto.md) doc.
 
 ## Prerequisites
@@ -9,18 +9,18 @@ This topic describes how to configure automatic scaling for CN nodes in a StarRo
 - Ensure that you have installed the [Helm](https://helm.sh/) package manager. 3.0.0+ is recommended.
 - Ensure that the helm chart repo for StarRocks is added.
   See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
-- Ensure that you have deployed a StarRocks cluster.
-  See [Deploy StarRocks With Operator](./deploy_starrocks_with_operator_howto.md)
-  or [Deploy StarRocks With Helm](./deploy_starrocks_with_helm_howto.md)
-  to learn how to deploy a StarRocks cluster.
+- Ensure that you have deployed a CelerData cluster.
+  See [Deploy CelerData With Operator](./deploy_celerdata_with_operator_howto.md)
+  or [Deploy CelerData With Helm](./deploy_celerdata_with_helm_howto.md)
+  to learn how to deploy a CelerData cluster.
 - Ensure that you have installed [metrics-server](https://github.com/kubernetes-sigs/metrics-server).
 
-> Suppose you have installed a StarRocks cluster named starrockscluster-sample under the starrocks namespace
+> Suppose you have installed a CelerData cluster named celerdatacluster-sample under the celerdata namespace
 
-There are two ways to deploy StarRocks cluster:
+There are two ways to deploy CelerData cluster:
 
-1. Deploy StarRocks cluster with `StarRocksCluster` CR yaml.
-2. Deploy StarRocks cluster with Helm chart.
+1. Deploy CelerData cluster with `CelerDataCluster` CR yaml.
+2. Deploy CelerData cluster with Helm chart.
 
 Therefore, there are two ways to configure automatic scaling for CN nodes.
 
@@ -31,20 +31,20 @@ scaling.
 
 ## Configure automatic scaling for CN nodes by using CR yaml
 
-Run the command `kubectl -n starrocks edit src starrockscluster-sample`` to configure the automatic scaling policy for
+Run the command `kubectl -n celerdata edit cdc celerdatacluster-sample`` to configure the automatic scaling policy for
 CN nodes.
 
 > **NOTE**
 >
 > If you have configured the automatic scaling policy for the CN cluster, delete the `replicas` field from the
-> `starRocksCnSpec` in the StarRocks cluster configuration file.
+> `celerDataCnSpec` in the CelerData cluster configuration file.
 
-The following is a [template](../examples/starrocks/deploy_a_starrocks_cluster_with_cn.yaml) to help you configure
+The following is a [template](../examples/celerdata/deploy_a_celerdata_cluster_with_cn.yaml) to help you configure
 automatic scaling policies:
 
 ```YAML
-  starRocksCnSpec:
-    image: starrocks/cn-ubuntu:3.0-latest
+  celerDataCnSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:3.0-latest
     requests:
       cpu: 4
       memory: 4Gi
@@ -86,12 +86,12 @@ automatic scaling policies:
 Add the following snippets to `values.yaml` to configure the automatic scaling policy for CN nodes,
 
 ```YAML
-  starrocksCluster: # do not forget to set enabledCn to true to enable deployment of CNs.
+  celerDataCluster: # do not forget to set enabledCn to true to enable deployment of CNs.
     enabledCn: true
 
-  starrocksCnSpec:
+  celerDataCnSpec:
     image:
-      repository: starrocks/cn-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
       tag: 3.5-latest
     resources:
       requests:

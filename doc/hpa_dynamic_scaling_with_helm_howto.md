@@ -1,6 +1,6 @@
 # HPA Dynamic Scaling for CN Nodes with Helm Charts
 
-This document describes how to implement Horizontal Pod Autoscaler (HPA) based dynamic scaling for CN (Compute Node) nodes in StarRocks clusters using Helm Charts. This feature was introduced in v1.11.0 and addresses critical autoscaling issues including resource cleanup, version compatibility, and graceful scaling operations.
+This document describes how to implement Horizontal Pod Autoscaler (HPA) based dynamic scaling for CN (Compute Node) nodes in CelerData clusters using Helm Charts. This feature was introduced in v1.11.0 and addresses critical autoscaling issues including resource cleanup, version compatibility, and graceful scaling operations.
 
 ## Prerequisites
 
@@ -24,31 +24,31 @@ Since v1.11.0, the following critical issues have been resolved:
 
 There are two ways to deploy StarRocks with HPA-enabled CN nodes:
 
-### 1. Integrated StarRocks Cluster with CN Nodes
-Deploy a complete StarRocks cluster including FE and CN nodes with HPA in a single chart.
+### 1. Integrated CelerData Cluster with CN Nodes
+Deploy a complete CelerData cluster including FE and CN nodes with HPA in a single chart.
 
 ### 2. Separate Cluster and Warehouse Deployment
-Deploy the main StarRocks cluster first, then deploy separate Warehouse instances with HPA-enabled CN nodes.
+Deploy the main CelerData cluster first, then deploy separate Warehouse instances with HPA-enabled CN nodes.
 
-## Method 1: Integrated StarRocks Cluster with CN Nodes
+## Method 1: Integrated CelerData Cluster with CN Nodes
 
 ### Step 1: Create Values Configuration
 
-Create a `starrocks-cluster-values.yaml` file:
+Create a `celerdata cluster-values.yaml` file:
 
 ```yaml
 starrocks:
   # Main cluster configuration
-  starrocksCluster:
+  celerDataCluster:
     enabledCn: true  # Enable CN nodes
     enabledBe: false # Disable BE nodes for shared-data mode
 
   # FE (Frontend) Configuration
-  starrocksFESpec:
+  celerDataFeSpec:
     # Three FE pods need to be running for high availability.
     replicas: 1
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.5.0
     resources:
       requests:
@@ -74,9 +74,9 @@ starrocks:
       aws_s3_use_aws_sdk_default_behavior = true
 
   # CN (Compute Node) Configuration with HPA
-  starrocksCnSpec:
+  celerDataCnSpec:
     image:
-      repository: starrocks/cn-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
       tag: 3.5.0
     storageSpec:
       logStorageSize: 1Gi
@@ -129,68 +129,68 @@ starrocks:
 operator:
   starrocksOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.11.0-rc5
     imagePullPolicy: IfNotPresent
 ```
 
-### Step 2: Deploy StarRocks Cluster
+### Step 2: Deploy CelerData Cluster
 
 ```bash
 # Add StarRocks Helm repository
-$ helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+$ helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
 $ helm repo update
 
 # Deploy the cluster
-$ helm install kube-starrocks starrocks/kube-starrocks \
-  -f starrocks-cluster-values.yaml \
-  --namespace starrocks \
+$ helm install kube-celerdata celerdata/kube-celerdata \
+  -f celerdata-cluster-values.yaml \
+  --namespace celerdata \
   --create-namespace
 
 # The number of CN pods will be automatically managed by HPA based on CPU and memory usage.
 $ kubectl get hpa
 NAME                           REFERENCE                         TARGETS             MINPODS   MAXPODS   REPLICAS   AGE
-kube-starrocks-cn-autoscaler   StarRocksCluster/kube-starrocks   15%/60%, 421%/70%   1         2         2          2m12s
+kube-celerdata-cn-autoscaler   CelerDataCluster/kube-celerdata   15%/60%, 421%/70%   1         2         2          2m12s
 
 $ kubectl get pods
 NAME                                       READY   STATUS    RESTARTS   AGE
-kube-starrocks-cn-0                        1/1     Running   0          2m17s
-kube-starrocks-cn-1                        1/1     Running   0          106s
-kube-starrocks-fe-0                        1/1     Running   0          3m6s
-kube-starrocks-operator-5fd56d547b-7fp4m   1/1     Running   0          3m22s
+kube-celerdata-cn-0                        1/1     Running   0          2m17s
+kube-celerdata-cn-1                        1/1     Running   0          106s
+kube-celerdata-fe-0                        1/1     Running   0          3m6s
+kube-celerdata-operator-5fd56d547b-7fp4m   1/1     Running   0          3m22s
 
 # The pvc will be deleted when the CN nodes are scaled down or the cluster is deleted.
 $ kubectl get pvc
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-cn-data-kube-starrocks-cn-0   Bound    pvc-d14e41ec-eafb-44c5-8482-43a7f01e46ef   10Gi       RWO            standard       3m7s
-cn-data-kube-starrocks-cn-1   Bound    pvc-9f98dc6a-194a-4284-9474-721226669d85   10Gi       RWO            standard       2m36s
-cn-log-kube-starrocks-cn-0    Bound    pvc-236c7e6b-d79b-40d0-a414-d4a3b657ce2f   1Gi        RWO            standard       3m7s
-cn-log-kube-starrocks-cn-1    Bound    pvc-cd8f2d22-1368-4830-93a0-f19f9d67ede9   1Gi        RWO            standard       2m36s
-fe-log-kube-starrocks-fe-0    Bound    pvc-9ef1467b-992b-4693-af92-c18214f91188   1Gi        RWO            standard       3m56s
-fe-meta-kube-starrocks-fe-0   Bound    pvc-522e40b4-8a48-4a62-a593-1ca9174a1475   10Gi       RWO            standard       3m56s
+cn-data-kube-celerdata-cn-0   Bound    pvc-d14e41ec-eafb-44c5-8482-43a7f01e46ef   10Gi       RWO            standard       3m7s
+cn-data-kube-celerdata-cn-1   Bound    pvc-9f98dc6a-194a-4284-9474-721226669d85   10Gi       RWO            standard       2m36s
+cn-log-kube-celerdata-cn-0    Bound    pvc-236c7e6b-d79b-40d0-a414-d4a3b657ce2f   1Gi        RWO            standard       3m7s
+cn-log-kube-celerdata-cn-1    Bound    pvc-cd8f2d22-1368-4830-93a0-f19f9d67ede9   1Gi        RWO            standard       2m36s
+fe-log-kube-celerdata-fe-0    Bound    pvc-9ef1467b-992b-4693-af92-c18214f91188   1Gi        RWO            standard       3m56s
+fe-meta-kube-celerdata-fe-0   Bound    pvc-522e40b4-8a48-4a62-a593-1ca9174a1475   10Gi       RWO            standard       3m56s
 ```
 
 ## Method 2: Separate Cluster and Warehouse Deployment
 
 Note: warehouse is an enterprise feature.
 
-### Step 1: Deploy Main StarRocks Cluster
+### Step 1: Deploy Main CelerData Cluster
 
 Create `cluster-values.yaml`:
 
 ```yaml
 starrocks:
   # Main cluster configuration
-  starrocksCluster:
+  celerDataCluster:
     enabledCn: false
     enabledBe: false
 
   # FE (Frontend) Configuration
-  starrocksFESpec:
+  celerDataFeSpec:
     # Three FE pods need to be running for high availability.
     replicas: 1
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.5.0
     resources:
       requests:
@@ -220,7 +220,7 @@ starrocks:
 operator:
   starrocksOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.11.0-rc5
     imagePullPolicy: IfNotPresent
 ```
@@ -228,21 +228,21 @@ operator:
 Deploy the main cluster:
 
 ```bash
-$ helm install kube-starrocks starrocks/kube-starrocks \
+$ helm install kube-celerdata celerdata/kube-celerdata \
   -f cluster-values.yaml \
-  --namespace starrocks \
+  --namespace celerdata \
   --create-namespace
 
 $ kubectl get pods
 NAME                                       READY   STATUS    RESTARTS   AGE
-kube-starrocks-fe-0                        1/1     Running   0          73s
-kube-starrocks-operator-5fd56d547b-46c9h   1/1     Running   0          91s
+kube-celerdata-fe-0                        1/1     Running   0          73s
+kube-celerdata-operator-5fd56d547b-46c9h   1/1     Running   0          91s
 
-# The FE PVCS will be deleted when the StarRocks cluster is deleted.
+# The FE PVCS will be deleted when the CelerData cluster is deleted.
 $ kubectl get pvc
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-fe-log-kube-starrocks-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       75s
-fe-meta-kube-starrocks-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       75s  
+fe-log-kube-celerdata-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       75s
+fe-meta-kube-celerdata-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       75s  
 ```
 
 ### Step 2: Deploy Warehouse with HPA
@@ -251,8 +251,8 @@ Create `warehouse-values.yaml`:
 
 ```yaml
 spec:
-  # Reference to the main StarRocks cluster
-  starRocksClusterName: kube-starrocks
+  # Reference to the main CelerData cluster
+  celerDataClusterName: kube-celerdata
 
   image:
     repository: xxx/cn-ubuntu  # an enterprise image repository
@@ -310,27 +310,27 @@ spec:
 Deploy the warehouse:
 
 ```bash
-$ helm install wh-1 starrocks/warehouse \
+$ helm install wh-1 celerdata/warehouse \
   -f warehouse-values.yaml \
-  --namespace starrocks
+  --namespace celerdata
 
 $ kubectl get pods
 NAME                                       READY   STATUS    RESTARTS   AGE
-kube-starrocks-fe-0                        1/1     Running   0          4m15s
-kube-starrocks-operator-5fd56d547b-46c9h   1/1     Running   0          4m33s
+kube-celerdata-fe-0                        1/1     Running   0          4m15s
+kube-celerdata-operator-5fd56d547b-46c9h   1/1     Running   0          4m33s
 wh-1-warehouse-cn-0                        1/1     Running   0          20s
 
 $ kubectl get hpa
 NAME                           REFERENCE                 TARGETS                        MINPODS   MAXPODS   REPLICAS   AGE
-wh-1-warehouse-cn-autoscaler   StarRocksWarehouse/wh-1   <unknown>/60%, <unknown>/70%   1         2         1          22s  
+wh-1-warehouse-cn-autoscaler   CelerDataWarehouse/wh-1   <unknown>/60%, <unknown>/70%   1         2         1          22s  
 
 # The CN PVCs will be deleted when the Warehouse is deleted or scaled down.
 $ kubectl get pvc
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 cn-data-wh-1-warehouse-cn-0   Bound    pvc-e49fe13b-f5c3-42fc-90a9-c18adccec39c   10Gi       RWO            standard       21s
 cn-log-wh-1-warehouse-cn-0    Bound    pvc-686d8dc7-55d5-4667-bec1-106ac9ea32c0   1Gi        RWO            standard       21s
-fe-log-kube-starrocks-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       5m50s
-fe-meta-kube-starrocks-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       5m50s
+fe-log-kube-celerdata-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       5m50s
+fe-meta-kube-celerdata-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       5m50s
 ```
 
 ## Scale Down the CN nodes
@@ -342,8 +342,8 @@ kubectl patch hpa <your-hpa-name> -p '{"spec":{"minReplicas":1,"maxReplicas":1}}
 # pods will be scaled down gracefully
 $ kubectl get pods
 NAME                                       READY   STATUS    RESTARTS   AGE
-kube-starrocks-fe-0                        1/1     Running   0          13m
-kube-starrocks-operator-5fd56d547b-46c9h   1/1     Running   0          13m
+kube-celerdata-fe-0                        1/1     Running   0          13m
+kube-celerdata-operator-5fd56d547b-46c9h   1/1     Running   0          13m
 wh-1-warehouse-cn-0                        1/1     Running   0          7m44s
 
 # PVC will be deleted when the CN node is scaled down
@@ -351,8 +351,8 @@ $ kubectl get pvc
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 cn-data-wh-1-warehouse-cn-0   Bound    pvc-e49fe13b-f5c3-42fc-90a9-c18adccec39c   10Gi       RWO            standard       7m57s
 cn-log-wh-1-warehouse-cn-0    Bound    pvc-686d8dc7-55d5-4667-bec1-106ac9ea32c0   1Gi        RWO            standard       7m57s
-fe-log-kube-starrocks-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       13m
-fe-meta-kube-starrocks-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       13m
+fe-log-kube-celerdata-fe-0    Bound    pvc-5fce212f-0f22-494c-925d-ffd17bada556   1Gi        RWO            standard       13m
+fe-meta-kube-celerdata-fe-0   Bound    pvc-74b5ea92-c298-48eb-a7bf-5682679c4d7e   10Gi       RWO            standard       13m
 
 # If you execute show compute nodes in the FE, you will see that the CN node is still deregistered
 mysql> show compute nodes \G;

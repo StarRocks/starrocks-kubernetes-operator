@@ -19,10 +19,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/hash"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
 )
 
 const (
@@ -59,10 +59,10 @@ type hashService struct {
 }
 
 // BuildExternalService build the external service. not have selector
-func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterface,
+func BuildExternalService(object object.StarRocksObject, spec cdapi.SpecInterface,
 	config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
 	// the k8s service type.
-	var srPorts []srapi.StarRocksServicePort
+	var srPorts []cdapi.CelerDataServicePort
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.ExternalServiceName(object.SubResourcePrefixName, spec),
@@ -87,15 +87,15 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	}
 	svc.Labels = newLabels
 	switch spec.(type) {
-	case *srapi.StarRocksFeSpec:
+	case *cdapi.CelerDataFeSpec:
 		srPorts = getFeServicePorts(config, starRocksService)
-	case *srapi.StarRocksBeSpec:
+	case *cdapi.CelerDataBeSpec:
 		srPorts = getBeServicePorts(config, starRocksService)
-	case *srapi.StarRocksCnSpec:
+	case *cdapi.CelerDataCnSpec:
 		srPorts = getCnServicePorts(config, starRocksService)
-	case *srapi.StarRocksFeProxySpec:
-		srPorts = []srapi.StarRocksServicePort{
-			mergePort(starRocksService, srapi.StarRocksServicePort{
+	case *cdapi.CelerDataFeProxySpec:
+		srPorts = []cdapi.CelerDataServicePort{
+			mergePort(starRocksService, cdapi.CelerDataServicePort{
 				Name:          FE_PORXY_HTTP_PORT_NAME,
 				Port:          FE_PROXY_HTTP_PORT,
 				ContainerPort: FE_PROXY_HTTP_PORT,
@@ -132,29 +132,29 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 		svc.Spec.LoadBalancerSourceRanges = starRocksService.LoadBalancerSourceRanges
 	}
 
-	anno[srapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
+	anno[cdapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
 	svc.Annotations = anno
 	return svc
 }
 
-func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
+func getFeServicePorts(config map[string]interface{}, service *cdapi.CelerDataService) (srPorts []cdapi.CelerDataServicePort) {
 	httpPort := GetPort(config, HTTP_PORT)
 	rpcPort := GetPort(config, RPC_PORT)
 	queryPort := GetPort(config, QUERY_PORT)
 	editPort := GetPort(config, EDIT_LOG_PORT)
-	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, cdapi.CelerDataServicePort{
 		Port: httpPort, ContainerPort: httpPort, Name: FeHTTPPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: rpcPort, ContainerPort: rpcPort, Name: FeRPCPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: queryPort, ContainerPort: queryPort, Name: FeQueryPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: editPort, ContainerPort: editPort, Name: FeEditLogPortName,
 	}))
 
 	arrowFlightPort := GetPort(config, ARROW_FLIGHT_PORT)
 	if arrowFlightPort != 0 {
-		srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+		srPorts = append(srPorts, mergePort(service, cdapi.CelerDataServicePort{
 			Port: arrowFlightPort, ContainerPort: arrowFlightPort, Name: FEArrowFlightPortName,
 		}))
 	}
@@ -162,44 +162,44 @@ func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksSe
 	return srPorts
 }
 
-func getBeServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
+func getBeServicePorts(config map[string]interface{}, service *cdapi.CelerDataService) (srPorts []cdapi.CelerDataServicePort) {
 	bePort := GetPort(config, BE_PORT)
 	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
 
-	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, cdapi.CelerDataServicePort{
 		Port: bePort, ContainerPort: bePort, Name: BePortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: webserverPort, ContainerPort: webserverPort, Name: BeWebserverPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: BeHeartbeatPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: brpcPort, ContainerPort: brpcPort, Name: BeBrpcPortName,
 	}))
 
 	return srPorts
 }
 
-func getCnServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {
+func getCnServicePorts(config map[string]interface{}, service *cdapi.CelerDataService) (srPorts []cdapi.CelerDataServicePort) {
 	thriftPort := GetPort(config, THRIFT_PORT)
 	webserverPort := GetPort(config, WEBSERVER_PORT)
 	heartPort := GetPort(config, HEARTBEAT_SERVICE_PORT)
 	brpcPort := GetPort(config, BRPC_PORT)
-	srPorts = append(srPorts, mergePort(service, srapi.StarRocksServicePort{
+	srPorts = append(srPorts, mergePort(service, cdapi.CelerDataServicePort{
 		Port: thriftPort, ContainerPort: thriftPort, Name: CnThriftPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: webserverPort, ContainerPort: webserverPort, Name: CnWebserverPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: heartPort, ContainerPort: heartPort, Name: CnHeartbeatPortName,
-	}), mergePort(service, srapi.StarRocksServicePort{
+	}), mergePort(service, cdapi.CelerDataServicePort{
 		Port: brpcPort, ContainerPort: brpcPort, Name: CnBrpcPortName,
 	}))
 
 	return srPorts
 }
 
-func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
+func setServiceType(svc *cdapi.CelerDataService, service *corev1.Service) {
 	service.Spec.Type = corev1.ServiceTypeClusterIP
 	if svc != nil && svc.Type != "" {
 		service.Spec.Type = svc.Type
@@ -210,7 +210,7 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	}
 }
 
-func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServicePort) srapi.StarRocksServicePort {
+func mergePort(service *cdapi.CelerDataService, defaultPort cdapi.CelerDataServicePort) cdapi.CelerDataServicePort {
 	if service == nil || service.Ports == nil {
 		return defaultPort
 	}
@@ -245,7 +245,7 @@ func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServi
 	return port
 }
 
-func getExternalServiceAnnotations(svc *srapi.StarRocksService) map[string]string {
+func getExternalServiceAnnotations(svc *cdapi.CelerDataService) map[string]string {
 	if svc != nil && svc.Annotations != nil {
 		annotations := map[string]string{}
 		for key, val := range svc.Annotations {
@@ -256,7 +256,7 @@ func getExternalServiceAnnotations(svc *srapi.StarRocksService) map[string]strin
 	return map[string]string{}
 }
 
-func getExternalServiceLabels(svc *srapi.StarRocksService) map[string]string {
+func getExternalServiceLabels(svc *cdapi.CelerDataService) map[string]string {
 	if svc != nil && svc.Labels != nil {
 		labels := map[string]string{}
 		for key, val := range svc.Labels {
@@ -269,17 +269,17 @@ func getExternalServiceLabels(svc *srapi.StarRocksService) map[string]string {
 
 func ServiceDeepEqual(expectSvc, actualSvc *corev1.Service) (string, bool) {
 	var expectHashValue string
-	if _, ok := expectSvc.Annotations[srapi.ComponentResourceHash]; ok {
-		expectHashValue = expectSvc.Annotations[srapi.ComponentResourceHash]
+	if _, ok := expectSvc.Annotations[cdapi.ComponentResourceHash]; ok {
+		expectHashValue = expectSvc.Annotations[cdapi.ComponentResourceHash]
 	} else {
 		expectHashValue = hash.HashObject(serviceHashObject(expectSvc))
 	}
 
 	// Because service annotations will be updated by k8s controller manager, so we should get hash value from
-	// srapi.ComponentResourceHash annotation.
+	// cdapi.ComponentResourceHash annotation.
 	var actualHashValue string
-	if _, ok := actualSvc.Annotations[srapi.ComponentResourceHash]; ok {
-		actualHashValue = actualSvc.Annotations[srapi.ComponentResourceHash]
+	if _, ok := actualSvc.Annotations[cdapi.ComponentResourceHash]; ok {
+		actualHashValue = actualSvc.Annotations[cdapi.ComponentResourceHash]
 	} else {
 		actualHashValue = hash.HashObject(serviceHashObject(actualSvc))
 	}

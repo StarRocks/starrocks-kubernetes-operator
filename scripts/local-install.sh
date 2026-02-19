@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# This script is used to install starrocks on local k8s cluster.
-# Make sure `docker` is installed，See [install docker](https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/doc/local_installation_how_to.md#11-install-docker) for more details.
+# This script is used to install celerdata on local k8s cluster.
+# Make sure `docker` is installed，See [install docker](https://github.com/celerdata/celerdata-kubernetes-operator/blob/main/doc/local_installation_how_to.md#11-install-docker) for more details.
 #
 # It will do the following things:
 #   1. install kubectl, helm, kind on your machine.
-#   2. create a kind cluster named `starrocks`.
-#   3. install [kube-starrocks](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks) helm chart.
+#   2. create a kind cluster named `celerdata`.
+#   3. install [kube-celerdata](https://github.com/celerdata/celerdata-kubernetes-operator/tree/main/helm-charts/charts/kube-celerdata) helm chart.
 
 # specify the k8s version installed by kind
 K8S_VERSION="v1.23.4"
@@ -15,14 +15,14 @@ K8S_VERSION="v1.23.4"
 HELM_URL="https://get.helm.sh"
 KIND_URL="https://kind.sigs.k8s.io/dl/v0.20.0"
 KUBECTL_URL="https://dl.k8s.io/release/v1.28.3/bin"
-HELM_CHART_URL="https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.6/kube-starrocks-1.8.6.tgz"
+HELM_CHART_URL="https://github.com/celerdata/celerdata-kubernetes-operator/releases/download/v1.8.6/kube-celerdata-1.8.6.tgz"
 # NOTE:
 # if you can not access the following url, you can try to use the following url.
 # And you can specify the url by command arguments.
 # HELM_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
 # KIND_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
 # KUBECTL_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
-# HELM_CHART_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-starrocks-1.8.6.tgz"
+# HELM_CHART_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-celerdata-1.8.6.tgz"
 
 # checkBinary checks if the binary is installed. If not, return 1, else return 0
 function checkBinary() {
@@ -159,26 +159,26 @@ nodes:
     hostPort: 30002
     protocol: TCP" >/tmp/kind.yaml
 
-  kind create cluster --image=kindest/node:$K8S_VERSION --name=starrocks --config=/tmp/kind.yaml || exit 1
+  kind create cluster --image=kindest/node:$K8S_VERSION --name=celerdata --config=/tmp/kind.yaml || exit 1
 }
 
-# install installs kube-starrocks helm chart
+# install installs kube-celerdata helm chart
 function install() {
-  echo "Installing kube-starrocks helm chart"
-  helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
-  helm repo update starrocks
+  echo "Installing kube-celerdata helm chart"
+  helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
+  helm repo update celerdata
 
   cat <<EOF >/tmp/local-install-values.yaml
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.8.6
 
-starrocks:
-  starrocksFESpec:
+celerdata:
+  celerDataFeSpec:
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.1.4
     resources:
       limits:
@@ -194,9 +194,9 @@ starrocks:
         name: query
         nodePort: 30002
         port: 9030
-  starrocksBeSpec:
+  celerDataBeSpec:
     image:
-      repository: starrocks/be-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
       tag: 3.1.4
     resources:
       limits:
@@ -205,7 +205,7 @@ starrocks:
       requests:
         cpu: 100m
         memory: 200Mi
-  starrocksFeProxySpec:
+  celerDataFeProxySpec:
     enabled: true
     resources:
       requests:
@@ -220,7 +220,7 @@ starrocks:
         port: 8080
 EOF
 
-  cmd="helm install -n starrocks starrocks $HELM_CHART_URL --create-namespace --timeout 60s"
+  cmd="helm install -n celerdata celerdata $HELM_CHART_URL --create-namespace --timeout 60s"
   eval "$cmd -f /tmp/local-install-values.yaml" 1>/dev/null
 }
 
@@ -261,8 +261,8 @@ function parseInput() {
   done
 
   checkPrerequisites
-  (sudo kind get clusters | grep starrocks) || kindCreateCluster
-  install && echo 'StarRocks is installed successfully!' || echo 'StarRocks is installed failed!'
+  (sudo kind get clusters | grep celerdata) || kindCreateCluster
+  install && echo 'CelerData is installed successfully!' || echo 'CelerData is installed failed!'
 }
 
 parseInput "$@"

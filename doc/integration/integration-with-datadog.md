@@ -40,13 +40,13 @@ Install the chart with the release name `datadog-agent`:
 helm install datadog-agent  -f datadog-values.yaml datadog/datadog
 ```
 
-## 2. Install or upgrade the starrocks cluster
+## 2. Install or upgrade the celerdata cluster
 
-If this is a fresh install, add the Helm StarRocks Operator repo
+If this is a fresh install, add the Helm CelerData Operator repo
 
 ```bash
-helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update starrocks
+helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
+helm repo update celerdata
 ```
 
 **Add** the following configuration to your `sr-values.yaml` file:
@@ -60,14 +60,14 @@ datadog:
     enabled: true  # enable the metrics collection
 ```
 
-Install or upgrade your starrocks cluster:
+Install or upgrade your celerdata cluster:
 
 ```bash
 # install
-helm install -n starrocks starrocks -f sr-values.yaml starrocks/kube-starrocks
+helm install -n celerdata celerdata -f sr-values.yaml celerdata/kube-celerdata
 
 # upgrade
-helm upgrade -n starrocks starrocks -f sr-values.yaml starrocks/kube-starrocks
+helm upgrade -n celerdata celerdata -f sr-values.yaml celerdata/kube-celerdata
 ```
 
 When you execute `helm install` or `helm upgrade` command, the rendered configuration will be passed to the starrocks
@@ -75,10 +75,10 @@ cluster, like the following:
 
 ```yaml
 # sr-values.yaml
-starrocksFESpec:
+celerDataFeSpec:
   annotations:
     # change the value of ad.datadoghq.com/fe.logs to your own value
-    ad.datadoghq.com/fe.logs: '[{"source": "fe","service": "starrocks","tags": ["env:test"]}]'
+    ad.datadoghq.com/fe.logs: '[{"source": "fe","service": "celerdata","tags": ["env:test"]}]'
   service:
     annotations:
       prometheus.io/path: "/metrics"
@@ -87,10 +87,10 @@ starrocksFESpec:
   feEnvVars:
     - name: LOG_CONSOLE
       value: "1"
-starrocksBeSpec:
+celerDataBeSpec:
   annotations:
     # change the value of ad.datadoghq.com/be.logs to your own value
-    ad.datadoghq.com/be.logs: '[{"source": "be","service": "starrocks","tags": ["env:test"]}]'
+    ad.datadoghq.com/be.logs: '[{"source": "be","service": "celerdata","tags": ["env:test"]}]'
   service:
     annotations:
       prometheus.io/path: "/metrics"

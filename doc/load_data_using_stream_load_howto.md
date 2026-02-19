@@ -20,11 +20,11 @@ The following solutions for other read and write data scenarios are listed (will
 
 If you install StarRocks with Helm, you can add the following configuration to the `values.yaml` file:
 
-For `kube-starrocks` Helm chart:
+For `kube-celerdata` Helm chart:
 
 ```yaml
 starrocks:
-  starrocksFeProxySpec:
+  celerDataFeProxySpec:
     enabled: true
     replicas: 1
     # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
@@ -47,7 +47,7 @@ starrocks:
 For `starrocks` Helm chart:
 
 ```yaml
-starRocksFeProxySpec:
+celerDataFeProxySpec:
   enabled: true
   replicas: 1
   # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
@@ -68,10 +68,10 @@ starRocksFeProxySpec:
 ```
 
 Please
-see https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/values.yaml
-for more details about how to configure `starRocksFeProxySpec`.
+see https://github.com/celerdata/celerdata-kubernetes-operator/blob/main/helm-charts/charts/kube-celerdata/values.yaml
+for more details about how to configure `celerDataFeProxySpec`.
 
-## Deploy Fe Proxy Using StarRocksCluster CR
+## Deploy Fe Proxy Using CelerDataCluster CR
 
-If you install StarRocks with StarRocksCluster CR yaml, please see
-[deploy_a_starrocks_cluster_with_fe_proxy.md](../examples/starrocks/deploy_a_starrocks_cluster_with_fe_proxy.yaml)
+If you install StarRocks with CelerDataCluster CR yaml, please see
+[deploy_a_celerdata_cluster_with_fe_proxy.md](../examples/celerdata/deploy_a_celerdata_cluster_with_fe_proxy.yaml)

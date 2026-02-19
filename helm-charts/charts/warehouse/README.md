@@ -1,44 +1,44 @@
-# Deploy StarRocks Warehouse by starrocks Chart
+# Deploy CelerData Warehouse by warehouse Chart
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Release Charts](https://img.shields.io/badge/Release-helmcharts-green.svg)](https://github.com/StarRocks/starrocks-kubernetes-operator/releases)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Release Charts](https://img.shields.io/badge/Release-helmcharts-green.svg)](https://github.com/celerdata/celerdata-kubernetes-operator/releases)
 
 [Helm](https://helm.sh/) is a package manager for Kubernetes. A [Helm Chart](https://helm.sh/docs/topics/charts/) is a
 Helm package and contains all of the resource definitions necessary to run an application on a Kubernetes cluster. This
-topic describes how to use Helm to automatically deploy a StarRocks cluster on a Kubernetes cluster.
+topic describes how to use Helm to automatically deploy a CelerData warehouse on a Kubernetes cluster.
 
 ## Before you begin
 
 - [Create a Kubernetes cluster](https://kubernetes.io/).
 - [Install Helm](https://helm.sh/docs/intro/quickstart/).
-- [Install StarRocks operator](../kube-starrocks/charts/operator/README.md).
-- [Install StarRocks cluster](../kube-starrocks/charts/starrocks/README.md).
+- [Install CelerData operator](../kube-celerdata/charts/operator/README.md).
+- [Install CelerData cluster](../kube-celerdata/charts/celerdata/README.md).
 
-> Note: Warehouse is an enterprise feature for StarRocks.
+> Note: Warehouse is an enterprise feature for CelerData.
 
 ## Install Warehouse Chart
 
-1. Add the StarRocks Helm repository.
+1. Add the CelerData Helm repository.
 
     ```bash
-    $ helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
-    $ helm repo update
-    $ helm search repo starrocks
+    $ helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
+    $ helm repo update celerdata
+    $ helm search repo celerdata
     NAME                                    CHART VERSION    APP VERSION  DESCRIPTION
-    starrocks/kube-starrocks      1.9.0            3.1-latest   kube-starrocks includes two subcharts, starrock...
-    starrocks/operator            1.9.0            1.9.0        A Helm chart for StarRocks operator
-    starrocks/starrocks           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
-    starrocks/warehouse           1.9.0            3.1-latest   A Helm chart for StarRocks cluster
+    celerdata/kube-celerdata      1.9.0            3.1-latest   kube-celerdata includes two subcharts, operator and celerdata
+    us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator            1.9.0            1.9.0        A Helm chart for CelerData operator
+    celerdata/celerdata           1.9.0            3.1-latest   A Helm chart for CelerData cluster
+    celerdata/warehouse           1.9.0            3.1-latest   A Helm chart for CelerData cluster
     ```
 
 2. Prepare the values.yaml file.
 
    ```yaml
-   # The name of warehouse in StarRocks. You can execute `show warehouses` command in SQL to see the created warehouse.
+   # The name of warehouse in CelerData. You can execute `show warehouses` command in SQL to see the created warehouse.
    nameOverride: "wh1"
    spec:
-     # Make sure the StarRocks cluster exists in the same namespace.
-     # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
-     starRocksClusterName: kube-starrocks
+     # Make sure the CelerData cluster exists in the same namespace.
+     # You can check it by running `kubectl -n celerdata get celerdataclusters.celerdata.com`.
+     celerDataClusterName: kube-celerdata
      replicas: 1
      image: your-enterprise-image-version-for-cn
      resources:
@@ -53,11 +53,11 @@ topic describes how to use Helm to automatically deploy a StarRocks cluster on a
 3. Install the warehouse Chart.
 
     ```bash
-    # Use the above values.yaml to deploy a warehouse in namespace starrocks
-    helm -n starrocks install warehouse starrocks/warehouse -f values.yaml
+    # Use the above values.yaml to deploy a warehouse in namespace celerdata
+    helm -n celerdata install warehouse celerdata/warehouse -f values.yaml
 
-    # Restart the StarRocks operator to make it aware of the new CRD
-    kubectl -n starrocks rollout restart deployment kube-starrocks-operator
+    # Restart the CelerData operator to make it aware of the new CRD
+    kubectl -n celerdata rollout restart deployment kube-celerdata-operator
     ```
 
    Please see [values.yaml](./values.yaml) for more details.

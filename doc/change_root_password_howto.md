@@ -1,6 +1,6 @@
 # Change root user password HOWTO
 
-The password is empty for the `root` user when deploying a StarRocks cluster from fresh installation. This can be a
+The password is empty for the `root` user when deploying a CelerData cluster from fresh installation. This can be a
 security concern. This document describes steps to change root password and still the operator can manage the cluster
 correctly.
 
@@ -9,7 +9,7 @@ password chosen for the root.
 
 ## Prerequisites
 
-**A StarRocks cluster is deployed and up with empty root password by the operator.**
+**A CelerData cluster is deployed and up with empty root password by the operator.**
 
 ## 1. Change the password for root user
 
@@ -25,14 +25,14 @@ MySQL [(none)]> SET PASSWORD = PASSWORD('mysql_password');
 
 ## 2. Inject MYSQL_PWD environment variable to StarRocks components
 
-There are two ways to deploy StarRocks cluster:
+There are two ways to deploy CelerData cluster:
 
-1. Deploy StarRocks cluster with `StarRocksCluster` CR yaml.
-2. Deploy StarRocks cluster with Helm chart.
+1. Deploy CelerData cluster with `CelerDataCluster` CR yaml.
+2. Deploy CelerData cluster with Helm chart.
 
 Therefore, there are two ways to inject the MYSQL_PWD environment variable into StarRocks components.
 
-### 2.1 inject MYSQL_PWD environment variable with StarRocksCluster CRD yaml
+### 2.1 inject MYSQL_PWD environment variable with CelerDataCluster CRD yaml
 
 1. Create a secret **rootcredential** with the key **password** to store the root password
 
@@ -40,11 +40,11 @@ Therefore, there are two ways to inject the MYSQL_PWD environment variable into 
    kubectl create secret generic rootcredential --from-literal=password=mysql_password
    ```
 
-2. Add the following snippets to `starRocksFeSpec/starRocksBeSpec/starRocksCnSpec` respectively if the corresponding
+2. Add the following snippets to `celerDataFeSpec/celerDataBeSpec/celerDataCnSpec` respectively if the corresponding
    components are deployed.
 
    ```yaml
-   # for starRocksFeSpec
+   # for celerDataFeSpec
    feEnvVars:
    - name: "MYSQL_PWD"
      valueFrom:
@@ -52,7 +52,7 @@ Therefore, there are two ways to inject the MYSQL_PWD environment variable into 
          name: rootcredential
          key: password
 
-   # for starRocksBeSpec
+   # for celerDataBeSpec
    beEnvVars:
    - name: "MYSQL_PWD"
      valueFrom:
@@ -60,7 +60,7 @@ Therefore, there are two ways to inject the MYSQL_PWD environment variable into 
          name: rootcredential
          key: password
 
-   # for starRocksCnSpec
+   # for celerDataCnSpec
    cnEnvVars:
    - name: "MYSQL_PWD"
      valueFrom:
@@ -79,7 +79,7 @@ It will trigger a rolling restart of the cluster, wait until the cluster restart
 
 ### 2.2 Inject MYSQL_PWD environment variable with helm chart
 
-If you are using the `kube-starrocks` Helm chart, add the following snippets to `values.yaml`.
+If you are using the `kube-celerdata` Helm chart, add the following snippets to `values.yaml`.
 
 ```yaml
 
@@ -90,7 +90,7 @@ starrocks:
       data:
         password: mysql_password
 
-  starrocksFESpec:
+  celerDataFeSpec:
     feEnvVars:
       - name: "MYSQL_PWD"
         valueFrom:
@@ -98,7 +98,7 @@ starrocks:
             name: rootcredential
             key: password
 
-  starrocksBeSpec:
+  celerDataBeSpec:
     beEnvVars:
       - name: "MYSQL_PWD"
         valueFrom:
@@ -106,7 +106,7 @@ starrocks:
             name: rootcredential
             key: password
 
-  starrocksCnSpec:
+  celerDataCnSpec:
     cnEnvVars:
       - name: "MYSQL_PWD"
         valueFrom:
@@ -124,7 +124,7 @@ secrets:
   data:
     password: mysql_password
 
-starrocksFESpec:
+celerDataFeSpec:
   feEnvVars:
   - name: "MYSQL_PWD"
     valueFrom:
@@ -132,7 +132,7 @@ starrocksFESpec:
         name: rootcredential
         key: password
 
-starrocksBeSpec:
+celerDataBeSpec:
   beEnvVars:
   - name: "MYSQL_PWD"
     valueFrom:
@@ -140,7 +140,7 @@ starrocksBeSpec:
         name: rootcredential
         key: password
 
-starrocksCnSpec:
+celerDataCnSpec:
   cnEnvVars:
   - name: "MYSQL_PWD"
     valueFrom:

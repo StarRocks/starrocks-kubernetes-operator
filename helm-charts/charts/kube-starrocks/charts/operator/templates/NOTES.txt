@@ -1,3 +1,0 @@
-Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} operator chart.
-
-Please see the values.yaml for more operation information: https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/operator/values.yaml

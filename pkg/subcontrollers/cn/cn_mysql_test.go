@@ -17,7 +17,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
 )
 
 func TestNewSQLExecutor(t *testing.T) {

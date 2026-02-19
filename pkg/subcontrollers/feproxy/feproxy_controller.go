@@ -29,17 +29,17 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/deployment"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/log"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/deployment"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/fe"
 )
 
 type FeProxyController struct {
@@ -62,15 +62,15 @@ func (controller *FeProxyController) GetControllerName() string {
 	return "feProxyController"
 }
 
-func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
-	feProxySpec := src.Spec.StarRocksFeProxySpec
+func (controller *FeProxyController) SyncCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
+	feProxySpec := src.Spec.CelerDataFeProxySpec
 	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
 
 	if feProxySpec == nil {
-		logger.Info("src.Spec.StarRocksFeProxySpec == nil, clear fe proxy resource")
+		logger.Info("src.Spec.CelerDataFeProxySpec == nil, clear fe proxy resource")
 		if err := controller.ClearCluster(ctx, src); err != nil {
-			logger.Error(err, "clear fe proxy resource failed", "StarRocksCluster", src)
+			logger.Error(err, "clear fe proxy resource failed", "CelerDataCluster", src)
 			return err
 		}
 		return nil
@@ -92,7 +92,7 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 
 	err = controller.SyncConfigMap(ctx, src)
 	if err != nil {
-		logger.Error(err, "sync fe proxy configmap failed", "StarRocksCluster", src)
+		logger.Error(err, "sync fe proxy configmap failed", "CelerDataCluster", src)
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 	expectDeployment := deployment.MakeDeployment(src, feProxySpec, podTemplate)
 	err = k8sutils.ApplyDeployment(ctx, controller.k8sClient, expectDeployment)
 	if err != nil {
-		logger.Error(err, "sync fe proxy deployment failed", "StarRocksCluster", src)
+		logger.Error(err, "sync fe proxy deployment failed", "CelerDataCluster", src)
 		return err
 	}
 
@@ -115,26 +115,26 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 }
 
 // UpdateClusterStatus update the all resource status about fe.
-func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).
 		WithValues(log.ActionKey, log.ActionUpdateClusterStatus)
 	ctx = logr.NewContext(ctx, logger)
 
-	feProxySpec := src.Spec.StarRocksFeProxySpec
+	feProxySpec := src.Spec.CelerDataFeProxySpec
 	if feProxySpec == nil {
-		src.Status.StarRocksFeProxyStatus = nil
+		src.Status.CelerDataFeProxyStatus = nil
 		return nil
 	}
 
-	status := &srapi.StarRocksFeProxyStatus{
-		StarRocksComponentStatus: srapi.StarRocksComponentStatus{
-			Phase: srapi.ComponentReconciling,
+	status := &cdapi.CelerDataFeProxyStatus{
+		CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
+			Phase: cdapi.ComponentReconciling,
 		},
 	}
-	if src.Status.StarRocksFeProxyStatus != nil {
-		status = src.Status.StarRocksFeProxyStatus.DeepCopy()
+	if src.Status.CelerDataFeProxyStatus != nil {
+		status = src.Status.CelerDataFeProxyStatus.DeepCopy()
 	}
-	src.Status.StarRocksFeProxyStatus = status
+	src.Status.CelerDataFeProxyStatus = status
 
 	var actual appsv1.Deployment
 	deploymentName := load.Name(src.Name, feProxySpec)
@@ -143,7 +143,7 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 		Name:      deploymentName,
 	}, &actual)
 	if err != nil {
-		logger.Error(err, "get fe proxy deployment failed", "StarRocksCluster", src)
+		logger.Error(err, "get fe proxy deployment failed", "CelerDataCluster", src)
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
@@ -151,9 +151,9 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 	}
 
 	status.ServiceName = service.ExternalServiceName(src.Name, feProxySpec)
-	if err := subcontrollers.UpdateStatus(&status.StarRocksComponentStatus, controller.k8sClient,
+	if err := subcontrollers.UpdateStatus(&status.CelerDataComponentStatus, controller.k8sClient,
 		src.Namespace, load.Name(src.Name, feProxySpec), pod.Labels(src.Name, feProxySpec), subcontrollers.DeploymentLoadType); err != nil {
-		logger.Error(err, "update fe proxy status failed", "StarRocksCluster", src)
+		logger.Error(err, "update fe proxy status failed", "CelerDataCluster", src)
 		return err
 	}
 
@@ -161,42 +161,42 @@ func (controller *FeProxyController) UpdateClusterStatus(ctx context.Context, sr
 }
 
 // ClearResources clear resource about fe.
-func (controller *FeProxyController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (controller *FeProxyController) ClearCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(controller.GetControllerName()).
 		WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	if src.Spec.StarRocksFeProxySpec != nil {
+	if src.Spec.CelerDataFeProxySpec != nil {
 		return nil
 	}
 
-	feProxySpec := src.Spec.StarRocksFeProxySpec
+	feProxySpec := src.Spec.CelerDataFeProxySpec
 	loadName := load.Name(src.Name, feProxySpec)
 	if err := k8sutils.DeleteDeployment(ctx, controller.k8sClient, src.Namespace, loadName); err != nil {
-		logger.Error(err, "delete fe proxy deployment failed", "StarRocksCluster", src)
+		logger.Error(err, "delete fe proxy deployment failed", "CelerDataCluster", src)
 		return err
 	}
 
 	externalServiceName := service.ExternalServiceName(src.Name, feProxySpec)
 	if err := k8sutils.DeleteService(ctx, controller.k8sClient, src.Namespace, externalServiceName); err != nil {
-		logger.Error(err, "delete fe proxy service failed", "StarRocksCluster", src)
+		logger.Error(err, "delete fe proxy service failed", "CelerDataCluster", src)
 		return err
 	}
 
 	configMapName := load.Name(src.Name, feProxySpec)
 	if err := k8sutils.DeleteConfigMap(ctx, controller.k8sClient, src.Namespace, configMapName); err != nil {
-		logger.Error(err, "delete fe proxy configmap failed", "StarRocksCluster", src)
+		logger.Error(err, "delete fe proxy configmap failed", "CelerDataCluster", src)
 		return err
 	}
 
 	return nil
 }
 
-func (controller *FeProxyController) buildPodTemplate(src *srapi.StarRocksCluster) corev1.PodTemplateSpec {
-	feProxySpec := src.Spec.StarRocksFeProxySpec
+func (controller *FeProxyController) buildPodTemplate(src *cdapi.CelerDataCluster) corev1.PodTemplateSpec {
+	feProxySpec := src.Spec.CelerDataFeProxySpec
 	vols, volumeMounts := pod.MountStorageVolumes(feProxySpec)
 
-	vols, volumeMounts = pod.MountConfigMaps(feProxySpec, vols, volumeMounts, []srapi.ConfigMapReference{
+	vols, volumeMounts = pod.MountConfigMaps(feProxySpec, vols, volumeMounts, []cdapi.ConfigMapReference{
 		{
 			Name:      load.Name(src.Name, feProxySpec),
 			MountPath: "/etc/nginx",

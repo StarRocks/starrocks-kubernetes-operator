@@ -1,8 +1,6 @@
 apiVersion: v2
 name: warehouse
-description: Warehouse is currently a feature of the StarRocks Enterprise Edition.
-
-icon: https://avatars.githubusercontent.com/u/88238841
+description: Warehouse is currently a feature of the CelerData Enterprise Edition.
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -15,10 +13,8 @@ icon: https://avatars.githubusercontent.com/u/88238841
 type: application
 
 maintainers:
-  - name: Kevin Cai
-    email: caixiaohua@starrocks.com
-  - name: Dongxiao Yan
-    email: yandongxiao@starrocks.com
+  - name: Ray Yan
+    email: ray.yan@celerdata.com
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
@@ -35,7 +31,7 @@ kubeVersion: ">=1.23.0-0"
 
 keywords:
   - operator
-  - starrocks
+  - celerdata
   - database
   - olap
   - multi-warehouse
@@ -43,4 +39,4 @@ keywords:
 sources:
   - https://github.com/StarRocks/starrocks
 
-home: https://github.com/StarRocks/starrocks-kubernetes-operator
+home: https://github.com/celerdata/celerdata-kubernetes-operator

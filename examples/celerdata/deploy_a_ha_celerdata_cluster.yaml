@@ -1,0 +1,30 @@
+# This manifest deploys a high-available CelerData cluster with 3 FE pods and 3 BE pods.
+# A high-available CelerData cluster requires at least THREE FE pods in the CelerData cluster. One of them is the
+# leader, and the other two are the followers.
+# the number of BEs required depends on the default `replication_num` which is `3` by default.
+# CelerData cluster.
+# The requests and limits of FE and BE are set based on https://docs.starrocks.io/docs/deployment/plan_cluster/
+
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: a-ha-celerdata   # change the name if needed.
+spec:
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest
+    replicas: 3   # at least 3 FE pods
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+  celerDataBeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:latest
+    replicas: 3 # at least 3 BE pods
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi

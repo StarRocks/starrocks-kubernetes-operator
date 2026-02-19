@@ -1,9 +1,0 @@
-{{- if .Values.metrics.serviceMonitor.enabled }}
-{{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
-ERROR: Installation of the ServiceMonitor CR for the Prometheus operator failed. Please ensure it is installed beforehand.
-{{- end }}
-{{- end }}
-
-Thank you for installing {{ .Chart.Name }}-{{ .Chart.Version }} starrocks chart. Please wait for a few minutes for the cluster to be ready.
-
-Please see the values.yaml for more operation information: https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/charts/starrocks/values.yaml

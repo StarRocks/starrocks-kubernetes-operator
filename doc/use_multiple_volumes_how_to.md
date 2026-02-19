@@ -1,19 +1,19 @@
-# Deploy StarRocks with Multiple Volumes
+# Deploy CelerData with Multiple Volumes
 
 This document describes how to use multiple volumes to store StarRocks data.
 > Note: After installation, you are not allowed to modify the volume related fields no matter in the CRD or Helm Chart.
 
-# Deploy StarRocks with Multiple Volumes By Helm Chart
+# Deploy CelerData with Multiple Volumes By Helm Chart
 
 Based on the `storageSpec` field
-in [values.yaml](https://github.com/StarRocks/starrocks-kubernetes-operator/blob/main/helm-charts/charts/kube-starrocks/values.yaml),
+in [values.yaml](https://github.com/celerdata/celerdata-kubernetes-operator/blob/main/helm-charts/charts/kube-celerdata/values.yaml),
 we will give an example of how to use multiple volumes to store StarRocks data.
 
 ```yaml
 operator:
   starrocksOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.9.8
     imagePullPolicy: IfNotPresent
     resources:
@@ -21,7 +21,7 @@ operator:
         cpu: 1m
         memory: 20Mi
 starrocks:
-  starrocksBeSpec:
+  celerDataBeSpec:
     beEnvVars:
     # add storage_root_path in StarRocks config
     config: |
@@ -33,7 +33,7 @@ starrocks:
       default_rowset_type = beta
       storage_root_path = /opt/starrocks/be/storage0;/opt/starrocks/be/storage1
     image:
-      repository: starrocks/be-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
       tag: 3.2.2
     replicas: 1
     resources:
@@ -48,9 +48,9 @@ starrocks:
       name: be-storage
       storageCount: 2   # specify the number of volumes
       storageSize: 10Gi # the size of each volume
-  starrocksFESpec:
+  celerDataFeSpec:
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.2.2
     resources:
       limits:
@@ -75,11 +75,11 @@ Note:
 This feature is not supported in Helm Chart. The following is a workaround:
 
 ```bash
-# starrocks-community is a helm chart repository, you can show yours by `helm repo list`
-# kube-starrocks is the name of the helm chart
-helm template starrocks starrocks-community/kube-starrocks -f ./values.yaml >./sr.yaml
+# celerdata-community is a helm chart repository, you can show yours by `helm repo list`
+# kube-celerdata is the name of the helm chart
+helm template celerdata celerdata/kube-celerdata -f ./values.yaml >./sr.yaml
 
-# From the sr.yaml, there will a Custom Resource Definition (CRD) named StarRocksCluster.
+# From the sr.yaml, there will a Custom Resource Definition (CRD) named CelerDataCluster.
 # You can modify the CRD to use different storageClass or storageSize for each volume.
 storageVolumes:
 - name: be0-data

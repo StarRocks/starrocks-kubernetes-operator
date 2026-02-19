@@ -24,9 +24,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
 )
 
 func TestMakePVCList(t *testing.T) {
@@ -90,7 +90,7 @@ func TestMakeSelector(t *testing.T) {
 			name: "test Selector",
 			args: args{
 				clusterName: "test",
-				spec:        &v1.StarRocksFeSpec{},
+				spec:        &v1.CelerDataFeSpec{},
 			},
 			want: map[string]string{
 				v1.OwnerReference:    "test-fe",
@@ -109,7 +109,7 @@ func TestMakeSelector(t *testing.T) {
 
 func TestMakeStatefulset(t *testing.T) {
 	replicas := int32(1)
-	cluster := v1.StarRocksCluster{
+	cluster := v1.CelerDataCluster{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -118,7 +118,7 @@ func TestMakeStatefulset(t *testing.T) {
 	}
 
 	type args struct {
-		cluster v1.StarRocksCluster
+		cluster v1.CelerDataCluster
 		spec    v1.SpecInterface
 	}
 	tests := []struct {
@@ -130,9 +130,9 @@ func TestMakeStatefulset(t *testing.T) {
 			name: "test Statefulset",
 			args: args{
 				cluster: cluster,
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							Replicas: &replicas,
 						},
 					},
@@ -143,7 +143,7 @@ func TestMakeStatefulset(t *testing.T) {
 					Name:      "test-fe",
 					Namespace: "namespace",
 					Labels: map[string]string{
-						"app.starrocks.ownerreference/name": "test",
+						"app.celerdata.ownerreference/name": "test",
 						"app.kubernetes.io/component":       "fe",
 					},
 					Annotations: map[string]string{},
@@ -154,7 +154,7 @@ func TestMakeStatefulset(t *testing.T) {
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"app.kubernetes.io/component":       "fe",
-							"app.starrocks.ownerreference/name": "test-fe",
+							"app.celerdata.ownerreference/name": "test-fe",
 						},
 					},
 					ServiceName:         "test-fe-search",
@@ -172,9 +172,9 @@ func TestMakeStatefulset(t *testing.T) {
 			name: "test Statefulset with updateStrategy",
 			args: args{
 				cluster: cluster,
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							Replicas: &replicas,
 						},
 						UpdateStrategy: &appsv1.StatefulSetUpdateStrategy{
@@ -191,7 +191,7 @@ func TestMakeStatefulset(t *testing.T) {
 					Name:      "test-fe",
 					Namespace: "namespace",
 					Labels: map[string]string{
-						"app.starrocks.ownerreference/name": "test",
+						"app.celerdata.ownerreference/name": "test",
 						"app.kubernetes.io/component":       "fe",
 					},
 					Annotations: map[string]string{},
@@ -202,7 +202,7 @@ func TestMakeStatefulset(t *testing.T) {
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"app.kubernetes.io/component":       "fe",
-							"app.starrocks.ownerreference/name": "test-fe",
+							"app.celerdata.ownerreference/name": "test-fe",
 						},
 					},
 					ServiceName:         "test-fe-search",

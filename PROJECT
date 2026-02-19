@@ -1,23 +1,23 @@
-domain: starrocks.com
+domain: celerdata.com
 layout:
 - go.kubebuilder.io/v3
-projectName: starrocks-operator
-repo: github.com/StarRocks/starrocks-kubernetes-operator
+projectName: celerdata-operator
+repo: github.com/celerdata/celerdata-kubernetes-operator-internal
 resources:
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: starrocks.com
-  kind: StarRocksCluster
-  path: github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1
+  domain: celerdata.com
+  kind: CelerDataCluster
+  path: github.com/celerdata/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1
   version: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: starrocks.com
-  kind: StarRocksWarehouse
-  path: github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1
+  domain: celerdata.com
+  kind: CelerDataWarehouse
+  path: github.com/celerdata/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1
   version: v1
 version: "3"

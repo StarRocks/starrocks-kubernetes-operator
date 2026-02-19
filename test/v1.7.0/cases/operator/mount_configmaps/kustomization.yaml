@@ -1,8 +1,0 @@
-bases:
-- ../../../../cluster
-
-resources:
-- configmaps.yaml
-
-patchesStrategicMerge:
-- patch.yaml

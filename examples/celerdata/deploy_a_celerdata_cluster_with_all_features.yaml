@@ -1,0 +1,500 @@
+# This manifest deploys a CelerData cluster with all supported features.
+
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: a-celerdata-with-all-features   # change the name if needed.
+spec:
+  # the spec for celerdata FE.
+  celerDataFeSpec:
+    # the image for celerdata FE.
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest
+    # number of replicas for celerdata FE.
+    replicas: 3
+    # define resources requests and limits for FE pods.
+    limits:
+      cpu: 8
+      memory: 16Gi
+    requests:
+      cpu: 8
+      memory: 16Gi
+    # reference the configMap for FE which contains the fe.conf.
+    configMapInfo:
+      configMapName: celerdatacluster-sample-fe-cm
+      resolveKey: fe.conf
+    # fe storage volumes for persistent metadata and log
+    storageVolumes:
+      - name: fe-meta
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        # storageClassName: ""
+        # the persistent volume size. FE container stop running if the disk free space which the
+        # fe meta directory residents, is less than 5Gi.
+        storageSize: 10Gi
+        # the mount path for FE meta.
+        mountPath: /opt/starrocks/fe/meta
+      - name: fe-log
+        # storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path for FE log.
+        mountPath: /opt/starrocks/fe/log
+    # add annotations for fe pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # affinity for fe pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for fe pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # Additional fe container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    feEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the fe service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for fe service.
+      annotations: {}
+      # config the service port for fe service.
+      # if you want to use a dedicated port for fe service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for http port of fe service.
+      # - name: http  # fill the name from the fe service ports
+      #   nodePort: 30030 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for fe access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
+    startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
+
+  # the spec for celerdata BE.
+  celerDataBeSpec: # the image for celerdata BE.
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:latest
+    # number of replicas to deploy for a BE statefulset.
+    replicas: 3
+    # define resources requests and limits for BE pods.
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    # reference to the configmap for BE which contains the be.conf.
+    configMapInfo:
+      configMapName: celerdatacluster-sample-be-cm
+      resolveKey: be.conf
+    # be storage volumes for persistent storage.
+    storageVolumes:
+      - name: be-data
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        # storageClassName: ""
+        # the size of storage volume for data
+        storageSize: 10Gi
+        # the mount path for BE data.
+        mountPath: /opt/starrocks/be/storage
+      - name: be-log
+        # storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path for BE log.
+        mountPath: /opt/starrocks/be/log
+    # add annotations for be pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # affinity for be pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for be pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    # Additional be container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    beEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the be service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for be service.
+      annotations: {}
+      # config the service port for be service.
+      # if you want to use a dedicated port for be service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for be service.
+      # - name: webserver # fill the name from the be service ports
+      #   nodePort: 30040 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for be access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
+    startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
+
+  # the spec for celerdata CN.
+  celerDataCnSpec: # the image for celerdata CN.
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:latest
+    # number of replicas to deploy for a CN statefulset.
+    # comment out this line if autoScalingPolicy is enabled.
+    # replicas: 1
+    # define resources requests and limits for CN pods.
+    limits:
+      cpu: 16
+      memory: 64Gi
+    requests:
+      cpu: 16
+      memory: 64Gi
+    # reference to the configmap for CN which contains the cn.conf.
+    configMapInfo:
+      configMapName: celerdatacluster-sample-cn-cm
+      resolveKey: cn.conf
+    storageVolumes:
+      - name: cn-data
+        # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
+        # storageClassName: ""
+        # the size of storage volume for data
+        storageSize: 10Gi
+        # the mount path of CN data
+        mountPath: /opt/starrocks/cn/storage
+      - name: cn-log
+        # storageClassName: ""
+        # the size of storage volume for log
+        storageSize: 1Gi
+        # the mount path of CN log
+        mountPath: /opt/starrocks/cn/log
+    # comment out this section if you don't want to enable autoscaling policy.
+    autoScalingPolicy:
+      # the max replicas for CN autoscaling.
+      maxReplicas: 10
+      # the min replicas for CN autoscaling.
+      minReplicas: 1
+      # operator creates an HPA resource based on the following field.
+      # see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ for more information.
+      hpaPolicy:
+        metrics:
+          - type: Resource
+            resource:
+              # The average memory usage of CNs is specified as a resource metric.
+              name: memory
+              target:
+                # The elastic scaling threshold is 60%.
+                # When the average memory utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average memory utilization of CNs is below 60%, the number of CNs decreases for scale-in.
+                averageUtilization: 60
+                type: Utilization
+          - type: Resource
+            resource:
+              # The average CPU utilization of CNs is specified as a resource metric.
+              name: cpu
+              target:
+                # The elastic scaling threshold is 60%.
+                # When the average CPU utilization of CNs exceeds 60%, the number of CNs increases for scale-out.
+                # When the average CPU utilization of CNs is below 60%, the number of CNs decreases for scale-in.
+                averageUtilization: 60
+                type: Utilization
+        # The scaling behavior is customized according to business scenarios, helping
+        # you achieve rapid or slow scaling or disable scaling.
+        behavior:
+          scaleUp:
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled
+    # add annotations for cn pods.
+    annotations: {}
+    # the pod labels for user select or classify pods.
+    podLabels: {}
+    # schedulerName allows you to specify which scheduler will be used for your pods.
+    schedulerName: ""
+    # Additional cn container environment variables
+    # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+    # affinity for cn pod scheduling.
+    affinity: {}
+      # nodeAffinity:
+      #   requiredDuringSchedulingIgnoredDuringExecution:
+      #     nodeSelectorTerms:
+      #     - matchFields:
+      #       - key: metadata.name
+      #         operator: In
+      #         values:
+      #         - target-host-name
+    # Node tolerations for cn pod scheduling to nodes with taints
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    tolerations: []
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
+    # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    nodeSelector: {}
+      # kubernetes.io/arch: amd64
+      # kubernetes.io/os: linux
+    cnEnvVars: []
+      # e.g. static environment variable:
+      # - name: DEMO_GREETING
+      #   value: "Hello from the environment"
+      # e.g. secret environment variable:
+      # - name: USERNAME
+      #   valueFrom:
+      #   secretKeyRef:
+      #     name: mysecret
+      #     key: username
+    # If runAsNonRoot is true, the container is run as non-root user.
+    # The userId will be set to 1000, and the groupID will be set to 1000.
+    runAsNonRoot: false
+    service:
+      # the cn service type, only supported ClusterIP, NodePort, LoadBalancer
+      type: ClusterIP
+      # the loadBalancerIP for static ip config when the type=LoadBalancer
+      loadBalancerIP: ""
+      # add annotations for cn service.
+      annotations: {}
+      # config the service port for cn service.
+      # if you want to use a dedicated port for cn service, you can config the port.
+      # see https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports for more details.
+      ports: []
+      # e.g. use a dedicated node port for cn service.
+      # - name: webserver # fill the name from the cn service ports
+      #   nodePort: 30040 # The range of valid ports is 30000-32767
+    # imagePullSecrets allows you to use secrets to pull images for pods.
+    imagePullSecrets: []
+    # serviceAccount for cn access cloud service.
+    serviceAccount: ""
+    # mount secrets if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    secrets: []
+      # e.g. mount my-secret to /etc/my-secret
+      # - name: my-secret
+      #   mountPath: /etc/my-secret
+      #   subPath: ""
+    # mount configmaps if necessary.
+    # see https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath for more details about subPath.
+    configMaps: []
+      # e.g. mount my-configmap to /etc/my-configmap
+      # - name: my-configmap
+      #   mountPath: /etc/my-configmap
+      #   subPath: ""
+    # startupProbeFailureSeconds defines the total failure seconds of startupProbe.
+    # Default failureThreshold is 60 and the periodSeconds is 5, this means the startup
+    # will fail if the pod can't start in 300 seconds. Your StartupProbeFailureSeconds is
+    # the total time of seconds before startupProbe give up and fail the container start.
+    # If startupProbeFailureSeconds can't be divided by defaultPeriodSeconds, the failureThreshold
+    # will be rounded up
+    # Note: you can set it to 0 to disable the probe.
+    startupProbeFailureSeconds: 300
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
+
+  # the spec for celerdata FE proxy.
+  celerDataFeProxySpec:
+    replicas: 1
+    # define resources requests and limits for FE proxy pods.
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+    service:
+      type: NodePort   # export fe proxy service
+      ports:
+        - name: http-port   # the name is from fe proxy service ports
+          nodePort: 30180   # The range of valid ports is 30000-32767
+    # set the resolver for nginx server, default kube-dns.kube-system.svc.cluster.local
+    resolver: "kube-dns.kube-system.svc.cluster.local"
+    # LivenessProbeFailureSeconds defines the total failure seconds of liveness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    livenessProbeFailureSeconds: 15
+    # ReadinessProbeFailureSeconds defines the total failure seconds of readiness Probe.
+    # default value is 15 seconds
+    # You can set it to 0 to disable the probe.
+    readinessProbeFailureSeconds: 15
+
+---
+
+# fe config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celerdatacluster-sample-fe-cm
+  labels:
+    cluster: celerdatacluster-sample
+data:
+  fe.conf: |
+    LOG_DIR = ${STARROCKS_HOME}/log
+    DATE = "$(date +%Y%m%d-%H%M%S)"
+    JAVA_OPTS="-Dlog4j2.formatMsgNoLookups=true -Xmx8192m -XX:+UseG1GC -Xlog:gc*:${LOG_DIR}/fe.gc.log.$DATE:time"
+    http_port = 8030
+    rpc_port = 9020
+    query_port = 9030
+    edit_log_port = 9010
+    mysql_service_nio_enabled = true
+    sys_log_level = INFO
+
+---
+
+# be config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celerdatacluster-sample-be-cm
+  labels:
+    cluster: celerdatacluster-sample
+data:
+  be.conf: |
+    be_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060
+    sys_log_level = INFO
+    default_rowset_type = beta
+
+---
+
+# cn config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celerdatacluster-sample-cn-cm
+  labels:
+    cluster: celerdatacluster-sample
+data:
+  cn.conf: |
+    sys_log_level = INFO
+    # ports for admin, web, heartbeat service
+    thrift_port = 9060
+    webserver_port = 8040
+    heartbeat_service_port = 9050
+    brpc_port = 8060

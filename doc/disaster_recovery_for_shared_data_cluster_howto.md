@@ -35,8 +35,8 @@ status:
    Operator compares the values of `generation` and `observedGeneration`: when `disasterRecoveryStatus` is empty,
    or `observedGeneration < generation`, a new DR operation is triggered.
    If `generation == observedGeneration` && `disasterRecovery.Phase` != `v1.DRPhaseDone`, it means that after the last
-   reconcile, the StarRocks cluster has entered disaster recovery mode.
-3. Check the FE configuration file to ensure that the StarRocks cluster is started in shared-data mode.
+   reconcile, the CelerData cluster has entered disaster recovery mode.
+3. Check the FE configuration file to ensure that the CelerData cluster is started in shared-data mode.
 
 If all the above conditions are met, the Operator will enter the DR mode.
 
@@ -48,7 +48,7 @@ For CN component, the reconcile is paused.
 
 The reconcile process for FE is as follows:
 
-1. Traverse `spec.starrocksFESpec.ConfigMaps` to confirm that `cluster_snapshot.yaml` has been mounted. Currently,
+1. Traverse `spec.celerDataFeSpec.ConfigMaps` to confirm that `cluster_snapshot.yaml` has been mounted. Currently,
    this check is relatively simple, mainly to check whether the `SubPath` field is equal to `cluster_snapshot.yaml`.
 2. Modify the FE Statefulset, including:
     1. Start a single-replica FE.
@@ -59,7 +59,7 @@ The reconcile process for FE is as follows:
     4. Modify the Readiness configuration. The configuration for normal cluster is to send an HTTP request to FE 8030;
        the new configuration is used to detect whether the FE 9030 port is connected. Once connected, it means that the
        FE Pod disaster recovery operation is complete.
-3. After the FE Pod disaster recovery is complete, according to the configuration of the StarRocksCluster, StarRocks
+3. After the FE Pod disaster recovery is complete, according to the configuration of the CelerDataCluster, StarRocks
    is started normally.
 
 ### How does Operator update the disaster recovery phase?
@@ -79,7 +79,7 @@ The status update logic is as follows:
 
 ## Example
 
-Inorder to keep it simple and easy for users to follow this document, we use the `kube-starrocks` Helm Chart to deploy.
+Inorder to keep it simple and easy for users to follow this document, we use the `kube-celerdata` Helm Chart to deploy.
 Please note:
 
 1. Be sure to use at least v1.10.0 version of Operator and CRD.
@@ -95,7 +95,7 @@ Prepare the `./starrocks-values.yaml` file:
 operator:
   starrocksOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.10.0
     imagePullPolicy: IfNotPresent
     replicaCount: 1
@@ -104,10 +104,10 @@ operator:
         cpu: 1m
         memory: 20Mi
 starrocks:
-  starrocksCluster:
+  celerDataCluster:
     enabledBe: false
     enabledCn: true
-  starrocksCnSpec:
+  celerDataCnSpec:
     config: |
       sys_log_level = INFO
       # ports for admin, web, heartbeat service
@@ -116,7 +116,7 @@ starrocks:
       heartbeat_service_port = 9050
       brpc_port = 8060
     image:
-      repository: starrocks/cn-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
       tag: 3.4.1
     replicas: 1
     resources:
@@ -130,7 +130,7 @@ starrocks:
       name: cn
       logStorageSize: 1Gi
       storageSize: 10Gi
-  starrocksFESpec:
+  celerDataFeSpec:
     feEnvVars:
       - name: LOG_CONSOLE
         value: "1"
@@ -157,7 +157,7 @@ starrocks:
       automated_cluster_snapshot_interval_seconds = 60
     replicas: 3
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.4.1
     resources:
       limits:
@@ -175,15 +175,15 @@ starrocks:
 Create the cluster using Helm:
 
 ```bash
-helm install -f ./starrocks-values.yaml starrocks starrocks-community/kube-starrocks
+helm install -f ./celerdata-values.yaml celerdata celerdata-community/kube-celerdata
 
 # make sure the cluster has been successfully deployed
 kubectl get pods
 NAME READY STATUS RESTARTS AGE
-kube-starrocks-cn-0 1/1 Running 0 23s
-kube-starrocks-fe-0 1/1 Running 0 79s
-kube-starrocks-fe-1 1/1 Running 0 79s
-kube-starrocks-fe-2 1/1 Running 0 79s
+kube-celerdata-cn-0 1/1 Running 0 23s
+kube-celerdata-fe-0 1/1 Running 0 79s
+kube-celerdata-fe-1 1/1 Running 0 79s
+kube-celerdata-fe-2 1/1 Running 0 79s
 ```
 
 ### 2. Create a table and insert data
@@ -192,7 +192,7 @@ Connect to the FE Pod:
 
 ```bash
 # enter FE pod
-kubectl exec -it kube-starrocks-fe-0 bash
+kubectl exec -it kube-celerdata-fe-0 bash
 
 # use mysql client to login
 mysql -h 127.0.0.1 -P9030 -uroot
@@ -304,18 +304,18 @@ sDIR s3://xxx/data/7351ce6a-f4a4-4937-a876-cb8801085aea/meta/image/automated_clu
 ### 4. Delete the created cluster
 
 ```bash
-helm uninstall starrocks
+helm uninstall celerdata
 
 # delete pvcs
 kubectl get pvc | awk '{if (NR>1){print $1}}' | xargs kubectl delete pvc
-persistentvolumeclaim "cn-data-kube-starrocks-cn-0" deleted
-persistentvolumeclaim "cn-log-kube-starrocks-cn-0" deleted
-persistentvolumeclaim "fe-storage-log-kube-starrocks-fe-0" deleted
-persistentvolumeclaim "fe-storage-log-kube-starrocks-fe-1" deleted
-persistentvolumeclaim "fe-storage-log-kube-starrocks-fe-2" deleted
-persistentvolumeclaim "fe-storage-meta-kube-starrocks-fe-0" deleted
-persistentvolumeclaim "fe-storage-meta-kube-starrocks-fe-1" deleted
-persistentvolumeclaim "fe-storage-meta-kube-starrocks-fe-2" deleted
+persistentvolumeclaim "cn-data-kube-celerdata-cn-0" deleted
+persistentvolumeclaim "cn-log-kube-celerdata-cn-0" deleted
+persistentvolumeclaim "fe-storage-log-kube-celerdata-fe-0" deleted
+persistentvolumeclaim "fe-storage-log-kube-celerdata-fe-1" deleted
+persistentvolumeclaim "fe-storage-log-kube-celerdata-fe-2" deleted
+persistentvolumeclaim "fe-storage-meta-kube-celerdata-fe-0" deleted
+persistentvolumeclaim "fe-storage-meta-kube-celerdata-fe-1" deleted
+persistentvolumeclaim "fe-storage-meta-kube-celerdata-fe-2" deleted
 ```
 
 ### 5. Create a new cluster for disaster recovery
@@ -325,11 +325,11 @@ Prepare a new file named `override.yaml`, which contains the configuration requi
 
 ```yaml
 starrocks:
-  starrocksCluster: # enable disaster recovery
+  celerDataCluster: # enable disaster recovery
     disasterRecovery:
       enabled: true
       generation: 1
-  starrocksFESpec: # mount the cluster_snapshot.yaml
+  celerDataFeSpec: # mount the cluster_snapshot.yaml
     configMaps:
       - name: cluster-snapshot
         mountPath: /opt/starrocks/fe/conf/cluster_snapshot.yaml
@@ -376,7 +376,7 @@ This time, we will deploy the cluster with the following command:
 # 1. make sure you are using the at least v1.10.0 version of Operator and CRD
 # 2. the command to deploy the cluster is different from the first time. We specify two files, and the override.yaml
 #    is used for the recovery configuration.
-helm install -f ./starrocks-values.yaml -f override.yaml starrocks starrocks-community/kube-starrocks --version 1.10.0
+helm install -f ./celerdata-values.yaml -f override.yaml celerdata celerdata-community/kube-celerdata --version 1.10.0
 
 ```
 
@@ -386,11 +386,11 @@ The detailed process of disaster recovery is as follows:
    ```
    kubectl get pods
    NAME                  READY   STATUS    RESTARTS        AGE
-   kube-starrocks-fe-0   1/1     Running   0               4m37s
+   kube-celerdata-fe-0   1/1     Running   0               4m37s
    ```
-   If you check the status of the StarRocksCluster at this time, you will see:
+   If you check the status of the CelerDataCluster at this time, you will see:
    ```
-   kubectl get src kube-starrocks -oyaml | less
+   kubectl get cdc kube-celerdata -oyaml | less
    status:
      phase: running
      disasterRecovery:
@@ -404,10 +404,10 @@ The detailed process of disaster recovery is as follows:
    ```
    kubectl get pods
    NAME                  READY   STATUS    RESTARTS        AGE
-   kube-starrocks-cn-0   1/1     Running   0               7m54s
-   kube-starrocks-fe-0   1/1     Running   0               7m1s
-   kube-starrocks-fe-1   1/1     Running   0               7m54s
-   kube-starrocks-fe-2   1/1     Running   0               7m54s
+   kube-celerdata-cn-0   1/1     Running   0               7m54s
+   kube-celerdata-fe-0   1/1     Running   0               7m1s
+   kube-celerdata-fe-1   1/1     Running   0               7m54s
+   kube-celerdata-fe-2   1/1     Running   0               7m54s
    ```
    The cluster status is as follows:
    ```
@@ -425,7 +425,7 @@ The detailed process of disaster recovery is as follows:
 
 ```shell
 # enter the pod
-kubectl exec -it kube-starrocks-fe-0 bash
+kubectl exec -it kube-celerdata-fe-0 bash
 
 # connect mysql
 mysql -h 127.0.0.1 -P9030 -uroot

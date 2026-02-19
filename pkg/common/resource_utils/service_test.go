@@ -23,13 +23,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
 )
 
 func Test_getExternalServiceAnnotations(t *testing.T) {
 	type args struct {
-		svc *srapi.StarRocksService
+		svc *cdapi.CelerDataService
 	}
 	tests := []struct {
 		name string
@@ -39,14 +39,14 @@ func Test_getExternalServiceAnnotations(t *testing.T) {
 		{
 			name: "empty service",
 			args: args{
-				svc: &srapi.StarRocksService{},
+				svc: &cdapi.CelerDataService{},
 			},
 			want: map[string]string{},
 		},
 		{
 			name: "service with annotations",
 			args: args{
-				svc: &srapi.StarRocksService{
+				svc: &cdapi.CelerDataService{
 					Annotations: map[string]string{
 						"test": "test",
 					},
@@ -66,7 +66,7 @@ func Test_getExternalServiceAnnotations(t *testing.T) {
 
 func Test_getExternalServiceLabels(t *testing.T) {
 	type args struct {
-		svc *srapi.StarRocksService
+		svc *cdapi.CelerDataService
 	}
 	tests := []struct {
 		name string
@@ -76,14 +76,14 @@ func Test_getExternalServiceLabels(t *testing.T) {
 		{
 			name: "empty service",
 			args: args{
-				svc: &srapi.StarRocksService{},
+				svc: &cdapi.CelerDataService{},
 			},
 			want: map[string]string{},
 		},
 		{
 			name: "service with labels",
 			args: args{
-				svc: &srapi.StarRocksService{
+				svc: &cdapi.CelerDataService{
 					Labels: map[string]string{
 						"test": "test",
 					},
@@ -101,18 +101,18 @@ func Test_getExternalServiceLabels(t *testing.T) {
 	}
 }
 
-func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
-	warehouse := &srapi.StarRocksWarehouse{
+func TestBuildExternalService_ForCelerDataWarehouse(t *testing.T) {
+	warehouse := &cdapi.CelerDataWarehouse{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "default",
 		},
-		Spec: srapi.StarRocksWarehouseSpec{
-			StarRocksCluster: "test",
-			Template: &srapi.WarehouseComponentSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Service: &srapi.StarRocksService{
+		Spec: cdapi.CelerDataWarehouseSpec{
+			CelerDataCluster: "test",
+			Template: &cdapi.WarehouseComponentSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+						Service: &cdapi.CelerDataService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
 						},
@@ -123,7 +123,7 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 	}
 
 	type args struct {
-		src *srapi.StarRocksWarehouse
+		src *cdapi.CelerDataWarehouse
 	}
 	tests := []struct {
 		name          string
@@ -140,7 +140,7 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 					Name:      "test-warehouse-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2811429284",
+						cdapi.ComponentResourceHash: "2811429284",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(warehouse, warehouse.GroupVersionKind())
@@ -195,17 +195,17 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 	}
 }
 
-func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
-	src := &srapi.StarRocksCluster{
+func TestBuildExternalService_ForCelerDataCluster(t *testing.T) {
+	src := &cdapi.CelerDataCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "default",
 		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksFeSpec: &srapi.StarRocksFeSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Service: &srapi.StarRocksService{
+		Spec: cdapi.CelerDataClusterSpec{
+			CelerDataFeSpec: &cdapi.CelerDataFeSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+						Service: &cdapi.CelerDataService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
 							Labels: map[string]string{
@@ -215,10 +215,10 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					},
 				},
 			},
-			StarRocksBeSpec: &srapi.StarRocksBeSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Service: &srapi.StarRocksService{
+			CelerDataBeSpec: &cdapi.CelerDataBeSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+						Service: &cdapi.CelerDataService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
 							Labels: map[string]string{
@@ -228,10 +228,10 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					},
 				},
 			},
-			StarRocksCnSpec: &srapi.StarRocksCnSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Service: &srapi.StarRocksService{
+			CelerDataCnSpec: &cdapi.CelerDataCnSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+						Service: &cdapi.CelerDataService{
 							Type:           corev1.ServiceTypeLoadBalancer,
 							LoadBalancerIP: "127.0.0.1",
 							Labels: map[string]string{
@@ -245,7 +245,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 	}
 
 	type args struct {
-		src *srapi.StarRocksCluster
+		src *cdapi.CelerDataCluster
 	}
 	tests := []struct {
 		name          string
@@ -264,7 +264,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2323011486",
+						cdapi.ComponentResourceHash: "2323011486",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -304,7 +304,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-be-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2811174334",
+						cdapi.ComponentResourceHash: "2811174334",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -341,7 +341,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "4173513860",
+						cdapi.ComponentResourceHash: "4173513860",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -397,13 +397,13 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(_ *testing.T) {
 			object := object.NewFromCluster(src)
-			gotFeService := BuildExternalService(object, src.Spec.StarRocksFeSpec,
+			gotFeService := BuildExternalService(object, src.Spec.CelerDataFeSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotFeService, tt.wantFeService)
-			gotBeService := BuildExternalService(object, src.Spec.StarRocksBeSpec,
+			gotBeService := BuildExternalService(object, src.Spec.CelerDataBeSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotBeService, tt.wantBeService)
-			gotCnService := BuildExternalService(object, src.Spec.StarRocksCnSpec,
+			gotCnService := BuildExternalService(object, src.Spec.CelerDataCnSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
 			equal(gotCnService, tt.wantCnService)
 		})
@@ -417,14 +417,14 @@ func Test_getFeServicePorts(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		wantSrPorts []srapi.StarRocksServicePort
+		wantSrPorts []cdapi.CelerDataServicePort
 	}{
 		{
 			name: "test get fe service ports",
 			args: args{
 				config: map[string]interface{}{},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "http",
 					Port:          DefMap[HTTP_PORT],
@@ -457,7 +457,7 @@ func Test_getFeServicePorts(t *testing.T) {
 					EDIT_LOG_PORT: "4",
 				},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "http",
 					Port:          1,
@@ -497,14 +497,14 @@ func Test_getBeServicePorts(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		wantSrPorts []srapi.StarRocksServicePort
+		wantSrPorts []cdapi.CelerDataServicePort
 	}{
 		{
 			name: "test get be service ports",
 			args: args{
 				config: map[string]interface{}{},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "be",
 					Port:          DefMap[BE_PORT],
@@ -537,7 +537,7 @@ func Test_getBeServicePorts(t *testing.T) {
 					BRPC_PORT:              "4",
 				},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "be",
 					Port:          1,
@@ -577,14 +577,14 @@ func Test_getCnServicePorts(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		wantSrPorts []srapi.StarRocksServicePort
+		wantSrPorts []cdapi.CelerDataServicePort
 	}{
 		{
 			name: "test get cn service ports",
 			args: args{
 				config: map[string]interface{}{},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "thrift",
 					Port:          DefMap[THRIFT_PORT],
@@ -617,7 +617,7 @@ func Test_getCnServicePorts(t *testing.T) {
 					BRPC_PORT:              "4",
 				},
 			},
-			wantSrPorts: []srapi.StarRocksServicePort{
+			wantSrPorts: []cdapi.CelerDataServicePort{
 				{
 					Name:          "thrift",
 					Port:          1,
@@ -652,19 +652,19 @@ func Test_getCnServicePorts(t *testing.T) {
 
 func Test_mergePort(t *testing.T) {
 	type args struct {
-		service     *srapi.StarRocksService
-		defaultPort srapi.StarRocksServicePort
+		service     *cdapi.CelerDataService
+		defaultPort cdapi.CelerDataServicePort
 	}
 	tests := []struct {
 		name string
 		args args
-		want srapi.StarRocksServicePort
+		want cdapi.CelerDataServicePort
 	}{
 		{
 			name: "merge port by containerPort",
 			args: args{
-				service: &srapi.StarRocksService{
-					Ports: []srapi.StarRocksServicePort{
+				service: &cdapi.CelerDataService{
+					Ports: []cdapi.CelerDataServicePort{
 						{
 							Port:          1,
 							NodePort:      1,
@@ -676,13 +676,13 @@ func Test_mergePort(t *testing.T) {
 						},
 					},
 				},
-				defaultPort: srapi.StarRocksServicePort{
+				defaultPort: cdapi.CelerDataServicePort{
 					Name:          "port-x",
 					ContainerPort: 1,
 					NodePort:      3,
 				},
 			},
-			want: srapi.StarRocksServicePort{
+			want: cdapi.CelerDataServicePort{
 				Name:          "port-x",
 				ContainerPort: 1,
 				NodePort:      1,
@@ -692,8 +692,8 @@ func Test_mergePort(t *testing.T) {
 		{
 			name: "merge port by Name",
 			args: args{
-				service: &srapi.StarRocksService{
-					Ports: []srapi.StarRocksServicePort{
+				service: &cdapi.CelerDataService{
+					Ports: []cdapi.CelerDataServicePort{
 						{
 							Name:     "port-x",
 							NodePort: 1,
@@ -705,13 +705,13 @@ func Test_mergePort(t *testing.T) {
 						},
 					},
 				},
-				defaultPort: srapi.StarRocksServicePort{
+				defaultPort: cdapi.CelerDataServicePort{
 					Name:          "port-x",
 					ContainerPort: 1,
 					NodePort:      3,
 				},
 			},
-			want: srapi.StarRocksServicePort{
+			want: cdapi.CelerDataServicePort{
 				Name:          "port-x",
 				ContainerPort: 1,
 				NodePort:      1,
@@ -721,8 +721,8 @@ func Test_mergePort(t *testing.T) {
 		{
 			name: "merge port by container and port",
 			args: args{
-				service: &srapi.StarRocksService{
-					Ports: []srapi.StarRocksServicePort{
+				service: &cdapi.CelerDataService{
+					Ports: []cdapi.CelerDataServicePort{
 						{
 							ContainerPort: 1,
 							NodePort:      1,
@@ -735,13 +735,13 @@ func Test_mergePort(t *testing.T) {
 						},
 					},
 				},
-				defaultPort: srapi.StarRocksServicePort{
+				defaultPort: cdapi.CelerDataServicePort{
 					Name:          "port-x",
 					ContainerPort: 1, // make sure containerPort has higher priority
 					NodePort:      3,
 				},
 			},
-			want: srapi.StarRocksServicePort{
+			want: cdapi.CelerDataServicePort{
 				Name:          "port-x",
 				ContainerPort: 1,
 				NodePort:      1,

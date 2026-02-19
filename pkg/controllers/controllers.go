@@ -9,12 +9,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/be"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/cn"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/fe"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/feproxy"
 )
 
 func SetupClusterReconciler(mgr ctrl.Manager) error {
@@ -26,9 +26,9 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 		feController, beController, cnController, feProxyController,
 	}
 
-	reconciler := &StarRocksClusterReconciler{
+	reconciler := &CelerDataClusterReconciler{
 		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("starrockscluster-controller"),
+		Recorder: mgr.GetEventRecorderFor("celerdatacluster-controller"),
 		Scs:      subcs,
 	}
 
@@ -39,12 +39,12 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *CelerDataClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// cannot add Owns(&v2.HorizontalPodAutoscaler{}), because if a kubernetes version is lower than 1.23,
 	// v2.HorizontalPodAutoscaler does not exist.
 	// todo(yandongxiao): watch the HPA resource
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&srapi.StarRocksCluster{}).
+		For(&cdapi.CelerDataCluster{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
@@ -62,18 +62,18 @@ func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
 	if namespace != "" {
 		listOpts = append(listOpts, client.InNamespace(namespace))
 	}
-	// check StarRocksWarehouse CRD exists or not
-	if err := mgr.GetAPIReader().List(context.Background(), &srapi.StarRocksWarehouseList{}, listOpts...); err != nil {
+	// check CelerDataWarehouse CRD exists or not
+	if err := mgr.GetAPIReader().List(context.Background(), &cdapi.CelerDataWarehouseList{}, listOpts...); err != nil {
 		if meta.IsNoMatchError(err) {
-			// StarRocksWarehouse CRD is not found, skip StarRocksWarehouseReconciler
+			// CelerDataWarehouse CRD is not found, skip CelerDataWarehouseReconciler
 			return nil
 		}
 		return err
 	}
 
-	reconciler := &StarRocksWarehouseReconciler{
+	reconciler := &CelerDataWarehouseReconciler{
 		Client:         mgr.GetClient(),
-		recorder:       mgr.GetEventRecorderFor("starrockswarehouse-controller"),
+		recorder:       mgr.GetEventRecorderFor("celerdatawarehouse-controller"),
 		subControllers: []subcontrollers.WarehouseSubController{cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)},
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
@@ -83,12 +83,12 @@ func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *StarRocksWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *CelerDataWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// cannot add Owns(&v2.HorizontalPodAutoscaler{}), because if a kubernetes version is lower than 1.23,
 	// v2.HorizontalPodAutoscaler does not exist.
 	// todo(yandongxiao): watch the HPA resource
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&srapi.StarRocksWarehouse{}).
+		For(&cdapi.CelerDataWarehouse{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).

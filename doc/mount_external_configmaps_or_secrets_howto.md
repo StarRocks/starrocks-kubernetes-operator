@@ -9,20 +9,20 @@ describes how to mount configmaps into StarRocks.
 You can specify `configMaps` in the corresponding component spec. The following is an example
 
 ```shell
-apiVersion: starrocks.com/v1
-kind: StarRocksCluster
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
 metadata:
-  name: kube-starrocks
+  name: kube-celerdata
   namespace: kb-system
 spec:
-  starRocksFeSpec:
-    image: "starrocks/fe-ubuntu:2.5.4"
+  celerDataFeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:2.5.4"
     replicas: 1
     configMaps:
       - name: my-configmap
         mountPath: /etc/my-configmap
-  starRocksBeSpec:
-    image: "starrocks/be-ubuntu:2.5.4"
+  celerDataBeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:2.5.4"
     replicas: 1
     configMaps:
       - name: my-configmap
@@ -34,11 +34,11 @@ spec:
 ## 2. Mount configMaps by helm chart
 
 By using Helm chart, you can also mount multiple external configmaps into StarRocks. You can specify `configMaps` in
-the corresponding component spec. The following is an example by using `kube-starrocks` Helm chart.
+the corresponding component spec. The following is an example by using `kube-celerdata` Helm chart.
 
 ```shell
-starrocks:
-  starrocksBeSpec:
+celerdata:
+  celerDataBeSpec:
     configMaps:
       # mount the whole configmap `my-configmap` to `/etc/my-configmap`
       - name: my-configmap
@@ -56,11 +56,11 @@ starrocks:
 ## 3. Mount configMaps to a subPath by Helm Chart
 
 You can also mount external configmaps into StarRocks with a subPath. The following is an example by
-using `kube-starrocks` Helm chart.
+using `kube-celerdata` Helm chart.
 
 ```shell
-starrocks:
-  starrocksBeSpec:
+celerdata:
+  celerDataBeSpec:
     configMaps:
       # mount the file `key.conf` in configmap `my-configmap` to `/opt/starrocks/be/conf/key.conf`
       - name: my-configmap

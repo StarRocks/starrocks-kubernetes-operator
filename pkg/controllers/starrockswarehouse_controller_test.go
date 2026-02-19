@@ -13,10 +13,10 @@ import (
 	"k8s.io/client-go/tools/record"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/cn"
 )
 
 func TestMain(m *testing.M) {
@@ -24,9 +24,9 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWarehouseReconciler {
+func newCelerDataWarehouseController(objects ...runtime.Object) *CelerDataWarehouseReconciler {
 	client := fake.NewFakeClient(v1.Scheme, objects...)
-	warehouseController := &StarRocksWarehouseReconciler{
+	warehouseController := &CelerDataWarehouseReconciler{
 		recorder: record.NewFakeRecorder(10),
 		Client:   client,
 		subControllers: []subcontrollers.WarehouseSubController{
@@ -36,9 +36,9 @@ func newStarRocksWarehouseController(objects ...runtime.Object) *StarRocksWareho
 	return warehouseController
 }
 
-func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
+func TestCelerDataWarehouseReconciler_Reconcile(t *testing.T) {
 	type fields struct {
-		reconciler *StarRocksWarehouseReconciler
+		reconciler *CelerDataWarehouseReconciler
 	}
 	type args struct {
 		ctx context.Context
@@ -54,7 +54,7 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 		{
 			name: "test warehouse reconcile without cr",
 			fields: fields{
-				reconciler: newStarRocksWarehouseController(),
+				reconciler: newCelerDataWarehouseController(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -71,13 +71,13 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 		{
 			name: "test warehouse reconcile without specified cluster",
 			fields: fields{
-				reconciler: newStarRocksWarehouseController(
-					&v1.StarRocksWarehouse{
+				reconciler: newCelerDataWarehouseController(
+					&v1.CelerDataWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksWarehouseSpec{
+						Spec: v1.CelerDataWarehouseSpec{
 							Template: &v1.WarehouseComponentSpec{},
 						},
 					}),
@@ -97,14 +97,14 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 		{
 			name: "test warehouse reconcile without cluster",
 			fields: fields{
-				reconciler: newStarRocksWarehouseController(
-					&v1.StarRocksWarehouse{
+				reconciler: newCelerDataWarehouseController(
+					&v1.CelerDataWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksWarehouseSpec{
-							StarRocksCluster: "cluster",
+						Spec: v1.CelerDataWarehouseSpec{
+							CelerDataCluster: "cluster",
 						},
 					}),
 			},
@@ -123,26 +123,26 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 		{
 			name: "test warehouse reconcile with not ready cluster",
 			fields: fields{
-				reconciler: newStarRocksWarehouseController(
-					&v1.StarRocksWarehouse{
+				reconciler: newCelerDataWarehouseController(
+					&v1.CelerDataWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "wh",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksWarehouseSpec{
-							StarRocksCluster: "test",
+						Spec: v1.CelerDataWarehouseSpec{
+							CelerDataCluster: "test",
 							Template:         &v1.WarehouseComponentSpec{},
 						},
 					},
-					&v1.StarRocksCluster{
+					&v1.CelerDataCluster{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksClusterSpec{
-							StarRocksFeSpec: &v1.StarRocksFeSpec{
-								StarRocksComponentSpec: v1.StarRocksComponentSpec{
-									StarRocksLoadSpec: v1.StarRocksLoadSpec{
+						Spec: v1.CelerDataClusterSpec{
+							CelerDataFeSpec: &v1.CelerDataFeSpec{
+								CelerDataComponentSpec: v1.CelerDataComponentSpec{
+									CelerDataLoadSpec: v1.CelerDataLoadSpec{
 										ConfigMapInfo: v1.ConfigMapInfo{
 											ConfigMapName: "fe-configmap",
 											ResolveKey:    "fe.conf",
@@ -188,26 +188,26 @@ func TestStarRocksWarehouseReconciler_Reconcile(t *testing.T) {
 		{
 			name: "test warehouse reconcile",
 			fields: fields{
-				reconciler: newStarRocksWarehouseController(
-					&v1.StarRocksWarehouse{
+				reconciler: newCelerDataWarehouseController(
+					&v1.CelerDataWarehouse{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "wh",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksWarehouseSpec{
-							StarRocksCluster: "test",
+						Spec: v1.CelerDataWarehouseSpec{
+							CelerDataCluster: "test",
 							Template:         &v1.WarehouseComponentSpec{},
 						},
 					},
-					&v1.StarRocksCluster{
+					&v1.CelerDataCluster{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
 							Namespace: "test",
 						},
-						Spec: v1.StarRocksClusterSpec{
-							StarRocksFeSpec: &v1.StarRocksFeSpec{
-								StarRocksComponentSpec: v1.StarRocksComponentSpec{
-									StarRocksLoadSpec: v1.StarRocksLoadSpec{
+						Spec: v1.CelerDataClusterSpec{
+							CelerDataFeSpec: &v1.CelerDataFeSpec{
+								CelerDataComponentSpec: v1.CelerDataComponentSpec{
+									CelerDataLoadSpec: v1.CelerDataLoadSpec{
 										ConfigMapInfo: v1.ConfigMapInfo{
 											ConfigMapName: "fe-configmap",
 											ResolveKey:    "fe.conf",

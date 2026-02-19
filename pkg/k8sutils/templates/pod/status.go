@@ -19,7 +19,7 @@ package pod
 import (
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
 )
 
 type PodStatus struct {

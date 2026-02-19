@@ -25,10 +25,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/cmd/config"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/controllers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
 )
 
 var (
@@ -57,17 +57,17 @@ func main() {
 	logger := ctrl.Log.WithName("main")
 
 	// Register CRD to SchemeBuilder
-	srapi.Register()
+	cdapi.Register()
 
 	duration := 2 * time.Minute
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 srapi.Scheme,
+		Scheme:                 cdapi.Scheme,
 		MetricsBindAddress:     _metricsAddr,
 		Port:                   9443,
 		SyncPeriod:             &duration,
 		HealthProbeBindAddress: _probeAddr,
 		LeaderElection:         _enableLeaderElection,
-		LeaderElectionID:       "c6c79638.starrocks.com",
+		LeaderElectionID:       "c6c79638.celerdata.com",
 		Namespace:              _namespace,
 	})
 	if err != nil {

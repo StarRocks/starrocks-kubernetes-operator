@@ -29,17 +29,17 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
-	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/log"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/statefulset"
+	subc "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/fe"
 )
 
 type BeController struct {
@@ -59,11 +59,11 @@ func (be *BeController) GetControllerName() string {
 	return "beController"
 }
 
-func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (be *BeController) SyncCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	if src.Spec.StarRocksBeSpec == nil {
+	if src.Spec.CelerDataBeSpec == nil {
 		if err := be.ClearCluster(ctx, src); err != nil {
 			logger.Error(err, "clear resource failed")
 			return err
@@ -80,7 +80,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	}()
 
-	beSpec := src.Spec.StarRocksBeSpec
+	beSpec := src.Spec.CelerDataBeSpec
 	if err = be.validating(beSpec); err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	feSpec := src.Spec.StarRocksFeSpec
+	feSpec := src.Spec.CelerDataFeSpec
 	feConfig, _ := fe.GetFEConfig(ctx, be.Client, feSpec, src.Namespace)
 	if b, _ := fe.ShouldEnterDisasterRecoveryMode(src.Spec.DisasterRecovery, src.Status.DisasterRecoveryStatus, feConfig); b {
 		// return nil because in disaster recovery mode, we do not need to sync the BE.
@@ -140,26 +140,26 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 }
 
 // UpdateClusterStatus update the all resource status about be.
-func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (be *BeController) UpdateClusterStatus(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionUpdateClusterStatus)
 	ctx = logr.NewContext(ctx, logger)
 
 	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearCluster.
-	beSpec := src.Spec.StarRocksBeSpec
+	beSpec := src.Spec.CelerDataBeSpec
 	if beSpec == nil {
-		src.Status.StarRocksBeStatus = nil
+		src.Status.CelerDataBeStatus = nil
 		return nil
 	}
 
-	bs := &srapi.StarRocksBeStatus{
-		StarRocksComponentStatus: srapi.StarRocksComponentStatus{
-			Phase: srapi.ComponentReconciling,
+	bs := &cdapi.CelerDataBeStatus{
+		CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
+			Phase: cdapi.ComponentReconciling,
 		},
 	}
-	if src.Status.StarRocksBeStatus != nil {
-		bs = src.Status.StarRocksBeStatus.DeepCopy()
+	if src.Status.CelerDataBeStatus != nil {
+		bs = src.Status.CelerDataBeStatus.DeepCopy()
 	}
-	src.Status.StarRocksBeStatus = bs
+	src.Status.CelerDataBeStatus = bs
 
 	var st appsv1.StatefulSet
 	statefulSetName := load.Name(src.Name, beSpec)
@@ -174,7 +174,7 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 	bs.ServiceName = service.ExternalServiceName(src.Name, beSpec)
 	bs.ResourceNames = rutils.MergeSlices(bs.ResourceNames, []string{statefulSetName})
 
-	if err := subc.UpdateStatus(&bs.StarRocksComponentStatus, be.Client,
+	if err := subc.UpdateStatus(&bs.CelerDataComponentStatus, be.Client,
 		src.Namespace, load.Name(src.Name, beSpec), pod.Labels(src.Name, beSpec), subc.StatefulSetLoadType); err != nil {
 		return err
 	}
@@ -182,9 +182,9 @@ func (be *BeController) UpdateClusterStatus(ctx context.Context, src *srapi.Star
 	return nil
 }
 
-func GenerateInternalService(src *srapi.StarRocksCluster,
+func GenerateInternalService(src *cdapi.CelerDataCluster,
 	externalService *corev1.Service, beConfig map[string]interface{}, labels map[string]string) *corev1.Service {
-	spec := src.Spec.StarRocksBeSpec
+	spec := src.Spec.CelerDataBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
 	searchSvc := service.MakeSearchService(searchServiceName, externalService, []corev1.ServicePort{
 		{
@@ -208,16 +208,16 @@ func GenerateInternalService(src *srapi.StarRocksCluster,
 
 // GetBeConfig get the config of BE from configmap.
 func (be *BeController) GetBeConfig(ctx context.Context,
-	beSpec *srapi.StarRocksBeSpec, namespace string) (map[string]interface{}, error) {
+	beSpec *cdapi.CelerDataBeSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, be.Client, beSpec.ConfigMapInfo,
 		beSpec.ConfigMaps, pod.GetConfigDir(beSpec), "be.conf", namespace)
 }
 
-func (be *BeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (be *BeController) ClearCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(be.GetControllerName()).WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	beSpec := src.Spec.StarRocksBeSpec
+	beSpec := src.Spec.CelerDataBeSpec
 	if beSpec != nil {
 		return nil
 	}
@@ -244,13 +244,13 @@ func (be *BeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 	return nil
 }
 
-func (be *BeController) validating(beSpec *srapi.StarRocksBeSpec) error {
+func (be *BeController) validating(beSpec *cdapi.CelerDataBeSpec) error {
 	for i := range beSpec.StorageVolumes {
 		if err := beSpec.StorageVolumes[i].Validate(); err != nil {
 			return err
 		}
 	}
-	if err := srapi.ValidUpdateStrategy(beSpec.UpdateStrategy); err != nil {
+	if err := cdapi.ValidUpdateStrategy(beSpec.UpdateStrategy); err != nil {
 		return err
 	}
 	return nil

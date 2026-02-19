@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# It use gen-crd-api-reference-docs to provide API reference docs for Custom Resource Definitions: StarRockCluster and StarRocksWarehouse
+# It use gen-crd-api-reference-docs to provide API reference docs for Custom Resource Definitions: CelerDataCluster and CelerDataWarehouse
 
 # include common.sh
 source ./common.sh
@@ -16,12 +16,12 @@ unzip master.zip
 cd gen-crd-api-reference-docs-master
 go build .
 
-# Generate the API reference docs for StarRockCluster and StarRocksWarehouse
+# Generate the API reference docs for CelerDataCluster and CelerDataWarehouse
 cd $HOME_PATH
 ./scripts/gen-crd-api-reference-docs-master/gen-crd-api-reference-docs \
   -config=./scripts/gen-crd-api-reference-docs-master/example-config.json \
   -template-dir=./scripts/gen-crd-api-reference-docs-master/template \
-  -api-dir=github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1 \
+  -api-dir=github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1 \
   -out-file=./doc/api.md
 
 # remove the gen-crd-api-reference-docs tool

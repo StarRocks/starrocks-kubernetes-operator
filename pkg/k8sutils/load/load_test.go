@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestSelector(t *testing.T) {
@@ -20,12 +20,12 @@ func TestSelector(t *testing.T) {
 		{
 			name: "test selector",
 			args: args{
-				clusterName: "kube-starrocks",
-				spec:        (*v1.StarRocksFeProxySpec)(nil),
+				clusterName: "kube-celerdata",
+				spec:        (*v1.CelerDataFeProxySpec)(nil),
 			},
 			want: map[string]string{
 				"app.kubernetes.io/component":       "fe-proxy",
-				"app.starrocks.ownerreference/name": "kube-starrocks-fe-proxy",
+				"app.celerdata.ownerreference/name": "kube-celerdata-fe-proxy",
 			},
 		},
 	}

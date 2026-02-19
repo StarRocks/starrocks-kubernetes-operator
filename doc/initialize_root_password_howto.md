@@ -1,6 +1,6 @@
 # Initializing the Root User Password in StarRocks
 
-Upon deploying a fresh StarRocks cluster, the `root` user's password remains unset, potentially posing a security risk.
+Upon deploying a fresh CelerData cluster, the `root` user's password remains unset, potentially posing a security risk.
 This guide delineates the process to establish a root password when a new installation.
 
 > Note that this only works for helm install, can't use it in helm upgrade
@@ -12,14 +12,14 @@ This guide delineates the process to establish a root password when a new instal
 - Ensure the helm chart repo for StarRocks is added.
   See [Add the Helm Chart Repo for StarRocks](./add_helm_repo_howto.md).
 
-In this guide, we will use `starrocks/kube-starrocks` chart to deploy both StarRocks operator and cluster.
+In this guide, we will use `starrocks/kube-celerdata` chart to deploy both CelerData operator and cluster.
 
-## 1. Download the values.yaml file for the kube-starrocks chart
+## 1. Download the values.yaml file for the kube-celerdata chart
 
-The values.yaml file contains the default configurations for the StarRocks Operator and the StarRocks cluster.
+The values.yaml file contains the default configurations for the CelerData Operator and the CelerData cluster.
 
 ```Bash
-helm show values starrocks/kube-starrocks > values.yaml
+helm show values celerdata/kube-celerdata > values.yaml
 ```
 
 The following is a snippet of the values.yaml file:
@@ -63,7 +63,7 @@ You can also use a secret to set the root password. The secret must be created b
 > Note the key of the secret must be `password`.
 
 ```bash
-kubectl create secret generic starrocks-root-password --from-literal=password=mysql_password
+kubectl create secret generic celerdata-root-password --from-literal=password=mysql_password
 ```
 
 To initialize the root password, embed the following snippet:
@@ -72,23 +72,23 @@ To initialize the root password, embed the following snippet:
 starrocks:
   initPassword:
     enabled: true
-    passwordSecret: starrocks-root-password
+    passwordSecret: celerdata-root-password
 ```
 
-## 3. Deploy the StarRocks Operator and the StarRocks cluster
+## 3. Deploy the CelerData Operator and the CelerData cluster
 
-Execute Deployment with Custom Specifications. Run the subsequent command to deploy the StarRocks Operator and the
-StarRocks cluster.
+Execute Deployment with Custom Specifications. Run the subsequent command to deploy the CelerData Operator and the
+CelerData cluster.
 
 ```shell
-helm install -f my-values.yaml starrocks starrocks/kube-starrocks
+helm install -f my-values.yaml celerdata celerdata/kube-celerdata
 ```
 
 ## 4. Access Your Cluster
 
 ```bash
 # in one terminal
-kubectl port-forward service/kube-starrocks-fe-service 9030:9030
+kubectl port-forward service/kube-celerdata-fe-service 9030:9030
 
 # in another terminal
 mysql -h 127.0.0.1 -P 9030 -u root -p mysql_password

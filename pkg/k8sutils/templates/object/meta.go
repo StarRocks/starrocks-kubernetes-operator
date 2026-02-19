@@ -5,53 +5,53 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
 )
 
 const (
-	StarRocksClusterKind   = "StarRocksCluster"
-	StarRocksWarehouseKind = "StarRocksWarehouse"
+	CelerDataClusterKind   = "CelerDataCluster"
+	CelerDataWarehouseKind = "CelerDataWarehouse"
 )
 
-// StarRocksObject is a wrapper of metav1.TypeMeta and metav1.ObjectMeta for StarRocksCluster and StarRocksWarehouse.
+// StarRocksObject is a wrapper of metav1.TypeMeta and metav1.ObjectMeta for CelerDataCluster and CelerDataWarehouse.
 type StarRocksObject struct {
 	*metav1.TypeMeta
 	*metav1.ObjectMeta
 
-	// ClusterName is the name of StarRocksCluster.
+	// ClusterName is the name of CelerDataCluster.
 	ClusterName string
 
-	// Kind is StarRocksCluster or StarRocksWarehouse.
+	// Kind is CelerDataCluster or CelerDataWarehouse.
 	// The reason why we need this field is that we can't make sure ObjectMeta.Kind is filled.
 	Kind string
 
 	// SubResourcePrefixName represents the prefix of subresource names for cn component. The reason is that when the name of
-	// StarRocksWarehouse is the same as the name of StarRocksCluster, operator should avoid to create the same name
+	// CelerDataWarehouse is the same as the name of CelerDataCluster, operator should avoid to create the same name
 	// StatefulSet, Service, etc.
 	SubResourcePrefixName string
 
-	// IsWarehouseObject indicates whether this object is a StarRocksWarehouse object.
+	// IsWarehouseObject indicates whether this object is a CelerDataWarehouse object.
 	IsWarehouseObject bool
 }
 
-func NewFromCluster(cluster *srapi.StarRocksCluster) StarRocksObject {
+func NewFromCluster(cluster *cdapi.CelerDataCluster) StarRocksObject {
 	return StarRocksObject{
 		TypeMeta:              &cluster.TypeMeta,
 		ObjectMeta:            &cluster.ObjectMeta,
 		ClusterName:           cluster.Name,
-		Kind:                  StarRocksClusterKind,
+		Kind:                  CelerDataClusterKind,
 		SubResourcePrefixName: cluster.Name,
 		IsWarehouseObject:     false,
 	}
 }
 
-func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
+func NewFromWarehouse(warehouse *cdapi.CelerDataWarehouse) StarRocksObject {
 	return StarRocksObject{
 		TypeMeta:              &warehouse.TypeMeta,
 		ObjectMeta:            &warehouse.ObjectMeta,
-		ClusterName:           warehouse.Spec.StarRocksCluster,
-		Kind:                  StarRocksWarehouseKind,
+		ClusterName:           warehouse.Spec.CelerDataCluster,
+		Kind:                  CelerDataWarehouseKind,
 		SubResourcePrefixName: GetPrefixNameForWarehouse(warehouse.Name),
 		IsWarehouseObject:     true,
 	}
@@ -68,7 +68,7 @@ func (object *StarRocksObject) Name() string {
 }
 
 func (object *StarRocksObject) GetCNStatefulSetName() string {
-	return load.Name(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil))
+	return load.Name(object.SubResourcePrefixName, (*cdapi.CelerDataCnSpec)(nil))
 }
 
 func (object *StarRocksObject) GetWarehouseNameInFE() string {

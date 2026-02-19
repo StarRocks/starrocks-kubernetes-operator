@@ -9,7 +9,7 @@ persistent volumes to StarRocks FE and BE pods:
 1. Mounting persistent volumes to StarRocks FE and BE pods by the StarRocks CRD YAML file.
 2. Mounting persistent volumes to StarRocks FE and BE pods by Helm chart.
 
-> Note: Starrocks Operator will create a new PVC for each storageVolume. You should not create PVC manually.
+> Note: celerdata operator will create a new PVC for each storageVolume. You should not create PVC manually.
 
 ## 1. Mounting Persistent Volumes by StarRocks CRD YAML File
 
@@ -19,16 +19,16 @@ the corresponding component spec.
 The following is an example of mounting persistent volumes to StarRocks FE and BE.
 
 ```bash
-apiVersion: starrocks.com/v1
-kind: StarRocksCluster
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
 metadata:
-  name: kube-starrocks
-  namespace: starrocks
+  name: kube-celerdata
+  namespace: celerdata
   labels:
-    cluster: kube-starrocks
+    cluster: kube-celerdata
 spec:
-  starRocksFeSpec:
-    image: "starrocks/fe-ubuntu:3.5-latest"
+  celerDataFeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest"
     replicas: 1
     storageVolumes:
     - name: fe-meta
@@ -40,8 +40,8 @@ spec:
       storageClassName: standard-rwo
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
-  starRocksBeSpec:
-    image: "starrocks/be-ubuntu:3.5-latest"
+  celerDataBeSpec:
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest"
     replicas: 3
     storageVolumes:
     - name: be-data
@@ -61,21 +61,21 @@ BE data.
 ## 2. Mounting Persistent Volumes by Helm Chart
 
 See [helm_repo_add_howto](./add_helm_repo_howto.md) to learn how to add the Helm Chart Repo for StarRocks. In this
-guide, we will use `starrocks/kube-starrocks` chart to deploy both StarRocks operator and cluster.
+guide, we will use `starrocks/kube-celerdata` chart to deploy both CelerData operator and cluster.
 
-### 2.1. Download the values.yaml file for the kube-starrocks chart
+### 2.1. Download the values.yaml file for the kube-celerdata chart
 
-The values.yaml file contains the default configurations for the StarRocks Operator and the StarRocks cluster.
+The values.yaml file contains the default configurations for the CelerData Operator and the CelerData cluster.
 
 ```Bash
-helm show values starrocks/kube-starrocks > values.yaml
+helm show values celerdata/kube-celerdata > values.yaml
 ```
 
 The following is a snippet of the values.yaml file:
 
 ```yaml
 starrocks:
-  starrocksFESpec: # fe storageSpec for persistent metadata.
+  celerDataFeSpec: # fe storageSpec for persistent metadata.
     storageSpec:
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -87,7 +87,7 @@ starrocks:
       # Setting this parameter can persist log storage
       logStorageSize: 5Gi
 
-  starrocksBeSpec: # specify storageclass name and request size.
+  celerDataBeSpec: # specify storageclass name and request size.
     storageSpec: # the name of volume for mount. if not will use emptyDir.
       name: ""
       # the storageClassName represent the used storageclass name. if not set will use k8s cluster default storageclass.
@@ -104,18 +104,18 @@ The following is an example of a custom values.yaml with storageSpec settings:
 
 ```yaml
 starrocks:
-   starrocksFESpec:
+   celerDataFeSpec:
       image:
-         repository: starrocks/fe-ubuntu
+         repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
          tag: 3.5-latest
       storageSpec:
          name: fe-data
          storageClassName: standard-rwo   # standard-rwo is the default storageClassName in GKE.
          logStorageSize: 10Gi
          storageSize: 100Gi
-   starrocksBeSpec:
+   celerDataBeSpec:
       image:
-         repository: starrocks/be-ubuntu
+         repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
          tag: 3.5-latest
       replicas: 3
       storageSpec:
@@ -125,10 +125,10 @@ starrocks:
          storageSize: 500Gi
 ```
 
-### 2.3. Deploy StarRocks Operator and Cluster
+### 2.3. Deploy CelerData Operator and Cluster
 
-See [Install StarRocks by kube-starrocks chart](../helm-charts/charts/kube-starrocks/README.md) to learn how to deploy
-StarRocks Operator and Cluster
+See [Install StarRocks by kube-celerdata chart](../helm-charts/charts/kube-celerdata/README.md) to learn how to deploy
+CelerData Operator and Cluster
 
 ## 3. Some Special storageClassName
 

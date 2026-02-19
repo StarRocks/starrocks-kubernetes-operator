@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // +k8s:deepcopy-gen=package
-// +groupName=starrocks.com
+// +groupName=celerdata.com
 package subcontrollers
 
 import (
@@ -27,24 +27,24 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/deployment"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/deployment"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/statefulset"
 )
 
 type ClusterSubController interface {
 	// SyncCluster reconcile for sub controller. bool represent the component have updated.
-	SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error
+	SyncCluster(ctx context.Context, src *cdapi.CelerDataCluster) error
 
 	// ClearCluster clear all subresources.
-	ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error
+	ClearCluster(ctx context.Context, src *cdapi.CelerDataCluster) error
 
 	// GetControllerName return the controller name, beController, feController,cnController for log.
 	GetControllerName() string
 
 	// UpdateClusterStatus only updates the status locally, but not update it to k8s
-	UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error
+	UpdateClusterStatus(ctx context.Context, src *cdapi.CelerDataCluster) error
 }
 
 type GetEventRecorderForFunc func(name string) record.EventRecorder
@@ -53,12 +53,12 @@ type WarehouseSubController interface {
 	// ClearWarehouse will clear all resource about warehouse.
 	ClearWarehouse(ctx context.Context, namespace string, name string) error
 
-	SyncWarehouse(ctx context.Context, src *srapi.StarRocksWarehouse) error
+	SyncWarehouse(ctx context.Context, src *cdapi.CelerDataWarehouse) error
 
 	GetControllerName() string
 
 	// UpdateWarehouseStatus only updates the status locally, but not update it to k8s
-	UpdateWarehouseStatus(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error
+	UpdateWarehouseStatus(ctx context.Context, warehouse *cdapi.CelerDataWarehouse) error
 }
 
 type LoadType string
@@ -68,7 +68,7 @@ const (
 	StatefulSetLoadType = "StatefulSet"
 )
 
-func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient client.Client,
+func UpdateStatus(componentStatus *cdapi.CelerDataComponentStatus, k8sClient client.Client,
 	namespace string, name string, podLabels map[string]string, loadType LoadType) error {
 	ctx := context.TODO()
 
@@ -84,10 +84,10 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 	componentStatus.CreatingInstances = creating
 
 	if len(failed) != 0 {
-		componentStatus.Phase = srapi.ComponentFailed
+		componentStatus.Phase = cdapi.ComponentFailed
 		componentStatus.Reason = podsStatus[failed[0]].Reason
 	} else if len(creating) != 0 {
-		componentStatus.Phase = srapi.ComponentReconciling
+		componentStatus.Phase = cdapi.ComponentReconciling
 		componentStatus.Reason = podsStatus[creating[0]].Reason
 	} else {
 		// even all pods is ready, that does not mean the fe is ready, maybe fe is upgrading
@@ -97,7 +97,7 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 		switch loadType {
 		case DeploymentLoadType:
 			var load appsv1.Deployment
-			componentStatus.Phase = srapi.ComponentReconciling
+			componentStatus.Phase = cdapi.ComponentReconciling
 			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &load)
 			if err != nil {
 				return err
@@ -108,7 +108,7 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 			}
 		case StatefulSetLoadType:
 			var sts appsv1.StatefulSet
-			componentStatus.Phase = srapi.ComponentReconciling
+			componentStatus.Phase = cdapi.ComponentReconciling
 			err = k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &sts)
 			if err != nil {
 				return err
@@ -119,10 +119,10 @@ func UpdateStatus(componentStatus *srapi.StarRocksComponentStatus, k8sClient cli
 			}
 		}
 		if done {
-			componentStatus.Phase = srapi.ComponentRunning
+			componentStatus.Phase = cdapi.ComponentRunning
 			componentStatus.Reason = ""
 		} else {
-			componentStatus.Phase = srapi.ComponentReconciling
+			componentStatus.Phase = cdapi.ComponentReconciling
 			componentStatus.Reason = reason
 		}
 	}

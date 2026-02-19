@@ -34,7 +34,7 @@ as an example:
 
 ```yaml
 spec:
-  starRocksFeSpec:
+  celerDataFeSpec:
     storageVolumes:
       - mountPath: /opt/starrocks/fe/log
         name: fe-log
@@ -47,19 +47,19 @@ the Kubernetes cluster with `kubectl get storageclass`. **Note: selecting an app
 dictates the type of storage volume**. See https://kubernetes.io/docs/concepts/storage/persistent-volumes/ for more
 information.
 
-> Attention: The Operator will create PVC resources for the StarRocks cluster. The storage class controller will then
+> Attention: The Operator will create PVC resources for the CelerData cluster. The storage class controller will then
 > automatically generate the specific storage volume.
 
 ### 3.1 Helm Chart Supports Persisting Logs
 
-If you deployed the StarRocks cluster using Helm Chart, you can modify the `values.yaml` content to persist logs. Here's
+If you deployed the CelerData cluster using Helm Chart, you can modify the `values.yaml` content to persist logs. Here's
 an example for the FE component:
 
-For the kube-starrocks Helm Chart, you can configure as:
+For the kube-celerdata Helm Chart, you can configure as:
 
 ```yaml
 starrocks:
-  starrocksFESpec:
+  celerDataFeSpec:
     storageSpec:
       name: "fe"
       storageSize: 10Gi
@@ -70,7 +70,7 @@ starrocks:
 For the starrocks Helm Chart, configure as:
 
 ```yaml
-starrocksFESpec:
+celerDataFeSpec:
   storageSpec:
     name: "fe"
     storageSize: 10Gi
@@ -91,7 +91,7 @@ for FE:
 
 ```yaml
 spec:
-  starRocksFeSpec:
+  celerDataFeSpec:
     feEnvVars:
       - name: LOG_CONSOLE
         value: "1"
@@ -99,14 +99,14 @@ spec:
 
 ### 4.1 Helm Chart Supports Environment Variable Settings
 
-If you've deployed the StarRocks cluster using Helm Chart, you can modify the `values.yaml` content to set environment
+If you've deployed the CelerData cluster using Helm Chart, you can modify the `values.yaml` content to set environment
 variables. An example for the FE component:
 
-For the kube-starrocks Helm Chart, configure as:
+For the kube-celerdata Helm Chart, configure as:
 
 ```yaml
 starrocks:
-  starrocksFESpec:
+  celerDataFeSpec:
     feEnvVars:
       - name: LOG_CONSOLE
         value: "1"
@@ -115,7 +115,7 @@ starrocks:
 For the starrocks Helm Chart, configure as:
 
 ```yaml
-starrocksFESpec:
+celerDataFeSpec:
   feEnvVars:
     - name: LOG_CONSOLE
       value: "1"

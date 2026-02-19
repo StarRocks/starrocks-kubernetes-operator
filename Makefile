@@ -63,14 +63,14 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
-	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
-	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
+	@$(CONTROLLER_GEN) rbac:roleName=celerdata-manager crd webhook paths="./pkg/apis/...;./pkg/controllers/..." output:crd:artifacts:config=config/crd/bases
+	@$(CONTROLLER_GEN) rbac:roleName=celerdata-manager crd:maxDescLen=0 webhook paths="./pkg/apis/...;./pkg/controllers/..." output:crd:artifacts:config=deploy/
 
 .PHONY: ci-manifests
 ci-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects in config/crd/bases and deploy.
-	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
-	@$(CONTROLLER_GEN) rbac:roleName=starrocks-manager crd:maxDescLen=0 webhook paths="./pkg/apis/..." output:crd:artifacts:config=deploy/ output:rbac:artifacts:config=deploy/
-	@git status | grep "starrocks.com_starrocksclusters.yaml" && echo "the crd file need to be updated" && exit 1 || exit 0
+	@$(CONTROLLER_GEN) rbac:roleName=celerdata-manager crd webhook paths="./pkg/apis/...;./pkg/controllers/..." output:crd:artifacts:config=config/crd/bases
+	@$(CONTROLLER_GEN) rbac:roleName=celerdata-manager crd:maxDescLen=0 webhook paths="./pkg/apis/...;./pkg/controllers/..." output:crd:artifacts:config=deploy/
+	@git status | grep "celerdata.com_celerdataclusters.yaml" && echo "the crd file need to be updated" && exit 1 || exit 0
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -87,10 +87,10 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
 	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
-		github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/... 			\
-		github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers/... 		\
-		github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/... 		\
-		github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/... 	\
+		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/... 			\
+		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/controllers/... 		\
+		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/... 		\
+		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/... 	\
 		-coverprofile=coverage.data -timeout 30m || return 1
 	@go tool cover -func=coverage.data
 
@@ -101,7 +101,7 @@ tidy: ## Run go vet against code.
 
 .PHONY: build
 build: tidy generate fmt vet crd-all ## Build operator binary,name=manager, path=bin/ .
-	GOOS=linux go build -ldflags=$(LDFLAGS) -o bin/sroperator cmd/main.go
+	GOOS=linux go build -ldflags=$(LDFLAGS) -o bin/celerdata-operator cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.

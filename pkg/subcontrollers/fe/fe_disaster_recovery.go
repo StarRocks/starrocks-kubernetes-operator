@@ -13,9 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
 )
 
 func ShouldEnterDisasterRecoveryMode(drSpec *v1.DisasterRecovery,
@@ -47,8 +47,8 @@ func ShouldEnterDisasterRecoveryMode(drSpec *v1.DisasterRecovery,
 }
 
 func EnterDisasterRecoveryMode(ctx context.Context, k8sClient client.Client,
-	src *v1.StarRocksCluster, sts *appsv1.StatefulSet, queryPort int32) error {
-	feSpec := src.Spec.StarRocksFeSpec
+	src *v1.CelerDataCluster, sts *appsv1.StatefulSet, queryPort int32) error {
+	feSpec := src.Spec.CelerDataFeSpec
 	drSpec := src.Spec.DisasterRecovery
 	drStatus := src.Status.DisasterRecoveryStatus
 	logger := logr.FromContextOrDiscard(ctx)
@@ -153,7 +153,7 @@ func CheckFEReadyInDisasterRecovery(ctx context.Context, k8sClient client.Client
 	if err := k8sClient.List(ctx, &podList, client.InNamespace(clusterNamespace),
 		client.MatchingLabels{
 			v1.ComponentLabelKey: v1.DEFAULT_FE,
-			v1.OwnerReference:    load.Name(clusterName, (*v1.StarRocksFeSpec)(nil)),
+			v1.OwnerReference:    load.Name(clusterName, (*v1.CelerDataFeSpec)(nil)),
 		}); err != nil {
 		logger.Error(err, "list fe pod failed")
 		return false

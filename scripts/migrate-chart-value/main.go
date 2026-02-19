@@ -19,7 +19,7 @@ var (
 const (
 	NEW_VERSION = "v1.8.0"
 	OPERATOR    = "operator"
-	STARROCKS   = "starrocks"
+	STARROCKS   = "celerdata"
 )
 
 var _starrocksKeys = []string{"nameOverride", "initPassword", "timeZone", "datadog", "starrocksCluster",
@@ -30,7 +30,7 @@ var _operatorKeys = []string{"global", "timeZone", "nameOverride", "starrocksOpe
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `
-This tool is used to upgrade or downgrade the version of values.yaml for kube-starrocks chart.
+This tool is used to upgrade or downgrade the version of values.yaml for kube-celerdata chart.
 
 If the chart version is less than v1.8.0, the values.yaml is in the following format:
 key1: value1
@@ -39,7 +39,7 @@ key2: value2
 If the chart version is greater than or equal to v1.8.0, the values.yaml will be changed to the following format:
 operator:
   key1: value1
-starrocks:
+celerdata:
   key2: value2
 
 If you want to upgrade the version of values.yaml, you can run the following command:
@@ -53,11 +53,11 @@ If you want to downgrade the version of values.yaml, you can run the following c
 		flag.PrintDefaults()
 	}
 	flag.StringVar(&inputFilePath, "input", "",
-		"the input path of values.yaml for kube-starrocks chart, if not specified, it will read from stdin")
+		"the input path of values.yaml for kube-celerdata chart, if not specified, it will read from stdin")
 	flag.StringVar(&targetChartVersion, "target-version", "",
 		"the chart version, which this tool will change the values.yaml to")
 	flag.StringVar(&outputFilePath, "output", "",
-		"the output path of values.yaml for kube-starrocks chart, if not specified, it will write to stdout")
+		"the output path of values.yaml for kube-celerdata chart, if not specified, it will write to stdout")
 	flag.Parse()
 
 	log.SetOutput(os.Stderr)
@@ -112,9 +112,9 @@ func Do(reader io.Reader, targetChartVersion string, writer io.Writer) error {
 		return err
 	}
 
-	// find the value of the field "operator" or "starrocks"
+	// find the value of the field "operator" or "celerdata"
 	operator := s[OPERATOR]   // the type of operator is interface{}
-	starrocks := s[STARROCKS] // the type of starrocks is interface{}
+	starrocks := s[STARROCKS] // the type of celerdata is interface{}
 	if operator != nil || starrocks != nil {
 		log.Printf("this values.yaml is from new chart version >= %v\n", NEW_VERSION)
 		// values.yaml is from new chart version
@@ -166,7 +166,7 @@ func Write(w io.Writer, originalFields map[string]interface{}, keys []string, he
 		case "timeZone":
 			return "Asia/Shanghai"
 		case "nameOverride":
-			return "kube-starrocks"
+			return "kube-celerdata"
 		}
 		return nil
 	}

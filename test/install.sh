@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# this script is used to install starrocks-operator by kind
+# this script is used to install celerdata-operator by kind
 # you should also install kubectl and plugins, including kubectl-neat, kubectl-ns.
 
 # check the number of arguments
@@ -12,25 +12,25 @@ release_tag=$1
 fe_be_cn_tag=$2
 
 # check if the cluster exists
-kind get clusters | grep starrocks >/dev/null
+kind get clusters | grep celerdata >/dev/null
 if [ $? -eq 0 ]; then
   echo "The cluster starrocks already exists, please delete it first."
 else
   # delete the old cluster if exists
-  kind delete cluster --name starrocks
+  kind delete cluster --name celerdata
 
   # create a new kubernetes cluster
   unset http_proxy
   unset https_proxy
-  kind create cluster --name starrocks
+  kind create cluster --name celerdata
 fi
 
 # download yaml files of crd and operator
-curl -LO https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/operator.yaml >operator.yaml
-curl -LO https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/${release_tag}/starrocks.com_starrocksclusters.yaml >starrocks.com_starrocksclusters.yaml
+curl -LO https://github.com/celerdata/celerdata-kubernetes-operator/releases/download/${release_tag}/operator.yaml >operator.yaml
+curl -LO https://github.com/celerdata/celerdata-kubernetes-operator/releases/download/${release_tag}/celerdata.com_celerdataclusters.yaml >celerdata.com_celerdataclusters.yaml
 
 # install crd
-kubectl apply -f starrocks.com_starrocksclusters.yaml
+kubectl apply -f celerdata.com_celerdataclusters.yaml
 
 # install operator
 # NOTE:
@@ -39,27 +39,27 @@ kubectl apply -f starrocks.com_starrocksclusters.yaml
 kubectl apply -f operator.yaml
 
 # prepare for images
-docker images starrocks/fe-ubuntu | grep ${fe_be_cn_tag} >/dev/null
+docker images us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu | grep ${fe_be_cn_tag} >/dev/null
 if [ $? -ne 0 ]; then
-  docker pull starrocks/fe-ubuntu:${fe_be_cn_tag}
+  docker pull us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:${fe_be_cn_tag}
 fi
-kind load docker-image starrocks/fe-ubuntu:${fe_be_cn_tag} --name starrocks
+kind load docker-image us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:${fe_be_cn_tag} --name celerdata
 
-docker images starrocks/be-ubuntu | grep ${fe_be_cn_tag} >/dev/null
+docker images us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu | grep ${fe_be_cn_tag} >/dev/null
 if [ $? -ne 0 ]; then
-  docker pull starrocks/be-ubuntu:${fe_be_cn_tag}
+  docker pull us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:${fe_be_cn_tag}
 fi
-kind load docker-image starrocks/be-ubuntu:${fe_be_cn_tag} --name starrocks
+kind load docker-image us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:${fe_be_cn_tag} --name celerdata
 
-docker images starrocks/cn-ubuntu | grep ${fe_be_cn_tag} >/dev/null
+docker images us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu | grep ${fe_be_cn_tag} >/dev/null
 if [ $? -ne 0 ]; then
-  docker pull starrocks/cn-ubuntu:${fe_be_cn_tag}
+  docker pull us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:${fe_be_cn_tag}
 fi
-kind load docker-image starrocks/cn-ubuntu:${fe_be_cn_tag} --name starrocks
+kind load docker-image us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:${fe_be_cn_tag} --name celerdata
 
-# install starrocks cluster
-kubectl-ns starrocks
-kubectl apply -f ./cluster/starrockscluster_sample.yaml
+# install celerdata cluster
+kubectl-ns celerdata
+kubectl apply -f ./cluster/celerdatacluster_sample.yaml
 
 ## sleep for waiting operator to reconcile
 #sleep 20
@@ -68,7 +68,7 @@ kubectl apply -f ./cluster/starrockscluster_sample.yaml
 #version=$1
 #mkdir -p "./${version}"
 #cd "./${version}"
-#cluster=$(kubectl get starrockscluster | grep sample | awk '{print $1}')
+#cluster=$(kubectl get celerdatacluster | grep sample | awk '{print $1}')
 #kubectl get sts ${cluster}-be -oyaml | kubectl-neat >./${cluster}-be.yaml
 #kubectl get sts ${cluster}-fe -oyaml | kubectl-neat >./${cluster}-fe.yaml
 #kubectl get sts ${cluster}-cn -oyaml | kubectl-neat >./${cluster}-cn.yaml

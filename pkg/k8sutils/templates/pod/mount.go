@@ -5,10 +5,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/cmd/config"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/hash"
 )
 
 // SpecialStorageClassName returns the special storage class name of the storage volume, else return "".

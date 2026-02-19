@@ -1,0 +1,50 @@
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: celerdatacluster-sample
+  namespace: celerdata
+spec:
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:2.5.4
+    replicas: 1
+    requests:
+      cpu: 1
+      memory: 1Gi
+  celerDataBeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:2.5.4
+    replicas: 1
+    requests:
+      cpu: 1
+      memory: 2Gi
+  celerDataCnSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu:2.5.4
+    replicas: 1
+    autoScalingPolicy:
+      version: v2
+      minReplicas: 1
+      maxReplicas: 1
+      hpaPolicy:
+        metrics:
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              averageUtilization: 30
+              type: Utilization
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              averageUtilization: 60
+              type: Utilization
+        behavior:
+          scaleUp:
+            policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 10
+          scaleDown:
+            selectPolicy: Disabled
+    requests:
+      cpu: 1
+      memory: 2Gi

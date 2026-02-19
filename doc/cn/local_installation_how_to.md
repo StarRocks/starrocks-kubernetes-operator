@@ -181,7 +181,7 @@ EOF
 unset http_proxy
 unset https_proxy
 # 你可能需要 sudo 权限来执行 kind create cluster 命令
-sudo kind create cluster --image=kindest/node:v1.23.4 --name=starrocks --config=kind.yaml
+sudo kind create cluster --image=kindest/node:v1.23.4 --name=celerdata --config=kind.yaml
 
 # 你可能需要 sudo 权限来执行kubectl命令
 # waiting for the new kubernetes cluster to be running healthily
@@ -189,48 +189,48 @@ sudo kubectl get pods -A
 NAMESPACE            NAME                                              READY   STATUS    RESTARTS   AGE
 kube-system          coredns-64897985d-brlj9                           1/1     Running   0          4m26s
 kube-system          coredns-64897985d-m9kj6                           1/1     Running   0          4m26s
-kube-system          etcd-starrocks-control-plane                      1/1     Running   0          4m39s
+kube-system          etcd-celerdata-control-plane                      1/1     Running   0          4m39s
 kube-system          kindnet-jsrg8                                     1/1     Running   0          4m26s
-kube-system          kube-apiserver-starrocks-control-plane            1/1     Running   0          4m39s
-kube-system          kube-controller-manager-starrocks-control-plane   1/1     Running   0          4m39s
+kube-system          kube-apiserver-celerdata-control-plane            1/1     Running   0          4m39s
+kube-system          kube-controller-manager-celerdata-control-plane   1/1     Running   0          4m39s
 kube-system          kube-proxy-8h6b4                                  1/1     Running   0          4m26s
-kube-system          kube-scheduler-starrocks-control-plane            1/1     Running   0          4m39s
+kube-system          kube-scheduler-celerdata-control-plane            1/1     Running   0          4m39s
 local-path-storage   local-path-provisioner-5ddd94ff66-9l2km           1/1     Running   0          4m26s
 ```
 
 ### 2.2 通过 Helm 安装 StarRocks
 
-你可以在 https://github.com/StarRocks/starrocks-kubernetes-operator/releases 获取 StarRocks Helm Chart 的最新版本。
+你可以在 https://github.com/celerdata/celerdata-kubernetes-operator/releases 获取 StarRocks Helm Chart 的最新版本。
 
 ```shell
 # Add the Helm Chart Repo
-helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
+helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
 
 # update the repo
-helm repo update starrocks
+helm repo update celerdata
 
 # View the Helm Chart Repo that you added.
-# There are three charts in the repo, and kube-starrocks will be used to install StarRocks Operator and StarRocks cluster.
-helm search repo starrocks
+# There are three charts in the repo, and kube-celerdata will be used to install CelerData Operator and CelerData cluster.
+helm search repo celerdata
 ```
 
-这里有 [kube-starrocks](../../helm-charts/charts/kube-starrocks/README.md) Helm Chart 的更多信息。
+这里有 [kube-celerdata](../../helm-charts/charts/kube-celerdata/README.md) Helm Chart 的更多信息。
 
 Prepare a `values.yaml` file to install, and you can refer
-to [values.yaml](../../helm-charts/charts/kube-starrocks/values.yaml) to see the default values.
+to [values.yaml](../../helm-charts/charts/kube-celerdata/values.yaml) to see the default values.
 
 ```shell
 cat <<EOF >values.yaml
 operator:
   starrocksOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.8.6
 
 starrocks:
-  starrocksFESpec:
+  celerDataFeSpec:
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.1.2
     resources:
       limits:
@@ -246,9 +246,9 @@ starrocks:
         containerPort: 9030
         nodePort: 30002
         port: 9030
-  starrocksBeSpec:
+  celerDataBeSpec:
     image:
-      repository: starrocks/be-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
       tag: 3.1.2
     resources:
       limits:
@@ -257,7 +257,7 @@ starrocks:
       requests:
         cpu: 500m
         memory: 1Gi
-  starrocksFeProxySpec:
+  celerDataFeProxySpec:
     enabled: true
     resources:
       requests:
@@ -272,29 +272,29 @@ starrocks:
         port: 8080        
 EOF
 
-# install starrocks
+# install celerdata
 # 如果你因为网络问题无法安装，可参见后面的操作
-helm install -n starrocks starrocks -f values.yaml starrocks/kube-starrocks --create-namespace
+helm install -n celerdata celerdata -f values.yaml celerdata/kube-celerdata --create-namespace
 
 ############## 如果你因为网络问题无法直接安装(helm instal)，可以先下载再安装 ##############
 # 如果无法下载可以使用下面的 URL
 # HELM_CHART_URL="https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com"
-HELM_CHART_URL="https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.8.6"
-curl -LO "$HELM_CHART_URL/kube-starrocks-1.8.6.tgz"
+HELM_CHART_URL="https://github.com/celerdata/celerdata-kubernetes-operator/releases/download/v1.8.6"
+curl -LO "$HELM_CHART_URL/kube-celerdata-1.8.6.tgz"
 
-helm install -n starrocks starrocks -f values.yaml ./kube-starrocks-1.8.6.tgz --create-namespace
+helm install -n celerdata celerdata -f values.yaml ./kube-celerdata-1.8.6.tgz --create-namespace
 #############################################################
 
 # set alias for kubectl
-alias k='kubectl -n starrocks'
+alias k='kubectl -n celerdata'
 
-# waiting for the starrocks cluster to be running healthily
+# waiting for the celerdata cluster to be running healthily
 ubuntu@vm:~$ k get pods
 NAME READY STATUS RESTARTS AGE
-kube-starrocks-be-0 1/1 Running 0 2m
-kube-starrocks-fe-0 1/1 Running 0 3m
-kube-starrocks-fe-proxy-5c7c7fc7b-wwvs6 1/1 Running 0 3m
-kube-starrocks-operator-7498c7fbd-qsbgb 1/1 Running 0 3m
+kube-celerdata-be-0 1/1 Running 0 2m
+kube-celerdata-fe-0 1/1 Running 0 3m
+kube-celerdata-fe-proxy-5c7c7fc7b-wwvs6 1/1 Running 0 3m
+kube-celerdata-operator-7498c7fbd-qsbgb 1/1 Running 0 3m
 ```
 
 ## 3. 通过脚本安装
@@ -305,12 +305,12 @@ kube-starrocks-operator-7498c7fbd-qsbgb 1/1 Running 0 3m
 
 1. 在你的机器上安装 kubectl、helm、kind。
 2. 创建一个名为 `starrocks` 的 kind 集群。
-3. 通过 [kube-starrocks](../../helm-charts/charts/kube-starrocks/README.md) chart 安装 starrocks。
+3. 通过 [kube-celerdata](../../helm-charts/charts/kube-celerdata/README.md) chart 安装 starrocks。
 
 执行下面的命令：
 
 ```shell
-sudo bash local-install.sh --helm-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kind-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kubectl-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --helm-chart-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-starrocks-1.8.6.tgz
+sudo bash local-install.sh --helm-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kind-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --kubectl-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com --helm-chart-url https://ydx-starrocks-public.oss-cn-hangzhou.aliyuncs.com/kube-celerdata-1.8.6.tgz
 ```
 
 ## 4. 将数据加载到 StarRocks
@@ -319,13 +319,13 @@ sudo bash local-install.sh --helm-url https://ydx-starrocks-public.oss-cn-hangzh
 
 ```shell
 # set alias for kubectl
-alias k='kubectl -n starrocks'
+alias k='kubectl -n celerdata'
 
-# get the pod ip of kube-starrocks-fe-0
-IP=$(k get pod kube-starrocks-fe-0 --template '{{.status.podIP}}')
+# get the pod ip of kube-celerdata-fe-0
+IP=$(k get pod kube-celerdata-fe-0 --template '{{.status.podIP}}')
 
-# login to kube-starrocks-fe-0
-k exec -it kube-starrocks-fe-0 -- env IP=$IP bash
+# login to kube-celerdata-fe-0
+k exec -it kube-celerdata-fe-0 -- env IP=$IP bash
 
 # create database and table
 mysql -h $IP -P 9030 -uroot
@@ -352,7 +352,7 @@ cat <<EOF > example1.csv
 4,Julia,25
 EOF
 
-# load data to starrocks
+# load data to celerdata
 curl --location-trusted -u root:"" -H "label:123" \
     -H "Expect:100-continue" \
     -H "column_separator:," \
@@ -364,9 +364,9 @@ curl --location-trusted -u root:"" -H "label:123" \
 ## 5. 卸载 StarRocks
 
 ```shell
-# uninstall starrocks
-helm uninstall starrocks -n starrocks
+# uninstall celerdata
+helm uninstall celerdata -n celerdata
 
 # uninstall kubernetes cluster
-kind delete cluster --name starrocks
+kind delete cluster --name celerdata
 ```

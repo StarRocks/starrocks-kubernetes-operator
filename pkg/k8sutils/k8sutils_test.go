@@ -27,14 +27,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
 )
 
 func TestMain(m *testing.M) {
-	srapi.Register()
+	cdapi.Register()
 	os.Exit(m.Run())
 }
 
@@ -54,7 +54,7 @@ func Test_getValueFromConfigmap(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -101,7 +101,7 @@ func Test_getValueFromSecret(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Secret{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: "default",
@@ -147,7 +147,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value",
 			args: args{
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 				namespace: "default",
 				envVar: corev1.EnvVar{
 					Name:  "test",
@@ -160,7 +160,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from configmap",
 			args: args{
-				k8sClient: fake.NewFakeClient(srapi.Scheme,
+				k8sClient: fake.NewFakeClient(cdapi.Scheme,
 					&corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
@@ -189,7 +189,7 @@ func TestGetEnvVarValue(t *testing.T) {
 		{
 			name: "get value from secret",
 			args: args{
-				k8sClient: fake.NewFakeClient(srapi.Scheme,
+				k8sClient: fake.NewFakeClient(cdapi.Scheme,
 					&corev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      "test",
@@ -246,7 +246,7 @@ func TestService(t *testing.T) {
 			name: "test apply service which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 				svc: &corev1.Service{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.ServiceKind,
@@ -268,7 +268,7 @@ func TestService(t *testing.T) {
 			name: "test apply service which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Service{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.Service{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       rutils.ServiceKind,
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -337,7 +337,7 @@ func TestApplyDeployment(t *testing.T) {
 			name: "test apply deployment which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 				deploy: &appsv1.Deployment{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Deployment",
@@ -357,7 +357,7 @@ func TestApplyDeployment(t *testing.T) {
 			name: "test apply deployment which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.Deployment{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.Deployment{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Deployment",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -423,7 +423,7 @@ func TestApplyConfigMap(t *testing.T) {
 			name: "test apply configmap which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 				configmap: &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
@@ -443,7 +443,7 @@ func TestApplyConfigMap(t *testing.T) {
 			name: "test apply configmap which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -516,7 +516,7 @@ func TestApplyStatefulSet(t *testing.T) {
 			name: "test apply sts which not exist",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 				sts: &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
@@ -539,7 +539,7 @@ func TestApplyStatefulSet(t *testing.T) {
 			name: "test apply sts which has been created",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -575,7 +575,7 @@ func TestApplyStatefulSet(t *testing.T) {
 			name: "scale sts replicas to 1",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -678,7 +678,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 		k8sClient client.Client
 		namespace string
 		name      string
-		version   srapi.AutoScalerVersion
+		version   cdapi.AutoScalerVersion
 	}
 	tests := []struct {
 		name    string
@@ -689,7 +689,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 			name: "delete autoscaler",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "autoscaling",
 						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
@@ -701,7 +701,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 				}),
 				namespace: "default",
 				name:      "my-hpa",
-				version:   srapi.AutoScalerV2,
+				version:   cdapi.AutoScalerV2,
 			},
 			wantErr: false,
 		},
@@ -709,7 +709,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 			name: "delete autoscaler which not exist",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "autoscaling",
 						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
@@ -721,7 +721,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 				}),
 				namespace: "default",
 				name:      "my-hpa",
-				version:   srapi.AutoScalerV2,
+				version:   cdapi.AutoScalerV2,
 			},
 			wantErr: false, // "not found" means the resource has not been created, so it is not an error
 		},
@@ -729,7 +729,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 			name: "delete autoscaler with wrong version",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "autoscaling",
 						APIVersion: autoscalingv2.SchemeGroupVersion.String(),
@@ -749,7 +749,7 @@ func TestDeleteAutoscaler(t *testing.T) {
 			name: "delete autoscaler with wrong version and name",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &autoscalingv2.HorizontalPodAutoscaler{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "autoscaling",
 						APIVersion: autoscalingv2.SchemeGroupVersion.String(),

@@ -32,31 +32,31 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/be"
 )
 
 func TestMain(m *testing.M) {
-	srapi.Register()
+	cdapi.Register()
 	os.Exit(m.Run())
 }
 
 func Test_ClearResources(t *testing.T) {
 	now := metav1.NewTime(time.Now())
-	src := &srapi.StarRocksCluster{
+	src := &cdapi.CelerDataCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test",
 			Namespace:         "default",
 			DeletionTimestamp: &now,
 		},
-		Spec: srapi.StarRocksClusterSpec{},
-		Status: srapi.StarRocksClusterStatus{
-			StarRocksFeStatus: &srapi.StarRocksFeStatus{
-				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+		Spec: cdapi.CelerDataClusterSpec{},
+		Status: cdapi.CelerDataClusterStatus{
+			CelerDataFeStatus: &cdapi.CelerDataFeStatus{
+				CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
 					ResourceNames: []string{"test-fe"},
 					ServiceName:   "test-fe-access",
 				},
@@ -97,7 +97,7 @@ func Test_ClearResources(t *testing.T) {
 		},
 	}
 
-	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &st, &svc, &ssvc), fake.GetEventRecorderFor(nil))
+	bc := be.New(fake.NewFakeClient(cdapi.Scheme, src, &st, &svc, &ssvc), fake.GetEventRecorderFor(nil))
 	err := bc.ClearCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 
@@ -120,16 +120,16 @@ func Test_Sync(t *testing.T) {
 	labels["test"] = "test"
 	labels["test1"] = "test1"
 
-	src := &srapi.StarRocksCluster{
+	src := &cdapi.CelerDataCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "default",
 		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksFeSpec: &srapi.StarRocksFeSpec{},
-			StarRocksBeSpec: &srapi.StarRocksBeSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+		Spec: cdapi.CelerDataClusterSpec{
+			CelerDataFeSpec: &cdapi.CelerDataFeSpec{},
+			CelerDataBeSpec: &cdapi.CelerDataBeSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
 						Replicas:       rutils.GetInt32Pointer(3),
 						Image:          "test.image",
 						ServiceAccount: "test-sa",
@@ -156,18 +156,18 @@ func Test_Sync(t *testing.T) {
 		}},
 	}
 
-	bc := be.New(fake.NewFakeClient(srapi.Scheme, src, &ep), fake.GetEventRecorderFor(nil))
+	bc := be.New(fake.NewFakeClient(cdapi.Scheme, src, &ep), fake.GetEventRecorderFor(nil))
 	err := bc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = bc.UpdateClusterStatus(context.Background(), src)
 	require.Equal(t, nil, err)
-	beStatus := src.Status.StarRocksBeStatus
-	require.Equal(t, beStatus.Phase, srapi.ComponentReconciling)
+	beStatus := src.Status.CelerDataBeStatus
+	require.Equal(t, beStatus.Phase, cdapi.ComponentReconciling)
 	require.Equal(t, nil, err)
 	var st appsv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
-	spec := src.Spec.StarRocksBeSpec
+	spec := src.Spec.CelerDataBeSpec
 	searchServiceName := service.SearchServiceName(src.Name, spec)
 	require.NoError(t, bc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.ExternalServiceName(src.Name, spec), Namespace: "default"}, &asvc))
@@ -176,14 +176,14 @@ func Test_Sync(t *testing.T) {
 		types.NamespacedName{Name: searchServiceName, Namespace: "default"}, &rsvc))
 	require.Equal(t, searchServiceName, rsvc.Name)
 	require.NoError(t, bc.Client.Get(context.Background(),
-		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksBeSpec), Namespace: "default"}, &st))
+		types.NamespacedName{Name: load.Name(src.Name, src.Spec.CelerDataBeSpec), Namespace: "default"}, &st))
 	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
 }
 
 func TestBeController_GetBeConfig(t *testing.T) {
 	type args struct {
 		ctx       context.Context
-		beSpec    *srapi.StarRocksBeSpec
+		beSpec    *cdapi.CelerDataBeSpec
 		namespace string
 	}
 	type fields struct {
@@ -199,7 +199,7 @@ func TestBeController_GetBeConfig(t *testing.T) {
 		{
 			name: "get BE config from ConfigMapInfo",
 			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -215,10 +215,10 @@ func TestBeController_GetBeConfig(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				beSpec: &srapi.StarRocksBeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-							ConfigMapInfo: srapi.ConfigMapInfo{
+				beSpec: &cdapi.CelerDataBeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+							ConfigMapInfo: cdapi.ConfigMapInfo{
 								ConfigMapName: "be-configMap",
 								ResolveKey:    "be.conf",
 							},
@@ -235,7 +235,7 @@ func TestBeController_GetBeConfig(t *testing.T) {
 		{
 			name: "get BE config from configMaps, with matching subpath",
 			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -251,9 +251,9 @@ func TestBeController_GetBeConfig(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				beSpec: &srapi.StarRocksBeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						ConfigMaps: []srapi.ConfigMapReference{
+				beSpec: &cdapi.CelerDataBeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						ConfigMaps: []cdapi.ConfigMapReference{
 							{
 								Name:      "be-configMap",
 								MountPath: "/opt/starrocks/be/conf/be.conf",
@@ -271,7 +271,7 @@ func TestBeController_GetBeConfig(t *testing.T) {
 		{
 			name: "get BE config from configMap 2, without subpath",
 			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -287,9 +287,9 @@ func TestBeController_GetBeConfig(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				beSpec: &srapi.StarRocksBeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						ConfigMaps: []srapi.ConfigMapReference{
+				beSpec: &cdapi.CelerDataBeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						ConfigMaps: []cdapi.ConfigMapReference{
 							{
 								Name:      "be-configMap",
 								MountPath: "/opt/starrocks/be/conf",
@@ -306,11 +306,11 @@ func TestBeController_GetBeConfig(t *testing.T) {
 		{
 			name: "get BE empty config",
 			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
 			},
 			args: args{
 				ctx:       context.Background(),
-				beSpec:    &srapi.StarRocksBeSpec{},
+				beSpec:    &cdapi.CelerDataBeSpec{},
 				namespace: "default",
 			},
 			want: map[string]interface{}{},
@@ -335,7 +335,7 @@ func TestBeController_GetBeConfig(t *testing.T) {
 
 func TestGenerateInternalService(t *testing.T) {
 	type args struct {
-		cluster         *srapi.StarRocksCluster
+		cluster         *cdapi.CelerDataCluster
 		externalService *corev1.Service
 		beConfig        map[string]interface{}
 		labels          map[string]string
@@ -348,12 +348,12 @@ func TestGenerateInternalService(t *testing.T) {
 		{
 			name: "test1",
 			args: args{
-				cluster: &srapi.StarRocksCluster{
+				cluster: &cdapi.CelerDataCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "test-cluster",
 					},
-					Spec: srapi.StarRocksClusterSpec{
-						StarRocksBeSpec: &srapi.StarRocksBeSpec{},
+					Spec: cdapi.CelerDataClusterSpec{
+						CelerDataBeSpec: &cdapi.CelerDataBeSpec{},
 					},
 				},
 				externalService: &corev1.Service{

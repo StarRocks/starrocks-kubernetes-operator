@@ -15,13 +15,13 @@ global:
   rbac:
     create: true
 timeZone: Asia/Shanghai
-nameOverride: "kube-starrocks"
+nameOverride: "kube-celerdata"
 starrocksOperator:
   enabled: true
   annotations: {}
   namespaceOverride: ""
   image:
-    repository: starrocks/operator
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
     tag: v1.7.1
   imagePullPolicy: Always
   replicaCount: 1
@@ -36,7 +36,7 @@ starrocksOperator:
   tolerations: []
 `
 const STARROCKS_YAML = `
-nameOverride: "kube-starrocks"
+nameOverride: "kube-celerdata"
 initPassword:
   enabled: false
   password: ""
@@ -55,7 +55,7 @@ starrocksCluster:
 starrocksFESpec:
   replicas: 1
   image:
-    repository: starrocks/fe-ubuntu
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
     tag: 2.0-latest
   annotations: {}
   runAsNonRoot: false
@@ -96,7 +96,7 @@ starrocksFESpec:
   configMaps: []
 starrocksCnSpec:
   image:
-    repository: starrocks/cn-ubuntu
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
     tag: 2.0-latest
   serviceAccount: ""
   annotations: {}
@@ -132,7 +132,7 @@ starrocksCnSpec:
 starrocksBeSpec:
   replicas: 1
   image:
-    repository: starrocks/be-ubuntu
+    repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
     tag: 2.0-latest
   serviceAccount: ""
   annotations: {}
@@ -182,7 +182,7 @@ operator:
     annotations: {}
     namespaceOverride: ""
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.7.1
     imagePullPolicy: Always
     replicaCount: 1
@@ -195,8 +195,8 @@ operator:
         memory: 200Mi
     nodeSelector: {}
     tolerations: []
-starrocks:
-  nameOverride: "kube-starrocks"
+celerdata:
+  nameOverride: "kube-celerdata"
   initPassword:
     enabled: false
     password: ""
@@ -215,7 +215,7 @@ starrocks:
   starrocksFESpec:
     replicas: 1
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 2.0-latest
     annotations: {}
     runAsNonRoot: false
@@ -256,7 +256,7 @@ starrocks:
     configMaps: []
   starrocksCnSpec:
     image:
-      repository: starrocks/cn-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
       tag: 2.0-latest
     serviceAccount: ""
     annotations: {}
@@ -292,7 +292,7 @@ starrocks:
   starrocksBeSpec:
     replicas: 1
     image:
-      repository: starrocks/be-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
       tag: 2.0-latest
     serviceAccount: ""
     annotations: {}
@@ -336,7 +336,7 @@ starrocks:
 var V1_7_1_YAML = func() string {
 	// remove the line has timeZone or nameOverride
 	val := strings.ReplaceAll(OPERATOR_YAML, "timeZone: Asia/Shanghai\n", "")
-	val = strings.ReplaceAll(val, "nameOverride: \"kube-starrocks\"\n", "")
+	val = strings.ReplaceAll(val, "nameOverride: \"kube-celerdata\"\n", "")
 	// remove whitespace line
 	val = strings.ReplaceAll(val, "\n\n", "\n")
 	return fmt.Sprintf("%v\n%v", val, STARROCKS_YAML)
@@ -391,7 +391,7 @@ func TestDo(t *testing.T) {
 				chartVersion: "v1.8.0",
 			},
 			wantW1: fmt.Sprintf("%v\n%v", marshal(addHeader2(OPERATOR_YAML, "operator")),
-				marshal(addHeader2(STARROCKS_YAML, "starrocks"))),
+				marshal(addHeader2(STARROCKS_YAML, "celerdata"))),
 			wantErr: false,
 		},
 		{

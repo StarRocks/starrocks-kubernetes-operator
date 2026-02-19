@@ -1,13 +1,13 @@
 operator:
-  starrocksOperator:
+  celerDataOperator:
     image:
-      repository: starrocks/operator
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
       tag: v1.8.6
 
-starrocks:
-  starrocksFESpec:
+celerdata:
+  celerDataFeSpec:
     image:
-      repository: starrocks/fe-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
       tag: 3.1.2
     resources:
       limits:
@@ -23,9 +23,9 @@ starrocks:
         containerPort: 9030
         nodePort: 30002
         port: 9030
-  starrocksBeSpec:
+  celerDataBeSpec:
     image:
-      repository: starrocks/be-ubuntu
+      repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
       tag: 3.1.2
     resources:
       limits:
@@ -34,7 +34,7 @@ starrocks:
       requests:
         cpu: 1
         memory: 2Gi
-  starrocksFeProxySpec:
+  celerDataFeProxySpec:
     enabled: true
     service:
       type: NodePort

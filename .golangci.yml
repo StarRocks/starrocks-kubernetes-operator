@@ -120,7 +120,7 @@ formatters:
           replacement: any
     goimports:
       local-prefixes:
-        - github.com/StarRocks/starrocks-kubernetes-operator
+        - github.com/CelerData/celerdata-kubernetes-operator-internal
   exclusions:
     generated: lax
     paths:

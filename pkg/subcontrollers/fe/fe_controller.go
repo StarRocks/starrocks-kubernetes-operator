@@ -28,16 +28,16 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/log"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/statefulset"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
 )
 
 type FeController struct {
@@ -59,11 +59,11 @@ func (fc *FeController) GetControllerName() string {
 }
 
 // SyncCluster starRocksCluster spec to fe statefulset and service.
-func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeController) SyncCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
-	if src.Spec.StarRocksFeSpec == nil {
-		logger.Info("src.Spec.StarRocksFeSpec == nil, skip sync fe")
+	if src.Spec.CelerDataFeSpec == nil {
+		logger.Info("src.Spec.CelerDataFeSpec == nil, skip sync fe")
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	}()
 
-	feSpec := src.Spec.StarRocksFeSpec
+	feSpec := src.Spec.CelerDataFeSpec
 	if err = fc.Validating(feSpec); err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 
 	// generate new fe service.
-	logger.V(log.DebugLevel).Info("build fe service", "StarRocksCluster", src)
+	logger.V(log.DebugLevel).Info("build fe service", "CelerDataCluster", src)
 	object := object.NewFromCluster(src)
 	defaultLabels := load.Labels(src.Name, feSpec)
 	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), defaultLabels)
@@ -116,7 +116,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	if shouldEnterDRMode {
 		logger.Info("should enter disaster recovery mode")
 		if drStatus == nil {
-			drStatus = srapi.NewDisasterRecoveryStatus(drSpec.Generation)
+			drStatus = cdapi.NewDisasterRecoveryStatus(drSpec.Generation)
 			src.Status.DisasterRecoveryStatus = drStatus
 		}
 		if err = EnterDisasterRecoveryMode(ctx, fc.Client, src, &expectSts, queryPort); err != nil {
@@ -146,30 +146,30 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 }
 
 // UpdateClusterStatus update the all resource status about fe.
-func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeController) UpdateClusterStatus(_ context.Context, src *cdapi.CelerDataCluster) error {
 	// if spec is not exist, status is empty. but before clear status we must clear all resource about be used by ClearCluster.
-	feSpec := src.Spec.StarRocksFeSpec
+	feSpec := src.Spec.CelerDataFeSpec
 	if feSpec == nil {
-		src.Status.StarRocksFeStatus = nil
+		src.Status.CelerDataFeStatus = nil
 		return nil
 	}
 
-	fs := &srapi.StarRocksFeStatus{
-		StarRocksComponentStatus: srapi.StarRocksComponentStatus{
-			Phase: srapi.ComponentReconciling,
+	fs := &cdapi.CelerDataFeStatus{
+		CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
+			Phase: cdapi.ComponentReconciling,
 		},
 	}
 
-	if src.Status.StarRocksFeStatus != nil {
-		fs = src.Status.StarRocksFeStatus.DeepCopy()
+	if src.Status.CelerDataFeStatus != nil {
+		fs = src.Status.CelerDataFeStatus.DeepCopy()
 	}
 
-	src.Status.StarRocksFeStatus = fs
-	fs.ServiceName = service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
-	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
+	src.Status.CelerDataFeStatus = fs
+	fs.ServiceName = service.ExternalServiceName(src.Name, src.Spec.CelerDataFeSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.CelerDataFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
+	if err := subcontrollers.UpdateStatus(&fs.CelerDataComponentStatus, fc.Client,
 		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), subcontrollers.StatefulSetLoadType); err != nil {
 		return err
 	}
@@ -183,12 +183,12 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 }
 
 // ClearCluster clears resource about fe.
-func (fc *FeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeController) ClearCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	// if the starrocks is not have fe.
-	if src.Status.StarRocksFeStatus == nil {
+	// if the celerdata is not have fe.
+	if src.Status.CelerDataFeStatus == nil {
 		return nil
 	}
 
@@ -196,13 +196,13 @@ func (fc *FeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 		return nil
 	}
 
-	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
+	statefulSetName := load.Name(src.Name, src.Spec.CelerDataFeSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete statefulset failed", "statefulsetName", statefulSetName)
 		return err
 	}
 
-	feSpec := src.Spec.StarRocksFeSpec
+	feSpec := src.Spec.CelerDataFeSpec
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete search service failed", "searchServiceName", searchServiceName)
@@ -218,13 +218,13 @@ func (fc *FeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 	return nil
 }
 
-func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
+func (fc *FeController) Validating(feSpec *cdapi.CelerDataFeSpec) error {
 	for i := range feSpec.StorageVolumes {
 		if err := feSpec.StorageVolumes[i].Validate(); err != nil {
 			return err
 		}
 	}
-	if err := srapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
+	if err := cdapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
 		return err
 	}
 	return nil
@@ -237,7 +237,7 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
 	logger := logr.FromContextOrDiscard(ctx)
 	endpoints := corev1.Endpoints{}
-	serviceName := service.ExternalServiceName(clusterName, (*srapi.StarRocksFeSpec)(nil))
+	serviceName := service.ExternalServiceName(clusterName, (*cdapi.CelerDataFeSpec)(nil))
 	// 1. wait for FE ready.
 	if err := k8sClient.Get(ctx,
 		types.NamespacedName{

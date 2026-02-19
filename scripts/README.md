@@ -1,21 +1,21 @@
-This directory contains scripts to help with the development of the StarRocks Operator.
+This directory contains scripts to help with the development of the CelerData Operator.
 
-`artifacts.sh` is used to generate the artifacts for the StarRocks Operator when a new release is made.
+`artifacts.sh` is used to generate the artifacts for the CelerData Operator when a new release is made.
 It includes:
 ```console
 bash artifacts.sh <version>
 
 # output
 # for example
-kube-starrocks-1.7.1.tgz
-kube-starrocks-1.7.1.tgz.prov
+kube-celerdata-1.7.1.tgz
+kube-celerdata-1.7.1.tgz.prov
 operator.yaml
-starrocks.com_starrocksclusters.yaml
+celerdata.com_celerdataclusters.yaml
 ```
 
 `create-parent-chart-values.sh` is used to generate the parent chart values. It just contains the values of the child charts.
 ```console
-# the output file will be saved to `helm-charts/charts/kube-starrocks/values.yaml`.
+# the output file will be saved to `helm-charts/charts/kube-celerdata/values.yaml`.
 bash create-parent-chart-values.sh
 ```
 

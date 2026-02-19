@@ -8,4 +8,4 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
-  resourceName: c6c79638.starrocks.com
+  resourceName: c6c79638.celerdata.com

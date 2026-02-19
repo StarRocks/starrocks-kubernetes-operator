@@ -15,7 +15,7 @@
 package load
 
 import (
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func Selector(clusterName string, spec v1.SpecInterface) map[string]string {

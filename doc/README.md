@@ -4,10 +4,10 @@ Table Of Content
 
 - [API Reference](./api.md)
 - HOWTO
-    - [Least Permission to Deploy StarRocks](./least_permission_to_deploy_starrocks_howto.md)
-    - [Deploy StarRocks With Operator](./deploy_starrocks_with_operator_howto.md)
-    - [Deploy StarRocks With Helm](./deploy_starrocks_with_helm_howto.md)
-    - [Install StarRocks Locally](./local_installation_how_to.md)
+    - [Least Permission to Deploy CelerData](./least_permission_to_deploy_celerdata_howto.md)
+    - [Deploy CelerData With Operator](./deploy_celerdata_with_operator_howto.md)
+    - [Deploy CelerData With Helm](./deploy_celerdata_with_helm_howto.md)
+    - [Install CelerData Locally](./local_installation_how_to.md)
     - [Change Root Password](./change_root_password_howto.md)
     - [Init Root Password When First Deploy](./initialize_root_password_howto.md)
     - [Build Operator Image By Yourself](./build_the_operator_images_by_yourself_howto.md)

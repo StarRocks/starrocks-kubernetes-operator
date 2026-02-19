@@ -13,8 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 )
 
 // SQLExecutor is used to execute sql statements.
-// Component CN needs to connect to mysql and execute sql statements. E.g.: When StarRocksWarehouse is deleted, the
+// Component CN needs to connect to mysql and execute sql statements. E.g.: When CelerDataWarehouse is deleted, the
 // related 'DROP WAREHOUSE <name>' statement needs to be executed.
 type SQLExecutor struct {
 	RootPassword       string
@@ -194,10 +194,10 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 		return nil, err
 	}
 
-	// the FQDN looks like: kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local,
-	// kube-starrocks-cn-1.kube-starrocks-cn-search.default.svc.cluster.local,
-	// kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local
-	// kube-starrocks-cn-10 should be after kube-starrocks-cn-2 when sorting.
+	// the FQDN looks like: kube-celerdata-cn-2.kube-celerdata-cn-search.default.svc.cluster.local,
+	// kube-celerdata-cn-1.kube-celerdata-cn-search.default.svc.cluster.local,
+	// kube-celerdata-cn-10.kube-celerdata-cn-search.default.svc.cluster.local
+	// kube-celerdata-cn-10 should be after kube-celerdata-cn-2 when sorting.
 	for _, computeNodes := range result.ComputeNodesByWarehouse {
 		sort.Slice(computeNodes, func(i, j int) bool {
 			return computeNodes[i].index < computeNodes[j].index

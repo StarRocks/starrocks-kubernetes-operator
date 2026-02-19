@@ -1,0 +1,53 @@
+# This manifest deploys a CelerData cluster with 3 FEs, 3 BEs.
+
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: celerdatacluster-sample
+  namespace: celerdata
+spec:
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest
+    replicas: 3
+    # If you just want to start a running CelerData cluster, you can set a smaller request/limit, such as 1 core and 2GB.
+    # See https://docs.starrocks.io/docs/deployment/plan_cluster/#cpu-and-memory for more information about how to configure CPU and memory in production.
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+    # storageVolumes is optional. If you don't specify it, emptyDir will be used to store FE meta and log, and be aware
+    # that the files and directories written to the volume will be completely lost upon container restarting.
+    storageVolumes:
+    - name: fe-meta
+      # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
+      # fe container stop running if the disk free space which the fe meta directory residents, is less than 5Gi.
+      storageSize: 10Gi
+      mountPath: /opt/starrocks/fe/meta
+    - name: fe-log
+      # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
+      storageSize: 5Gi
+      mountPath: /opt/starrocks/fe/log
+  celerDataBeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:latest
+    replicas: 3
+    # If you just want to start a running CelerData cluster, you can set a smaller request/limit, such as 1 core and 2GB.
+    # See https://docs.starrocks.io/docs/deployment/plan_cluster/#cpu-and-memory for more information about how to configure CPU and memory in production.
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+    # storageVolumes is optional. If you don't specify it, emptyDir will be used to store BE data and log, and be aware
+    # that the files and directories written to the volume will be completely lost upon container restarting.
+    storageVolumes:
+    - name: be-data
+      # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
+      storageSize: 1Ti
+      mountPath: /opt/starrocks/be/storage
+    - name: be-log
+      # storageClassName: ""  # If storageClassName is not set, Kubernetes will use the default storage class.
+      storageSize: 1Gi
+      mountPath: /opt/starrocks/be/log

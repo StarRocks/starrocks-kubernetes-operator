@@ -1,4 +1,4 @@
-# StarRocks-Kubernetes-Operator
+# CelerData-Kubernetes-Operator
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -6,10 +6,10 @@
 
 ## Overview
 
-StarRocks Kubernetes Operator is a project that implements the deployment and operation of StarRocks, a next-generation
+CelerData Kubernetes Operator is a project that implements the deployment and operation of StarRocks, a next-generation
 sub-second MPP OLAP database, on Kubernetes. It facilitates the deployment of StarRocks' Frontend (FE), Backend (BE),
 and Compute Node (CN) components within your Kubernetes environment. It also includes Helm chart for easy installation
-and configuration. With StarRocks Kubernetes Operator, you can easily manage the lifecycle of StarRocks clusters, such
+and configuration. With CelerData Kubernetes Operator, you can easily manage the lifecycle of CelerData clusters, such
 as installing, scaling, upgrading etc.
 
 > [!NOTE]  
@@ -26,7 +26,7 @@ as installing, scaling, upgrading etc.
 
 - Support deploying StarRocks FE, BE and CN components separately
   FE component is a must-have component, BE and CN components can be optionally deployed
-- Support multiple StarRocks clusters in one Kubernetes cluster
+- Support multiple CelerData clusters in one Kubernetes cluster
 - Support external clients outside the network of kubernetes to load data into StarRocks using STREAM LOAD
 - Support automatic scaling for CN nodes based on CPU and memory usage
 - Support mounting persistent volumes for StarRocks containers
@@ -34,72 +34,72 @@ as installing, scaling, upgrading etc.
 ### Helm Chart Features
 
 - Support Helm Chart for easy installation and configuration
-    - using kube-starrocks Helm chart to install both operator and StarRocks cluster
-    - using operator Helm Chart to install operator, and using starrocks Helm Chart to install starrocks cluster
-- Support initializing the password of root in your StarRocks cluster during installation.
+    - using kube-celerdata Helm chart to install both operator and CelerData cluster
+    - using operator Helm Chart to install operator, and using starrocks Helm Chart to install celerdata cluster
+- Support initializing the password of root in your CelerData cluster during installation.
 - Support integration with other components in the Kubernetes ecosystem, such as Prometheus, Datadog, etc.
 
 ## Installation
 
 In order to use StarRocks in Kubernetes, you need to install:
 
-1. StarRocksCluster CRD
-2. StarRocks Operator
-3. StarRocksCluster CR
+1. CelerDataCluster CRD
+2. CelerData Operator
+3. CelerDataCluster CR
 
-There are two ways to install Operator and StarRocks Cluster.
+There are two ways to install Operator and CelerData Cluster.
 
-1. Install Operator and StarRocks Cluster by yaml Manifest.
-2. Install Operator and StarRocks Cluster by Helm Chart.
+1. Install Operator and CelerData Cluster by yaml Manifest.
+2. Install Operator and CelerData Cluster by Helm Chart.
 
 > Note: In every release, we will provide the latest version of the yaml Manifest and Helm Chart. You can find them
-> in https://github.com/StarRocks/starrocks-kubernetes-operator/releases
+> in https://github.com/celerdata/celerdata-kubernetes-operator/releases
 
 ## Installation by yaml Manifest
 
-Please see [Deploy StarRocks With Operator](./doc/deploy_starrocks_with_operator_howto.md) document for more details.
+Please see [Deploy StarRocks With Operator](./doc/deploy_celerdata_with_operator_howto.md) document for more details.
 
-### 1. Apply the StarRocksCluster CRD
+### 1. Apply the CelerDataCluster CRD
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/starrocks.com_starrocksclusters.yaml
+kubectl apply -f https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/celerdata.com_celerdataclusters.yaml
 ```
 
 ### 2. Apply the Operator manifest
 
 Apply the Operator manifest. By default, the Operator is configured to install in the starrocks namespace. To use the
 Operator in a custom namespace, download
-the [Operator manifest](https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml)
+the [Operator manifest](https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/operator.yaml)
 and edit all instances of namespace: starrocks to specify your custom namespace.
 Then apply this version of the manifest to the cluster with kubectl apply -f {local-file-path} instead of using the
 command below.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/operator.yaml
 ```
 
-### 3. Deploy the StarRocks cluster
+### 3. Deploy the CelerData cluster
 
-You need to prepare a separate yaml file to deploy the StarRocks. The starrocks cluster CRD fields explains
-in [api.md](./doc/api.md). The [examples](./examples/starrocks) directory contains some simple example for reference.
+You need to prepare a separate yaml file to deploy the StarRocks. The celerdata cluster CRD fields explains
+in [api.md](./doc/api.md). The [examples](./examples/celerdata) directory contains some simple example for reference.
 
 You can use any of the template yaml file as a starting point. You can further add more configurations into the template
 yaml file following this deployment documentation.
 
-For demonstration purpose, we use the [starrocks-fe-and-be.yaml](./examples/starrocks/starrocks-fe-and-be.yaml) example
-template to start a 3 FE and 3 BE StarRocks cluster.
+For demonstration purpose, we use the [celerdata-fe-and-be.yaml](./examples/celerdata/celerdata-fe-and-be.yaml) example
+template to start a 3 FE and 3 BE CelerData cluster.
 
 Here's an example yaml for Docker Desktop with local desktop access with StarRocks 3.2.1 so you can upgrade in later steps.
 ```
-atwong@Albert-CelerData sroperatortest % cat starrocks-fe-and-be.yaml
-apiVersion: starrocks.com/v1
-kind: StarRocksCluster
+atwong@Albert-CelerData celerdatatest % cat celerdata-fe-and-be.yaml
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
 metadata:
-  name: starrockscluster-sample
-  namespace: starrocks
+  name: celerdatacluster-sample
+  namespace: celerdata
 spec:
-  starRocksFeSpec:
-    image: starrocks/fe-ubuntu:3.2.1
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.2.1
     replicas: 3
     requests:
       cpu: 1
@@ -109,8 +109,8 @@ spec:
       memory: 16Gi
     service:            
       type: LoadBalancer
-  starRocksBeSpec:
-    image: starrocks/be-ubuntu:3.2.1
+  celerDataBeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.2.1
     replicas: 3
     requests:
       cpu: 1
@@ -121,24 +121,24 @@ spec:
 ```
 
 ```console
-kubectl apply -f starrocks-fe-and-be.yaml
+kubectl apply -f celerdata-fe-and-be.yaml
 ```
 
-### 4. Connect the StarRocks cluster
+### 4. Connect the CelerData cluster
 
-To connect, just use the mysql client and connect to the StarRocks cluster port 9030.  An example of a connection is shown below. 
+To connect, just use the mysql client and connect to the CelerData cluster port 9030.  An example of a connection is shown below. 
 
 > [!NOTE]  
 >  If you want to connect remotely or through your desktop, you will need to enable the k8s Load Balander.
 
 ```
-atwong@Albert-CelerData sroperatortest % kubectl -n starrocks get svc
+atwong@Albert-CelerData celerdatatest % kubectl -n celerdata get svc
 NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                       AGE
-starrockscluster-sample-be-search    ClusterIP      None            <none>        9050/TCP                                                      5m2s
-starrockscluster-sample-be-service   ClusterIP      10.103.248.52   <none>        9060/TCP,8040/TCP,9050/TCP,8060/TCP                           5m2s
-starrockscluster-sample-fe-search    ClusterIP      None            <none>        9030/TCP                                                      6m22s
-starrockscluster-sample-fe-service   LoadBalancer   10.99.14.222    localhost     8030:32326/TCP,9020:32578/TCP,9030:30774/TCP,9010:32505/TCP   6m22s
-atwong@Albert-CelerData sroperatortest % mysql -h 127.0.0.1 -P 9030 -uroot
+celerdatacluster-sample-be-search    ClusterIP      None            <none>        9050/TCP                                                      5m2s
+celerdatacluster-sample-be-service   ClusterIP      10.103.248.52   <none>        9060/TCP,8040/TCP,9050/TCP,8060/TCP                           5m2s
+celerdatacluster-sample-fe-search    ClusterIP      None            <none>        9030/TCP                                                      6m22s
+celerdatacluster-sample-fe-service   LoadBalancer   10.99.14.222    localhost     8030:32326/TCP,9020:32578/TCP,9030:30774/TCP,9010:32505/TCP   6m22s
+atwong@Albert-CelerData celerdatatest % mysql -h 127.0.0.1 -P 9030 -uroot
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 3
 Server version: 5.1.0 3.2.1-79ee91d
@@ -154,58 +154,58 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql>
 ```
 
-### 5. Upgrade the StarRocks cluster
+### 5. Upgrade the CelerData cluster
 
-To upgrade, just patch the StarRocks cluster. 
+To upgrade, just patch the CelerData cluster. 
 
 ```console
-kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksFeSpec":{"image":"starrocks/fe-ubuntu:latest"}}}'
-kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"image":"starrocks/be-ubuntu:latest"}}}'
+kubectl -n celerdata patch celerdatacluster celerdatacluster-sample --type='merge' -p '{"spec":{"celerDataFeSpec":{"image":"us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest"}}}'
+kubectl -n celerdata patch celerdatacluster celerdatacluster-sample --type='merge' -p '{"spec":{"celerDataBeSpec":{"image":"us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:latest"}}}'
 ```
 
-### 6. Resize the StarRocks cluster
+### 6. Resize the CelerData cluster
 
-To resize, just patch the StarRocks cluster. 
+To resize, just patch the CelerData cluster. 
 
 > [!IMPORTANT]  
 >  Once you deploy with 3 FE nodes, you are in HA mode.  Do not resize FE nodes below 3 since that will affect cluster quorum.  This rule doesn't apply to CN nodes.
 
 ```console
-kubectl -n starrocks patch starrockscluster starrockscluster-sample --type='merge' -p '{"spec":{"starRocksBeSpec":{"replicas":9}}}'
+kubectl -n celerdata patch celerdatacluster celerdatacluster-sample --type='merge' -p '{"spec":{"celerDataBeSpec":{"replicas":9}}}'
 ```
 
-### 7. Delete/stop the StarRocks cluster
+### 7. Delete/stop the CelerData cluster
 
-To delete/stop the StarRocks cluster, just execute the delete command.
+To delete/stop the CelerData cluster, just execute the delete command.
 
 ```console
-kubectl delete -f starrocks-fe-and-be.yaml
+kubectl delete -f celerdata-fe-and-be.yaml
 ```
 or
 ```console
-kubectl delete starrockscluster starrockscluster-sample -n starrocks
+kubectl delete celerdatacluster celerdatacluster-sample -n celerdata
 ```
 
-### 8. Delete/stop the StarRocks Operator
+### 8. Delete/stop the CelerData Operator
 
 To delete/stop the StarRocks Operate, just execute the delete command.
 
 ```console
-kubectl delete -f https://raw.githubusercontent.com/StarRocks/starrocks-kubernetes-operator/main/deploy/operator.yaml
+kubectl delete -f https://raw.githubusercontent.com/celerdata/celerdata-kubernetes-operator/main/deploy/operator.yaml
 ```
 
 
 ## Installation by Helm Chart
 
-Please see [kube-starrocks](./helm-charts/charts/kube-starrocks/README.md) for how to install both operator and
-StarRocks cluster by Helm Chart.
+Please see [kube-celerdata](./helm-charts/charts/kube-celerdata/README.md) for how to install both operator and
+CelerData cluster by Helm Chart.
 
-If you want more flexibility in managing your StarRocks clusters, you can deploy Operator
-using [operator](./helm-charts/charts/kube-starrocks/charts/operator) Helm Chart and StarRocks
-using [starrocks](./helm-charts/charts/kube-starrocks/charts/starrocks) Helm Chart separately.
+If you want more flexibility in managing your CelerData clusters, you can deploy Operator
+using [operator](./helm-charts/charts/kube-celerdata/charts/operator) Helm Chart and StarRocks
+using [celerdata](./helm-charts/charts/kube-celerdata/charts/celerdata) Helm Chart separately.
 
 ## Other Documents
 
-- In [doc](./doc) directory, you can find more documents about how to use StarRocks Operator.
-- In [examples](./examples/starrocks) directory, you can find more examples about how to write StarRocksCluster CR.
+- In [doc](./doc) directory, you can find more documents about how to use CelerData Operator.
+- In [examples](./examples/celerdata) directory, you can find more examples about how to write CelerDataCluster CR.
 - [Documentation on docs.starrocks.io](https://docs.starrocks.io/docs/deployment/sr_operator/)

@@ -1,16 +1,16 @@
 # Deploy Warehouse
 
-From StarRocks Operator v1.9.0, StarRocksWarehouse CRD is introduced to manage the warehouse. This document describes
+From CelerData Operator v1.9.0, CelerDataWarehouse CRD is introduced to manage the warehouse. This document describes
 how to deploy a warehouse.
 
 > Note: Warehouse is an enterprise feature for StarRocks.
 
 ## 1. Prerequisites
 
-1. StarRocks Operator >= v1.9.0. The latest version of the operator is recommended.
-2. An installed StarRocks Cluster.
-   See [deploy_starrocks_with_operator_howto.md](./deploy_starrocks_with_operator_howto.md)
-   or [deploy_starrocks_with_helm_howto.md](./deploy_starrocks_with_helm_howto.md) for more details.
+1. CelerData Operator >= v1.9.0. The latest version of the operator is recommended.
+2. An installed CelerData Cluster.
+   See [deploy_celerdata_with_operator_howto.md](./deploy_celerdata_with_operator_howto.md)
+   or [deploy_celerdata_with_helm_howto.md](./deploy_celerdata_with_helm_howto.md) for more details.
 3. Starrocks enterprise version >= v3.2.0.
 
 ## 2. Deploy Warehouse
@@ -20,36 +20,36 @@ You can choose one of the following methods to deploy a warehouse:
 1. Deploy Warehouse by YAML Manifest
 2. Deploy Warehouse by Helm Chart
 
-> If you deploy StarRocks Cluster with BE and CN nodes, they are added to the `default_warehouse` in StarRocks by
+> If you deploy CelerData Cluster with BE and CN nodes, they are added to the `default_warehouse` in StarRocks by
 > default. You can also define a Warehouse CR named `default-warehouse` to add more BE and CN nodes to the warehouse.
 
 ### 2.1 Deploy Warehouse by YAML Manifest
 
-First, we need to install StarRocksWarehouse CRD and restart the StarRocks operator to make it aware of the new CRD.
+First, we need to install CelerDataWarehouse CRD and restart the CelerData operator to make it aware of the new CRD.
 
 ```console
 # install crd
-kubectl apply -f https://github.com/StarRocks/starrocks-kubernetes-operator/releases/download/v1.9.6/starrocks.com_starrockswarehouses.yaml
+kubectl apply -f https://github.com/celerdata/celerdata-kubernetes-operator/releases/download/v1.9.6/celerdata.com_celerdatawarehouses.yaml
 
 # restart operator
-kubectl rollout restart deployment kube-starrocks-operator
+kubectl rollout restart deployment kube-celerdata-operator
 ```
 
 Then, we need to deploy a warehouse by the following YAML manifest.
 
 ```yaml
 # wh1.yaml
-apiVersion: starrocks.com/v1
-kind: StarRocksWarehouse
+apiVersion: celerdata.com/v1
+kind: CelerDataWarehouse
 metadata:
-  # A warehouse will be created with this name in StarRocks Cluster. If you are using dash(-) in the name, the warehouse
+  # A warehouse will be created with this name in CelerData Cluster. If you are using dash(-) in the name, the warehouse
   # name created by StarRocks will be replaced with underscore(_).
   name: wh1
 
 spec:
-  # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
-  starRocksCluster: kube-starrocks
+  # Make sure the CelerData cluster exists in the same namespace.
+  # You can check it by running `kubectl -n celerdata get celerdataclusters.celerdata.com`.
+  celerDataCluster: kube-celerdata
   template:
     envVars:
       - name: TZ
@@ -64,15 +64,15 @@ spec:
       memory: 8Gi
 ```
 
-You can see [api.md](./api.md) for more details about the StarRocksWarehouse CRD fields. The spec part is very similar
-to the StarRocksCnSpec of StarRocksCluster, so
-see [deploy_a_starrocks_cluster_with_cn.yaml](../examples/starrocks/deploy_a_starrocks_cluster_with_cn.yaml) for more
+You can see [api.md](./api.md) for more details about the CelerDataWarehouse CRD fields. The spec part is very similar
+to the CelerDataCnSpec of CelerDataCluster, so
+see [deploy_a_celerdata_cluster_with_cn.yaml](../examples/celerdata/deploy_a_celerdata_cluster_with_cn.yaml) for more
 fields.
 
 Apply the YAML manifest:
 
 ```bash
-kubectl -n starrocks apply -f wh1.yaml
+kubectl -n celerdata apply -f wh1.yaml
 ```
 
 ### 2.2. Deploy Warehouse by Helm Chart
@@ -85,9 +85,9 @@ First, prepare a values.yaml file for Warehouse chart.
 ```yaml
 # wh1-values.yaml
 spec:
-  # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
-  starRocksClusterName: kube-starrocks
+  # Make sure the CelerData cluster exists in the same namespace.
+  # You can check it by running `kubectl -n celerdata get celerdataclusters.celerdata.com`.
+  celerDataClusterName: kube-celerdata
   replicas: 1
   image:
     repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
@@ -104,11 +104,11 @@ spec:
 Then deploy a warehouse by the following command:
 
 ```console
-# Use the above values.yaml to deploy a warehouse in namespace starrocks
-helm -n starrocks install wh1 starrocks/warehouse -f wh1-values.yaml
+# Use the above values.yaml to deploy a warehouse in namespace celerdata
+helm -n celerdata install wh1 celerdata/warehouse -f wh1-values.yaml
 
-# Restart the StarRocks operator to make it aware of the new CRD
-kubectl -n starrocks rollout restart deployment kube-starrocks-operator
+# Restart the CelerData operator to make it aware of the new CRD
+kubectl -n celerdata rollout restart deployment kube-celerdata-operator
 ```
 
 ## 3. Manage Warehouse
@@ -141,17 +141,17 @@ you can update any fields in the file, e.g. the image version, replicas, and res
 For example, upgrade the image version:
 
 ```yaml
-apiVersion: starrocks.com/v1
-kind: StarRocksWarehouse
+apiVersion: celerdata.com/v1
+kind: CelerDataWarehouse
 metadata:
-  # A warehouse will be created with this name in StarRocks Cluster. If you are using dash(-) in the name, the warehouse
+  # A warehouse will be created with this name in CelerData Cluster. If you are using dash(-) in the name, the warehouse
   # name created by StarRocks will be replaced with underscore(_).
   name: wh1
 
 spec:
-  # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
-  starRocksCluster: kube-starrocks
+  # Make sure the CelerData cluster exists in the same namespace.
+  # You can check it by running `kubectl -n celerdata get celerdataclusters.celerdata.com`.
+  celerDataCluster: kube-celerdata
   template:
     envVars:
       - name: TZ
@@ -169,7 +169,7 @@ spec:
 Apply the updated YAML manifest:
 
 ```console
-kubectl -n starrocks apply -f wh1.yaml
+kubectl -n celerdata apply -f wh1.yaml
 ```
 
 ### 3.2.2 Update values.yaml for Helm chart
@@ -179,9 +179,9 @@ For example, upgrade the image version:
 ```yaml
 # wh1-values.yaml
 spec:
-  # Make sure the StarRocks cluster exists in the same namespace.
-  # You can check it by running `kubectl -n starrocks get starrocksclusters.starrocks.com`.
-  starRocksClusterName: kube-starrocks
+  # Make sure the CelerData cluster exists in the same namespace.
+  # You can check it by running `kubectl -n celerdata get celerdataclusters.celerdata.com`.
+  celerDataClusterName: kube-celerdata
   replicas: 1
   image:
     repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
@@ -198,7 +198,7 @@ spec:
 Then upgrade the warehouse by the following command:
 
 ```console
-helm -n starrocks upgrade wh1 starrocks/warehouse -f wh1-values.yaml
+helm -n celerdata upgrade wh1 celerdata/warehouse -f wh1-values.yaml
 ```
 
 ## 4. Delete the Warehouse
@@ -212,5 +212,5 @@ kubectl delete -f wh1.yaml
 If you deployed the warehouse by Helm chart, you can delete it by running the following command:
 
 ```console
-helm -n starrocks uninstall wh1
+helm -n celerdata uninstall wh1
 ```

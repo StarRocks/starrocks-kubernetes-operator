@@ -1,0 +1,13 @@
+{{- if and .Values.celerDataCluster.enabledCn .Values.celerDataCnSpec .Values.celerDataCnSpec.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "celerdatacluster.cn.configmap.name" . }}
+  namespace: {{ template "celerdatacluster.namespace" . }}
+  labels:
+    cluster: {{ template "celerdatacluster.name" . }}
+    app: "cn"
+data:
+  {{- include "celerdatacluster.cn.config" . | nindent 2 }}
+
+{{- end }}

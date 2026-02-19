@@ -1,0 +1,74 @@
+{{- if and .Values.celerDataOperator.enabled .Values.global.rbac.create }}
+{{- if .Values.celerDataOperator.watchNamespace }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "operator.name" . }}-operator
+  namespace: {{ template "operator.namespace" . }}
+  labels:
+    app: {{ template "operator.name" . }}-operator
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - '*'
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - serviceaccounts
+  - services
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - pods
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters
+  - celerdatawarehouses
+  verbs:
+  - '*'
+# when deploying to OpenShift, the following permission is also necessary
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters/finalizers
+  - celerdatawarehouses/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - celerdata.com
+  resources:
+  - celerdataclusters/status
+  - celerdatawarehouses/status
+  verbs:
+  - get
+  - patch
+  - update
+
+{{- end }}
+{{- end }}

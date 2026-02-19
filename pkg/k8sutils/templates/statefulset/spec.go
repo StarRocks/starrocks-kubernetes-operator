@@ -22,14 +22,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	srobject "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
 )
 
-const STARROCKS_WAREHOUSE_FINALIZER = "starrocks.com.starrockswarehouse/protection"
+const STARROCKS_WAREHOUSE_FINALIZER = "celerdata.com.celerdatawarehouse/protection"
 
 func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
@@ -90,26 +90,26 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 
 	// When Warehouse CR is deleted, the operator needs to get some environments from the statefulset to
 	// execute the dropping warehouse statement.
-	if object.Kind == srobject.StarRocksWarehouseKind {
+	if object.Kind == srobject.CelerDataWarehouseKind {
 		expectSTS.Finalizers = append(expectSTS.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
 	}
 
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		if v.PersistentVolumeClaimRetentionPolicy != nil {
 			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
 				WhenScaled:  "",
 				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
 			}
 		}
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		if v.PersistentVolumeClaimRetentionPolicy != nil {
 			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
 				WhenScaled:  "",
 				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
 			}
 		}
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = v.PersistentVolumeClaimRetentionPolicy
 	}
 

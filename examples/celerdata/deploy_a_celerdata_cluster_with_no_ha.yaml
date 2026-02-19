@@ -1,0 +1,26 @@
+# This manifest deploys a very simple CelerData cluster with 1 FE and 1 BE.
+# Without any workload, Starrocks doesn't require too much cpu and memory resource.
+
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: a-celerdata-with-no-ha  # change the name if needed.
+spec:
+  celerDataFeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  celerDataBeSpec:
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:latest
+    replicas: 1
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi

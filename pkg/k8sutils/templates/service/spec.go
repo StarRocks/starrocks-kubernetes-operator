@@ -17,7 +17,7 @@ package service
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort,
@@ -47,11 +47,11 @@ func MakeSearchService(serviceName string, externalService *corev1.Service, port
 // domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
 func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return clusterName + "-be-search"
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return clusterName + "-cn-search"
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return clusterName + "-fe-search"
 	default:
 		return ""
@@ -61,13 +61,13 @@ func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
 // ExternalServiceName generate the name of external service.
 func ExternalServiceName(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return clusterName + "-" + v1.DEFAULT_FE + "-service"
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return clusterName + "-" + v1.DEFAULT_BE + "-service"
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return clusterName + "-" + v1.DEFAULT_CN + "-service"
-	case *v1.StarRocksFeProxySpec:
+	case *v1.CelerDataFeProxySpec:
 		return clusterName + "-" + v1.DEFAULT_FE_PROXY + "-service"
 	}
 	return ""

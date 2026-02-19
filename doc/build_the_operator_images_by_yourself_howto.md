@@ -1,22 +1,22 @@
 # Build the operator images by yourself
 
-Get the official operator image from [here](https://hub.docker.com/r/starrocks/operator/tags).
+Get the official operator image from [here](https://hub.docker.com/r/us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator/tags).
 
-### Build starrocks operator docker image
+### Build celerdata operator docker image
 
 Follow below instructions if you want to build your own image.
 
 ```console
-DOCKER_BUILDKIT=1 docker build -t starrocks/operator:<tag> .
+DOCKER_BUILDKIT=1 docker build -t us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator:<tag> .
 ```
 
 E.g.
 
 ```console
-DOCKER_BUILDKIT=1 docker build -t starrocks/operator:latest .
+DOCKER_BUILDKIT=1 docker build -t us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator:latest .
 ```
 
-### Publish starrocks operator docker image
+### Publish celerdata operator docker image
 
 ```console
 docker push starrocksr/operator:latest
@@ -25,5 +25,5 @@ docker push starrocksr/operator:latest
 E.g. Publish image to dockerhub
 
 ```console
-docker push starrocks/operator:latest
+docker push us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator:latest
 ```

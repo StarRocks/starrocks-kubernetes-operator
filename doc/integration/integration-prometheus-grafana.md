@@ -1,9 +1,9 @@
-# StarRocks Cluster Integration With Prometheus and Grafana Service
+# CelerData Cluster Integration With Prometheus and Grafana Service
 
-This document describes how to integrate StarRocks cluster with Prometheus and Grafana service in a kubernetes
+This document describes how to integrate CelerData cluster with Prometheus and Grafana service in a kubernetes
 environment. From this document, you will learn,
 
-* How to turn on prometheus metrics scrape for the StarRocks cluster
+* How to turn on prometheus metrics scrape for the CelerData cluster
 * How to import StarRocks Grafana dashboard
 
 ## 1. Prerequisites
@@ -11,20 +11,20 @@ environment. From this document, you will learn,
 + Kubernetes: v1.23.0+
 + Prometheus helm chart: latest available version
 + Grafana helm chart: latest available version
-+ StarRocks operator and helm chart: v1.7.1+
++ CelerData operator and helm chart: v1.7.1+
 
 > see [deploy-prometheus-grafana.md](./deploy-prometheus-grafana.md) for how to deploy Prometheus and Grafana.
 
-## 2. Deploy StarRocks Cluster
+## 2. Deploy CelerData Cluster
 
-There are two ways to turn on the prometheus metrics scrape for the StarRocks cluster.
+There are two ways to turn on the prometheus metrics scrape for the CelerData cluster.
 
 1. Turn on the prometheus metrics scrape by adding annotations
 2. Turn on the prometheus metrics scrape by using ServiceMonitor CRD
 
 ### 2.1 Turn on the prometheus metrics scrape by adding annotations
 
-Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks)
+Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
 with some customized values.
 
 Following is an example of the content of the `sr-values.yaml`.
@@ -33,7 +33,7 @@ Following is an example of the content of the `sr-values.yaml`.
 
 ```yaml
 # sr-values.yaml
-starrocksFESpec:
+celerDataFeSpec:
   service:
     annotations:
       prometheus.io/path: "/metrics"
@@ -46,7 +46,7 @@ starrocksFESpec:
     limits:
       cpu: 4
       memory: 4Gi
-starrocksBESpec:
+celerDataBeSpec:
   service:
     annotations:
       prometheus.io/path: "/metrics"
@@ -66,7 +66,7 @@ starrocksBESpec:
 ```yaml
 # sr-values.yaml
 starrocks:
-  starrocksFESpec:
+  celerDataFeSpec:
     service:
       annotations:
         prometheus.io/path: "/metrics"
@@ -79,7 +79,7 @@ starrocks:
       limits:
         cpu: 4
         memory: 4Gi
-  starrocksBESpec:
+  celerDataBeSpec:
     service:
       annotations:
         prometheus.io/path: "/metrics"
@@ -96,22 +96,22 @@ starrocks:
 
 Note that `"prometheus.io/*` annotations are the must items to be added, this will allow prometheus to auto discover
 StarRocks PODs and to collect the metrics.
-This method will restart the StarRocks cluster.
+This method will restart the CelerData cluster.
 
 An equivalent StarRocks CRD may look like,
 
 ```yaml
-apiVersion: starrocks.com/v1
-kind: StarRocksCluster
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
 metadata:
-  name: kube-starrocks
+  name: kube-celerdata
   namespace: default
 spec:
-  starRocksBeSpec:
+  celerDataBeSpec:
     configMapInfo:
-      configMapName: kube-starrocks-be-cm
+      configMapName: kube-celerdata-be-cm
       resolveKey: be.conf
-    image: starrocks/be-ubuntu:3.5-latest
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest
     limits:
       cpu: 4
       memory: 4Gi
@@ -124,11 +124,11 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "8040"
         prometheus.io/scrape: "true"
-  starRocksFeSpec:
+  celerDataFeSpec:
     configMapInfo:
-      configMapName: kube-starrocks-fe-cm
+      configMapName: kube-celerdata-fe-cm
       resolveKey: fe.conf
-    image: starrocks/fe-ubuntu:3.5-latest
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest
     limits:
       cpu: 4
       memory: 4Gi
@@ -143,12 +143,12 @@ spec:
         prometheus.io/scrape: "true"
 ```
 
-Run the following commands to deploy StarRocks operator and StarRocks cluster,
+Run the following commands to deploy CelerData operator and CelerData cluster,
 
 ```shell
-helm repo add starrocks https://starrocks.github.io/starrocks-kubernetes-operator
-helm repo update starrocks
-helm install starrocks -f sr-values.yaml starrocks/kube-starrocks
+helm repo add celerdata https://celerdata.github.io/celerdata-kubernetes-operator
+helm repo update celerdata
+helm install celerdata -f sr-values.yaml celerdata/kube-celerdata
 ```
 
 ### 2.2 Turn on the prometheus metrics scrape by using ServiceMonitor CRD
@@ -158,11 +158,11 @@ in the future.
 > Make
 > sure [Deploy Prometheus and Grafana Service by Operator](./deploy-prometheus-grafana.md#2-deploy-prometheus-and-grafana-service-by-operator)
 
-Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-starrocks/kube-starrocks)
+Follow the instructions from [StarRocks Helm Chart](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata)
 with some customized values.
 
 ```shell
-starrocks:
+celerdata:
   metrics:
     serviceMonitor:
       enabled: true

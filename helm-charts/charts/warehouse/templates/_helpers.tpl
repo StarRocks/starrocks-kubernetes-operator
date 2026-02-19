@@ -1,21 +1,21 @@
-{{- define "starrockswarehouse.name" -}}
+{{- define "celerdatawarehouse.name" -}}
 {{ .Release.Name }}
 {{- end }}
 
-{{- define "starrockswarehouse.namespace" -}}
+{{- define "celerdatawarehouse.namespace" -}}
 {{ .Release.Namespace }}
 {{- end }}
 
-{{- define "starrockswarehouse.labels" -}}
+{{- define "celerdatawarehouse.labels" -}}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{- define "starrockswarehouse.configmap.name" -}}
-{{- print (include "starrockswarehouse.name" .) "-cm" }}
+{{- define "celerdatawarehouse.configmap.name" -}}
+{{- print (include "celerdatawarehouse.name" .) "-cm" }}
 {{- end }}
 
-{{- define "starrockswarehouse.config" -}}
+{{- define "celerdatawarehouse.config" -}}
 cn.conf: |
 {{- if .Values.spec.config }}
 {{- .Values.spec.config | nindent 2 }}
@@ -23,10 +23,10 @@ cn.conf: |
 {{- end }}
 
 {{/*
-starrockswarehouse.config.hash is used to calculate the hash value of the cn.conf, and due to the length limit, only
+celerdatawarehouse.config.hash is used to calculate the hash value of the cn.conf, and due to the length limit, only
 the first 8 digits are taken, which will be used as the annotations for pods.
 */}}
-{{- define "starrockswarehouse.config.hash" }}
+{{- define "celerdatawarehouse.config.hash" }}
   {{- if .Values.spec.config }}
     {{- $hash := toJson .Values.spec.config | sha256sum | trunc 8 }}
     {{- printf "%s" $hash }}
@@ -35,11 +35,11 @@ the first 8 digits are taken, which will be used as the annotations for pods.
   {{- end }}
 {{- end }}
 
-{{- define "starrockswarehouse.webserver.port" -}}
-{{- include "starrockswarehouse.get.webserver.port" .Values.spec }}
+{{- define "celerdatawarehouse.webserver.port" -}}
+{{- include "celerdatawarehouse.get.webserver.port" .Values.spec }}
 {{- end }}
 
-{{- define "starrockswarehouse.get.webserver.port" -}}
+{{- define "celerdatawarehouse.get.webserver.port" -}}
 {{- $config := index .config  -}}
 {{- $configMap := dict -}}
 {{- range $line := splitList "\n" $config -}}
@@ -53,18 +53,18 @@ the first 8 digits are taken, which will be used as the annotations for pods.
 {{- end }}
 {{- end }}
 
-{{- define "starrockscluster.cn.data.suffix" -}}
+{{- define "celerdatacluster.cn.data.suffix" -}}
 {{- print "-data" }}
 {{- end }}
 
-{{- define "starrockscluster.cn.data.path" -}}
+{{- define "celerdatacluster.cn.data.path" -}}
 {{- print "/opt/starrocks/cn/storage" }}
 {{- end }}
 
-{{- define "starrockscluster.cn.log.suffix" -}}
+{{- define "celerdatacluster.cn.log.suffix" -}}
 {{- print "-log" }}
 {{- end }}
 
-{{- define "starrockscluster.cn.log.path" -}}
+{{- define "celerdatacluster.cn.log.path" -}}
 {{- print "/opt/starrocks/cn/log" }}
 {{- end }}

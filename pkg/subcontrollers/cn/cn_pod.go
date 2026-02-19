@@ -27,23 +27,23 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	srobject "github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	srobject "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
 )
 
 const (
 	_logName         = "cn-log"
-	_cnConfigPath    = "/etc/starrocks/cn/conf"
+	_cnConfigPath    = "/etc/celerdata/cn/conf"
 	_envCnConfigPath = "CONFIGMAP_MOUNT_PATH"
 )
 
 // buildPodTemplate construct the podTemplate for deploy cn.
 func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.StarRocksObject,
-	cnSpec *srapi.StarRocksCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
+	cnSpec *cdapi.CelerDataCnSpec, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	vols, volumeMounts := pod.MountStorageVolumes(cnSpec)
 
 	if !k8sutils.HasVolume(vols, _logName) && !k8sutils.HasMountPath(volumeMounts, pod.GetLogDir(cnSpec)) {
@@ -58,10 +58,10 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		return nil, err
 	}
 
-	feExternalServiceName := service.ExternalServiceName(object.ClusterName, (*srapi.StarRocksFeSpec)(nil))
+	feExternalServiceName := service.ExternalServiceName(object.ClusterName, (*cdapi.CelerDataFeSpec)(nil))
 	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
-	if object.Kind == srobject.StarRocksWarehouseKind {
+	if object.Kind == srobject.CelerDataWarehouseKind {
 		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature", feExternalServiceName, object.Namespace, rutils.GetPort(config, rutils.HTTP_PORT))
 		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
@@ -75,7 +75,7 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 		}
 	}
 	cnContainer := corev1.Container{
-		Name:            srapi.DEFAULT_CN,
+		Name:            cdapi.DEFAULT_CN,
 		Image:           cnSpec.Image,
 		Command:         pod.ContainerCommand(cnSpec),
 		Args:            pod.ContainerArgs(cnSpec),

@@ -20,24 +20,24 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
 )
 
 const (
 	_metaName             = "fe-meta"
 	_logName              = "fe-log"
-	_feConfigMountPath    = "/etc/starrocks/fe/conf"
+	_feConfigMountPath    = "/etc/celerdata/fe/conf"
 	_envFeConfigMountPath = "CONFIGMAP_MOUNT_PATH"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
-func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
-	metaName := src.Name + "-" + srapi.DEFAULT_FE
-	feSpec := src.Spec.StarRocksFeSpec
+func (fc *FeController) buildPodTemplate(src *cdapi.CelerDataCluster, config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
+	metaName := src.Name + "-" + cdapi.DEFAULT_FE
+	feSpec := src.Spec.CelerDataFeSpec
 
 	vols, volMounts := pod.MountStorageVolumes(feSpec)
 	// add default volume about log, meta if not configure.
@@ -57,10 +57,10 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 	}
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
-	envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
+	envs := pod.Envs(src.Spec.CelerDataFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feContainer := corev1.Container{
-		Name:            srapi.DEFAULT_FE,
+		Name:            cdapi.DEFAULT_FE,
 		Image:           feSpec.Image,
 		Command:         pod.ContainerCommand(feSpec),
 		Args:            pod.ContainerArgs(feSpec),
@@ -94,7 +94,7 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 			Name:        metaName,
 			Namespace:   src.Namespace,
 			Annotations: annotations,
-			Labels:      pod.Labels(src.Name, src.Spec.StarRocksFeSpec),
+			Labels:      pod.Labels(src.Name, src.Spec.CelerDataFeSpec),
 		},
 		Spec: podSpec,
 	}, nil

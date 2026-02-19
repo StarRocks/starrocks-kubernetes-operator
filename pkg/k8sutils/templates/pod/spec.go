@@ -22,10 +22,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
 )
 
 const (
@@ -65,19 +65,19 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 	labels := load.Selector(clusterName, spec)
 
 	switch v := spec.(type) {
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
-	case *v1.StarRocksFeProxySpec:
+	case *v1.CelerDataFeProxySpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
@@ -143,7 +143,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 	}
 
 	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
@@ -156,7 +156,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		} {
 			addEnv(envVar)
 		}
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
@@ -173,7 +173,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		} {
 			addEnv(envVar)
 		}
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		for _, envVar := range []corev1.EnvVar{
 			{
 				Name:  v1.COMPONENT_NAME,
@@ -198,7 +198,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.ContainerPort {
 	var ports []corev1.ContainerPort
 	switch spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		ports = append(ports, []corev1.ContainerPort{
 			{
 				Name:          "http-port",
@@ -214,7 +214,7 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 				Protocol:      corev1.ProtocolTCP,
 			},
 		}...)
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		ports = append(ports, []corev1.ContainerPort{
 			{
 				Name:          "be-port",
@@ -233,7 +233,7 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 				Protocol:      corev1.ProtocolTCP,
 			},
 		}...)
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		ports = append(ports, []corev1.ContainerPort{
 			{
 				Name:          "thrift-port",
@@ -253,7 +253,7 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 				Protocol:      corev1.ProtocolTCP,
 			},
 		}...)
-	case *v1.StarRocksFeProxySpec:
+	case *v1.CelerDataFeProxySpec:
 		ports = append(ports, []corev1.ContainerPort{
 			{
 				Name:          rutils.FE_PORXY_HTTP_PORT_NAME,
@@ -333,11 +333,11 @@ func ContainerSecurityContext(spec v1.SpecInterface) *corev1.SecurityContext {
 
 func getDefaultEntrypointScript(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return fmt.Sprintf("%s/fe_entrypoint.sh", GetStarRocksRootPath(v.FeEnvVars))
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return fmt.Sprintf("%s/be_entrypoint.sh", GetStarRocksRootPath(v.BeEnvVars))
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return fmt.Sprintf("%s/cn_entrypoint.sh", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
@@ -345,11 +345,11 @@ func getDefaultEntrypointScript(spec v1.SpecInterface) string {
 
 func GetStorageDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return fmt.Sprintf("%s/fe/meta", GetStarRocksRootPath(v.FeEnvVars))
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return fmt.Sprintf("%s/be/storage", GetStarRocksRootPath(v.BeEnvVars))
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return fmt.Sprintf("%s/cn/storage", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
@@ -357,11 +357,11 @@ func GetStorageDir(spec v1.SpecInterface) string {
 
 func GetLogDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return fmt.Sprintf("%s/fe/log", GetStarRocksRootPath(v.FeEnvVars))
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return fmt.Sprintf("%s/be/log", GetStarRocksRootPath(v.BeEnvVars))
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return fmt.Sprintf("%s/cn/log", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
@@ -369,11 +369,11 @@ func GetLogDir(spec v1.SpecInterface) string {
 
 func GetConfigDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		return fmt.Sprintf("%s/fe/conf", GetStarRocksRootPath(v.FeEnvVars))
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		return fmt.Sprintf("%s/be/conf", GetStarRocksRootPath(v.BeEnvVars))
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		return fmt.Sprintf("%s/cn/conf", GetStarRocksRootPath(v.CnEnvVars))
 	}
 	return ""
@@ -384,9 +384,9 @@ func GetPreStopCommand(spec v1.SpecInterface) []string {
 	// we do not need to set --timeout parameter for stop_xx.sh, because the terminationGracePeriodSeconds configuration
 	// on Pod will take the same effect
 	switch v := spec.(type) {
-	case *v1.StarRocksFeSpec:
+	case *v1.CelerDataFeSpec:
 		command = append(command, fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars)))
-	case *v1.StarRocksBeSpec:
+	case *v1.CelerDataBeSpec:
 		imageVersion := GetImageVersion(spec.GetImage())
 		b, err := IsLowerThanAny(imageVersion, []string{"3.3.19", "3.4.8", "3.5.6"})
 		if err == nil && b {
@@ -394,7 +394,7 @@ func GetPreStopCommand(spec v1.SpecInterface) []string {
 		} else {
 			command = append(command, fmt.Sprintf("%s/be/bin/stop_be.sh -g", GetStarRocksRootPath(v.BeEnvVars)))
 		}
-	case *v1.StarRocksCnSpec:
+	case *v1.CelerDataCnSpec:
 		imageVersion := GetImageVersion(spec.GetImage())
 		b, err := IsLowerThanAny(imageVersion, []string{"3.3.17", "3.4.6", "3.5.2"})
 		if err == nil && b {

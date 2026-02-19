@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +domain=starrocks.com
+// +domain=celerdata.com
 package apis

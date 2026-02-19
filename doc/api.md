@@ -1,23 +1,23 @@
 <p>Packages:</p>
 <ul>
 <li>
-<a href="#starrocks.com%2fv1">starrocks.com/v1</a>
+<a href="#celerdata.com%2fv1">celerdata.com/v1</a>
 </li>
 </ul>
-<h2 id="starrocks.com/v1">starrocks.com/v1</h2>
+<h2 id="celerdata.com/v1">celerdata.com/v1</h2>
 <div>
 </div>
 Resource Types:
 <ul></ul>
-<h3 id="starrocks.com/v1.AnnotationOperationValue">AnnotationOperationValue
+<h3 id="celerdata.com/v1.AnnotationOperationValue">AnnotationOperationValue
 (<code>string</code> alias)</h3>
 <div>
 <p>AnnotationOperationValue present the operation for fe, cn, be.</p>
 </div>
-<h3 id="starrocks.com/v1.AutoScalerVersion">AutoScalerVersion
+<h3 id="celerdata.com/v1.AutoScalerVersion">AutoScalerVersion
 (<code>string</code> alias)</h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#starrocks.com/v1.HorizontalScaler">HorizontalScaler</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>, <a href="#celerdata.com/v1.HorizontalScaler">HorizontalScaler</a>)
 </p>
 <div>
 </div>
@@ -39,10 +39,10 @@ Resource Types:
 </td>
 </tr></tbody>
 </table>
-<h3 id="starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy
+<h3 id="celerdata.com/v1.AutoScalingPolicy">AutoScalingPolicy
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.WarehouseComponentSpec">WarehouseComponentSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataCnSpec">CelerDataCnSpec</a>, <a href="#celerdata.com/v1.WarehouseComponentSpec">WarehouseComponentSpec</a>)
 </p>
 <div>
 <p>AutoScalingPolicy defines the auto scale</p>
@@ -59,7 +59,7 @@ Resource Types:
 <td>
 <code>hpaPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.HPAPolicy">
+<a href="#celerdata.com/v1.HPAPolicy">
 HPAPolicy
 </a>
 </em>
@@ -72,7 +72,7 @@ HPAPolicy
 <td>
 <code>version</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
+<a href="#celerdata.com/v1.AutoScalerVersion">
 AutoScalerVersion
 </a>
 </em>
@@ -109,41 +109,13 @@ cannot be smaller than MinReplicas.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.ComponentPhase">ComponentPhase
-(<code>string</code> alias)</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus</a>)
-</p>
-<div>
-<p>ComponentPhase represent the component phase. e.g.
-1. StarRocksCluster contains three components: FE, CN, BE.
-2. StarRocksWarehouse reuse the CN component.
-The possible value for component phase are: reconciling, failed, running.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;failed&#34;</p></td>
-<td><p>ComponentFailed the pod of component is failed</p>
-</td>
-</tr><tr><td><p>&#34;reconciling&#34;</p></td>
-<td><p>ComponentReconciling the starrocks component is reconciling</p>
-</td>
-</tr><tr><td><p>&#34;running&#34;</p></td>
-<td><p>ComponentRunning all components runs available.</p>
-</td>
-</tr></tbody>
-</table>
-<h3 id="starrocks.com/v1.ConfigMapInfo">ConfigMapInfo
+<h3 id="celerdata.com/v1.CelerDataBeSpec">CelerDataBeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec</a>)
 </p>
 <div>
+<p>CelerDataBeSpec defines the desired state of be.</p>
 </div>
 <table>
 <thead>
@@ -155,494 +127,16 @@ The possible value for component phase are: reconciling, failed, running.</p>
 <tbody>
 <tr>
 <td>
-<code>configMapName</code><br/>
+<code>CelerDataComponentSpec</code><br/>
 <em>
-string
-</em>
-</td>
-<td>
-<p>the config info for start progress.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>resolveKey</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>the config response key in configmap.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.ConfigMapReference">ConfigMapReference
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
-the length of name must not more than 50 characters.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>subPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
-Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.DRPhase">DRPhase
-(<code>string</code> alias)</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;doing&#34;</p></td>
-<td></td>
-</tr><tr><td><p>&#34;done&#34;</p></td>
-<td></td>
-</tr><tr><td><p>&#34;todo&#34;</p></td>
-<td></td>
-</tr></tbody>
-</table>
-<h3 id="starrocks.com/v1.DisasterRecovery">DisasterRecovery
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
-</p>
-<div>
-<p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>enabled</code><br/>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>Enabled is used to determine whether to enter disaster recovery mode.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>generation</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
-increase the generation.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
-</p>
-<div>
-<p>DisasterRecoveryStatus represents the status of disaster recovery.
-Note: you should create a new instance of DisasterRecoveryStatus by NewDisasterRecoveryStatus.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>phase</code><br/>
-<em>
-<a href="#starrocks.com/v1.DRPhase">
-DRPhase
-</a>
-</em>
-</td>
-<td>
-<p>the available phase include: todo, doing, done</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>reason</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>the reason of disaster recovery.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>startTimestamp</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>the unix time of starting disaster recovery.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>endTimestamp</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>the unix time of ending disaster recovery.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>observedGeneration</code><br/>
-<em>
-int64
-</em>
-</td>
-<td>
-<p>the observed generation of disaster recovery.
-If the observed generation is less than the generation, it will trigger disaster recovery.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.HPAPolicy">HPAPolicy
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metrics</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2beta2-autoscaling">
-[]Kubernetes autoscaling/v2beta2.MetricSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Metrics specifies how to scale based on a single metric
-the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-HorizontalPodAutoscaler version and kubernetes releases matching issue.
-the splice will have unsafe.Pointer convert, so be careful to edit the struct fields.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>behavior</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2beta2-autoscaling">
-Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
-the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
-HorizontalPodAutoscaler version and kubernetes releases matching issue.
-the</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.HorizontalScaler">HorizontalScaler
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>the horizontal scaler name</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>version</code><br/>
-<em>
-<a href="#starrocks.com/v1.AutoScalerVersion">
-AutoScalerVersion
-</a>
-</em>
-</td>
-<td>
-<p>the horizontal version.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.MountInfo">MountInfo
-</h3>
-<div>
-<p>MountInfo
-The reason why we do not support defaultMode is that we use hash.HashObject to
-calculate the actual volume name. This volume name is used in pod template of statefulset,
-and if this MountInfo type has been changed, the volume name will be changed too, and
-that will make pods restart.
-The default mode is 0644, and in order to support to set permission information for a configMap
-or secret, we add should specify the subPath and specify a command or args in the container.
-And It will be set 0755.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
-the length of name must not more than 50 characters.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>subPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
-Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.Phase">Phase
-(<code>string</code> alias)</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
-</p>
-<div>
-<p>Phase is defined under status, e.g.
-1. StarRocksClusterStatus.Phase represents the phase of starrocks cluster.
-2. StarRocksWarehouseStatus.Phase represents the phase of starrocks warehouse.
-The possible value for cluster phase are: running, failed, pending, deleting.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr><td><p>&#34;failed&#34;</p></td>
-<td><p>ClusterFailed represents starrocks cluster failed.</p>
-</td>
-</tr><tr><td><p>&#34;reconciling&#34;</p></td>
-<td><p>ClusterReconciling represents some component is reconciling</p>
-</td>
-</tr><tr><td><p>&#34;running&#34;</p></td>
-<td><p>ClusterRunning represents starrocks cluster is running.</p>
-</td>
-</tr></tbody>
-</table>
-<h3 id="starrocks.com/v1.SecretReference">SecretReference
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>)
-</p>
-<div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
-the length of name must not more than 50 characters.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mountPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Path within the container at which the volume should be mounted.  Must
-not contain &lsquo;:&rsquo;.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>subPath</code><br/>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
-Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="starrocks.com/v1.SpecInterface">SpecInterface
-</h3>
-<div>
-<p>SpecInterface defines the common interface that must be implemented by all StarRocks component specs
-(FE, BE, CN, FE Proxy). It provides methods to configure pod and container settings like security context,
-lifecycle hooks, networking, and storage.
-All components including StarRocksFeSpec, StarRocksBeSpec, StarRocksCnSpec, StarRocksFeProxySpec have implemented
-the SpecInterface. If a method has the same implementation, we will implement in StarRocksLoadSpec which implements
-the loadInterface interface.</p>
-</div>
-<h3 id="starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec
-</h3>
-<p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
-</p>
-<div>
-<p>StarRocksBeSpec defines the desired state of be.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>StarRocksComponentSpec</code><br/>
-<em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+<a href="#celerdata.com/v1.CelerDataComponentSpec">
+CelerDataComponentSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
+(Members of <code>CelerDataComponentSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -662,13 +156,13 @@ StarRocksComponentSpec
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus
+<h3 id="celerdata.com/v1.CelerDataBeStatus">CelerDataBeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>)
 </p>
 <div>
-<p>StarRocksBeStatus represents the status of starrocks be.</p>
+<p>CelerDataBeStatus represents the status of CelerData be.</p>
 </div>
 <table>
 <thead>
@@ -680,25 +174,25 @@ StarRocksComponentSpec
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>CelerDataComponentStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
+<a href="#celerdata.com/v1.CelerDataComponentStatus">
+CelerDataComponentStatus
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
+(Members of <code>CelerDataComponentStatus</code> are embedded into this type.)
 </p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCluster">StarRocksCluster
+<h3 id="celerdata.com/v1.CelerDataCluster">CelerDataCluster
 </h3>
 <div>
-<p>StarRocksCluster defines a starrocks cluster deployment.</p>
+<p>CelerDataCluster defines a CelerData cluster deployment.</p>
 </div>
 <table>
 <thead>
@@ -726,13 +220,13 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterSpec">
-StarRocksClusterSpec
+<a href="#celerdata.com/v1.CelerDataClusterSpec">
+CelerDataClusterSpec
 </a>
 </em>
 </td>
 <td>
-<p>Specification of the desired state of the starrocks cluster.</p>
+<p>Specification of the desired state of the CelerData cluster.</p>
 <br/>
 <br/>
 <table>
@@ -745,67 +239,67 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.
+<p>Specify a Service Account for CelerDataCluster use k8s cluster.
 Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksFeSpec</code><br/>
+<code>celerDataFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
-StarRocksFeSpec
+<a href="#celerdata.com/v1.CelerDataFeSpec">
+CelerDataFeSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksFeSpec define fe configuration for start fe service.</p>
+<p>CelerDataFeSpec define fe configuration for start fe service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksBeSpec</code><br/>
+<code>celerDataBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
-StarRocksBeSpec
+<a href="#celerdata.com/v1.CelerDataBeSpec">
+CelerDataBeSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksBeSpec define be configuration for start be service.</p>
+<p>CelerDataBeSpec define be configuration for start be service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksCnSpec</code><br/>
+<code>celerDataCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
-StarRocksCnSpec
+<a href="#celerdata.com/v1.CelerDataCnSpec">
+CelerDataCnSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksCnSpec define cn configuration for start cn service.</p>
+<p>CelerDataCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksFeProxySpec</code><br/>
+<code>celerDataFeProxySpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeProxySpec">
-StarRocksFeProxySpec
+<a href="#celerdata.com/v1.CelerDataFeProxySpec">
+CelerDataFeProxySpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksLoadSpec define a proxy for fe.</p>
+<p>CelerDataLoadSpec define a proxy for fe.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>disasterRecovery</code><br/>
 <em>
-<a href="#starrocks.com/v1.DisasterRecovery">
+<a href="#celerdata.com/v1.DisasterRecovery">
 DisasterRecovery
 </a>
 </em>
@@ -822,24 +316,24 @@ DisasterRecovery
 <td>
 <code>status</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksClusterStatus">
-StarRocksClusterStatus
+<a href="#celerdata.com/v1.CelerDataClusterStatus">
+CelerDataClusterStatus
 </a>
 </em>
 </td>
 <td>
-<p>Most recent observed status of the starrocks cluster</p>
+<p>Most recent observed status of the CelerData cluster</p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec
+<h3 id="celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataCluster">CelerDataCluster</a>)
 </p>
 <div>
-<p>StarRocksClusterSpec defines the desired state of StarRocksCluster</p>
+<p>CelerDataClusterSpec defines the desired state of CelerDataCluster</p>
 </div>
 <table>
 <thead>
@@ -858,67 +352,67 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Specify a Service Account for starRocksCluster use k8s cluster.
+<p>Specify a Service Account for CelerDataCluster use k8s cluster.
 Deprecated: component use serviceAccount in own&rsquo;s field.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksFeSpec</code><br/>
+<code>celerDataFeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeSpec">
-StarRocksFeSpec
+<a href="#celerdata.com/v1.CelerDataFeSpec">
+CelerDataFeSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksFeSpec define fe configuration for start fe service.</p>
+<p>CelerDataFeSpec define fe configuration for start fe service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksBeSpec</code><br/>
+<code>celerDataBeSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeSpec">
-StarRocksBeSpec
+<a href="#celerdata.com/v1.CelerDataBeSpec">
+CelerDataBeSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksBeSpec define be configuration for start be service.</p>
+<p>CelerDataBeSpec define be configuration for start be service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksCnSpec</code><br/>
+<code>celerDataCnSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnSpec">
-StarRocksCnSpec
+<a href="#celerdata.com/v1.CelerDataCnSpec">
+CelerDataCnSpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksCnSpec define cn configuration for start cn service.</p>
+<p>CelerDataCnSpec define cn configuration for start cn service.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>starRocksFeProxySpec</code><br/>
+<code>celerDataFeProxySpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeProxySpec">
-StarRocksFeProxySpec
+<a href="#celerdata.com/v1.CelerDataFeProxySpec">
+CelerDataFeProxySpec
 </a>
 </em>
 </td>
 <td>
-<p>StarRocksLoadSpec define a proxy for fe.</p>
+<p>CelerDataLoadSpec define a proxy for fe.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>disasterRecovery</code><br/>
 <em>
-<a href="#starrocks.com/v1.DisasterRecovery">
+<a href="#celerdata.com/v1.DisasterRecovery">
 DisasterRecovery
 </a>
 </em>
@@ -930,13 +424,13 @@ DisasterRecovery
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus
+<h3 id="celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksCluster">StarRocksCluster</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataCluster">CelerDataCluster</a>)
 </p>
 <div>
-<p>StarRocksClusterStatus defines the observed state of StarRocksCluster.</p>
+<p>CelerDataClusterStatus defines the observed state of CelerDataCluster.</p>
 </div>
 <table>
 <thead>
@@ -950,7 +444,7 @@ DisasterRecovery
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.Phase">
+<a href="#celerdata.com/v1.Phase">
 Phase
 </a>
 </em>
@@ -972,10 +466,10 @@ string
 </tr>
 <tr>
 <td>
-<code>starRocksFeStatus</code><br/>
+<code>celerDataFeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeStatus">
-StarRocksFeStatus
+<a href="#celerdata.com/v1.CelerDataFeStatus">
+CelerDataFeStatus
 </a>
 </em>
 </td>
@@ -985,10 +479,10 @@ StarRocksFeStatus
 </tr>
 <tr>
 <td>
-<code>starRocksBeStatus</code><br/>
+<code>celerDataBeStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksBeStatus">
-StarRocksBeStatus
+<a href="#celerdata.com/v1.CelerDataBeStatus">
+CelerDataBeStatus
 </a>
 </em>
 </td>
@@ -998,10 +492,10 @@ StarRocksBeStatus
 </tr>
 <tr>
 <td>
-<code>starRocksCnStatus</code><br/>
+<code>celerDataCnStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnStatus">
-StarRocksCnStatus
+<a href="#celerdata.com/v1.CelerDataCnStatus">
+CelerDataCnStatus
 </a>
 </em>
 </td>
@@ -1011,10 +505,10 @@ StarRocksCnStatus
 </tr>
 <tr>
 <td>
-<code>starRocksFeProxyStatus</code><br/>
+<code>celerDataFeProxyStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksFeProxyStatus">
-StarRocksFeProxyStatus
+<a href="#celerdata.com/v1.CelerDataFeProxyStatus">
+CelerDataFeProxyStatus
 </a>
 </em>
 </td>
@@ -1026,7 +520,7 @@ StarRocksFeProxyStatus
 <td>
 <code>disasterRecoveryStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.DisasterRecoveryStatus">
+<a href="#celerdata.com/v1.DisasterRecoveryStatus">
 DisasterRecoveryStatus
 </a>
 </em>
@@ -1038,13 +532,13 @@ DisasterRecoveryStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec
+<h3 id="celerdata.com/v1.CelerDataCnSpec">CelerDataCnSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec</a>)
 </p>
 <div>
-<p>StarRocksCnSpec defines the desired state of cn.</p>
+<p>CelerDataCnSpec defines the desired state of cn.</p>
 </div>
 <table>
 <thead>
@@ -1056,16 +550,16 @@ DisasterRecoveryStatus
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentSpec</code><br/>
+<code>CelerDataComponentSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+<a href="#celerdata.com/v1.CelerDataComponentSpec">
+CelerDataComponentSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
+(Members of <code>CelerDataComponentSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -1087,7 +581,7 @@ StarRocksComponentSpec
 <td>
 <code>autoScalingPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalingPolicy">
+<a href="#celerdata.com/v1.AutoScalingPolicy">
 AutoScalingPolicy
 </a>
 </em>
@@ -1098,10 +592,10 @@ AutoScalingPolicy
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus
+<h3 id="celerdata.com/v1.CelerDataCnStatus">CelerDataCnStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>, <a href="#starrocks.com/v1.StarRocksWarehouseStatus">StarRocksWarehouseStatus</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>, <a href="#celerdata.com/v1.CelerDataWarehouseStatus">CelerDataWarehouseStatus</a>)
 </p>
 <div>
 <p>WarehouseComponentStatus represents the status of component.</p>
@@ -1116,16 +610,16 @@ AutoScalingPolicy
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>CelerDataComponentStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
+<a href="#celerdata.com/v1.CelerDataComponentStatus">
+CelerDataComponentStatus
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
+(Members of <code>CelerDataComponentStatus</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -1145,7 +639,7 @@ Deprecated</p>
 <td>
 <code>horizontalScaler</code><br/>
 <em>
-<a href="#starrocks.com/v1.HorizontalScaler">
+<a href="#celerdata.com/v1.HorizontalScaler">
 HorizontalScaler
 </a>
 </em>
@@ -1178,13 +672,13 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec
+<h3 id="celerdata.com/v1.CelerDataComponentSpec">CelerDataComponentSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeSpec">StarRocksBeSpec</a>, <a href="#starrocks.com/v1.StarRocksCnSpec">StarRocksCnSpec</a>, <a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>, <a href="#starrocks.com/v1.WarehouseComponentSpec">WarehouseComponentSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataBeSpec">CelerDataBeSpec</a>, <a href="#celerdata.com/v1.CelerDataCnSpec">CelerDataCnSpec</a>, <a href="#celerdata.com/v1.CelerDataFeSpec">CelerDataFeSpec</a>, <a href="#celerdata.com/v1.WarehouseComponentSpec">WarehouseComponentSpec</a>)
 </p>
 <div>
-<p>StarRocksComponentSpec defines the shared specification for all StarRocks components except FE Proxy</p>
+<p>CelerDataComponentSpec defines the shared specification for all CelerData components except FE Proxy</p>
 </div>
 <table>
 <thead>
@@ -1196,16 +690,16 @@ string
 <tbody>
 <tr>
 <td>
-<code>StarRocksLoadSpec</code><br/>
+<code>CelerDataLoadSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksLoadSpec">
-StarRocksLoadSpec
+<a href="#celerdata.com/v1.CelerDataLoadSpec">
+CelerDataLoadSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksLoadSpec</code> are embedded into this type.)
+(Members of <code>CelerDataLoadSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -1217,7 +711,7 @@ bool
 </em>
 </td>
 <td>
-<p>RunAsNonRoot is used to determine whether to run starrocks as a normal user.
+<p>RunAsNonRoot is used to determine whether to run CelerData as a normal user.
 If RunAsNonRoot is true, operator will set RunAsUser and RunAsGroup to 1000 in securityContext.
 default: nil</p>
 </td>
@@ -1241,7 +735,7 @@ grant certain privileges to a process without granting all the privileges of the
 <td>
 <code>configMaps</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapReference">
+<a href="#celerdata.com/v1.ConfigMapReference">
 []ConfigMapReference
 </a>
 </em>
@@ -1255,7 +749,7 @@ grant certain privileges to a process without granting all the privileges of the
 <td>
 <code>secrets</code><br/>
 <em>
-<a href="#starrocks.com/v1.SecretReference">
+<a href="#celerdata.com/v1.SecretReference">
 []SecretReference
 </a>
 </em>
@@ -1310,7 +804,7 @@ Defaults to 120 seconds.</p>
 </td>
 <td>
 <em>(Optional)</em>
-<p>Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
+<p>Sidecars is an optional list of containers that are run in the same pod as the CelerData component.
 You can use this field to launch helper containers that provide additional functionality to the main container.
 See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for how to configure a container.</p>
 </td>
@@ -1325,7 +819,7 @@ See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resour
 </em>
 </td>
 <td>
-<p>InitContainers is an optional list of containers that are run in the same pod as the starrocks component.
+<p>InitContainers is an optional list of containers that are run in the same pod as the CelerData component.
 You can use this field to launch helper containers that run before the main container starts.
 See <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container">https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container</a> for how to configure a container.</p>
 </td>
@@ -1377,7 +871,7 @@ Kubernetes apps/v1.StatefulSetUpdateStrategy
 </td>
 <td>
 <em>(Optional)</em>
-<p>StarRocksCluster use StatefulSet to deploy FE/BE/CN components.
+<p>CelerDataCluster use StatefulSet to deploy FE/BE/CN components.
 UpdateStrategy indicates the StatefulSetUpdateStrategy that will be
 employed to update Pods in the StatefulSet when a revision is made to
 Template. See <a href="https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#rolling-updates">https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#rolling-updates</a> for more details.
@@ -1463,13 +957,13 @@ to use a different default value.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksComponentStatus">StarRocksComponentStatus
+<h3 id="celerdata.com/v1.CelerDataComponentStatus">CelerDataComponentStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksBeStatus">StarRocksBeStatus</a>, <a href="#starrocks.com/v1.StarRocksCnStatus">StarRocksCnStatus</a>, <a href="#starrocks.com/v1.StarRocksFeProxyStatus">StarRocksFeProxyStatus</a>, <a href="#starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataBeStatus">CelerDataBeStatus</a>, <a href="#celerdata.com/v1.CelerDataCnStatus">CelerDataCnStatus</a>, <a href="#celerdata.com/v1.CelerDataFeProxyStatus">CelerDataFeProxyStatus</a>, <a href="#celerdata.com/v1.CelerDataFeStatus">CelerDataFeStatus</a>)
 </p>
 <div>
-<p>StarRocksComponentStatus represents the status of a starrocks component.</p>
+<p>CelerDataComponentStatus represents the status of a CelerData component.</p>
 </div>
 <table>
 <thead>
@@ -1538,7 +1032,7 @@ string
 <td>
 <code>phase</code><br/>
 <em>
-<a href="#starrocks.com/v1.ComponentPhase">
+<a href="#celerdata.com/v1.ComponentPhase">
 ComponentPhase
 </a>
 </em>
@@ -1561,14 +1055,14 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeProxySpec">StarRocksFeProxySpec
+<h3 id="celerdata.com/v1.CelerDataFeProxySpec">CelerDataFeProxySpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec</a>)
 </p>
 <div>
-<p>StarRocksFeProxySpec defines the specification for FE Proxy
-Note: it includes StarRocksLoadSpec, not StarRocksComponentSpec</p>
+<p>CelerDataFeProxySpec defines the specification for FE Proxy
+Note: it includes CelerDataLoadSpec, not CelerDataComponentSpec</p>
 </div>
 <table>
 <thead>
@@ -1580,16 +1074,16 @@ Note: it includes StarRocksLoadSpec, not StarRocksComponentSpec</p>
 <tbody>
 <tr>
 <td>
-<code>StarRocksLoadSpec</code><br/>
+<code>CelerDataLoadSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksLoadSpec">
-StarRocksLoadSpec
+<a href="#celerdata.com/v1.CelerDataLoadSpec">
+CelerDataLoadSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksLoadSpec</code> are embedded into this type.)
+(Members of <code>CelerDataLoadSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -1605,10 +1099,10 @@ string
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeProxyStatus">StarRocksFeProxyStatus
+<h3 id="celerdata.com/v1.CelerDataFeProxyStatus">CelerDataFeProxyStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>)
 </p>
 <div>
 </div>
@@ -1622,28 +1116,28 @@ string
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>CelerDataComponentStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
+<a href="#celerdata.com/v1.CelerDataComponentStatus">
+CelerDataComponentStatus
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
+(Members of <code>CelerDataComponentStatus</code> are embedded into this type.)
 </p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec
+<h3 id="celerdata.com/v1.CelerDataFeSpec">CelerDataFeSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterSpec">StarRocksClusterSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec</a>)
 </p>
 <div>
-<p>StarRocksFeSpec defines the desired state of fe.</p>
+<p>CelerDataFeSpec defines the desired state of fe.</p>
 </div>
 <table>
 <thead>
@@ -1655,16 +1149,16 @@ StarRocksComponentStatus
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentSpec</code><br/>
+<code>CelerDataComponentSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+<a href="#celerdata.com/v1.CelerDataComponentSpec">
+CelerDataComponentSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
+(Members of <code>CelerDataComponentSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -1684,13 +1178,13 @@ StarRocksComponentSpec
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksFeStatus">StarRocksFeStatus
+<h3 id="celerdata.com/v1.CelerDataFeStatus">CelerDataFeStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksClusterStatus">StarRocksClusterStatus</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>)
 </p>
 <div>
-<p>StarRocksFeStatus represents the status of starrocks fe.</p>
+<p>CelerDataFeStatus represents the status of CelerData fe.</p>
 </div>
 <table>
 <thead>
@@ -1702,25 +1196,25 @@ StarRocksComponentSpec
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentStatus</code><br/>
+<code>CelerDataComponentStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentStatus">
-StarRocksComponentStatus
+<a href="#celerdata.com/v1.CelerDataComponentStatus">
+CelerDataComponentStatus
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentStatus</code> are embedded into this type.)
+(Members of <code>CelerDataComponentStatus</code> are embedded into this type.)
 </p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec
+<h3 id="celerdata.com/v1.CelerDataLoadSpec">CelerDataLoadSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksComponentSpec">StarRocksComponentSpec</a>, <a href="#starrocks.com/v1.StarRocksFeProxySpec">StarRocksFeProxySpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataComponentSpec">CelerDataComponentSpec</a>, <a href="#celerdata.com/v1.CelerDataFeProxySpec">CelerDataFeProxySpec</a>)
 </p>
 <div>
 </div>
@@ -1782,8 +1276,8 @@ int32
 <td>
 <em>(Optional)</em>
 <p>Replicas is the number of desired Pods.
-When HPA policy is enabled with a fixed replica count in StarRocksCnSpec: every time
-the starrockscluster CR is applied, the replica count of the StatefulSet
+When HPA policy is enabled with a fixed replica count in CelerDataCnSpec: every time
+the CelerDataCluster CR is applied, the replica count of the StatefulSet
 object in K8S will be reset to the value specified by the &lsquo;Replicas&rsquo;
 field, erasing the value previously set by HPA.</p>
 </td>
@@ -1797,7 +1291,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Image for a starrocks deployment.</p>
+<p>Image for a CelerData deployment.</p>
 </td>
 </tr>
 <tr>
@@ -1905,8 +1399,8 @@ More info: <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topo
 <td>
 <code>service</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksService">
-StarRocksService
+<a href="#celerdata.com/v1.CelerDataService">
+CelerDataService
 </a>
 </em>
 </td>
@@ -1919,7 +1413,7 @@ StarRocksService
 <td>
 <code>storageVolumes</code><br/>
 <em>
-<a href="#starrocks.com/v1.StorageVolume">
+<a href="#celerdata.com/v1.StorageVolume">
 []StorageVolume
 </a>
 </em>
@@ -1959,14 +1453,14 @@ string
 <td>
 <code>configMapInfo</code><br/>
 <em>
-<a href="#starrocks.com/v1.ConfigMapInfo">
+<a href="#celerdata.com/v1.ConfigMapInfo">
 ConfigMapInfo
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>the reference for configMap which store the config info to start starrocks. e.g. be.conf, fe.conf, cn.conf.</p>
+<p>the reference for configMap which store the config info to start CelerData. e.g. be.conf, fe.conf, cn.conf.</p>
 </td>
 </tr>
 <tr>
@@ -2055,10 +1549,10 @@ Optional: Default to false.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksProbe">StarRocksProbe
+<h3 id="celerdata.com/v1.CelerDataProbe">CelerDataProbe
 </h3>
 <div>
-<p>StarRocksProbe defines the mode for probe be alive.</p>
+<p>CelerDataProbe defines the mode for probe be alive.</p>
 </div>
 <table>
 <thead>
@@ -2107,13 +1601,13 @@ Default to Kubernetes default (10 seconds). Minimum value is 1.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksService">StarRocksService
+<h3 id="celerdata.com/v1.CelerDataService">CelerDataService
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataLoadSpec">CelerDataLoadSpec</a>)
 </p>
 <div>
-<p>StarRocksService defines external service for starrocks component.</p>
+<p>CelerDataService defines external service for CelerData component.</p>
 </div>
 <table>
 <thead>
@@ -2146,7 +1640,7 @@ map[string]string
 <td>
 <em>(Optional)</em>
 <p>Labels store Kubernetes Service labels. These will be added to the external service only (not
-internal). StarRocks may add its own default labels.</p>
+internal). CelerData may add its own default labels.</p>
 </td>
 </tr>
 <tr>
@@ -2187,17 +1681,17 @@ This field may be removed in a future API version.</p>
 <td>
 <code>ports</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksServicePort">
-[]StarRocksServicePort
+<a href="#celerdata.com/v1.CelerDataServicePort">
+[]CelerDataServicePort
 </a>
 </em>
 </td>
 <td>
 <em>(Optional)</em>
 <p>Ports are the ports that are exposed by this service.
-You can override the default port information by specifying the same StarRocksServicePort.Name in the ports list.
-e.g. if you want to use a dedicated node port, you can just specify the StarRocksServicePort.Name and
-StarRocksServicePort.NodePort field.</p>
+You can override the default port information by specifying the same CelerDataServicePort.Name in the ports list.
+e.g. if you want to use a dedicated node port, you can just specify the CelerDataServicePort.Name and
+CelerDataServicePort.NodePort field.</p>
 </td>
 </tr>
 <tr>
@@ -2217,13 +1711,13 @@ More info: <a href="https://kubernetes.io/docs/tasks/access-application-cluster/
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksServicePort">StarRocksServicePort
+<h3 id="celerdata.com/v1.CelerDataServicePort">CelerDataServicePort
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksService">StarRocksService</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataService">CelerDataService</a>)
 </p>
 <div>
-<p>StarRocksServicePort defines the port that will be exposed by this service.
+<p>CelerDataServicePort defines the port that will be exposed by this service.
 To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
 containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.</p>
 </div>
@@ -2294,10 +1788,10 @@ The range of valid ports is 30000-32767</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse
+<h3 id="celerdata.com/v1.CelerDataWarehouse">CelerDataWarehouse
 </h3>
 <div>
-<p>StarRocksWarehouse defines a starrocks warehouse.</p>
+<p>CelerDataWarehouse defines a CelerData warehouse.</p>
 </div>
 <table>
 <thead>
@@ -2325,32 +1819,32 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksWarehouseSpec">
-StarRocksWarehouseSpec
+<a href="#celerdata.com/v1.CelerDataWarehouseSpec">
+CelerDataWarehouseSpec
 </a>
 </em>
 </td>
 <td>
-<p>Spec represents the specification of desired state of a starrocks warehouse.</p>
+<p>Spec represents the specification of desired state of a CelerData warehouse.</p>
 <br/>
 <br/>
 <table>
 <tr>
 <td>
-<code>starRocksCluster</code><br/>
+<code>celerDataCluster</code><br/>
 <em>
 string
 </em>
 </td>
 <td>
-<p>StarRocksCluster is the name of a StarRocksCluster which the warehouse belongs to.</p>
+<p>CelerDataCluster is the name of a CelerDataCluster which the warehouse belongs to.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#starrocks.com/v1.WarehouseComponentSpec">
+<a href="#celerdata.com/v1.WarehouseComponentSpec">
 WarehouseComponentSpec
 </a>
 </em>
@@ -2366,24 +1860,24 @@ WarehouseComponentSpec
 <td>
 <code>status</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksWarehouseStatus">
-StarRocksWarehouseStatus
+<a href="#celerdata.com/v1.CelerDataWarehouseStatus">
+CelerDataWarehouseStatus
 </a>
 </em>
 </td>
 <td>
-<p>Status represents the recent observed status of the starrocks warehouse.</p>
+<p>Status represents the recent observed status of the CelerData warehouse.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksWarehouseSpec">StarRocksWarehouseSpec
+<h3 id="celerdata.com/v1.CelerDataWarehouseSpec">CelerDataWarehouseSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataWarehouse">CelerDataWarehouse</a>)
 </p>
 <div>
-<p>StarRocksWarehouseSpec defines the desired state of StarRocksWarehouse</p>
+<p>CelerDataWarehouseSpec defines the desired state of CelerDataWarehouse</p>
 </div>
 <table>
 <thead>
@@ -2395,20 +1889,20 @@ StarRocksWarehouseStatus
 <tbody>
 <tr>
 <td>
-<code>starRocksCluster</code><br/>
+<code>celerDataCluster</code><br/>
 <em>
 string
 </em>
 </td>
 <td>
-<p>StarRocksCluster is the name of a StarRocksCluster which the warehouse belongs to.</p>
+<p>CelerDataCluster is the name of a CelerDataCluster which the warehouse belongs to.</p>
 </td>
 </tr>
 <tr>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#starrocks.com/v1.WarehouseComponentSpec">
+<a href="#celerdata.com/v1.WarehouseComponentSpec">
 WarehouseComponentSpec
 </a>
 </em>
@@ -2419,13 +1913,13 @@ WarehouseComponentSpec
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StarRocksWarehouseStatus">StarRocksWarehouseStatus
+<h3 id="celerdata.com/v1.CelerDataWarehouseStatus">CelerDataWarehouseStatus
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksWarehouse">StarRocksWarehouse</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataWarehouse">CelerDataWarehouse</a>)
 </p>
 <div>
-<p>StarRocksWarehouseStatus defines the observed state of StarRocksWarehouse.</p>
+<p>CelerDataWarehouseStatus defines the observed state of CelerDataWarehouse.</p>
 </div>
 <table>
 <thead>
@@ -2439,8 +1933,8 @@ WarehouseComponentSpec
 <td>
 <code>WarehouseComponentStatus</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksCnStatus">
-StarRocksCnStatus
+<a href="#celerdata.com/v1.CelerDataCnStatus">
+CelerDataCnStatus
 </a>
 </em>
 </td>
@@ -2452,10 +1946,516 @@ StarRocksCnStatus
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.StorageVolume">StorageVolume
+<h3 id="celerdata.com/v1.ComponentPhase">ComponentPhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataComponentStatus">CelerDataComponentStatus</a>)
+</p>
+<div>
+<p>ComponentPhase represent the component phase. e.g.
+1. CelerDataCluster contains three components: FE, CN, BE.
+2. CelerDataWarehouse reuse the CN component.
+The possible value for component phase are: reconciling, failed, running.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ComponentFailed the pod of component is failed</p>
+</td>
+</tr><tr><td><p>&#34;reconciling&#34;</p></td>
+<td><p>ComponentReconciling the CelerData component is reconciling</p>
+</td>
+</tr><tr><td><p>&#34;running&#34;</p></td>
+<td><p>ComponentRunning all components runs available.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="celerdata.com/v1.ConfigMapInfo">ConfigMapInfo
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksLoadSpec">StarRocksLoadSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataLoadSpec">CelerDataLoadSpec</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>configMapName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the config info for start progress.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resolveKey</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the config response key in configmap.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.ConfigMapReference">ConfigMapReference
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataComponentSpec">CelerDataComponentSpec</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
+the length of name must not more than 50 characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mountPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Path within the container at which the volume should be mounted.  Must
+not contain &lsquo;:&rsquo;.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.DRPhase">DRPhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;doing&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;done&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;todo&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="celerdata.com/v1.DisasterRecovery">DisasterRecovery
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterSpec">CelerDataClusterSpec</a>)
+</p>
+<div>
+<p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>generation</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>Generation records the generation of disaster recovery. If you want to trigger disaster recovery, you should
+increase the generation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.DisasterRecoveryStatus">DisasterRecoveryStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>)
+</p>
+<div>
+<p>DisasterRecoveryStatus represents the status of disaster recovery.
+Note: you should create a new instance of DisasterRecoveryStatus by NewDisasterRecoveryStatus.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+<a href="#celerdata.com/v1.DRPhase">
+DRPhase
+</a>
+</em>
+</td>
+<td>
+<p>the available phase include: todo, doing, done</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the reason of disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startTimestamp</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the unix time of starting disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>endTimestamp</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the unix time of ending disaster recovery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>observedGeneration</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>the observed generation of disaster recovery.
+If the observed generation is less than the generation, it will trigger disaster recovery.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.HPAPolicy">HPAPolicy
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.AutoScalingPolicy">AutoScalingPolicy</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metrics</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#metricspec-v2beta2-autoscaling">
+[]Kubernetes autoscaling/v2beta2.MetricSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Metrics specifies how to scale based on a single metric
+the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+HorizontalPodAutoscaler version and kubernetes releases matching issue.
+the splice will have unsafe.Pointer convert, so be careful to edit the struct fields.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>behavior</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#horizontalpodautoscalerbehavior-v2beta2-autoscaling">
+Kubernetes autoscaling/v2beta2.HorizontalPodAutoscalerBehavior
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HorizontalPodAutoscalerBehavior configures the scaling behavior of the target.
+the struct copy from k8s.io/api/autoscaling/v2beta2/types.go. the redundancy code will hide the restriction about
+HorizontalPodAutoscaler version and kubernetes releases matching issue.
+the</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.HorizontalScaler">HorizontalScaler
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataCnStatus">CelerDataCnStatus</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>the horizontal scaler name</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br/>
+<em>
+<a href="#celerdata.com/v1.AutoScalerVersion">
+AutoScalerVersion
+</a>
+</em>
+</td>
+<td>
+<p>the horizontal version.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.MountInfo">MountInfo
+</h3>
+<div>
+<p>MountInfo
+The reason why we do not support defaultMode is that we use hash.HashObject to
+calculate the actual volume name. This volume name is used in pod template of statefulset,
+and if this MountInfo type has been changed, the volume name will be changed too, and
+that will make pods restart.
+The default mode is 0644, and in order to support to set permission information for a configMap
+or secret, we add should specify the subPath and specify a command or args in the container.
+And It will be set 0755.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
+the length of name must not more than 50 characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mountPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Path within the container at which the volume should be mounted.  Must
+not contain &lsquo;:&rsquo;.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.Phase">Phase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataClusterStatus">CelerDataClusterStatus</a>)
+</p>
+<div>
+<p>Phase is defined under status, e.g.
+1. CelerDataClusterStatus.Phase represents the phase of CelerData cluster.
+2. CelerDataWarehouseStatus.Phase represents the phase of CelerData warehouse.
+The possible value for cluster phase are: running, failed, pending, deleting.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;failed&#34;</p></td>
+<td><p>ClusterFailed represents CelerData cluster failed.</p>
+</td>
+</tr><tr><td><p>&#34;reconciling&#34;</p></td>
+<td><p>ClusterReconciling represents some component is reconciling</p>
+</td>
+</tr><tr><td><p>&#34;running&#34;</p></td>
+<td><p>ClusterRunning represents CelerData cluster is running.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="celerdata.com/v1.SecretReference">SecretReference
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataComponentSpec">CelerDataComponentSpec</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>This must match the Name of a ConfigMap or Secret in the same namespace, and
+the length of name must not more than 50 characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mountPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Path within the container at which the volume should be mounted.  Must
+not contain &lsquo;:&rsquo;.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subPath</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
+Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="celerdata.com/v1.SpecInterface">SpecInterface
+</h3>
+<div>
+<p>SpecInterface defines the common interface that must be implemented by all CelerData component specs
+(FE, BE, CN, FE Proxy). It provides methods to configure pod and container settings like security context,
+lifecycle hooks, networking, and storage.
+All components including CelerDataFeSpec, CelerDataBeSpec, CelerDataCnSpec, CelerDataFeProxySpec have implemented
+the SpecInterface. If a method has the same implementation, we will implement in CelerDataLoadSpec which implements
+the loadInterface interface.</p>
+</div>
+<h3 id="celerdata.com/v1.StorageVolume">StorageVolume
+</h3>
+<p>
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataLoadSpec">CelerDataLoadSpec</a>)
 </p>
 <div>
 <p>StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC.</p>
@@ -2548,10 +2548,10 @@ Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 </tr>
 </tbody>
 </table>
-<h3 id="starrocks.com/v1.WarehouseComponentSpec">WarehouseComponentSpec
+<h3 id="celerdata.com/v1.WarehouseComponentSpec">WarehouseComponentSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksWarehouseSpec">StarRocksWarehouseSpec</a>)
+(<em>Appears on:</em><a href="#celerdata.com/v1.CelerDataWarehouseSpec">CelerDataWarehouseSpec</a>)
 </p>
 <div>
 <p>WarehouseComponentSpec defines the desired state of component.</p>
@@ -2566,16 +2566,16 @@ Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
 <tbody>
 <tr>
 <td>
-<code>StarRocksComponentSpec</code><br/>
+<code>CelerDataComponentSpec</code><br/>
 <em>
-<a href="#starrocks.com/v1.StarRocksComponentSpec">
-StarRocksComponentSpec
+<a href="#celerdata.com/v1.CelerDataComponentSpec">
+CelerDataComponentSpec
 </a>
 </em>
 </td>
 <td>
 <p>
-(Members of <code>StarRocksComponentSpec</code> are embedded into this type.)
+(Members of <code>CelerDataComponentSpec</code> are embedded into this type.)
 </p>
 </td>
 </tr>
@@ -2597,7 +2597,7 @@ StarRocksComponentSpec
 <td>
 <code>autoScalingPolicy</code><br/>
 <em>
-<a href="#starrocks.com/v1.AutoScalingPolicy">
+<a href="#celerdata.com/v1.AutoScalingPolicy">
 AutoScalingPolicy
 </a>
 </em>
@@ -2611,5 +2611,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>30cbedfc</code>.
+on git commit <code>7dd0cf8c</code>.
 </em></p>

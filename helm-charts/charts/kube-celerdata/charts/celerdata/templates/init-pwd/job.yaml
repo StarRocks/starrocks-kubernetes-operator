@@ -1,0 +1,71 @@
+{{- if and .Values.initPassword.enabled .Values.initPassword.isInstall .Release.IsInstall }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "celerdatacluster.name" . }}-initpwd
+  namespace: {{ template "celerdatacluster.namespace" . }}
+  labels:
+    cluster: {{ template "celerdatacluster.name" . }}
+  {{- if .Values.initPassword.annotations }}
+  annotations:
+    {{- toYaml .Values.initPassword.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    {{- if .Values.initPassword.podAnnotations }}
+    metadata:
+      annotations:
+        {{- toYaml .Values.initPassword.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      {{- if or .Values.celerDataFeSpec.imagePullSecrets .Values.celerDataCluster.componentValues.imagePullSecrets }}
+      imagePullSecrets:
+        {{- include "celerdatacluster.fe.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
+      {{- if or .Values.celerDataFeSpec.affinity .Values.celerDataCluster.componentValues.affinity }}
+      affinity:
+        {{- include "celerdatacluster.fe.affinity" . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.celerDataFeSpec.tolerations .Values.celerDataCluster.componentValues.tolerations }}
+      tolerations:
+        {{- include "celerdatacluster.fe.tolerations" . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ template "celerdatacluster.name" . }}-initpwd
+        {{- if .Values.initPassword.image }}
+        image: {{ .Values.initPassword.image }}
+        {{- else }}
+        image: {{ .Values.celerDataFeSpec.image.repository }}:{{ include "celerdatacluster.fe.image.tag" . }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+        {{- if .Values.initPassword.resources }}
+        resources: {{- toYaml .Values.initPassword.resources | nindent 10 }}
+        {{- end }}
+        command:
+        - /bin/bash
+        args:
+        - /opt/starrocks/fe_initpwd.sh
+        - {{ template "celerdatacluster.name" . }}-fe-0.{{ template "celerdatacluster.name" . }}-fe-search
+        - "{{- default 9030 (include "celerdatacluster.fe.query.port" .) }}"
+        env:
+        - name: INIT_PWD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ template "celerdatacluster.initpassword.secret.name" . }}
+        volumeMounts:
+        - mountPath: /opt/starrocks/fe_initpwd.sh
+          name: {{ template "celerdatacluster.name" . }}-initpwd-shell
+          subPath: fe_initpwd.sh
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+            - key: fe_initpwd.sh
+              path: fe_initpwd.sh
+          name: {{ template "celerdatacluster.name" . }}-initpwd-shell
+          optional: false
+        name: {{ template "celerdatacluster.name" . }}-initpwd-shell
+      restartPolicy: OnFailure
+  backoffLimit: 10
+{{- end }}

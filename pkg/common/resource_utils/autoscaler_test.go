@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 const _defaultNamespace = "default"
@@ -34,10 +34,10 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 	labels := map[string]string{}
 	labels["cluster"] = _defaultName
 	labels["namespace"] = _defaultNamespace
-	cluster := srapi.StarRocksCluster{
+	cluster := cdapi.CelerDataCluster{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       StarRocksClusterKind,
-			APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+			Kind:       CelerDataClusterKind,
+			APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      _defaultName,
@@ -45,13 +45,13 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 		},
 	}
 	hpaParams := &HPAParams{
-		Version:         srapi.AutoScalerV1,
+		Version:         cdapi.AutoScalerV1,
 		Namespace:       _defaultNamespace,
 		Name:            "test-autoscaler",
 		Labels:          labels,
 		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(&cluster, cluster.GroupVersionKind())},
-		ScalerPolicy: &srapi.AutoScalingPolicy{
-			Version:     srapi.AutoScalerV1,
+		ScalerPolicy: &cdapi.AutoScalingPolicy{
+			Version:     cdapi.AutoScalerV1,
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
 		},
@@ -70,8 +70,8 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 			Namespace: hpaParams.Namespace,
 			Labels:    ls,
 			OwnerReferences: []metav1.OwnerReference{{
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
-				Kind:       StarRocksClusterKind,
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
+				Kind:       CelerDataClusterKind,
 				Name:       _defaultName,
 				Controller: func() *bool {
 					b := true
@@ -85,25 +85,25 @@ func TestBuildHorizontalPodAutoscalerV1(t *testing.T) {
 		},
 		Spec: v1.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v1.CrossVersionObjectReference{
-				Kind:       StarRocksClusterKind,
+				Kind:       CelerDataClusterKind,
 				Name:       _defaultName,
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
 		},
 	}
-	require.Equal(t, BuildHPA(hpaParams, srapi.AutoScalerV1), ha)
+	require.Equal(t, BuildHPA(hpaParams, cdapi.AutoScalerV1), ha)
 }
 
 func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 	labels := map[string]string{}
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
-	cluster := srapi.StarRocksCluster{
+	cluster := cdapi.CelerDataCluster{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       StarRocksClusterKind,
-			APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+			Kind:       CelerDataClusterKind,
+			APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      _defaultName,
@@ -111,23 +111,23 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		},
 	}
 	hpaParams := &HPAParams{
-		Version:         srapi.AutoScalerV1,
+		Version:         cdapi.AutoScalerV1,
 		Namespace:       _defaultNamespace,
 		Name:            "test-autoscaler",
 		Labels:          labels,
 		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(&cluster, cluster.GroupVersionKind())},
-		ScalerPolicy: &srapi.AutoScalingPolicy{
-			Version:     srapi.AutoScalerV1,
+		ScalerPolicy: &cdapi.AutoScalingPolicy{
+			Version:     cdapi.AutoScalerV1,
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
-			HPAPolicy: &srapi.HPAPolicy{
+			HPAPolicy: &cdapi.HPAPolicy{
 				Metrics: []v2beta2.MetricSpec{{
 					Type: v2beta2.PodsMetricSourceType,
 					Object: &v2beta2.ObjectMetricSource{
 						DescribedObject: v2beta2.CrossVersionObjectReference{
-							Kind:       StarRocksClusterKind,
+							Kind:       CelerDataClusterKind,
 							Name:       _defaultName,
-							APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+							APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 						},
 						Target: v2beta2.MetricTarget{
 							Type:               v2beta2.ValueMetricType,
@@ -199,8 +199,8 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
-				Kind:       StarRocksClusterKind,
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
+				Kind:       CelerDataClusterKind,
 				Name:       _defaultName,
 				Controller: func() *bool {
 					b := true
@@ -215,8 +215,8 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		Spec: v2beta2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2beta2.CrossVersionObjectReference{
 				Name:       _defaultName,
-				Kind:       StarRocksClusterKind,
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+				Kind:       CelerDataClusterKind,
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
@@ -224,9 +224,9 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 				Type: v2beta2.PodsMetricSourceType,
 				Object: &v2beta2.ObjectMetricSource{
 					DescribedObject: v2beta2.CrossVersionObjectReference{
-						Kind:       StarRocksClusterKind,
+						Kind:       CelerDataClusterKind,
 						Name:       _defaultName,
-						APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+						APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 					},
 					Target: v2beta2.MetricTarget{
 						Type:               v2beta2.ValueMetricType,
@@ -287,7 +287,7 @@ func TestBuildHorizontalPodAutoscalerV2beta2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, expectedHPA, BuildHPA(hpaParams, srapi.AutoScalerV2Beta2))
+	require.Equal(t, expectedHPA, BuildHPA(hpaParams, cdapi.AutoScalerV2Beta2))
 }
 
 func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
@@ -295,10 +295,10 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 	labels["cluster"] = "test"
 	labels["namespace"] = _defaultNamespace
 
-	cluster := srapi.StarRocksCluster{
+	cluster := cdapi.CelerDataCluster{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       StarRocksClusterKind,
-			APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+			Kind:       CelerDataClusterKind,
+			APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      _defaultName,
@@ -307,23 +307,23 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 	}
 
 	hpaParams := &HPAParams{
-		Version:         srapi.AutoScalerV1,
+		Version:         cdapi.AutoScalerV1,
 		Namespace:       _defaultNamespace,
 		Name:            "test-autoscaler",
 		Labels:          labels,
 		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(&cluster, cluster.GroupVersionKind())},
-		ScalerPolicy: &srapi.AutoScalingPolicy{
-			Version:     srapi.AutoScalerV1,
+		ScalerPolicy: &cdapi.AutoScalingPolicy{
+			Version:     cdapi.AutoScalerV1,
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
-			HPAPolicy: &srapi.HPAPolicy{
+			HPAPolicy: &cdapi.HPAPolicy{
 				Metrics: []v2beta2.MetricSpec{{
 					Type: v2beta2.PodsMetricSourceType,
 					Object: &v2beta2.ObjectMetricSource{
 						DescribedObject: v2beta2.CrossVersionObjectReference{
-							Kind:       StarRocksClusterKind,
+							Kind:       CelerDataClusterKind,
 							Name:       _defaultName,
-							APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+							APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 						},
 						Target: v2beta2.MetricTarget{
 							Type:               v2beta2.ValueMetricType,
@@ -395,8 +395,8 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
-				Kind:       StarRocksClusterKind,
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
+				Kind:       CelerDataClusterKind,
 				Name:       _defaultName,
 				Controller: func() *bool {
 					b := true
@@ -410,9 +410,9 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				Kind:       StarRocksClusterKind,
+				Kind:       CelerDataClusterKind,
 				Name:       _defaultName,
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
@@ -420,9 +420,9 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 				Type: v2.PodsMetricSourceType,
 				Object: &v2.ObjectMetricSource{
 					DescribedObject: v2.CrossVersionObjectReference{
-						Kind:       StarRocksClusterKind,
+						Kind:       CelerDataClusterKind,
 						Name:       _defaultName,
-						APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+						APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 					},
 					Target: v2.MetricTarget{
 						Type:               v2.ValueMetricType,
@@ -483,7 +483,7 @@ func TestBuildHorizontalPodAutoscalerV2(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, expectedHPA, BuildHPA(hpaParams, srapi.AutoScalerV2))
+	require.Equal(t, expectedHPA, BuildHPA(hpaParams, cdapi.AutoScalerV2))
 }
 
 func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
@@ -491,38 +491,38 @@ func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
 	labels["cluster"] = _defaultName
 	labels["namespace"] = _defaultNamespace
 
-	warehouse := srapi.StarRocksWarehouse{
+	warehouse := cdapi.CelerDataWarehouse{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       StarRocksWarehouseKind,
-			APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+			Kind:       CelerDataWarehouseKind,
+			APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      _defaultName,
 			Namespace: _defaultNamespace,
 		},
-		Spec: srapi.StarRocksWarehouseSpec{
-			StarRocksCluster: _defaultName,
+		Spec: cdapi.CelerDataWarehouseSpec{
+			CelerDataCluster: _defaultName,
 		},
 	}
 
 	hpaParams := &HPAParams{
-		Version:         srapi.AutoScalerV1,
+		Version:         cdapi.AutoScalerV1,
 		Namespace:       _defaultNamespace,
 		Name:            "test-autoscaler",
 		Labels:          labels,
 		OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(&warehouse, warehouse.GroupVersionKind())},
-		ScalerPolicy: &srapi.AutoScalingPolicy{
-			Version:     srapi.AutoScalerV1,
+		ScalerPolicy: &cdapi.AutoScalingPolicy{
+			Version:     cdapi.AutoScalerV1,
 			MinReplicas: GetInt32Pointer(1),
 			MaxReplicas: 10,
-			HPAPolicy: &srapi.HPAPolicy{
+			HPAPolicy: &cdapi.HPAPolicy{
 				Metrics: []v2beta2.MetricSpec{{
 					Type: v2beta2.PodsMetricSourceType,
 					Object: &v2beta2.ObjectMetricSource{
 						DescribedObject: v2beta2.CrossVersionObjectReference{
-							Kind:       StarRocksWarehouseKind,
+							Kind:       CelerDataWarehouseKind,
 							Name:       _defaultName,
-							APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+							APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 						},
 						Target: v2beta2.MetricTarget{
 							Type:               v2beta2.ValueMetricType,
@@ -594,8 +594,8 @@ func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
 			Namespace: _defaultNamespace,
 			Labels:    labels,
 			OwnerReferences: []metav1.OwnerReference{{
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
-				Kind:       StarRocksWarehouseKind,
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
+				Kind:       CelerDataWarehouseKind,
 				Name:       _defaultName,
 				Controller: func() *bool {
 					b := true
@@ -609,9 +609,9 @@ func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				Kind:       StarRocksWarehouseKind,
+				Kind:       CelerDataWarehouseKind,
 				Name:       _defaultName,
-				APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+				APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 			},
 			MaxReplicas: 10,
 			MinReplicas: GetInt32Pointer(1),
@@ -619,9 +619,9 @@ func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
 				Type: v2.PodsMetricSourceType,
 				Object: &v2.ObjectMetricSource{
 					DescribedObject: v2.CrossVersionObjectReference{
-						Kind:       StarRocksWarehouseKind,
+						Kind:       CelerDataWarehouseKind,
 						Name:       _defaultName,
-						APIVersion: srapi.SchemeBuilder.GroupVersion.String(),
+						APIVersion: cdapi.SchemeBuilder.GroupVersion.String(),
 					},
 					Target: v2.MetricTarget{
 						Type:               v2.ValueMetricType,
@@ -682,5 +682,5 @@ func TestBuildHorizontalPodAutoscalerV2_ForWarehouse(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, expectedHPA, BuildHPA(hpaParams, srapi.AutoScalerV2))
+	require.Equal(t, expectedHPA, BuildHPA(hpaParams, cdapi.AutoScalerV2))
 }

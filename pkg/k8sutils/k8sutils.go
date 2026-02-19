@@ -40,8 +40,8 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/hash"
 )
 
 // ServiceEqual judges two services equal or not in some fields. developer can custom the function.
@@ -51,7 +51,7 @@ type ServiceEqual func(expect *corev1.Service, actual *corev1.Service) (string, 
 type StatefulSetEqual func(expect *appsv1.StatefulSet, actual *appsv1.StatefulSet) (string, bool)
 
 const (
-	LastAppliedConfigAnnotation = "starrocks.kubernetes.operator/last-applied-configuration"
+	LastAppliedConfigAnnotation = "celerdata.kubernetes.operator/last-applied-configuration"
 )
 
 func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev1.Service, equal ServiceEqual) error {
@@ -77,7 +77,7 @@ func ApplyService(ctx context.Context, k8sClient client.Client, expectSvc *corev
 	if expectSvc.Annotations == nil {
 		expectSvc.Annotations = map[string]string{}
 	}
-	expectSvc.Annotations[srapi.ComponentResourceHash] = newHashValue
+	expectSvc.Annotations[cdapi.ComponentResourceHash] = newHashValue
 	return PatchByThreeWayMerge(ctx, k8sClient, expectSvc, &actualSvc)
 }
 
@@ -95,12 +95,12 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appsv
 	}
 
 	// the hash value calculated from Deployment instance in k8s may will never equal to the hash value from
-	// starrocks cluster. Because Deployment instance may be updated by k8s controller manager.
+	// celerdata cluster. Because Deployment instance may be updated by k8s controller manager.
 	// Every time you update the Deployment instance, a new reconcile will be triggered.
 	var expectHash, actualHash string
 	expectHash = hash.HashObject(deploy)
-	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
-		actualHash = actual.Annotations[srapi.ComponentResourceHash]
+	if _, ok := actual.Annotations[cdapi.ComponentResourceHash]; ok {
+		actualHash = actual.Annotations[cdapi.ComponentResourceHash]
 	} else {
 		actualHash = hash.HashObject(actual)
 	}
@@ -114,7 +114,7 @@ func ApplyDeployment(ctx context.Context, k8sClient client.Client, deploy *appsv
 	if deploy.Annotations == nil {
 		deploy.Annotations = map[string]string{}
 	}
-	deploy.Annotations[srapi.ComponentResourceHash] = expectHash
+	deploy.Annotations[cdapi.ComponentResourceHash] = expectHash
 
 	return PatchByThreeWayMerge(ctx, k8sClient, deploy, &actual)
 }
@@ -145,7 +145,7 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 	}
 
 	// the hash value calculated from ConfigMap instance in k8s may will never equal to the hash value from
-	// starrocks cluster. Because ConfigMap instance may be updated by k8s controller manager.
+	// celerdata cluster. Because ConfigMap instance may be updated by k8s controller manager.
 	if !equal(configmap, &actual) {
 		return UpdateClientObject(ctx, k8sClient, configmap)
 	}
@@ -192,7 +192,7 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 		logger.Info("expectHash == actualHash, no need to update statefulset resource")
 		return nil
 	}
-	expect.Annotations[srapi.ComponentResourceHash] = newHashValue
+	expect.Annotations[cdapi.ComponentResourceHash] = newHashValue
 	expect.ResourceVersion = actual.ResourceVersion
 
 	return PatchByThreeWayMerge(ctx, k8sClient, expect, &actual)
@@ -364,7 +364,7 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 	return k8sClient.Delete(ctx, &cm)
 }
 
-func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string, version srapi.AutoScalerVersion) error {
+func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string, version cdapi.AutoScalerVersion) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("delete autoscaler from kubernetes", "name", name)
 
@@ -380,12 +380,12 @@ func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, n
 		// determine if it is this error is not a good approach.
 		// Therefore, our temporary solution is to always switch to another version of HPA for deletion.
 		wrongVersion := version
-		if wrongVersion == srapi.AutoScalerV2Beta2 {
+		if wrongVersion == cdapi.AutoScalerV2Beta2 {
 			err = k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace},
-				srapi.AutoScalerV2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
+				cdapi.AutoScalerV2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
 		} else { // HPA v2 exists in higher version of k8s
 			err = k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace},
-				srapi.AutoScalerV2Beta2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
+				cdapi.AutoScalerV2Beta2.CreateEmptyHPA(KUBE_MAJOR_VERSION, KUBE_MINOR_VERSION))
 		}
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -608,8 +608,8 @@ func CheckVolumes(volumes []corev1.Volume, mounts []corev1.VolumeMount) error {
 // Second, if the ConfigMapInfo is empty, it will try to read the config from the ConfigMaps.
 // Last, If the fe ConfigMapInfo is empty and the configMaps is nil, it will return an empty map.
 func GetConfig(ctx context.Context, k8sClient client.Client,
-	configMapInfo srapi.ConfigMapInfo,
-	configMaps []srapi.ConfigMapReference, expectMountPath, expectKey string,
+	configMapInfo cdapi.ConfigMapInfo,
+	configMaps []cdapi.ConfigMapReference, expectMountPath, expectKey string,
 	namespace string) (map[string]interface{}, error) {
 	if configMapInfo.ConfigMapName != "" || configMapInfo.ResolveKey != "" {
 		if configMapInfo.ConfigMapName == "" || configMapInfo.ResolveKey == "" {
@@ -652,7 +652,7 @@ func ResolveConfigMap(configMap *corev1.ConfigMap, key string) (map[string]inter
 //   - if subpath is empty, the mount path should equal to expectMountPath. And it will use expectKey as the key.
 //   - if subpath is not empty, it should equal to expectKey, and the mount path should be expectMountPath/expectKey.
 func getConfigFromConfigMaps(ctx context.Context, k8sClient client.Client,
-	configMaps []srapi.ConfigMapReference, expectMountPath, expectKey string,
+	configMaps []cdapi.ConfigMapReference, expectMountPath, expectKey string,
 	namespace string) (map[string]interface{}, error) {
 	configMapName := ""
 	for i := range configMaps {

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install Helm
@@ -22,5 +22,5 @@ jobs:
         version: v3.10.0
     - name: Run helm template
       run: |
-        cd helm-charts/charts/kube-starrocks/
+        cd helm-charts/charts/kube-celerdata/
         helm template -f values.yaml .

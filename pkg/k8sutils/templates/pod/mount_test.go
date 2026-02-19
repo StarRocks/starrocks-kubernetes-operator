@@ -7,8 +7,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
-	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/cmd/config"
+	v1 "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestMain(m *testing.M) {
@@ -225,9 +225,9 @@ func TestMountStorageVolumes(t *testing.T) {
 		{
 			name: "test mount storage volumes",
 			args: args{
-				spec: &v1.StarRocksFeSpec{
-					StarRocksComponentSpec: v1.StarRocksComponentSpec{
-						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+				spec: &v1.CelerDataFeSpec{
+					CelerDataComponentSpec: v1.CelerDataComponentSpec{
+						CelerDataLoadSpec: v1.CelerDataLoadSpec{
 							StorageVolumes: []v1.StorageVolume{
 								{
 									Name:             "s1",

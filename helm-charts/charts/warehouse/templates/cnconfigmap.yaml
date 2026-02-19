@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "starrockswarehouse.configmap.name" . }}
-  namespace: {{ template "starrockswarehouse.namespace" . }}
+  name: {{ template "celerdatawarehouse.configmap.name" . }}
+  namespace: {{ template "celerdatawarehouse.namespace" . }}
   labels:
-    warehouse: {{ template "starrockswarehouse.name" . }}
+    warehouse: {{ template "celerdatawarehouse.name" . }}
     app: "warehouse"
 data:
-  {{- include "starrockswarehouse.config" . | nindent 2 }}
+  {{- include "celerdatawarehouse.config" . | nindent 2 }}
 
 {{- end }}

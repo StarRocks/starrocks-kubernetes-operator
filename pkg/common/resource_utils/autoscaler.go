@@ -25,22 +25,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
 )
 
 var (
 	AutoscalerKind         = "HorizontalPodAutoscaler"
 	StatefulSetKind        = "StatefulSet"
-	StarRocksClusterKind   = "StarRocksCluster"
-	StarRocksWarehouseKind = "StarRocksWarehouse"
+	CelerDataClusterKind   = "CelerDataCluster"
+	CelerDataWarehouseKind = "CelerDataWarehouse"
 	ServiceKind            = "Service"
 )
 
 // HPAParams defines the parameters for creating a HorizontalPodAutoscaler resource.
 type HPAParams struct {
 	// Version defines the version of HPA to be used.
-	Version srapi.AutoScalerVersion
+	Version cdapi.AutoScalerVersion
 
 	// Name is the name of the HorizontalPodAutoscaler resource.
 	Name string
@@ -50,32 +50,32 @@ type HPAParams struct {
 	Namespace string
 
 	// Labels are the labels to be applied to the HorizontalPodAutoscaler resource.
-	// Now there are two labels: app.kubernetes.io/component: autoscaler and app.starrocks.ownerreference/name: <target-name>.
+	// Now there are two labels: app.kubernetes.io/component: autoscaler and app.celerdata.ownerreference/name: <target-name>.
 	Labels map[string]string
 
-	// OwnerReferences includes only one OwnerReference, which is the StarRocksCluster or StarRocksWarehouse object that
+	// OwnerReferences includes only one OwnerReference, which is the CelerDataCluster or CelerDataWarehouse object that
 	// this HPA belongs to.
 	OwnerReferences []metav1.OwnerReference
 
 	// ScalerPolicy defines the scaling policy for the HorizontalPodAutoscaler.
-	ScalerPolicy *srapi.AutoScalingPolicy
+	ScalerPolicy *cdapi.AutoScalingPolicy
 }
 
-func BuildHPA(hpaParams *HPAParams, autoScalerVersion srapi.AutoScalerVersion) client.Object {
+func BuildHPA(hpaParams *HPAParams, autoScalerVersion cdapi.AutoScalerVersion) client.Object {
 	if autoScalerVersion == "" {
 		autoScalerVersion = hpaParams.Version.Complete(k8sutils.KUBE_MAJOR_VERSION, k8sutils.KUBE_MINOR_VERSION)
 	}
 
-	getTypeMeta := func(version srapi.AutoScalerVersion) metav1.TypeMeta {
+	getTypeMeta := func(version cdapi.AutoScalerVersion) metav1.TypeMeta {
 		meta := metav1.TypeMeta{
 			Kind: AutoscalerKind,
 		}
 		switch version {
-		case srapi.AutoScalerV1:
+		case cdapi.AutoScalerV1:
 			meta.APIVersion = v1.SchemeGroupVersion.String()
-		case srapi.AutoScalerV2Beta2:
+		case cdapi.AutoScalerV2Beta2:
 			meta.APIVersion = v2beta2.SchemeGroupVersion.String()
-		case srapi.AutoScalerV2:
+		case cdapi.AutoScalerV2:
 			meta.APIVersion = v2.SchemeGroupVersion.String()
 		}
 		return meta
@@ -97,7 +97,7 @@ func BuildHPA(hpaParams *HPAParams, autoScalerVersion srapi.AutoScalerVersion) c
 	}
 
 	switch autoScalerVersion {
-	case srapi.AutoScalerV1:
+	case cdapi.AutoScalerV1:
 		return &v1.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
 			ObjectMeta: getObjectMeta(hpaParams),
@@ -107,7 +107,7 @@ func BuildHPA(hpaParams *HPAParams, autoScalerVersion srapi.AutoScalerVersion) c
 				MinReplicas:    hpaParams.ScalerPolicy.MinReplicas,
 			},
 		}
-	case srapi.AutoScalerV2:
+	case cdapi.AutoScalerV2:
 		hpa := &v2.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
 			ObjectMeta: getObjectMeta(hpaParams),
@@ -128,7 +128,7 @@ func BuildHPA(hpaParams *HPAParams, autoScalerVersion srapi.AutoScalerVersion) c
 		}
 		return hpa
 	default:
-		// case srapi.AutoScalerV2Beta2:
+		// case cdapi.AutoScalerV2Beta2:
 		hpa := &v2beta2.HorizontalPodAutoscaler{
 			TypeMeta:   getTypeMeta(autoScalerVersion),
 			ObjectMeta: getObjectMeta(hpaParams),

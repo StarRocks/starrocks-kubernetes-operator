@@ -33,17 +33,17 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/fake"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/fe"
 )
 
 func TestMain(m *testing.M) {
-	srapi.Register()
+	cdapi.Register()
 	os.Exit(m.Run())
 }
 
@@ -71,16 +71,16 @@ func TestFeController_updateStatus(_ *testing.T) {
 
 func Test_ClearResources(t *testing.T) {
 	now := metav1.NewTime(time.Now())
-	src := &srapi.StarRocksCluster{
+	src := &cdapi.CelerDataCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test",
 			Namespace:         "default",
 			DeletionTimestamp: &now,
 		},
-		Spec: srapi.StarRocksClusterSpec{},
-		Status: srapi.StarRocksClusterStatus{
-			StarRocksFeStatus: &srapi.StarRocksFeStatus{
-				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
+		Spec: cdapi.CelerDataClusterSpec{},
+		Status: cdapi.CelerDataClusterStatus{
+			CelerDataFeStatus: &cdapi.CelerDataFeStatus{
+				CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
 					ResourceNames: []string{"test-fe"},
 					ServiceName:   "test-fe-access",
 				},
@@ -104,7 +104,7 @@ func Test_ClearResources(t *testing.T) {
 		Spec: corev1.ServiceSpec{},
 	}
 
-	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc), fake.GetEventRecorderFor(nil))
+	fc := fe.New(fake.NewFakeClient(cdapi.Scheme, src, svc, ssvc), fake.GetEventRecorderFor(nil))
 	err := fc.ClearCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 
@@ -127,17 +127,17 @@ func Test_SyncDeploy(t *testing.T) {
 	labels["test"] = "test"
 	labels["test1"] = "test1"
 
-	src := &srapi.StarRocksCluster{
+	src := &cdapi.CelerDataCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "default",
 		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksFeSpec: &srapi.StarRocksFeSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+		Spec: cdapi.CelerDataClusterSpec{
+			CelerDataFeSpec: &cdapi.CelerDataFeSpec{
+				CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+					CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
 						Replicas: rutils.GetInt32Pointer(3),
-						Image:    "starrocks.com/cn:2.40",
+						Image:    "celerdata.com/cn:2.40",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
@@ -150,24 +150,24 @@ func Test_SyncDeploy(t *testing.T) {
 		},
 	}
 
-	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	fc := fe.New(fake.NewFakeClient(cdapi.Scheme, src), fake.GetEventRecorderFor(nil))
 
 	err := fc.SyncCluster(context.Background(), src)
 	require.Equal(t, nil, err)
 	err = fc.UpdateClusterStatus(context.Background(), src)
 	require.Equal(t, nil, err)
-	festatus := src.Status.StarRocksFeStatus
+	festatus := src.Status.CelerDataFeStatus
 	require.Equal(t, nil, err)
-	require.Equal(t, festatus.Phase, srapi.ComponentReconciling)
-	require.Equal(t, festatus.ServiceName, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec))
+	require.Equal(t, festatus.Phase, cdapi.ComponentReconciling)
+	require.Equal(t, festatus.ServiceName, service.ExternalServiceName(src.Name, src.Spec.CelerDataFeSpec))
 
 	var st appsv1.StatefulSet
 	var asvc corev1.Service
 	var rsvc corev1.Service
-	spec := src.Spec.StarRocksFeSpec
+	spec := src.Spec.CelerDataFeSpec
 	require.NoError(t, fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &asvc))
-	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), asvc.Name)
+		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.CelerDataFeSpec), Namespace: "default"}, &asvc))
+	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.CelerDataFeSpec), asvc.Name)
 	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.SearchServiceName(src.Name, spec), Namespace: "default"}, &rsvc))
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
@@ -193,18 +193,18 @@ func TestCheckFEReady(t *testing.T) {
 			name: "test fe is not ready",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Endpoints{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.Endpoints{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Endpoints",
 						APIVersion: corev1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "kube-starrocks-fe-service",
+						Name:      "kube-celerdata-fe-service",
 						Namespace: "default",
 					},
 				}),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 			},
 			want: false,
 		},
@@ -212,13 +212,13 @@ func TestCheckFEReady(t *testing.T) {
 			name: "test fe is ready",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.Endpoints{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.Endpoints{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "Endpoints",
 						APIVersion: corev1.SchemeGroupVersion.String(),
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "kube-starrocks-fe-service",
+						Name:      "kube-celerdata-fe-service",
 						Namespace: "default",
 					},
 					Subsets: []corev1.EndpointSubset{
@@ -232,7 +232,7 @@ func TestCheckFEReady(t *testing.T) {
 					},
 				}),
 				clusterNamespace: "default",
-				clusterName:      "kube-starrocks",
+				clusterName:      "kube-celerdata",
 			},
 			want: true,
 		},
@@ -250,7 +250,7 @@ func TestGetFeConfig(t *testing.T) {
 	type args struct {
 		ctx       context.Context
 		k8sClient client.Client
-		feSpec    srapi.StarRocksFeSpec
+		feSpec    cdapi.CelerDataFeSpec
 		namespace string
 	}
 	tests := []struct {
@@ -263,7 +263,7 @@ func TestGetFeConfig(t *testing.T) {
 			name: "get FE config from fe ConfigMapInfo",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -276,10 +276,10 @@ func TestGetFeConfig(t *testing.T) {
 						"fe.conf": "aa = bb",
 					},
 				}),
-				feSpec: srapi.StarRocksFeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-							ConfigMapInfo: srapi.ConfigMapInfo{
+				feSpec: cdapi.CelerDataFeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						CelerDataLoadSpec: cdapi.CelerDataLoadSpec{
+							ConfigMapInfo: cdapi.ConfigMapInfo{
 								ConfigMapName: "fe-configMap",
 								ResolveKey:    "fe.conf",
 							},
@@ -297,7 +297,7 @@ func TestGetFeConfig(t *testing.T) {
 			name: "get FE config from configMaps, with matching subpath",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -310,9 +310,9 @@ func TestGetFeConfig(t *testing.T) {
 						"fe.conf": "cc = dd",
 					},
 				}),
-				feSpec: srapi.StarRocksFeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						ConfigMaps: []srapi.ConfigMapReference{
+				feSpec: cdapi.CelerDataFeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						ConfigMaps: []cdapi.ConfigMapReference{
 							{
 								Name:      "fe-configMap",
 								MountPath: "/opt/starrocks/fe/conf/fe.conf",
@@ -331,7 +331,7 @@ func TestGetFeConfig(t *testing.T) {
 			name: "get FE config from configMap 1, without subpath",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "ConfigMap",
 						APIVersion: corev1.SchemeGroupVersion.String(),
@@ -344,9 +344,9 @@ func TestGetFeConfig(t *testing.T) {
 						"fe.conf": "cc = dd",
 					},
 				}),
-				feSpec: srapi.StarRocksFeSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-						ConfigMaps: []srapi.ConfigMapReference{
+				feSpec: cdapi.CelerDataFeSpec{
+					CelerDataComponentSpec: cdapi.CelerDataComponentSpec{
+						ConfigMaps: []cdapi.ConfigMapReference{
 							{
 								Name:      "fe-configMap",
 								MountPath: "/opt/starrocks/fe/conf",
@@ -364,8 +364,8 @@ func TestGetFeConfig(t *testing.T) {
 			name: "get FE empty config",
 			args: args{
 				ctx:       context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
-				feSpec:    srapi.StarRocksFeSpec{},
+				k8sClient: fake.NewFakeClient(cdapi.Scheme),
+				feSpec:    cdapi.CelerDataFeSpec{},
 				namespace: "default",
 			},
 			want: map[string]interface{}{},

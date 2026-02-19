@@ -1,0 +1,965 @@
+apiVersion: celerdata.com/v1
+kind: CelerDataCluster
+metadata:
+  name: {{ template "celerdatacluster.name" . }}
+  namespace: {{ template "celerdatacluster.namespace" . }}
+  labels:
+    cluster: {{ template "celerdatacluster.name" . }}
+  {{- include "celerdatacluster.labels" . | nindent 4 }}
+  {{- if .Values.celerDataCluster.annotations }}
+  annotations:
+    {{- toYaml .Values.celerDataCluster.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.celerDataCluster.disasterRecovery }}
+  disasterRecovery:
+    {{- toYaml .Values.celerDataCluster.disasterRecovery | nindent 4 }}
+  {{- end }}
+  celerDataFeSpec:
+    {{- if .Values.celerDataFeSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.celerDataFeSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.celerDataFeSpec.shareProcessNamespace }}
+    {{- end }}
+    image: "{{ .Values.celerDataFeSpec.image.repository }}:{{ include "celerdatacluster.fe.image.tag" . }}"
+    {{- if .Values.celerDataFeSpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{template "celerdatacluster.entrypoint.mount.path" .}}/{{template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    replicas: {{ .Values.celerDataFeSpec.replicas }}
+    imagePullPolicy: {{ .Values.celerDataFeSpec.imagePullPolicy }}
+    {{- if .Values.celerDataFeSpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: {{ .Values.celerDataFeSpec.maxUnavailablePods }}
+    {{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.celerDataFeSpec.resources }}
+    {{- include "celerdatacluster.fe.resources" . | nindent 4 }}
+    {{- else if .Values.celerDataFeSpec.resource }}
+    {{- toYaml .Values.celerDataFeSpec.resource | nindent 4 }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.service.type }}
+    service:
+      type: {{ .Values.celerDataFeSpec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataFeSpec.service.type) .Values.celerDataFeSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.celerDataFeSpec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataFeSpec.service.type) .Values.celerDataFeSpec.service.loadBalancerSourceRanges}}
+      loadBalancerSourceRanges:
+        {{- toYaml .Values.celerDataFeSpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataFeSpec.service.ports }}
+      ports:
+        {{- toYaml .Values.celerDataFeSpec.service.ports | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.celerDataFeSpec.service.annotations .Values.datadog.metrics.enabled }}
+      annotations:
+        {{- if .Values.datadog.metrics.enabled }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{- default 8030 (include "celerdatacluster.fe.http.port" .) }}"
+        prometheus.io/scrape: "true"
+        {{- end }}
+        {{- if .Values.celerDataFeSpec.service.annotations}}
+        {{- toYaml .Values.celerDataFeSpec.service.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataFeSpec.service.labels}}
+      labels:
+        {{- toYaml .Values.celerDataFeSpec.service.labels | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    annotations:
+      app.celerdata.io/fe-config-hash: "{{template "celerdatacluster.fe.config.hash" . }}"
+      {{- if .Values.datadog.log.enabled }}
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/fe.logs: '[{"service":"celerdata","source":"fe"}]'
+      {{- else }}
+      ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataFeSpec.entrypoint }}
+      app.celerdata.io/fe-entrypoint-hash: "{{ template "celerdatacluster.fe.entrypoint.script.hash" . }}"
+      {{- end }}
+      {{- if .Values.celerDataFeSpec.annotations }}
+      {{- toYaml .Values.celerDataFeSpec.annotations | nindent 6 }}
+      {{- end }}
+    {{- if or .Values.celerDataFeSpec.imagePullSecrets .Values.celerDataCluster.componentValues.imagePullSecrets }}
+    imagePullSecrets:
+      {{- include "celerdatacluster.fe.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.serviceAccount .Values.celerDataCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "celerdatacluster.fe.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "celerdatacluster.fe.runAsNonRoot" . }}
+    {{- if .Values.celerDataFeSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.celerDataFeSpec.readOnlyRootFilesystem }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.capabilities }}
+    capabilities:
+      {{- toYaml .Values.celerDataFeSpec.capabilities | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.sysctls }}
+    sysctls:
+      {{- toYaml .Values.celerDataFeSpec.sysctls | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.nodeSelector .Values.celerDataCluster.componentValues.nodeSelector }}
+    nodeSelector:
+      {{- include "celerdatacluster.fe.nodeSelector" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.podLabels .Values.celerDataCluster.componentValues.podLabels .Values.datadog.profiling.fe }}
+    podLabels:
+      {{- if or .Values.celerDataFeSpec.podLabels .Values.celerDataCluster.componentValues.podLabels }}
+      {{- include "celerdatacluster.fe.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.fe }}
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.hostAliases .Values.celerDataCluster.componentValues.hostAliases }}
+    hostAliases:
+      {{- include "celerdatacluster.fe.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.schedulerName .Values.celerDataCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "celerdatacluster.fe.schedulerName" . }}
+    {{- end }}
+    feEnvVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if and .Values.initPassword.enabled (.Values.celerDataFeSpec.feEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "celerdatacluster.initpassword.secret.name" . }}
+            key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.fe }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: celerdata-fe
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "celerdatacluster.fe.image.tag" . }}"
+      - name: DD_PROFILING_DDPROF_ALLOC_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DDPROF_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DDPROF_LIVEHEAP_ENABLED
+        value: "true"
+      - name: DD_PROFILING_DIRECTALLOCATION_ENABLED
+        value: "true"
+      {{- end }}
+      {{- if .Values.celerDataFeSpec.feEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.celerDataFeSpec.feEnvVars) "map" }}
+      {{- range $key, $value := .Values.celerDataFeSpec.feEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
+      {{- toYaml .Values.celerDataFeSpec.feEnvVars | nindent 6 }}
+      {{- end }}
+      {{- end }}
+    {{- if or .Values.celerDataFeSpec.affinity .Values.celerDataCluster.componentValues.affinity }}
+    affinity:
+      {{- include "celerdatacluster.fe.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.tolerations .Values.celerDataCluster.componentValues.tolerations }}
+    tolerations:
+      {{- include "celerdatacluster.fe.tolerations" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.topologySpreadConstraints .Values.celerDataCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "celerdatacluster.fe.topologySpreadConstraints" . | nindent 6 }}
+    {{- end }}
+    terminationGracePeriodSeconds: {{ .Values.celerDataFeSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.celerDataFeSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.celerDataFeSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.celerDataFeSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.celerDataFeSpec.readinessProbeFailureSeconds }}
+    {{- end }}
+    minReadySeconds: {{ .Values.celerDataFeSpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.celerDataFeSpec.podManagementPolicy }}
+    {{- if .Values.celerDataFeSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.celerDataFeSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.celerDataFeSpec.sidecarsMap .Values.celerDataFeSpec.sidecars }}
+      {{ fail "celerDataFeSpec.sidecarsMap and celerDataFeSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.sidecarsMap .Values.celerDataFeSpec.sidecars }}
+    sidecars:
+      {{- if .Values.celerDataFeSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.celerDataFeSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.celerDataFeSpec.sidecars }}
+      {{- toYaml .Values.celerDataFeSpec.sidecars | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.secrets }}
+    secrets:
+    {{- range .Values.celerDataFeSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataFeSpec.configMaps .Values.celerDataFeSpec.entrypoint }}
+    configMaps:
+    {{- if .Values.celerDataFeSpec.configMaps }}
+    {{- range .Values.celerDataFeSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.entrypoint }}
+      - name: {{template "celerdatacluster.fe.entrypoint.script.configmap.name" .}}
+        mountPath: {{template "celerdatacluster.entrypoint.mount.path" .}}/{{ template "celerdatacluster.entrypoint.script.name" .}}
+        subPath: {{ template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{ template  "celerdatacluster.fe.configmap.name" . }}
+      resolveKey: fe.conf
+    {{- if or .Values.celerDataFeSpec.storageSpec.name .Values.celerDataFeSpec.emptyDirs .Values.celerDataFeSpec.hostPaths }}
+    storageVolumes:
+    {{- if .Values.celerDataFeSpec.storageSpec.name }}
+    - name: {{ .Values.celerDataFeSpec.storageSpec.name }}{{ template "celerdatacluster.fe.meta.suffix" . }}
+      {{- if .Values.celerDataFeSpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.celerDataFeSpec.storageSpec.storageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataFeSpec.storageSpec.storageSize }}"
+      mountPath: {{ template "celerdatacluster.fe.meta.path" . }}
+    - name: {{ .Values.celerDataFeSpec.storageSpec.name }}{{ template "celerdatacluster.fe.log.suffix" . }}
+      {{- if .Values.celerDataFeSpec.storageSpec.logStorageClassName }}
+      storageClassName: {{ .Values.celerDataFeSpec.storageSpec.logStorageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataFeSpec.storageSpec.logStorageSize }}"
+      mountPath: {{ template "celerdatacluster.fe.log.path" . }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.emptyDirs }}
+    {{- range .Values.celerDataFeSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.hostPaths }}
+    {{- range .Values.celerDataFeSpec.hostPaths }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "hostPath"
+      hostPath:
+        {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeSpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.celerDataFeSpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
+    {{- end }}
+  {{- if .Values.celerDataCluster.enabledBe }}
+  celerDataBeSpec:
+    {{- if .Values.celerDataBeSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.celerDataBeSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.celerDataBeSpec.shareProcessNamespace }}
+    {{- end }}
+    image: "{{ .Values.celerDataBeSpec.image.repository }}:{{ include "celerdatacluster.be.image.tag" . }}"
+    {{- if .Values.celerDataBeSpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{template "celerdatacluster.entrypoint.mount.path" .}}/{{template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    replicas: {{ .Values.celerDataBeSpec.replicas }}
+    imagePullPolicy: {{ .Values.celerDataBeSpec.imagePullPolicy }}
+    {{- if .Values.celerDataBeSpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: {{ .Values.celerDataBeSpec.maxUnavailablePods }}
+    {{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.celerDataBeSpec.resources }}
+    {{- include "celerdatacluster.be.resources" . | nindent 4 }}
+    {{- else if .Values.celerDataBeSpec.resource }}
+    {{- toYaml .Values.celerDataBeSpec.resource | nindent 4 }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.service.type }}
+    service:
+      type: {{ .Values.celerDataBeSpec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataBeSpec.service.type) .Values.celerDataBeSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.celerDataBeSpec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataBeSpec.service.type) .Values.celerDataBeSpec.service.loadBalancerSourceRanges}}
+      loadBalancerSourceRanges:
+        {{- toYaml .Values.celerDataBeSpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.service.ports }}
+      ports:
+        {{- toYaml .Values.celerDataBeSpec.service.ports | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.celerDataBeSpec.service.annotations .Values.datadog.metrics.enabled }}
+      annotations:
+        {{- if .Values.datadog.metrics.enabled }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{- default 8040 (include "celerdatacluster.be.webserver.port" .) }}"
+        prometheus.io/scrape: "true"
+        {{- end }}
+        {{- if .Values.celerDataBeSpec.service.annotations }}
+        {{- toYaml .Values.celerDataBeSpec.service.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.service.labels}}
+      labels:
+        {{- toYaml .Values.celerDataBeSpec.service.labels | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    annotations:
+      app.celerdata.io/be-config-hash: "{{template "celerdatacluster.be.config.hash" . }}"
+      {{- if .Values.datadog.log.enabled }}
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/be.logs: '[{"service":"celerdata","source":"be"}]'
+      {{- else }}
+      ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.annotations }}
+      {{- toYaml .Values.celerDataBeSpec.annotations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.entrypoint }}
+      app.celerdata.io/be-entrypoint-hash: "{{ template "celerdatacluster.be.entrypoint.script.hash" . }}"
+      {{- end }}
+    {{- if or .Values.celerDataBeSpec.imagePullSecrets .Values.celerDataCluster.componentValues.imagePullSecrets }}
+    imagePullSecrets:
+      {{- include "celerdatacluster.be.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.serviceAccount .Values.celerDataCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "celerdatacluster.be.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "celerdatacluster.be.runAsNonRoot" . }}
+    {{- if .Values.celerDataBeSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.celerDataBeSpec.readOnlyRootFilesystem }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.capabilities .Values.datadog.profiling.be }}
+    capabilities:
+      {{- if or .Values.celerDataBeSpec.capabilities.add .Values.datadog.profiling.be }}
+      add:
+        {{- if .Values.celerDataBeSpec.capabilities.add }}
+        {{- toYaml .Values.celerDataBeSpec.capabilities.add | nindent 8 }}
+        {{- end }}
+        {{- if .Values.datadog.profiling.be }}
+        {{- if and .Values.celerDataBeSpec.capabilities.add (has "PERFMON" .Values.celerDataBeSpec.capabilities.add) | not }}
+        - PERFMON
+        {{- end }}
+        {{- if and .Values.celerDataBeSpec.capabilities.add (has "SYS_PTRACE" .Values.celerDataBeSpec.capabilities.add) | not }}
+        - SYS_PTRACE
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.capabilities.drop }}
+      drop:
+        {{- toYaml .Values.celerDataBeSpec.capabilities.drop | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.sysctls }}
+    sysctls:
+      {{- toYaml .Values.celerDataBeSpec.sysctls | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.podLabels .Values.celerDataCluster.componentValues.podLabels .Values.datadog.profiling.be }}
+    podLabels:
+      {{- if or .Values.celerDataBeSpec.podLabels .Values.celerDataCluster.componentValues.podLabels }}
+      {{- include "celerdatacluster.be.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.be }}
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.hostAliases .Values.celerDataCluster.componentValues.hostAliases }}
+    hostAliases:
+      {{- include "celerdatacluster.be.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.schedulerName .Values.celerDataCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "celerdatacluster.be.schedulerName" . }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.nodeSelector .Values.celerDataCluster.componentValues.nodeSelector }}
+    nodeSelector:
+      {{- include "celerdatacluster.be.nodeSelector" . | nindent 6 }}
+    {{- end }}
+    beEnvVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if and .Values.initPassword.enabled (.Values.celerDataBeSpec.beEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "celerdatacluster.initpassword.secret.name" . }}
+            key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.be }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: celerdata-be
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "celerdatacluster.be.image.tag" . }}"
+      {{- end }}
+      {{- if .Values.celerDataBeSpec.beEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.celerDataBeSpec.beEnvVars) "map" }}
+      {{- range $key, $value := .Values.celerDataBeSpec.beEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
+      {{- toYaml .Values.celerDataBeSpec.beEnvVars | nindent 6 }}
+      {{- end }}
+      {{- end }}
+    {{- if or .Values.celerDataBeSpec.affinity .Values.celerDataCluster.componentValues.affinity }}
+    affinity:
+      {{- include "celerdatacluster.be.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.tolerations .Values.celerDataCluster.componentValues.tolerations }}
+    tolerations:
+      {{- include "celerdatacluster.be.tolerations" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.topologySpreadConstraints .Values.celerDataCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "celerdatacluster.be.topologySpreadConstraints" . | nindent 6 }}
+    {{- end }}
+    terminationGracePeriodSeconds: {{ .Values.celerDataBeSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.celerDataBeSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.celerDataBeSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.celerDataBeSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.celerDataBeSpec.readinessProbeFailureSeconds }}
+    {{- end }}
+    minReadySeconds: {{ .Values.celerDataBeSpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.celerDataBeSpec.podManagementPolicy }}
+    {{- if .Values.celerDataBeSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.celerDataBeSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.celerDataBeSpec.sidecarsMap .Values.celerDataBeSpec.sidecars }}
+      {{ fail "celerDataBeSpec.sidecarsMap and celerDataBeSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.sidecarsMap .Values.celerDataBeSpec.sidecars }}
+    sidecars:
+      {{- if .Values.celerDataBeSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.celerDataBeSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.celerDataBeSpec.sidecars }}
+      {{- toYaml .Values.celerDataBeSpec.sidecars | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.secrets }}
+    secrets:
+    {{- range .Values.celerDataBeSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataBeSpec.configMaps .Values.celerDataBeSpec.entrypoint }}
+    configMaps:
+    {{- if .Values.celerDataBeSpec.configMaps }}
+    {{- range .Values.celerDataBeSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.entrypoint }}
+      - name: {{template "celerdatacluster.be.entrypoint.script.configmap.name" .}}
+        mountPath: {{template "celerdatacluster.entrypoint.mount.path" .}}/{{ template "celerdatacluster.entrypoint.script.name" .}}
+        subPath: {{ template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{template "celerdatacluster.be.configmap.name" . }}
+      resolveKey: be.conf
+    {{- if or .Values.celerDataBeSpec.storageSpec.name .Values.celerDataBeSpec.emptyDirs .Values.celerDataBeSpec.hostPaths }}
+    storageVolumes:
+    {{- if .Values.celerDataBeSpec.storageSpec.name }}
+    {{- if gt (int .Values.celerDataBeSpec.storageSpec.storageCount) 1 }}
+    {{- $storageName := .Values.celerDataBeSpec.storageSpec.name -}}
+    {{- $storageClassName := .Values.celerDataBeSpec.storageSpec.storageClassName -}}
+    {{- $storageSize := .Values.celerDataBeSpec.storageSpec.storageSize -}}
+    {{- $storageMountPath := include "celerdatacluster.be.data.path" . -}}
+    {{- range $i, $e := until (int .Values.celerDataBeSpec.storageSpec.storageCount) }}
+    - name: {{ $storageName }}{{ $i }}{{template "celerdatacluster.be.data.suffix" . }}
+      {{- if $storageClassName }}
+      storageClassName: {{ $storageClassName }}
+      {{- end }}
+      storageSize: "{{ $storageSize }}"
+      mountPath: {{ $storageMountPath }}{{ $i }}
+    {{- end }}
+    {{- else}}
+    - name: {{ .Values.celerDataBeSpec.storageSpec.name }}{{template "celerdatacluster.be.data.suffix" . }}
+      {{- if .Values.celerDataBeSpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.celerDataBeSpec.storageSpec.storageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataBeSpec.storageSpec.storageSize }}"
+      mountPath: {{template "celerdatacluster.be.data.path" . }}
+    {{- end }}
+    - name: {{ .Values.celerDataBeSpec.storageSpec.name }}{{template "celerdatacluster.be.log.suffix" . }}
+      {{- if .Values.celerDataBeSpec.storageSpec.logStorageClassName }}
+      storageClassName: {{ .Values.celerDataBeSpec.storageSpec.logStorageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataBeSpec.storageSpec.logStorageSize }}"
+      mountPath: {{template "celerdatacluster.be.log.path" . }}
+    - name: {{ .Values.celerDataBeSpec.storageSpec.name }}{{template "celerdatacluster.be.spill.suffix" . }}
+      {{- if .Values.celerDataBeSpec.storageSpec.spillStorageClassName }}
+      storageClassName: {{ .Values.celerDataBeSpec.storageSpec.spillStorageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataBeSpec.storageSpec.spillStorageSize}}"
+      mountPath: {{template "celerdatacluster.be.spill.path" . }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.emptyDirs }}
+    {{- range .Values.celerDataBeSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.hostPaths }}
+    {{- range .Values.celerDataBeSpec.hostPaths }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "hostPath"
+      hostPath:
+        {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataBeSpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.celerDataBeSpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.celerDataCluster.enabledCn }}
+  celerDataCnSpec:
+    {{- if .Values.celerDataCnSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.celerDataCnSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.celerDataCnSpec.shareProcessNamespace }}
+    {{- end }}
+    image: "{{ .Values.celerDataCnSpec.image.repository }}:{{ include "celerdatacluster.cn.image.tag" . }}"
+    {{- if .Values.celerDataCnSpec.entrypoint }}
+    command: ["bash", "-c"]
+    args:
+      - {{template "celerdatacluster.entrypoint.mount.path" .}}/{{template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    {{- if hasKey .Values.celerDataCnSpec "replicas" }}
+    replicas: {{ .Values.celerDataCnSpec.replicas }}
+    {{- end }}
+    imagePullPolicy: {{ .Values.celerDataCnSpec.imagePullPolicy }}
+    {{- if .Values.celerDataCnSpec.maxUnavailablePods }}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: {{ .Values.celerDataCnSpec.maxUnavailablePods }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.serviceAccount .Values.celerDataCluster.componentValues.serviceAccount }}
+    serviceAccount: {{ include "celerdatacluster.cn.serviceAccount" . }}
+    {{- end }}
+    runAsNonRoot: {{ include "celerdatacluster.cn.runAsNonRoot" . }}
+    {{- if .Values.celerDataCnSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.celerDataCnSpec.readOnlyRootFilesystem }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.capabilities .Values.datadog.profiling.cn }}
+    capabilities:
+      {{- if or .Values.celerDataCnSpec.capabilities.add .Values.datadog.profiling.cn }}
+      add:
+        {{- if .Values.celerDataCnSpec.capabilities.add }}
+        {{- toYaml .Values.celerDataCnSpec.capabilities.add | nindent 8 }}
+        {{- end }}
+        {{- if .Values.datadog.profiling.cn }}
+        {{- if and .Values.celerDataCnSpec.capabilities.add (has "PERFMON" .Values.celerDataCnSpec.capabilities.add) | not }}
+        - PERFMON
+        {{- end }}
+        {{- if and .Values.celerDataCnSpec.capabilities.add (has "SYS_PTRACE" .Values.celerDataCnSpec.capabilities.add) | not }}
+        - SYS_PTRACE
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.capabilities.drop }}
+      drop:
+        {{- toYaml .Values.celerDataCnSpec.capabilities.drop | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.sysctls }}
+    sysctls:
+      {{- toYaml .Values.celerDataCnSpec.sysctls | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.podLabels .Values.celerDataCluster.componentValues.podLabels .Values.datadog.profiling.cn }}
+    podLabels:
+      {{- if or .Values.celerDataCnSpec.podLabels .Values.celerDataCluster.componentValues.podLabels }}
+      {{- include "celerdatacluster.cn.podLabels" . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.datadog.profiling.cn }}
+      admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
+      admission.datadoghq.com/enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.hostAliases .Values.celerDataCluster.componentValues.hostAliases }}
+    hostAliases:
+      {{- include "celerdatacluster.cn.hostAliases" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.schedulerName .Values.celerDataCluster.componentValues.schedulerName }}
+    schedulerName: {{ include "celerdatacluster.cn.schedulerName" . }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.nodeSelector .Values.celerDataCluster.componentValues.nodeSelector }}
+    nodeSelector:
+      {{- include "celerdatacluster.cn.nodeSelector" . | nindent 6 }}
+    {{- end }}
+    cnEnvVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
+      {{- if .Values.datadog.log.enabled }}
+      - name: LOG_CONSOLE
+        value: "1"
+      {{- end }}
+      {{- if and .Values.initPassword.enabled (.Values.celerDataCnSpec.cnEnvVars | toJson | contains "MYSQL_PWD" | not) }}
+      - name: "MYSQL_PWD"
+        valueFrom:
+          secretKeyRef:
+            name: {{ template "celerdatacluster.initpassword.secret.name" . }}
+            key: password
+      {{- end }}
+      {{- if .Values.datadog.profiling.cn }}
+      - name: ENABLE_DATADOG_PROFILE
+        value: "true"
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_SERVICE
+        value: celerdata-cn
+      - name: DD_ENV
+        value: "{{ .Values.datadog.profiling.env }}"
+      - name: DD_VERSION
+        value: "{{ include "celerdatacluster.cn.image.tag" . }}"
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.cnEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.celerDataCnSpec.cnEnvVars) "map" }}
+      {{- range $key, $value := .Values.celerDataCnSpec.cnEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
+      {{- toYaml .Values.celerDataCnSpec.cnEnvVars | nindent 6 }}
+      {{- end }}
+      {{- end }}
+
+    {{- if or .Values.celerDataCnSpec.affinity .Values.celerDataCluster.componentValues.affinity }}
+    affinity:
+      {{- include "celerdatacluster.cn.affinity" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.tolerations .Values.celerDataCluster.componentValues.tolerations }}
+    tolerations:
+      {{- include "celerdatacluster.cn.tolerations" . | nindent 6 }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.topologySpreadConstraints .Values.celerDataCluster.componentValues.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- include "celerdatacluster.cn.topologySpreadConstraints" . | nindent 6 }}
+    {{- end }}
+    terminationGracePeriodSeconds: {{ .Values.celerDataCnSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.celerDataCnSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.celerDataCnSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.celerDataCnSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.celerDataCnSpec.readinessProbeFailureSeconds }}
+    {{- end }}
+    minReadySeconds: {{ .Values.celerDataCnSpec.minReadySeconds }}
+    podManagementPolicy: {{ .Values.celerDataCnSpec.podManagementPolicy }}
+    {{- if .Values.celerDataCnSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.celerDataCnSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.celerDataCnSpec.sidecarsMap .Values.celerDataCnSpec.sidecars }}
+      {{ fail "celerDataCnSpec.sidecarsMap and celerDataCnSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.sidecarsMap .Values.celerDataCnSpec.sidecars }}
+    sidecars:
+      {{- if .Values.celerDataCnSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.celerDataCnSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.celerDataCnSpec.sidecars }}
+      {{- toYaml .Values.celerDataCnSpec.sidecars | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if and .Values.celerDataCluster.enabledCn .Values.celerDataCnSpec.autoScalingPolicy }}
+    autoScalingPolicy:
+      {{- toYaml .Values.celerDataCnSpec.autoScalingPolicy | nindent 6 }}
+    {{- end }}
+    {{- /*
+    support both resources and resource for backward compatibility
+    */}}
+    {{- if .Values.celerDataCnSpec.resources }}
+    {{- include "celerdatacluster.cn.resources" . | nindent 4 }}
+    {{- else if .Values.celerDataCnSpec.resource }}
+    {{- toYaml .Values.celerDataCnSpec.resource | nindent 4 }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.service.type }}
+    service:
+      type: {{ .Values.celerDataCnSpec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataCnSpec.service.type) .Values.celerDataCnSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.celerDataCnSpec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataCnSpec.service.type) .Values.celerDataCnSpec.service.loadBalancerSourceRanges}}
+      loadBalancerSourceRanges:
+        {{- toYaml .Values.celerDataCnSpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.service.ports }}
+      ports:
+        {{- toYaml .Values.celerDataCnSpec.service.ports | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.celerDataCnSpec.service.annotations .Values.datadog.metrics.enabled }}
+      annotations:
+        {{- if .Values.datadog.metrics.enabled }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{- default 8040 (include "celerdatacluster.cn.webserver.port" .) }}"
+        prometheus.io/scrape: "true"
+        {{- end }}
+        {{- if .Values.celerDataCnSpec.service.annotations }}
+        {{- toYaml .Values.celerDataCnSpec.service.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.service.labels}}
+      labels:
+        {{- toYaml .Values.celerDataCnSpec.service.labels | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    annotations:
+      app.celerdata.io/cn-config-hash: "{{template "celerdatacluster.cn.config.hash" . }}"
+      {{- if .Values.datadog.log.enabled }}
+      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
+      ad.datadoghq.com/cn.logs: '[{"service":"celerdata","source":"cn"}]'
+      {{- else }}
+      ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.annotations }}
+      {{- toYaml .Values.celerDataCnSpec.annotations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.celerDataCnSpec.entrypoint }}
+      app.celerdata.io/cn-entrypoint-hash: "{{ template "celerdatacluster.cn.entrypoint.script.hash" . }}"
+      {{- end }}
+    {{- if or .Values.celerDataCnSpec.imagePullSecrets .Values.celerDataCluster.componentValues.imagePullSecrets }}
+    imagePullSecrets:
+      {{- include "celerdatacluster.cn.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.secrets }}
+    secrets:
+    {{- range .Values.celerDataCnSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if or .Values.celerDataCnSpec.configMaps .Values.celerDataCnSpec.entrypoint }}
+    configMaps:
+    {{- if .Values.celerDataCnSpec.configMaps }}
+    {{- range .Values.celerDataCnSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.entrypoint }}
+      - name: {{template "celerdatacluster.cn.entrypoint.script.configmap.name" .}}
+        mountPath: {{template "celerdatacluster.entrypoint.mount.path" .}}/{{ template "celerdatacluster.entrypoint.script.name" .}}
+        subPath: {{ template "celerdatacluster.entrypoint.script.name" .}}
+    {{- end }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{template  "celerdatacluster.cn.configmap.name" . }}
+      resolveKey: cn.conf
+    {{- if or .Values.celerDataCnSpec.storageSpec.name .Values.celerDataCnSpec.emptyDirs .Values.celerDataCnSpec.hostPaths }}
+    storageVolumes:
+    {{- if .Values.celerDataCnSpec.storageSpec.name }}
+    {{- if gt (int .Values.celerDataCnSpec.storageSpec.storageCount) 1 }}
+    {{- $storageName := .Values.celerDataCnSpec.storageSpec.name -}}
+    {{- $storageClassName := .Values.celerDataCnSpec.storageSpec.storageClassName -}}
+    {{- $storageSize := .Values.celerDataCnSpec.storageSpec.storageSize -}}
+    {{- $storageMountPath := include "celerdatacluster.cn.data.path" . -}}
+    {{- range $i, $e := until (int .Values.celerDataCnSpec.storageSpec.storageCount) }}
+    - name: {{ $storageName }}{{ $i }}{{template "celerdatacluster.cn.data.suffix" . }}
+      {{- if $storageClassName }}
+      storageClassName: {{ $storageClassName }}
+      {{- end }}
+      storageSize: "{{ $storageSize }}"
+      mountPath: {{ $storageMountPath }}{{ $i }}
+    {{- end }}
+    {{- else }}
+    - name: {{ .Values.celerDataCnSpec.storageSpec.name }}{{template "celerdatacluster.cn.data.suffix" . }}
+      {{- if .Values.celerDataCnSpec.storageSpec.storageClassName }}
+      storageClassName: {{ .Values.celerDataCnSpec.storageSpec.storageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataCnSpec.storageSpec.storageSize }}"
+      mountPath: {{template "celerdatacluster.cn.data.path" . }}
+    {{- end }}
+    - name: {{ .Values.celerDataCnSpec.storageSpec.name }}{{template "celerdatacluster.cn.log.suffix" . }}
+      {{- if .Values.celerDataCnSpec.storageSpec.logStorageClassName }}
+      storageClassName: {{ .Values.celerDataCnSpec.storageSpec.logStorageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataCnSpec.storageSpec.logStorageSize }}"
+      mountPath: {{template "celerdatacluster.cn.log.path" . }}
+    - name: {{ .Values.celerDataCnSpec.storageSpec.name }}{{template "celerdatacluster.cn.spill.suffix" . }}
+      {{- if .Values.celerDataCnSpec.storageSpec.spillStorageClassName }}
+      storageClassName: {{ .Values.celerDataCnSpec.storageSpec.spillStorageClassName }}
+      {{- end }}
+      storageSize: "{{ .Values.celerDataCnSpec.storageSpec.spillStorageSize}}"
+      mountPath: {{template "celerdatacluster.cn.spill.path" . }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.emptyDirs }}
+    {{- range .Values.celerDataCnSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.hostPaths }}
+    {{- range .Values.celerDataCnSpec.hostPaths }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "hostPath"
+      hostPath:
+        {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataCnSpec.persistentVolumeClaimRetentionPolicy }}
+    persistentVolumeClaimRetentionPolicy:
+      {{- toYaml .Values.celerDataCnSpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
+    {{- end }}
+  {{- end }}
+
+  {{- if .Values.celerDataFeProxySpec.enabled }}
+  celerDataFeProxySpec:
+    {{- if .Values.celerDataFeProxySpec.image.repository }}
+    image: "{{ .Values.celerDataFeProxySpec.image.repository }}:{{ .Values.celerDataFeProxySpec.image.tag }}"
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml .Values.celerDataFeProxySpec.imagePullSecrets | nindent 4 }}
+    {{- end }}
+    replicas: {{ .Values.celerDataFeProxySpec.replicas }}
+    imagePullPolicy: {{ .Values.celerDataFeProxySpec.imagePullPolicy }}
+    resolver: {{ .Values.celerDataFeProxySpec.resolver }}
+    {{- if .Values.celerDataFeProxySpec.resources }}
+      {{- toYaml .Values.celerDataFeProxySpec.resources | nindent 4 }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.service.type }}
+    service:
+      type: {{ .Values.celerDataFeProxySpec.service.type }}
+      {{- if .Values.celerDataFeProxySpec.service.annotations }}
+      annotations:
+        {{- toYaml .Values.celerDataFeProxySpec.service.annotations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataFeProxySpec.service.labels}}
+      labels:
+        {{- toYaml .Values.celerDataFeProxySpec.service.labels | nindent 8 }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataFeProxySpec.service.type) .Values.celerDataFeProxySpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.celerDataFeProxySpec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.celerDataFeProxySpec.service.type) .Values.celerDataFeProxySpec.service.loadBalancerSourceRanges}}
+      loadBalancerSourceRanges:
+        {{- toYaml .Values.celerDataFeProxySpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if .Values.celerDataFeProxySpec.service.ports }}
+      ports:
+        {{- toYaml .Values.celerDataFeProxySpec.service.ports | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.celerDataFeProxySpec.nodeSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.affinity }}
+    affinity:
+      {{- toYaml .Values.celerDataFeProxySpec.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.tolerations }}
+    tolerations:
+      {{- toYaml .Values.celerDataFeProxySpec.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.celerDataFeProxySpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.celerDataFeProxySpec.readinessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.emptyDirs }}
+    storageVolumes:
+    {{- range .Values.celerDataFeProxySpec.emptyDirs }}
+    - name: {{ .name }}
+      storageClassName: "emptyDir"
+      mountPath: {{ .mountPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.celerDataFeProxySpec.podLabels }}
+    podLabels:
+      {{- toYaml .Values.celerDataFeProxySpec.podLabels | nindent 6 }}
+    {{- end }}
+  {{- end }}

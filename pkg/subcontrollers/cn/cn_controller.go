@@ -33,18 +33,18 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/log"
-	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
-	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/hash"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/log"
+	rutils "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/resource_utils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/load"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/object"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/pod"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/service"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/templates/statefulset"
+	subc "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/fe"
 )
 
 type CnController struct {
@@ -67,35 +67,35 @@ func (cc *CnController) GetControllerName() string {
 
 var ErrWarehouseNameIsNotAllowed = errors.New("warehouse name should not equal to cluster name")
 var ErrSpecIsMissing = errors.New("spec.template or spec.starRocksCluster is missing")
-var ErrStarRocksClusterIsMissing = errors.New("custom resource StarRocksCluster is missing")
+var ErrCelerDataClusterIsMissing = errors.New("custom resource CelerDataCluster is missing")
 var ErrFeIsNotReady = errors.New("component fe is not ready")
-var ErrShouldRunInSharedDataMode = errors.New("StarRocks Cluster should run in shared_data mode")
+var ErrShouldRunInSharedDataMode = errors.New("cluster should run in shared_data mode")
 var ErrFailedToGetFeFeatureList = errors.New("failed to invoke FE /api/v2/feature or FE does not support multi-warehouse feature")
 
-func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
+func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *cdapi.CelerDataWarehouse) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncWarehouse)
 	ctx = logr.NewContext(ctx, logger)
 
 	template := warehouse.Spec.Template
-	if warehouse.Spec.StarRocksCluster == "" || template == nil {
+	if warehouse.Spec.CelerDataCluster == "" || template == nil {
 		return ErrSpecIsMissing
 	}
 
-	if warehouse.Name == warehouse.Spec.StarRocksCluster {
+	if warehouse.Name == warehouse.Spec.CelerDataCluster {
 		return ErrWarehouseNameIsNotAllowed
 	}
 
-	logger.Info("get StarRocksCluster CR from kubernetes")
-	_, err := cc.getStarRocksCluster(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	logger.Info("get CelerDataCluster CR from kubernetes")
+	_, err := cc.getCelerDataCluster(ctx, warehouse.Namespace, warehouse.Spec.CelerDataCluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return ErrStarRocksClusterIsMissing
+			return ErrCelerDataClusterIsMissing
 		}
 		return err
 	}
 
 	logger.Info("get fe config to make sure StarRocks run in shared_data mode")
-	feConfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	feConfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.CelerDataCluster)
 	if err != nil {
 		return err
 	}
@@ -103,18 +103,18 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return ErrShouldRunInSharedDataMode
 	}
 
-	if !fe.CheckFEReady(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
+	if !fe.CheckFEReady(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.CelerDataCluster) {
 		return ErrFeIsNotReady
 	}
 
 	return cc.SyncCnSpec(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec(), warehouse.Status.WarehouseComponentStatus)
 }
 
-func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (cc *CnController) SyncCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	if src.Spec.StarRocksCnSpec == nil {
+	if src.Spec.CelerDataCnSpec == nil {
 		if err := cc.ClearCluster(ctx, src); err != nil {
 			logger.Error(err, "clear resource failed")
 		}
@@ -136,7 +136,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return nil
 	}
 
-	err = cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.StarRocksCnSpec, src.Status.StarRocksCnStatus)
+	err = cc.SyncCnSpec(ctx, object.NewFromCluster(src), src.Spec.CelerDataCnSpec, src.Status.CelerDataCnStatus)
 	defer func() {
 		// we do not record an event if the error is nil, because this will cause too many events to be recorded.
 		if err != nil {
@@ -148,7 +148,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 //nolint:gocyclo
 func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject,
-	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
+	cnSpec *cdapi.CelerDataCnSpec, cnStatus *cdapi.CelerDataCnStatus) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	if err := cc.mutating(cnSpec); err != nil {
@@ -234,8 +234,8 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	// get actual pods
 	actualCNPods := corev1.PodList{}
 	matchingLabels := client.MatchingLabels{
-		srapi.ComponentLabelKey: srapi.DEFAULT_CN,
-		srapi.OwnerReference:    object.GetCNStatefulSetName(),
+		cdapi.ComponentLabelKey: cdapi.DEFAULT_CN,
+		cdapi.OwnerReference:    object.GetCNStatefulSetName(),
 	}
 
 	err = cc.k8sClient.List(ctx, &actualCNPods, client.InNamespace(object.Namespace), matchingLabels)
@@ -252,8 +252,8 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	return nil
 }
 
-// UpdateWarehouseStatus updates the status of StarRocksWarehouse.
-func (cc *CnController) UpdateWarehouseStatus(ctx context.Context, warehouse *srapi.StarRocksWarehouse) error {
+// UpdateWarehouseStatus updates the status of CelerDataWarehouse.
+func (cc *CnController) UpdateWarehouseStatus(ctx context.Context, warehouse *cdapi.CelerDataWarehouse) error {
 	template := warehouse.Spec.Template
 	if template == nil {
 		warehouse.Status.WarehouseComponentStatus = nil
@@ -261,33 +261,33 @@ func (cc *CnController) UpdateWarehouseStatus(ctx context.Context, warehouse *sr
 	}
 
 	status := warehouse.Status.WarehouseComponentStatus
-	status.Phase = srapi.ComponentReconciling
+	status.Phase = cdapi.ComponentReconciling
 	return cc.UpdateStatus(ctx, object.NewFromWarehouse(warehouse), template.ToCnSpec(), status)
 }
 
-// UpdateClusterStatus update the status of StarRocksCluster.
-func (cc *CnController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
-	cnSpec := src.Spec.StarRocksCnSpec
+// UpdateClusterStatus update the status of CelerDataCluster.
+func (cc *CnController) UpdateClusterStatus(ctx context.Context, src *cdapi.CelerDataCluster) error {
+	cnSpec := src.Spec.CelerDataCnSpec
 	if cnSpec == nil {
-		src.Status.StarRocksCnStatus = nil
+		src.Status.CelerDataCnStatus = nil
 		return nil
 	}
 
-	if src.Status.StarRocksCnStatus == nil {
-		src.Status.StarRocksCnStatus = &srapi.StarRocksCnStatus{
-			StarRocksComponentStatus: srapi.StarRocksComponentStatus{
-				Phase: srapi.ComponentReconciling,
+	if src.Status.CelerDataCnStatus == nil {
+		src.Status.CelerDataCnStatus = &cdapi.CelerDataCnStatus{
+			CelerDataComponentStatus: cdapi.CelerDataComponentStatus{
+				Phase: cdapi.ComponentReconciling,
 			},
 		}
 	}
-	cs := src.Status.StarRocksCnStatus
-	cs.Phase = srapi.ComponentReconciling
+	cs := src.Status.CelerDataCnStatus
+	cs.Phase = cdapi.ComponentReconciling
 
 	return cc.UpdateStatus(ctx, object.NewFromCluster(src), cnSpec, cs)
 }
 
 func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRocksObject,
-	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
+	cnSpec *cdapi.CelerDataCnSpec, cnStatus *cdapi.CelerDataCnStatus) error {
 	var actualSTS appsv1.StatefulSet
 	logger := logr.FromContextOrDiscard(ctx)
 
@@ -303,7 +303,7 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 		cnStatus.HorizontalScaler.Version = cnSpec.AutoScalingPolicy.Version.Complete(k8sutils.KUBE_MAJOR_VERSION,
 			k8sutils.KUBE_MINOR_VERSION)
 	} else {
-		cnStatus.HorizontalScaler = srapi.HorizontalScaler{}
+		cnStatus.HorizontalScaler = cdapi.HorizontalScaler{}
 	}
 
 	cnStatus.ServiceName = service.ExternalServiceName(object.SubResourcePrefixName, cnSpec)
@@ -318,7 +318,7 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 	}
 	cnStatus.Selector = selector.String()
 
-	if err := subc.UpdateStatus(&cnStatus.StarRocksComponentStatus, cc.k8sClient,
+	if err := subc.UpdateStatus(&cnStatus.CelerDataComponentStatus, cc.k8sClient,
 		object.Namespace, load.Name(object.SubResourcePrefixName, cnSpec),
 		pod.Labels(object.SubResourcePrefixName, cnSpec), subc.StatefulSetLoadType); err != nil {
 		return err
@@ -328,13 +328,13 @@ func (cc *CnController) UpdateStatus(ctx context.Context, object object.StarRock
 }
 
 // ClearWarehouse clear the warehouse resource. It is different from ClearResources, which need to clear the
-// CN related resources of StarRocksCluster. ClearWarehouse only has CN related resources, when the warehouse CR
+// CN related resources of CelerDataCluster. ClearWarehouse only has CN related resources, when the warehouse CR
 // is deleted, sub resources of CN will be deleted by k8s.
 func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, warehouseName string) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(cc.GetControllerName()).WithValues(log.ActionKey, log.ActionClearWarehouse)
 	ctx = logr.NewContext(ctx, logger)
 
-	cnSTSName := load.Name(object.GetPrefixNameForWarehouse(warehouseName), (*srapi.StarRocksCnSpec)(nil))
+	cnSTSName := load.Name(object.GetPrefixNameForWarehouse(warehouseName), (*cdapi.CelerDataCnSpec)(nil))
 	executor, err := NewSQLExecutor(ctx, cc.k8sClient, namespace, cnSTSName)
 	if err != nil {
 		logger.Error(err, "new SQL executor failed")
@@ -367,13 +367,13 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, wa
 
 // Deploy autoscaler
 func (cc *CnController) deployAutoScaler(ctx context.Context,
-	object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec, policy srapi.AutoScalingPolicy) error {
+	object object.StarRocksObject, cnSpec *cdapi.CelerDataCnSpec, policy cdapi.AutoScalingPolicy) error {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.Info("create or update k8s hpa resource")
 
 	labels := map[string]string{
-		srapi.ComponentLabelKey: "autoscaler",
-		srapi.OwnerReference:    object.Name(),
+		cdapi.ComponentLabelKey: "autoscaler",
+		cdapi.OwnerReference:    object.Name(),
 	}
 	hpaParams := &rutils.HPAParams{
 		Namespace:       object.Namespace,
@@ -403,7 +403,7 @@ func (cc *CnController) deployAutoScaler(ctx context.Context,
 
 	var expectHash, actualHash string
 	expectHash = hash.HashObject(expectHPA)
-	if v, ok := actualHPA.GetAnnotations()[srapi.ComponentResourceHash]; ok {
+	if v, ok := actualHPA.GetAnnotations()[cdapi.ComponentResourceHash]; ok {
 		actualHash = v
 	} else {
 		actualHash = hash.HashObject(actualHPA)
@@ -413,16 +413,16 @@ func (cc *CnController) deployAutoScaler(ctx context.Context,
 		logger.Info("expectHash == actualHash, no need to update HPA resource")
 		return nil
 	}
-	expectHPA.GetAnnotations()[srapi.ComponentResourceHash] = expectHash
+	expectHPA.GetAnnotations()[cdapi.ComponentResourceHash] = expectHash
 	return cc.k8sClient.Update(ctx, expectHPA)
 }
 
 // deleteAutoScaler delete the autoscaler.
 func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.StarRocksObject,
-	autoScalerVersion srapi.AutoScalerVersion) error {
+	autoScalerVersion cdapi.AutoScalerVersion) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
-	autoScalerName := cc.generateAutoScalerName(object.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil))
+	autoScalerName := cc.generateAutoScalerName(object.SubResourcePrefixName, (*cdapi.CelerDataCnSpec)(nil))
 	if err := k8sutils.DeleteAutoscaler(ctx, cc.k8sClient, object.Namespace, autoScalerName,
 		autoScalerVersion); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
@@ -432,14 +432,14 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.Star
 }
 
 // ClearResources clear the deployed resource about cn. statefulset, services, hpa.
-func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (cc *CnController) ClearCluster(ctx context.Context, src *cdapi.CelerDataCluster) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
-	if src.Spec.StarRocksCnSpec != nil {
+	if src.Spec.CelerDataCnSpec != nil {
 		return nil
 	}
 
-	cnSpec := src.Spec.StarRocksCnSpec
+	cnSpec := src.Spec.CelerDataCnSpec
 	statefulSetName := load.Name(src.Name, cnSpec)
 	err := k8sutils.DeleteStatefulset(ctx, cc.k8sClient, src.Namespace, statefulSetName)
 	if err != nil && !apierrors.IsNotFound(err) {
@@ -460,9 +460,9 @@ func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 		return err
 	}
 
-	var version srapi.AutoScalerVersion
-	if src.Status.StarRocksCnStatus != nil {
-		version = src.Status.StarRocksCnStatus.HorizontalScaler.Version
+	var version cdapi.AutoScalerVersion
+	if src.Status.CelerDataCnStatus != nil {
+		version = src.Status.CelerDataCnStatus.HorizontalScaler.Version
 	}
 	if err := cc.deleteAutoScaler(ctx, object.NewFromCluster(src), version); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete autoscaler failed")
@@ -473,7 +473,7 @@ func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 }
 
 func (cc *CnController) GetCnConfig(ctx context.Context,
-	cnSpec *srapi.StarRocksCnSpec, namespace string) (map[string]interface{}, error) {
+	cnSpec *cdapi.CelerDataCnSpec, namespace string) (map[string]interface{}, error) {
 	return k8sutils.GetConfig(ctx, cc.k8sClient, cnSpec.ConfigMapInfo,
 		cnSpec.ConfigMaps, pod.GetConfigDir(cnSpec), "cn.conf",
 		namespace)
@@ -481,18 +481,18 @@ func (cc *CnController) GetCnConfig(ctx context.Context,
 
 func (cc *CnController) getFeConfig(ctx context.Context,
 	clusterNamespace string, clusterName string) (map[string]interface{}, error) {
-	src, err := cc.getStarRocksCluster(ctx, clusterNamespace, clusterName)
+	src, err := cc.getCelerDataCluster(ctx, clusterNamespace, clusterName)
 	if err != nil {
 		return nil, err
 	}
-	return fe.GetFEConfig(ctx, cc.k8sClient, src.Spec.StarRocksFeSpec, src.Namespace)
+	return fe.GetFEConfig(ctx, cc.k8sClient, src.Spec.CelerDataFeSpec, src.Namespace)
 }
 
-func (cc *CnController) mutating(_ *srapi.StarRocksCnSpec) error {
+func (cc *CnController) mutating(_ *cdapi.CelerDataCnSpec) error {
 	return nil
 }
 
-func (cc *CnController) validating(cnSpec *srapi.StarRocksCnSpec) error {
+func (cc *CnController) validating(cnSpec *cdapi.CelerDataCnSpec) error {
 	// validating the auto scaling policy
 	policy := cnSpec.AutoScalingPolicy
 	if policy != nil {
@@ -516,16 +516,16 @@ func (cc *CnController) validating(cnSpec *srapi.StarRocksCnSpec) error {
 		}
 	}
 
-	if err := srapi.ValidUpdateStrategy(cnSpec.UpdateStrategy); err != nil {
+	if err := cdapi.ValidUpdateStrategy(cnSpec.UpdateStrategy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// getStarRocksCluster get the StarRocksCluster object by namespace and name.
-func (cc *CnController) getStarRocksCluster(ctx context.Context, namespace, name string) (*srapi.StarRocksCluster, error) {
-	src := &srapi.StarRocksCluster{}
+// getCelerDataCluster get the CelerDataCluster object by namespace and name.
+func (cc *CnController) getCelerDataCluster(ctx context.Context, namespace, name string) (*cdapi.CelerDataCluster, error) {
+	src := &cdapi.CelerDataCluster{}
 	err := cc.k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, src)
 	if err != nil {
 		return nil, err
@@ -533,7 +533,7 @@ func (cc *CnController) getStarRocksCluster(ctx context.Context, namespace, name
 	return src, nil
 }
 
-func (cc *CnController) generateAutoScalerName(srcName string, cnSpec srapi.SpecInterface) string {
+func (cc *CnController) generateAutoScalerName(srcName string, cnSpec cdapi.SpecInterface) string {
 	return load.Name(srcName, cnSpec) + "-autoscaler"
 }
 
@@ -617,7 +617,7 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 	return nil
 }
 
-func generateInternalService(object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
+func generateInternalService(object object.StarRocksObject, cnSpec *cdapi.CelerDataCnSpec,
 	externalService *corev1.Service, cnConfig map[string]interface{}, labels map[string]string) *corev1.Service {
 	searchServiceName := service.SearchServiceName(object.SubResourcePrefixName, cnSpec)
 	searchSvc := service.MakeSearchService(searchServiceName, externalService, []corev1.ServicePort{
