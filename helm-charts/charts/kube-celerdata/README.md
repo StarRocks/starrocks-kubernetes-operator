@@ -91,4 +91,4 @@ If you need to uninstall the CelerData Operator and CelerData cluster, run the f
 helm uninstall celerdata
 ```
 
-Search Helm Chart maintained by CelerData on Artifact Hub. See [kube-celerdata](https://artifacthub.io/packages/helm/kube-celerdata/kube-celerdata).
+Search Helm Chart maintained by CelerData on Artifact Hub. See [kube-celerdata](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks).
