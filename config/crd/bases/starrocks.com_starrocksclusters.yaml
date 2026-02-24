@@ -15461,6 +15461,15 @@ spec:
                         type: string
                     type: object
                 type: object
+              waitForFullRollout:
+                description: |-
+                  WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+                  will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+                  same revision) before updating BE/CN components. This prevents cascading failures
+                  if a bad FE version is deployed.
+                  When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+                  Defaults to false for backward compatibility.
+                type: boolean
             type: object
           status:
             description: Most recent observed status of the starrocks cluster

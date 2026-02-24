@@ -246,6 +246,124 @@ func TestCheckFEReady(t *testing.T) {
 	}
 }
 
+func TestCheckFEFullyRolledOut(t *testing.T) {
+	type args struct {
+		ctx              context.Context
+		k8sClient        client.Client
+		clusterNamespace string
+		clusterName      string
+	}
+
+	replicas := int32(3)
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "statefulset not found",
+			args: args{
+				ctx:              context.Background(),
+				k8sClient:        fake.NewFakeClient(srapi.Scheme),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "statefulset not fully ready - some replicas not ready",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe",
+						Namespace: "default",
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ReadyReplicas:   2,
+						CurrentRevision: "v1",
+						UpdateRevision:  "v1",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "statefulset rolling update in progress - revision mismatch",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe",
+						Namespace: "default",
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ReadyReplicas:   3,
+						UpdatedReplicas: 1,
+						CurrentRevision: "v1",
+						UpdateRevision:  "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "statefulset fully rolled out",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe",
+						Namespace: "default",
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ReadyReplicas:   3,
+						UpdatedReplicas: 3,
+						CurrentRevision: "v2",
+						UpdateRevision:  "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fe.CheckFEFullyRolledOut(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName); got != tt.want {
+				t.Errorf("CheckFEFullyRolledOut() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetFeConfig(t *testing.T) {
 	type args struct {
 		ctx       context.Context
