@@ -36,6 +36,7 @@ var (
 	_enableLeaderElection bool
 	_probeAddr            string
 	_namespace            string
+	_denyList             string
 )
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 		"restricts the manager's cache to watch objects in the desired namespace. Defaults to all namespaces.")
 	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
 	flag.BoolVar(&config.VolumeNameWithHash, "volume-name-with-hash", true, "Add a hash to the volume name")
+	flag.StringVar(&_denyList, "deny-list", "", "Comma-separated list of namespaces to exclude from reconciliation")
 
 	// Set up logger.
 	opts := zap.Options{}
@@ -76,12 +78,12 @@ func main() {
 	}
 
 	// setup all reconciles
-	if err := controllers.SetupClusterReconciler(mgr); err != nil {
+	if err := controllers.SetupClusterReconciler(mgr, _denyList); err != nil {
 		logger.Error(err, "unable to set up cluster reconciler")
 		os.Exit(1)
 	}
 
-	if err := controllers.SetupWarehouseReconciler(mgr, _namespace); err != nil {
+	if err := controllers.SetupWarehouseReconciler(mgr, _namespace, _denyList); err != nil {
 		logger.Error(err, "unable to set up warehouse reconciler")
 		os.Exit(1)
 	}

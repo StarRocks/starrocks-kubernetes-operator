@@ -42,6 +42,7 @@ type StarRocksClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
 	Scs      []subcontrollers.ClusterSubController
+	denyList string
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete

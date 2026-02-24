@@ -85,6 +85,16 @@ starrocksOperator:
   # the operator watching all namespaces uses too many memory resources, you can set this value.
   # Defaults to all namespaces.
   watchNamespace: ""
+  # Comma-separated list of namespaces to exclude from reconciliation.
+  # When specified, the operator will not reconcile StarRocks resources in these namespaces.
+  # This is useful when multiple operators manage different sets of namespaces.
+  # Note: This is different from watchNamespace - watchNamespace limits what the operator watches,
+  # while denyList excludes specific namespaces from reconciliation even if watching all namespaces.
+  # Precedence: denyList takes precedence over watchNamespace. If a namespace appears in both
+  # watchNamespace and denyList, the operator will watch that namespace but will NOT reconcile
+  # any resources in it. Avoid configuring conflicting values between these two settings.
+  # Example: "kube-system,kube-public,monitoring"
+  denyList: ""
   # Additional operator container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
