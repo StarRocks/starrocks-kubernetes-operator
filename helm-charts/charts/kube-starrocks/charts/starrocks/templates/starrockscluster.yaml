@@ -284,6 +284,181 @@ spec:
     persistentVolumeClaimRetentionPolicy:
       {{- toYaml .Values.starrocksFESpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
     {{- end }}
+  {{- if .Values.starrocksFeObserverSpec.enabled }}
+  starRocksFeObserverSpec:
+    {{- if .Values.starrocksFeObserverSpec.initContainers }}
+    initContainers:
+      {{- toYaml .Values.starrocksFeObserverSpec.initContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.shareProcessNamespace }}
+    shareProcessNamespace: {{ .Values.starrocksFeObserverSpec.shareProcessNamespace }}
+    {{- end }}
+    image: "{{ .Values.starrocksFeObserverSpec.image.repository }}:{{ default .Values.starrocksCluster.componentValues.image.tag .Values.starrocksFeObserverSpec.image.tag }}"
+    replicas: {{ .Values.starrocksFeObserverSpec.replicas }}
+    imagePullPolicy: {{ .Values.starrocksFeObserverSpec.imagePullPolicy }}
+    {{- if .Values.starrocksFeObserverSpec.resources }}
+      {{- toYaml .Values.starrocksFeObserverSpec.resources | nindent 4 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.service.type }}
+    service:
+      type: {{ .Values.starrocksFeObserverSpec.service.type }}
+      {{- if and (eq "LoadBalancer" .Values.starrocksFeObserverSpec.service.type) .Values.starrocksFeObserverSpec.service.loadbalancerIP }}
+      loadBalancerIP: {{ .Values.starrocksFeObserverSpec.service.loadbalancerIP }}
+      {{- end }}
+      {{- if and (eq "LoadBalancer" .Values.starrocksFeObserverSpec.service.type) .Values.starrocksFeObserverSpec.service.loadBalancerSourceRanges}}
+      loadBalancerSourceRanges:
+        {{- toYaml .Values.starrocksFeObserverSpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksFeObserverSpec.service.ports }}
+      ports:
+        {{- toYaml .Values.starrocksFeObserverSpec.service.ports | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksFeObserverSpec.service.annotations }}
+      annotations:
+        {{- toYaml .Values.starrocksFeObserverSpec.service.annotations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.starrocksFeObserverSpec.service.labels }}
+      labels:
+        {{- toYaml .Values.starrocksFeObserverSpec.service.labels | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    annotations:
+      app.starrocks.io/fe-config-hash: "{{template "starrockscluster.fe.config.hash" . }}"
+      {{- if .Values.starrocksFeObserverSpec.annotations }}
+      {{- toYaml .Values.starrocksFeObserverSpec.annotations | nindent 6 }}
+      {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml .Values.starrocksFeObserverSpec.imagePullSecrets | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.serviceAccount }}
+    serviceAccount: {{ .Values.starrocksFeObserverSpec.serviceAccount }}
+    {{- end }}
+    runAsNonRoot: {{ .Values.starrocksFeObserverSpec.runAsNonRoot }}
+    {{- if .Values.starrocksFeObserverSpec.readOnlyRootFilesystem }}
+    readOnlyRootFilesystem: {{ .Values.starrocksFeObserverSpec.readOnlyRootFilesystem }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.capabilities }}
+    capabilities:
+      {{- toYaml .Values.starrocksFeObserverSpec.capabilities | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.sysctls }}
+    sysctls:
+      {{- toYaml .Values.starrocksFeObserverSpec.sysctls | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.starrocksFeObserverSpec.nodeSelector | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.podLabels }}
+    podLabels:
+      {{- toYaml .Values.starrocksFeObserverSpec.podLabels | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.hostAliases }}
+    hostAliases:
+      {{- toYaml .Values.starrocksFeObserverSpec.hostAliases | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.schedulerName }}
+    schedulerName: {{ .Values.starrocksFeObserverSpec.schedulerName }}
+    {{- end }}
+    feEnvVars:
+      - name: TZ
+        value: {{ .Values.timeZone }}
+      {{- if .Values.starrocksFeObserverSpec.feEnvVars }}
+      {{- /* if it is a map, we use range to iterate to merge environment variables */}}
+      {{- if eq (kindOf .Values.starrocksFeObserverSpec.feEnvVars) "map" }}
+      {{- range $key, $value := .Values.starrocksFeObserverSpec.feEnvVars }}
+      - name: {{ $key }}
+        {{- if eq (kindOf $value) "string" }}
+        value: {{ $value | quote }}
+        {{- else }}
+        {{- toYaml $value | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- else }}
+      {{- /* the default kind is slice, we keep backward compatibility */}}
+      {{- toYaml .Values.starrocksFeObserverSpec.feEnvVars | nindent 6 }}
+      {{- end }}
+      {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.affinity }}
+    affinity:
+      {{- toYaml .Values.starrocksFeObserverSpec.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.tolerations }}
+    tolerations:
+      {{- toYaml .Values.starrocksFeObserverSpec.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.topologySpreadConstraints }}
+    topologySpreadConstraints:
+      {{- toYaml .Values.starrocksFeObserverSpec.topologySpreadConstraints | nindent 6 }}
+    {{- end }}
+    terminationGracePeriodSeconds: {{ .Values.starrocksFeObserverSpec.terminationGracePeriodSeconds }}
+    {{- if .Values.starrocksFeObserverSpec.startupProbeFailureSeconds }}
+    startupProbeFailureSeconds: {{ .Values.starrocksFeObserverSpec.startupProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.livenessProbeFailureSeconds }}
+    livenessProbeFailureSeconds: {{ .Values.starrocksFeObserverSpec.livenessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.readinessProbeFailureSeconds }}
+    readinessProbeFailureSeconds: {{ .Values.starrocksFeObserverSpec.readinessProbeFailureSeconds }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.lifecycle }}
+    lifecycle:
+      {{- toYaml .Values.starrocksFeObserverSpec.lifecycle | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.starrocksFeObserverSpec.sidecarsMap .Values.starrocksFeObserverSpec.sidecars }}
+      {{ fail "starrocksFeObserverSpec.sidecarsMap and starrocksFeObserverSpec.sidecars cannot be set at the same time" }}
+    {{- end }}
+    {{- if or .Values.starrocksFeObserverSpec.sidecarsMap .Values.starrocksFeObserverSpec.sidecars }}
+    sidecars:
+      {{- if .Values.starrocksFeObserverSpec.sidecarsMap }}
+      {{- range $name, $spec := .Values.starrocksFeObserverSpec.sidecarsMap }}
+      - name: {{ $name }}
+        {{- toYaml $spec | nindent 8 }}
+      {{- end }}
+      {{- else if .Values.starrocksFeObserverSpec.sidecars }}
+      {{- toYaml .Values.starrocksFeObserverSpec.sidecars | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.secrets }}
+    secrets:
+    {{- range .Values.starrocksFeObserverSpec.secrets }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.configMaps }}
+    configMaps:
+    {{- range .Values.starrocksFeObserverSpec.configMaps }}
+      - name: {{ .name }}
+        mountPath: {{ .mountPath }}
+        subPath: {{ .subPath }}
+    {{- end }}
+    {{- end }}
+    configMapInfo:
+      configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
+      resolveKey: fe.conf
+    {{- if or .Values.starrocksFeObserverSpec.emptyDirs .Values.starrocksFeObserverSpec.hostPaths }}
+    storageVolumes:
+    {{- if .Values.starrocksFeObserverSpec.emptyDirs }}
+    {{- range .Values.starrocksFeObserverSpec.emptyDirs }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "emptyDir"
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFeObserverSpec.hostPaths }}
+    {{- range .Values.starrocksFeObserverSpec.hostPaths }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "hostPath"
+      hostPath:
+        {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
   {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     {{- if .Values.starrocksBeSpec.initContainers }}

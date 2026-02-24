@@ -77,6 +77,10 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
+	case *v1.StarRocksFeObserverSpec:
+		if v != nil {
+			addLabels(labels, v.PodLabels)
+		}
 	case *v1.StarRocksFeProxySpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)
@@ -89,7 +93,6 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 	feExternalServiceName string, namespace string, envs []corev1.EnvVar) []corev1.EnvVar {
 	// copy envs
 	envs = append([]corev1.EnvVar(nil), envs...)
-
 	keys := make(map[string]bool)
 	for _, env := range envs {
 		keys[env.Name] = true
@@ -156,6 +159,23 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		} {
 			addEnv(envVar)
 		}
+	case *v1.StarRocksFeObserverSpec:
+		for _, envVar := range []corev1.EnvVar{
+			{
+				Name:  v1.COMPONENT_NAME,
+				Value: v1.DEFAULT_FE_OBSERVER,
+			},
+			{
+				Name:  v1.FE_SERVICE_NAME,
+				Value: feExternalServiceName + "." + namespace,
+			},
+			{
+				Name:  v1.IS_FE_OBSERVER,
+				Value: "true",
+			},
+		} {
+			addEnv(envVar)
+		}
 	case *v1.StarRocksBeSpec:
 		for _, envVar := range []corev1.EnvVar{
 			{
@@ -199,6 +219,22 @@ func Ports(spec v1.SpecInterface, config map[string]interface{}) []corev1.Contai
 	var ports []corev1.ContainerPort
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
+		ports = append(ports, []corev1.ContainerPort{
+			{
+				Name:          "http-port",
+				ContainerPort: rutils.GetPort(config, rutils.HTTP_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			}, {
+				Name:          "rpc-port",
+				ContainerPort: rutils.GetPort(config, rutils.RPC_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			}, {
+				Name:          "query-port",
+				ContainerPort: rutils.GetPort(config, rutils.QUERY_PORT),
+				Protocol:      corev1.ProtocolTCP,
+			},
+		}...)
+	case *v1.StarRocksFeObserverSpec:
 		ports = append(ports, []corev1.ContainerPort{
 			{
 				Name:          "http-port",
@@ -335,6 +371,8 @@ func getDefaultEntrypointScript(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
 		return fmt.Sprintf("%s/fe_entrypoint.sh", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksFeObserverSpec:
+		return fmt.Sprintf("%s/fe_entrypoint.sh", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
 		return fmt.Sprintf("%s/be_entrypoint.sh", GetStarRocksRootPath(v.BeEnvVars))
 	case *v1.StarRocksCnSpec:
@@ -346,6 +384,8 @@ func getDefaultEntrypointScript(spec v1.SpecInterface) string {
 func GetStorageDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe/meta", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksFeObserverSpec:
 		return fmt.Sprintf("%s/fe/meta", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
 		return fmt.Sprintf("%s/be/storage", GetStarRocksRootPath(v.BeEnvVars))
@@ -359,6 +399,8 @@ func GetLogDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
 		return fmt.Sprintf("%s/fe/log", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksFeObserverSpec:
+		return fmt.Sprintf("%s/fe/log", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
 		return fmt.Sprintf("%s/be/log", GetStarRocksRootPath(v.BeEnvVars))
 	case *v1.StarRocksCnSpec:
@@ -370,6 +412,8 @@ func GetLogDir(spec v1.SpecInterface) string {
 func GetConfigDir(spec v1.SpecInterface) string {
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
+		return fmt.Sprintf("%s/fe/conf", GetStarRocksRootPath(v.FeEnvVars))
+	case *v1.StarRocksFeObserverSpec:
 		return fmt.Sprintf("%s/fe/conf", GetStarRocksRootPath(v.FeEnvVars))
 	case *v1.StarRocksBeSpec:
 		return fmt.Sprintf("%s/be/conf", GetStarRocksRootPath(v.BeEnvVars))
@@ -385,6 +429,8 @@ func GetPreStopCommand(spec v1.SpecInterface) []string {
 	// on Pod will take the same effect
 	switch v := spec.(type) {
 	case *v1.StarRocksFeSpec:
+		command = append(command, fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars)))
+	case *v1.StarRocksFeObserverSpec:
 		command = append(command, fmt.Sprintf("%s/fe/bin/stop_fe.sh -g", GetStarRocksRootPath(v.FeEnvVars)))
 	case *v1.StarRocksBeSpec:
 		imageVersion := GetImageVersion(spec.GetImage())
