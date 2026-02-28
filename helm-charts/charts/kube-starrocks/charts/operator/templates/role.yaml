@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ template "operator.name" . }}-operator
-  namespace: {{ template "operator.namespace" . }}
+  namespace: {{.Values.starrocksOperator.watchNamespace }}
   labels:
     app: {{ template "operator.name" . }}-operator
 rules:
