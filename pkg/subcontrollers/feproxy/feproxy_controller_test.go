@@ -18,24 +18,24 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
-func newStarRocksClusterController(objects ...runtime.Object) *controllers.StarRocksClusterReconciler {
+func TestMain(_ *testing.M) {
 	srapi.Register()
+}
+
+func newStarRocksClusterController(objects ...runtime.Object) *controllers.StarRocksClusterReconciler {
 	srcController := &controllers.StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
-	srcController.Scs = []subcontrollers.ClusterSubController{
-		fe.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-		be.New(srcController.Client, fake.GetEventRecorderFor(srcController.Recorder)),
-		cn.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-		feproxy.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-	}
+	srcController.FeController = fe.New(srcController.Client, fake.GetEventRecorderFor(nil))
+	srcController.BeController = be.New(srcController.Client, fake.GetEventRecorderFor(srcController.Recorder))
+	srcController.CnController = cn.New(srcController.Client, fake.GetEventRecorderFor(nil))
+	srcController.FeProxyController = feproxy.New(srcController.Client, fake.GetEventRecorderFor(nil))
 	return srcController
 }
 

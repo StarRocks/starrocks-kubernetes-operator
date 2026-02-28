@@ -18,7 +18,6 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/be"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
@@ -29,12 +28,10 @@ func newStarRocksClusterController(objects ...runtime.Object) *controllers.StarR
 	srcController := &controllers.StarRocksClusterReconciler{}
 	srcController.Recorder = record.NewFakeRecorder(10)
 	srcController.Client = fake.NewFakeClient(srapi.Scheme, objects...)
-	srcController.Scs = []subcontrollers.ClusterSubController{
-		fe.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-		be.New(srcController.Client, fake.GetEventRecorderFor(srcController.Recorder)),
-		cn.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-		feproxy.New(srcController.Client, fake.GetEventRecorderFor(nil)),
-	}
+	srcController.FeController = fe.New(srcController.Client, fake.GetEventRecorderFor(nil))
+	srcController.BeController = be.New(srcController.Client, fake.GetEventRecorderFor(srcController.Recorder))
+	srcController.CnController = cn.New(srcController.Client, fake.GetEventRecorderFor(nil))
+	srcController.FeProxyController = feproxy.New(srcController.Client, fake.GetEventRecorderFor(nil))
 	return srcController
 }
 
@@ -99,6 +96,24 @@ func TestStarRocksClusterReconciler_BeResourceCreate(t *testing.T) {
 		}},
 	}
 
+	// mock the fe statefulset is ready (rollout complete)
+	feStatefulSet := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "starrockscluster-sample-fe",
+			Namespace:  "default",
+			Generation: 1,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas: rutils.GetInt32Pointer(3),
+		},
+		Status: appsv1.StatefulSetStatus{
+			ObservedGeneration: 1,
+			CurrentRevision:    "rev1",
+			UpdateRevision:     "rev1",
+			ReadyReplicas:      3,
+		},
+	}
+
 	// mock the fe configMap
 	feConfigMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -121,7 +136,7 @@ func TestStarRocksClusterReconciler_BeResourceCreate(t *testing.T) {
 		},
 	}
 
-	r := newStarRocksClusterController(src, ep, feConfigMap, beConfigMap)
+	r := newStarRocksClusterController(src, ep, feStatefulSet, feConfigMap, beConfigMap)
 	res, err := r.Reconcile(context.Background(),
 		reconcile.Request{
 			NamespacedName: types.NamespacedName{
