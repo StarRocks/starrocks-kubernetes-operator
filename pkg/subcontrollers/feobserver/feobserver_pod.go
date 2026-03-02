@@ -57,8 +57,12 @@ func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster,
 		return nil, err
 	}
 
-	feServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
+	feServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec)
 	envs := pod.Envs(observerSpec, config, feServiceName, src.Namespace, observerSpec.FeEnvVars)
+	envs = append(envs, corev1.EnvVar{
+		Name:  srapi.FE_SERVICE_NAME,
+		Value: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec),
+	})
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feObserverContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE_OBSERVER,

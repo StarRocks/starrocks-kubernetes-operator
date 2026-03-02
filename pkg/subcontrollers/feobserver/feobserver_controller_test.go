@@ -65,7 +65,7 @@ func TestFeObserver_ClearCluster(t *testing.T) {
 		},
 	}
 
-	deploy := appsv1.Deployment{
+	sts := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      load.Name(src.Name, src.Spec.StarRocksFeObserverSpec),
 			Namespace: "default",
@@ -86,12 +86,12 @@ func TestFeObserver_ClearCluster(t *testing.T) {
 		},
 	}
 
-	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, &deploy, &svc, &ssvc), fake.GetEventRecorderFor(nil))
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, &sts, &svc, &ssvc), fake.GetEventRecorderFor(nil))
 	err := fc.ClearCluster(context.Background(), src)
 	require.NoError(t, err)
 
-	var ed appsv1.Deployment
-	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: deploy.Name, Namespace: "default"}, &ed)
+	var est appsv1.StatefulSet
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: sts.Name, Namespace: "default"}, &est)
 	require.True(t, err == nil || apierrors.IsNotFound(err))
 	var esvc corev1.Service
 	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: svc.Name, Namespace: "default"}, &esvc)
@@ -143,9 +143,9 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	require.Equal(t, srapi.ComponentReconciling, status.Phase)
 	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), status.ServiceName)
 
-	var deploy appsv1.Deployment
+	var sts appsv1.StatefulSet
 	require.NoError(t, fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &deploy))
+		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &sts))
 	var asvc corev1.Service
 	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &asvc))
@@ -153,7 +153,7 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: service.SearchServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &rsvc))
 
-	require.Equal(t, asvc.Spec.Selector, deploy.Spec.Selector.MatchLabels)
+	require.Equal(t, asvc.Spec.Selector, sts.Spec.Selector.MatchLabels)
 }
 
 func TestFeObserver_Ready(t *testing.T) {

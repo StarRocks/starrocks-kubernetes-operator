@@ -34,10 +34,10 @@ import (
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/deployment"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
 
@@ -59,7 +59,7 @@ func (fc *FeObserverController) GetControllerName() string {
 	return "feObserverController"
 }
 
-// SyncCluster starRocksCluster spec to fe observer deployment and service.
+// SyncCluster starRocksCluster spec to fe observer statefulset and service.
 func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
@@ -112,10 +112,10 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 		logger.Error(err, "build pod template failed")
 		return err
 	}
-	expectDeployment := deployment.MakeDeployment(src, observerSpec, *podTemplateSpec)
-	err = k8sutils.ApplyDeployment(ctx, fc.Client, expectDeployment)
+	expectSts := statefulset.MakeStatefulset(object, observerSpec, podTemplateSpec)
+	err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, false, rutils.StatefulSetDeepEqual)
 	if err != nil {
-		logger.Error(err, "fe observer deployment failed", "StarRocksCluster", src)
+		logger.Error(err, "fe observer statefulset failed", "StarRocksCluster", src)
 		return err
 	}
 
@@ -153,16 +153,16 @@ func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srap
 
 	src.Status.StarRocksFeObserverStatus = fs
 	fs.ServiceName = service.ExternalServiceName(src.Name, observerSpec)
-	deploymentName := load.Name(src.Name, observerSpec)
-	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{deploymentName})
+	statefulSetName := load.Name(src.Name, observerSpec)
+	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
 	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
-		src.Namespace, deploymentName, pod.Labels(src.Name, observerSpec), subcontrollers.DeploymentLoadType); err != nil {
+		src.Namespace, statefulSetName, pod.Labels(src.Name, observerSpec), subcontrollers.StatefulSetLoadType); err != nil {
 		return err
 	}
 
-	var deploy appsv1.Deployment
-	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: deploymentName}, &deploy); err != nil {
+	var st appsv1.StatefulSet
+	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
 	}
 
@@ -183,9 +183,9 @@ func (fc *FeObserverController) ClearCluster(ctx context.Context, src *srapi.Sta
 	}
 
 	observerSpec := src.Spec.StarRocksFeObserverSpec
-	deploymentName := load.Name(src.Name, observerSpec)
-	if err := k8sutils.DeleteDeployment(ctx, fc.Client, src.Namespace, deploymentName); err != nil && !apierrors.IsNotFound(err) {
-		logger.Error(err, "delete deployment failed", "deploymentName", deploymentName)
+	statefulSetName := load.Name(src.Name, observerSpec)
+	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
+		logger.Error(err, "delete statefulset failed", "statefulSetName", statefulSetName)
 		return err
 	}
 

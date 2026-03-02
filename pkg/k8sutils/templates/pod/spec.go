@@ -166,7 +166,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 				Value: v1.DEFAULT_FE_OBSERVER,
 			},
 			{
-				Name:  v1.FE_SERVICE_NAME,
+				Name:  v1.FE_OBSERVER_NAME,
 				Value: feExternalServiceName + "." + namespace,
 			},
 			{
