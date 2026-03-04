@@ -354,6 +354,34 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "statefulset with nil replicas - should return true when revisions match",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "kube-starrocks-fe",
+						Namespace: "default",
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: nil,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ReadyReplicas:   1,
+						UpdatedReplicas: 1,
+						CurrentRevision: "v1",
+						UpdateRevision:  "v1",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

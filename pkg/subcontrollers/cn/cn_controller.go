@@ -129,6 +129,7 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	} else {
 		if !fe.CheckFEReady(ctx, cc.k8sClient, src.Namespace, src.Name) {
+			logger.Info("FE is not ready, skipping CN sync")
 			return nil
 		}
 	}

@@ -93,6 +93,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		}
 	} else {
 		if !fe.CheckFEReady(ctx, be.Client, src.Namespace, src.Name) {
+			logger.Info("FE is not ready, skipping BE sync")
 			return nil
 		}
 	}
