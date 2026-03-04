@@ -91,6 +91,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers/... 		\
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/... 		\
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/... 	\
+		github.com/StarRocks/starrocks-kubernetes-operator/pkg/predicates/... 		\
 		-coverprofile=coverage.data -timeout 30m || return 1
 	@go tool cover -func=coverage.data
 
