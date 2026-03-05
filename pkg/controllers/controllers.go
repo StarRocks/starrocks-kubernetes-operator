@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 
-	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/predicates"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -11,6 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/predicates"
 	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers"
 	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/be"
 	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/cn"

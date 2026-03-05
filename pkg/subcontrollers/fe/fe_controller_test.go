@@ -265,7 +265,7 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			name: "statefulset not found",
 			args: args{
 				ctx:              context.Background(),
-				k8sClient:        fake.NewFakeClient(srapi.Scheme),
+				k8sClient:        fake.NewFakeClient(cdapi.Scheme),
 				clusterNamespace: "default",
 				clusterName:      "kube-starrocks",
 			},
@@ -275,7 +275,7 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			name: "statefulset not fully ready - some replicas not ready",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -302,7 +302,7 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			name: "statefulset rolling update in progress - revision mismatch",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -330,7 +330,7 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			name: "statefulset fully rolled out",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -358,7 +358,7 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			name: "statefulset with nil replicas - should return true when revisions match",
 			args: args{
 				ctx: context.Background(),
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+				k8sClient: fake.NewFakeClient(cdapi.Scheme, &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "StatefulSet",
 						APIVersion: appsv1.SchemeGroupVersion.String(),

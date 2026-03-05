@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 
-	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	cdapi "github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/apis/celerdata/v1"
 )
 
 func TestGenericPredicates_Create(t *testing.T) {
@@ -63,7 +63,7 @@ func TestGenericPredicates_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create test object
-			obj := &srapi.StarRocksCluster{
+			obj := &cdapi.CelerDataCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "test-cluster",
 					Namespace:   tt.namespace,
@@ -115,13 +115,13 @@ func TestGenericPredicates_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create test objects
-			oldObj := &srapi.StarRocksCluster{
+			oldObj := &cdapi.CelerDataCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-cluster",
 					Namespace: tt.namespace,
 				},
 			}
-			newObj := &srapi.StarRocksCluster{
+			newObj := &cdapi.CelerDataCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "test-cluster",
 					Namespace:   tt.namespace,
@@ -166,7 +166,7 @@ func TestGenericPredicates_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			obj := &srapi.StarRocksCluster{
+			obj := &cdapi.CelerDataCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-cluster",
 					Namespace: tt.namespace,
@@ -207,7 +207,7 @@ func TestGenericPredicates_Generic(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			obj := &srapi.StarRocksCluster{
+			obj := &cdapi.CelerDataCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-cluster",
 					Namespace: tt.namespace,

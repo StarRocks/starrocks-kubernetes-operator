@@ -24,7 +24,7 @@ There are two ways to turn on the prometheus metrics scrape for the CelerData cl
 
 ### 2.1 Turn on the prometheus metrics scrape by adding annotations
 
-Follow the instructions from [CelerData Helm Chart](https://github.com/StarRocks/starrocks-kubernetes-operator/tree/main/helm-charts/charts/kube-starrocks)
+Follow the instructions from [CelerData Helm Chart](https://github.com/CelerData/celerdata-kubernetes-operator/tree/main/helm-charts/charts/kube-celerdata)
 with some customized values.
 
 Following is an example of the content of the `sr-values.yaml`.

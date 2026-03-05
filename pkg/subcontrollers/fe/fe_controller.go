@@ -269,7 +269,7 @@ func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, cluster
 	logger := logr.FromContextOrDiscard(ctx)
 
 	var sts appsv1.StatefulSet
-	stsName := load.Name(clusterName, (*srapi.StarRocksFeSpec)(nil))
+	stsName := load.Name(clusterName, (*cdapi.CelerDataFeSpec)(nil))
 	if err := k8sClient.Get(ctx, types.NamespacedName{
 		Namespace: clusterNamespace,
 		Name:      stsName,
