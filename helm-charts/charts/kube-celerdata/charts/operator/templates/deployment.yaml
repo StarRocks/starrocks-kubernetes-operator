@@ -44,6 +44,9 @@ spec:
         - --dns-domain-suffix={{ .Values.celerDataOperator.dnsDomainSuffix }}
         {{- end }}
         - --volume-name-with-hash={{ .Values.celerDataOperator.volumeNameWithHash }}
+        {{- if .Values.celerDataOperator.denyList }}
+        - --deny-list={{ .Values.celerDataOperator.denyList }}
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

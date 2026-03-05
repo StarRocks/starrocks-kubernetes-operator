@@ -42,6 +42,7 @@ type CelerDataClusterReconciler struct {
 	client.Client
 	Recorder record.EventRecorder
 	Scs      []subcontrollers.ClusterSubController
+	denyList string
 }
 
 // +kubebuilder:rbac:groups=celerdata.com,resources=celerdataclusters,verbs=get;list;watch;create;update;patch;delete

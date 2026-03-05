@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/predicates"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -17,7 +18,7 @@ import (
 	"github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/feproxy"
 )
 
-func SetupClusterReconciler(mgr ctrl.Manager) error {
+func SetupClusterReconciler(mgr ctrl.Manager, denyList string) error {
 	feController := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	beController := be.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	cnController := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)
@@ -30,6 +31,7 @@ func SetupClusterReconciler(mgr ctrl.Manager) error {
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor("celerdatacluster-controller"),
 		Scs:      subcs,
+		denyList: denyList,
 	}
 
 	if err := reconciler.SetupWithManager(mgr); err != nil {
@@ -49,6 +51,7 @@ func (r *CelerDataClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		WithEventFilter(predicates.NewGenericPredicates(r.denyList)).
 		Complete(r)
 }
 
@@ -57,7 +60,7 @@ func (r *CelerDataClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //  1. Warehouse CRD is an optional feature, and user may not install it.
 //  2. We try to use list Warehouses operation to check if Warehouse CRD exists or not.
 //  3. By Default, It needs the cluster scope permission.
-func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
+func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string, denyList string) error {
 	var listOpts []client.ListOption
 	if namespace != "" {
 		listOpts = append(listOpts, client.InNamespace(namespace))
@@ -75,6 +78,7 @@ func SetupWarehouseReconciler(mgr ctrl.Manager, namespace string) error {
 		Client:         mgr.GetClient(),
 		recorder:       mgr.GetEventRecorderFor("celerdatawarehouse-controller"),
 		subControllers: []subcontrollers.WarehouseSubController{cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)},
+		denyList:       denyList,
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		return err
@@ -92,5 +96,6 @@ func (r *CelerDataWarehouseReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		WithEventFilter(predicates.NewGenericPredicates(r.denyList)).
 		Complete(r)
 }

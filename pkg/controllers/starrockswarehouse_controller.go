@@ -38,6 +38,7 @@ type CelerDataWarehouseReconciler struct {
 	client.Client
 	recorder       record.EventRecorder
 	subControllers []subcontrollers.WarehouseSubController
+	denyList       string
 }
 
 // +kubebuilder:rbac:groups=celerdata.com,resources=celerdatawarehouses,verbs=get;list;watch;create;update;patch;delete

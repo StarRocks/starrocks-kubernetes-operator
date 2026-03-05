@@ -88,9 +88,10 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
 		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/common/... 			\
-		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/controllers/... 		\
+		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/controllers/... 	\
 		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/k8sutils/... 		\
 		github.com/CelerData/celerdata-kubernetes-operator-internal/pkg/subcontrollers/... 	\
+		github.com/CelerData/celerdata-kubernetes-operator/pkg/predicates/... 				\
 		-coverprofile=coverage.data -timeout 30m || return 1
 	@go tool cover -func=coverage.data
 
