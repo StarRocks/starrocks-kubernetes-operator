@@ -7235,6 +7235,8 @@ spec:
                 type: object
               serviceAccount:
                 type: string
+              waitForFullRollout:
+                type: boolean
             type: object
           status:
             properties:

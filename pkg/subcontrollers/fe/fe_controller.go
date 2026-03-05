@@ -257,3 +257,43 @@ func CheckFEReady(ctx context.Context, k8sClient client.Client, clusterNamespace
 
 	return false
 }
+
+// CheckFEFullyRolledOut checks if the FE StatefulSet is fully rolled out.
+// This is a stricter check than CheckFEReady - it ensures:
+// 1. All FE replicas are ready (ReadyReplicas == Replicas)
+// 2. StatefulSet revision is complete (UpdateRevision == CurrentRevision)
+//
+// Use this check before updating BE/CN to ensure a bad FE rollout doesn't cascade
+// to other components. If FE is stuck in a bad state, BE/CN updates will be paused.
+func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, clusterNamespace, clusterName string) bool {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	var sts appsv1.StatefulSet
+	stsName := load.Name(clusterName, (*srapi.StarRocksFeSpec)(nil))
+	if err := k8sClient.Get(ctx, types.NamespacedName{
+		Namespace: clusterNamespace,
+		Name:      stsName,
+	}, &sts); err != nil {
+		logger.Error(err, "get fe statefulset failed", "statefulsetName", stsName)
+		return false
+	}
+
+	// Check if all replicas are ready
+	if sts.Spec.Replicas != nil && sts.Status.ReadyReplicas < *sts.Spec.Replicas {
+		logger.Info("FE StatefulSet not fully ready",
+			"readyReplicas", sts.Status.ReadyReplicas,
+			"expectedReplicas", *sts.Spec.Replicas)
+		return false
+	}
+
+	// Check if revision is fully rolled out
+	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
+		logger.Info("FE StatefulSet rolling update in progress",
+			"currentRevision", sts.Status.CurrentRevision,
+			"updateRevision", sts.Status.UpdateRevision,
+			"updatedReplicas", sts.Status.UpdatedReplicas)
+		return false
+	}
+
+	return true
+}
