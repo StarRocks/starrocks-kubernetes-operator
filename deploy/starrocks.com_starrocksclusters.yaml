@@ -7235,6 +7235,8 @@ spec:
                         type: string
                     type: object
                 type: object
+              waitForFullRollout:
+                type: boolean
             type: object
           status:
             properties:
