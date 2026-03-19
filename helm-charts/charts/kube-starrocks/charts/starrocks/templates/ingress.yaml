@@ -1,0 +1,46 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "starrockscluster.name" . }}-ingress
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+    {{- include "starrockscluster.labels" . | nindent 4 }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - {{- if .host }}
+      host: {{ .host | quote }}
+      {{- end }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ default "Prefix" .pathType }}
+            backend:
+              service:
+                name: {{ default (printf "%s-fe-service" (include "starrockscluster.name" $)) $.Values.ingress.serviceName }}
+                port:
+                  {{- if kindIs "string" $.Values.ingress.servicePort }}
+                  name: {{ $.Values.ingress.servicePort }}
+                  {{- else }}
+                  number: {{ $.Values.ingress.servicePort }}
+                  {{- end }}
+          {{- end }}
+    {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
