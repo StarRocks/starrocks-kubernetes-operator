@@ -221,6 +221,30 @@ starrocks:
         #      - "all"
         params: {}
   
+  # Configure Ingress to expose FE TCP endpoint.
+  ingress:
+    enabled: false
+    # If empty, the cluster default ingress class is used.
+    ingressClassName: ""
+    annotations: {}
+    labels: {}
+    # Override backend service name. If empty, defaults to <cluster-name>-fe-service.
+    serviceName: ""
+    # Can be an integer port (for example, 9030) or named port (for example, "tcp").
+    servicePort: 9030
+    # hosts can define one or more rules.
+    hosts:
+      - host: ""
+        paths:
+          - path: /
+            pathType: Prefix
+    # TLS blocks for ingress.
+    # tls:
+    #   - secretName: starrocks-tls
+    #     hosts:
+    #       - starrocks.example.com
+    tls: []
+  
   # deploy a starrocks cluster
   starrocksCluster:
     # the name of starrockscluster cluster, if not set, the value of nameOverride fields will be used.
