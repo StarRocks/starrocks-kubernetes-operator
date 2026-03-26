@@ -97,6 +97,7 @@ http {
       set $fe_service "%[2]s";
       proxy_pass $fe_service;
       proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -108,6 +109,7 @@ http {
       set $fe_service "%[2]s";
       proxy_pass $fe_service;
       proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
       proxy_set_header Expect $http_expect;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -129,6 +131,7 @@ http {
       proxy_pass $redirect_uri;
       proxy_set_header Expect $http_expect;
       proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
