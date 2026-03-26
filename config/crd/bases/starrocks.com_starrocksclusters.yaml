@@ -15478,6 +15478,11 @@ spec:
                 description: DisasterRecoveryStatus represents the status of disaster
                   recovery.
                 properties:
+                  clusterUUID:
+                    description: |-
+                      ClusterUUID stores the recovered cluster UUID to ensure consistency after disaster recovery
+                      This prevents FE from creating a new cluster UUID when pods restart after recovery completion
+                    type: string
                   endTimestamp:
                     description: the unix time of ending disaster recovery.
                     format: int64
@@ -15493,6 +15498,11 @@ spec:
                     type: string
                   reason:
                     description: the reason of disaster recovery.
+                    type: string
+                  recoveredClusterSnapshot:
+                    description: |-
+                      RecoveredClusterSnapshot stores the snapshot path used for recovery
+                      This helps track which snapshot was used and maintain cluster state consistency
                     type: string
                   startTimestamp:
                     description: the unix time of starting disaster recovery.

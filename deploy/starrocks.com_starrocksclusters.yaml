@@ -7242,6 +7242,8 @@ spec:
             properties:
               disasterRecoveryStatus:
                 properties:
+                  clusterUUID:
+                    type: string
                   endTimestamp:
                     format: int64
                     type: integer
@@ -7251,6 +7253,8 @@ spec:
                   phase:
                     type: string
                   reason:
+                    type: string
+                  recoveredClusterSnapshot:
                     type: string
                   startTimestamp:
                     format: int64

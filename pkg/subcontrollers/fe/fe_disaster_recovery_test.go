@@ -606,7 +606,7 @@ func TestExtractClusterUUIDFromSnapshot(t *testing.T) {
 				snapshotPath: "s3://bucket/path/7351ce6a-f4a4-4937-a876-cb8801085aea/meta/image/snapshot_name",
 			},
 			want: "7351ce6a-f4a4-4937-a876-cb8801085aea",
-			},
+		},
 		{
 			name: "invalid path - no meta/image",
 			args: args{
