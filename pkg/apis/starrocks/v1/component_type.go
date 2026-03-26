@@ -320,6 +320,14 @@ type DisasterRecoveryStatus struct {
 	// the observed generation of disaster recovery.
 	// If the observed generation is less than the generation, it will trigger disaster recovery.
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// ClusterUUID stores the recovered cluster UUID to ensure consistency after disaster recovery
+	// This prevents FE from creating a new cluster UUID when pods restart after recovery completion
+	ClusterUUID string `json:"clusterUUID,omitempty"`
+
+	// RecoveredClusterSnapshot stores the snapshot path used for recovery
+	// This helps track which snapshot was used and maintain cluster state consistency
+	RecoveredClusterSnapshot string `json:"recoveredClusterSnapshot,omitempty"`
 }
 
 // NewDisasterRecoveryStatus creates a new disaster recovery status which the phase is todo.

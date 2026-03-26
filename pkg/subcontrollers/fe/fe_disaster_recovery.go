@@ -80,6 +80,15 @@ func EnterDisasterRecoveryMode(ctx context.Context, k8sClient client.Client,
 			drStatus.Phase = v1.DRPhaseDone
 			drStatus.Reason = "disaster recovery is done"
 			drStatus.EndTimestamp = time.Now().Unix()
+
+			// Extract and store cluster state information for future pod restarts
+			if drStatus.ClusterUUID == "" {
+				clusterUUID := extractClusterStateFromConfigMaps(ctx, k8sClient, src.Namespace, feSpec.ConfigMaps)
+				if clusterUUID != "" {
+					drStatus.ClusterUUID = clusterUUID
+					logger.Info("extracted cluster UUID for state preservation", "clusterUUID", clusterUUID)
+				}
+			}
 		}
 	}
 	return nil
@@ -194,4 +203,125 @@ func CheckFEReadyInDisasterRecovery(ctx context.Context, k8sClient client.Client
 		}
 	}
 	return true
+}
+
+// ShouldPreserveClusterState determines if cluster state should be preserved in StatefulSet
+// This returns true if either disaster recovery is active OR disaster recovery has completed
+// and we need to preserve the recovered cluster identity to prevent UUID regeneration
+func ShouldPreserveClusterState(drSpec *v1.DisasterRecovery, drStatus *v1.DisasterRecoveryStatus,
+	feConfig map[string]interface{}) (bool, int32) {
+	// Check if we should enter DR mode (existing logic)
+	shouldEnter, queryPort := ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig)
+	if shouldEnter {
+		return true, queryPort
+	}
+
+	// Check if disaster recovery has completed and we have cluster state to preserve
+	if drSpec != nil && drSpec.Enabled && drStatus != nil &&
+		drStatus.Phase == v1.DRPhaseDone && drStatus.ClusterUUID != "" &&
+		IsRunInSharedDataMode(feConfig) {
+		return true, rutils.GetPort(feConfig, rutils.QUERY_PORT)
+	}
+
+	return false, 0
+}
+
+// ExtractClusterUUIDFromSnapshot attempts to extract cluster UUID from cluster snapshot path
+// The snapshot path format is typically: s3://bucket/path/<cluster-uuid>/meta/image/snapshot_name
+func ExtractClusterUUIDFromSnapshot(snapshotPath string) string {
+	if snapshotPath == "" {
+		return ""
+	}
+
+	// Split by "/" and find the UUID part (should be before /meta/image/)
+	parts := strings.Split(snapshotPath, "/")
+	for i, part := range parts {
+		// Look for the part that comes before "meta"
+		if i < len(parts)-2 && parts[i+1] == "meta" && parts[i+2] == "image" {
+			// Basic UUID validation (36 characters with dashes in right positions)
+			if len(part) == 36 && strings.Count(part, "-") == 4 {
+				return part
+			}
+		}
+	}
+	return ""
+}
+
+// extractClusterStateFromConfigMaps extracts cluster UUID from the cluster_snapshot.yaml ConfigMap
+func extractClusterStateFromConfigMaps(ctx context.Context, k8sClient client.Client,
+	namespace string, configMaps []v1.ConfigMapReference) string {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	// Find the cluster_snapshot.yaml ConfigMap
+	for _, cmRef := range configMaps {
+		if strings.Contains(cmRef.SubPath, "cluster_snapshot.yaml") {
+			// Read the ConfigMap
+			cm := &corev1.ConfigMap{}
+			err := k8sClient.Get(ctx, client.ObjectKey{
+				Name:      cmRef.Name,
+				Namespace: namespace,
+			}, cm)
+			if err != nil {
+				logger.Error(err, "failed to read cluster snapshot ConfigMap", "configMap", cmRef.Name)
+				continue
+			}
+
+			// Parse the cluster_snapshot.yaml content
+			if snapshotYaml, exists := cm.Data["cluster_snapshot.yaml"]; exists {
+				clusterUUID := extractClusterUUIDFromSnapshotYaml(snapshotYaml)
+				if clusterUUID != "" {
+					return clusterUUID
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// extractClusterUUIDFromSnapshotYaml parses cluster_snapshot.yaml content to extract cluster UUID
+func extractClusterUUIDFromSnapshotYaml(yamlContent string) string {
+	// Look for cluster_snapshot_path line in the YAML
+	lines := strings.Split(yamlContent, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "cluster_snapshot_path:") {
+			// Extract the path value
+			parts := strings.SplitN(trimmed, ":", 2)
+			if len(parts) == 2 {
+				snapshotPath := strings.TrimSpace(parts[1])
+				return ExtractClusterUUIDFromSnapshot(snapshotPath)
+			}
+		}
+	}
+	return ""
+}
+
+// RewriteStatefulSetForClusterStatePreservation modifies StatefulSet to preserve cluster state
+// This is used both during active disaster recovery and after recovery completion
+func RewriteStatefulSetForClusterStatePreservation(expectSts *appsv1.StatefulSet,
+	drSpec *v1.DisasterRecovery, drStatus *v1.DisasterRecoveryStatus, queryPort int32) {
+
+	podTemplate := &expectSts.Spec.Template
+	feContainer := &(podTemplate.Spec.Containers[0])
+
+	if drStatus != nil && drStatus.Phase == v1.DRPhaseDone && drStatus.ClusterUUID != "" {
+		// Post-disaster recovery: preserve cluster state without active recovery
+		feContainer.Env = append(feContainer.Env,
+			corev1.EnvVar{
+				Name:  "RECOVERED_CLUSTER_UUID",
+				Value: drStatus.ClusterUUID,
+			},
+			corev1.EnvVar{
+				Name:  "USE_RECOVERED_CLUSTER_STATE",
+				Value: "true",
+			},
+		)
+		// Use normal probes for post-recovery operation
+		if feContainer.ReadinessProbe == nil {
+			feContainer.ReadinessProbe = PortReadyProbe(int(queryPort))
+		}
+	} else {
+		// Active disaster recovery: use existing behavior
+		rewriteStatefulSetForDisasterRecovery(expectSts, drSpec.Generation, queryPort)
+	}
 }

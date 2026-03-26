@@ -502,3 +502,131 @@ func TestCheckFEReadyInDisasterRecovery(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldPreserveClusterState(t *testing.T) {
+	type args struct {
+		drSpec   *v1.DisasterRecovery
+		drStatus *v1.DisasterRecoveryStatus
+		config   map[string]interface{}
+	}
+	tests := []struct {
+		name     string
+		args     args
+		want     bool
+		wantPort int32
+	}{
+		{
+			name: "disaster recovery is active - should preserve state",
+			args: args{
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
+				},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDoing,
+					ObservedGeneration: 1,
+				},
+				config: map[string]interface{}{
+					"run_mode": "shared_data",
+				},
+			},
+			want:     true,
+			wantPort: 9030,
+		},
+		{
+			name: "disaster recovery is done with cluster UUID - should preserve state",
+			args: args{
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
+				},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDone,
+					ObservedGeneration: 1,
+					ClusterUUID:        "test-uuid-1234-5678-9abc-def0",
+				},
+				config: map[string]interface{}{
+					"run_mode": "shared_data",
+				},
+			},
+			want:     true,
+			wantPort: 9030,
+		},
+		{
+			name: "disaster recovery is done but no cluster UUID - should not preserve state",
+			args: args{
+				drSpec: &v1.DisasterRecovery{
+					Enabled:    true,
+					Generation: 1,
+				},
+				drStatus: &v1.DisasterRecoveryStatus{
+					Phase:              v1.DRPhaseDone,
+					ObservedGeneration: 1,
+					ClusterUUID:        "",
+				},
+				config: map[string]interface{}{
+					"run_mode": "shared_data",
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotPort := ShouldPreserveClusterState(tt.args.drSpec, tt.args.drStatus, tt.args.config)
+			if got != tt.want {
+				t.Errorf("ShouldPreserveClusterState() got = %v, want %v", got, tt.want)
+			}
+			if got && gotPort != tt.wantPort {
+				t.Errorf("ShouldPreserveClusterState() gotPort = %v, want %v", gotPort, tt.wantPort)
+			}
+		})
+	}
+}
+
+func TestExtractClusterUUIDFromSnapshot(t *testing.T) {
+	type args struct {
+		snapshotPath string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "valid snapshot path with UUID",
+			args: args{
+				snapshotPath: "s3://dev-am-data-iceberg/starrocks-shared/randf/10573050-affb-4693-b5d8-7e64520b816e/meta/image/automated_cluster_snapshot_1774474184679",
+			},
+			want: "10573050-affb-4693-b5d8-7e64520b816e",
+		},
+		{
+			name: "different S3 path format",
+			args: args{
+				snapshotPath: "s3://bucket/path/7351ce6a-f4a4-4937-a876-cb8801085aea/meta/image/snapshot_name",
+			},
+			want: "7351ce6a-f4a4-4937-a876-cb8801085aea",
+			},
+		{
+			name: "invalid path - no meta/image",
+			args: args{
+				snapshotPath: "s3://bucket/path/some-uuid-1234-5678-9abc-def0/data/file",
+			},
+			want: "",
+		},
+		{
+			name: "empty path",
+			args: args{
+				snapshotPath: "",
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ExtractClusterUUIDFromSnapshot(tt.args.snapshotPath); got != tt.want {
+				t.Errorf("ExtractClusterUUIDFromSnapshot() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

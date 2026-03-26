@@ -113,6 +113,8 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	drSpec := src.Spec.DisasterRecovery
 	drStatus := src.Status.DisasterRecoveryStatus
 	shouldEnterDRMode, queryPort := ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig)
+	shouldPreserveState, stateQueryPort := ShouldPreserveClusterState(drSpec, drStatus, feConfig)
+
 	if shouldEnterDRMode {
 		logger.Info("should enter disaster recovery mode")
 		if drStatus == nil {
@@ -124,9 +126,12 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 			return err
 		}
 		logger.Info("deploy statefulset", "statefulset", expectSts)
+	} else if shouldPreserveState {
+		logger.Info("preserving cluster state after disaster recovery completion")
+		RewriteStatefulSetForClusterStatePreservation(&expectSts, drSpec, drStatus, stateQueryPort)
 	}
 
-	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode, rutils.StatefulSetDeepEqual); err != nil {
+	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode || shouldPreserveState, rutils.StatefulSetDeepEqual); err != nil {
 		logger.Error(err, "deploy statefulset failed")
 		return err
 	}
