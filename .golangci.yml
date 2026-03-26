@@ -1,6 +1,5 @@
-version: "2"
 linters:
-  default: none
+  disable-all: true
   enable:
     - bodyclose
     - depguard
@@ -28,7 +27,8 @@ linters:
     - unparam
     - unused
     - whitespace
-  settings:
+
+linters-settings:
     depguard:
       rules:
         logger:
@@ -76,7 +76,8 @@ linters:
         - name: unexported-return
           disabled: true
         - name: unused-parameter
-  exclusions:
+
+issues:
     generated: lax
     presets:
       - comments
