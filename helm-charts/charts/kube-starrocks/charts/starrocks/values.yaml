@@ -95,17 +95,19 @@ metrics:
       #      - "all"
       params: {}
 
-# Configure Ingress to expose FE TCP endpoint.
+# Configure Ingress to expose the FE MySQL endpoint.
 ingress:
   enabled: false
+  # Override ingress resource name. If empty, defaults to <cluster-name>-mysql-ingress.
+  name: ""
   # If empty, the cluster default ingress class is used.
   ingressClassName: ""
   annotations: {}
   labels: {}
-  # Override backend service name. If empty, defaults to <cluster-name>-fe-service.
-  serviceName: ""
+  # Override backend MySQL service name. If empty, defaults to <cluster-name>-fe-service.
+  mysqlServiceName: ""
   # Can be an integer port (for example, 9030) or named port (for example, "tcp").
-  servicePort: 9030
+  mysqlServicePort: 9030
   # hosts can define one or more rules.
   hosts:
     - host: ""
