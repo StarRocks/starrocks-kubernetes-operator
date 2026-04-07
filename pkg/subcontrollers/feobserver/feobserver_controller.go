@@ -18,14 +18,12 @@ package feobserver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,7 +34,6 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
@@ -63,12 +60,15 @@ func (fc *FeObserverController) GetControllerName() string {
 func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionSyncCluster)
 	ctx = logr.NewContext(ctx, logger)
-	if src.Spec.StarRocksFeObserverSpec == nil {
-		logger.Info("src.Spec.StarRocksFeObserverSpec == nil, skip sync fe observer")
+	feSpec := src.Spec.StarRocksFeSpec
+	observerSpec := feSpec.ToObserverSpec()
+	if observerSpec == nil {
+		logger.Info("fe observer is disabled, clear observer resources")
+		if err := fc.clearObserverResources(ctx, src); err != nil {
+			logger.Error(err, "clear fe observer resources failed")
+			return err
+		}
 		return nil
-	}
-	if src.Spec.StarRocksFeSpec == nil {
-		return fmt.Errorf("starRocksFeSpec is required before deploying fe observer")
 	}
 
 	var err error
@@ -79,33 +79,21 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 		}
 	}()
 
-	observerSpec := src.Spec.StarRocksFeObserverSpec
-	if err = fc.Validating(observerSpec); err != nil {
+	if err = fc.Validating(feSpec); err != nil {
 		return err
 	}
 
 	// get the fe observer configMap for resolve ports
-	logger.V(log.DebugLevel).Info("get fe observer configMap to resolve ports", "ConfigMapInfo", observerSpec.ConfigMapInfo)
+	logger.V(log.DebugLevel).Info("get fe observer configMap to resolve ports", "ConfigMapInfo", observerSpec.ComponentSpec.ConfigMapInfo)
 	observerConfig, err := GetFEObserverConfig(ctx, fc.Client, observerSpec, src.Namespace)
 	if err != nil {
-		logger.Error(err, "get fe observer config failed", "ConfigMapInfo", observerSpec.ConfigMapInfo)
+		logger.Error(err, "get fe observer config failed", "ConfigMapInfo", observerSpec.ComponentSpec.ConfigMapInfo)
 		return err
 	}
 
-	// generate new fe observer service.
-	logger.V(log.DebugLevel).Info("build fe observer service", "StarRocksCluster", src)
+	// generate new fe observer statefulset.
+	logger.V(log.DebugLevel).Info("build fe observer statefulset", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
-	defaultLabels := load.Labels(src.Name, observerSpec)
-	svc := rutils.BuildExternalService(object, observerSpec, observerConfig, load.Selector(src.Name, observerSpec), defaultLabels)
-	searchServiceName := service.SearchServiceName(src.Name, observerSpec)
-	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
-		{
-			Name:        "query-port",
-			Port:        rutils.GetPort(observerConfig, rutils.QUERY_PORT),
-			TargetPort:  intstr.FromInt(int(rutils.GetPort(observerConfig, rutils.QUERY_PORT))),
-			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
-		},
-	}, defaultLabels)
 
 	podTemplateSpec, err := fc.buildPodTemplate(src, observerConfig)
 	if err != nil {
@@ -113,20 +101,15 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 		return err
 	}
 	expectSts := statefulset.MakeStatefulset(object, observerSpec, podTemplateSpec)
+	expectSts.Spec.ServiceName = feSearchServiceName(src.Name)
 	err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, false, rutils.StatefulSetDeepEqual)
 	if err != nil {
 		logger.Error(err, "fe observer statefulset failed", "StarRocksCluster", src)
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, rutils.ServiceDeepEqual); err != nil {
-		logger.Error(err, "deploy search service failed", "internalService", internalService)
-		fc.Recorder.Event(src, corev1.EventTypeWarning, "DeployFeObserverFailed", err.Error())
-		return err
-	}
-
-	if err = k8sutils.ApplyService(ctx, fc.Client, &svc, rutils.ServiceDeepEqual); err != nil {
-		logger.Error(err, "deploy external service failed", "externalService", svc)
+	if err = fc.deleteLegacyObserverServices(ctx, src); err != nil {
+		logger.Error(err, "delete legacy fe observer services failed")
 		return err
 	}
 
@@ -135,7 +118,8 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 
 // UpdateClusterStatus update the all resource status about fe observer.
 func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srapi.StarRocksCluster) error {
-	observerSpec := src.Spec.StarRocksFeObserverSpec
+	feSpec := src.Spec.StarRocksFeSpec
+	observerSpec := feSpec.ToObserverSpec()
 	if observerSpec == nil {
 		src.Status.StarRocksFeObserverStatus = nil
 		return nil
@@ -152,7 +136,7 @@ func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srap
 	}
 
 	src.Status.StarRocksFeObserverStatus = fs
-	fs.ServiceName = service.ExternalServiceName(src.Name, observerSpec)
+	fs.ServiceName = feExternalServiceName(src.Name)
 	statefulSetName := load.Name(src.Name, observerSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
@@ -182,36 +166,45 @@ func (fc *FeObserverController) ClearCluster(ctx context.Context, src *srapi.Sta
 		return nil
 	}
 
-	observerSpec := src.Spec.StarRocksFeObserverSpec
-	statefulSetName := load.Name(src.Name, observerSpec)
-	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
-		logger.Error(err, "delete statefulset failed", "statefulSetName", statefulSetName)
-		return err
-	}
-
-	searchServiceName := service.SearchServiceName(src.Name, observerSpec)
-	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
-		logger.Error(err, "delete search service failed", "searchServiceName", searchServiceName)
-		return err
-	}
-	externalServiceName := service.ExternalServiceName(src.Name, observerSpec)
-	err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName)
-	if err != nil && !apierrors.IsNotFound(err) {
-		logger.Error(err, "delete external service failed", "externalServiceName", externalServiceName)
-		return err
-	}
-
-	return nil
+	return fc.clearObserverResources(ctx, src)
 }
 
-func (fc *FeObserverController) Validating(observerSpec *srapi.StarRocksFeObserverSpec) error {
-	for i := range observerSpec.StorageVolumes {
-		if err := observerSpec.StorageVolumes[i].Validate(); err != nil {
+func (fc *FeObserverController) Validating(feSpec *srapi.StarRocksFeSpec) error {
+	for i := range feSpec.StorageVolumes {
+		if err := feSpec.StorageVolumes[i].Validate(); err != nil {
 			return err
 		}
 	}
-	if err := srapi.ValidUpdateStrategy(observerSpec.UpdateStrategy); err != nil {
+	if err := srapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (fc *FeObserverController) clearObserverResources(ctx context.Context, src *srapi.StarRocksCluster) error {
+	statefulSetName := load.Name(src.Name, (*srapi.StarRocksFeObserverSpec)(nil))
+	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	return fc.deleteLegacyObserverServices(ctx, src)
+}
+
+func (fc *FeObserverController) deleteLegacyObserverServices(ctx context.Context, src *srapi.StarRocksCluster) error {
+	searchServiceName := src.Name + "-" + srapi.DEFAULT_FE_OBSERVER + "-search"
+	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	externalServiceName := src.Name + "-" + srapi.DEFAULT_FE_OBSERVER + "-service"
+	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName); err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
+}
+
+func feExternalServiceName(clusterName string) string {
+	return clusterName + "-" + srapi.DEFAULT_FE + "-service"
+}
+
+func feSearchServiceName(clusterName string) string {
+	return clusterName + "-" + srapi.DEFAULT_FE + "-search"
 }

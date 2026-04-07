@@ -13,7 +13,7 @@ import (
 // GetFEObserverConfig get the fe observer config from configMap.
 func GetFEObserverConfig(ctx context.Context, client client.Client,
 	observerSpec *srapi.StarRocksFeObserverSpec, namespace string) (map[string]interface{}, error) {
-	return k8sutils.GetConfig(ctx, client, observerSpec.ConfigMapInfo,
-		observerSpec.ConfigMaps, pod.GetConfigDir(observerSpec), "fe.conf",
+	return k8sutils.GetConfig(ctx, client, observerSpec.ComponentSpec.ConfigMapInfo,
+		observerSpec.ComponentSpec.ConfigMaps, pod.GetConfigDir(observerSpec), "fe.conf",
 		namespace)
 }

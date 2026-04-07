@@ -79,7 +79,7 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 		}
 	case *v1.StarRocksFeObserverSpec:
 		if v != nil {
-			addLabels(labels, v.PodLabels)
+			addLabels(labels, v.ComponentSpec.PodLabels)
 		}
 	case *v1.StarRocksFeProxySpec:
 		if v != nil {

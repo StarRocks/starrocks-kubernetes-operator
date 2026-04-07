@@ -35,7 +35,6 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	rutils "github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/resource_utils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feobserver"
@@ -65,23 +64,29 @@ func TestFeObserver_ClearCluster(t *testing.T) {
 		},
 	}
 
+	src.Spec.StarRocksFeSpec = &srapi.StarRocksFeSpec{
+		ObserverSpec: &srapi.StarRocksFeObserverSpec{
+			Enabled: true,
+		},
+	}
+
 	sts := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      load.Name(src.Name, src.Spec.StarRocksFeObserverSpec),
+			Name:      "test-fe-observer",
 			Namespace: "default",
 		},
 	}
 
 	svc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec),
+			Name:      "test-fe-observer-service",
 			Namespace: "default",
 		},
 	}
 
 	ssvc := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      service.SearchServiceName(src.Name, src.Spec.StarRocksFeObserverSpec),
+			Name:      "test-fe-observer-search",
 			Namespace: "default",
 		},
 	}
@@ -111,15 +116,8 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 			StarRocksFeSpec: &srapi.StarRocksFeSpec{
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
 					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Image: "starrocks.com/cn:2.40",
-					},
-				},
-			},
-			StarRocksFeObserverSpec: &srapi.StarRocksFeObserverSpec{
-				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
-					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-						Replicas: rutils.GetInt32Pointer(1),
-						Image:    "starrocks.com/cn:2.40",
+						Replicas: rutils.GetInt32Pointer(3),
+						Image:    "starrocks.com/fe:2.40",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
@@ -127,6 +125,10 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 							},
 						},
 					},
+				},
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{
+					Enabled:        true,
+					ObserverNumber: rutils.GetInt32Pointer(2),
 				},
 			},
 		},
@@ -141,19 +143,65 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	status := src.Status.StarRocksFeObserverStatus
 	require.NotNil(t, status)
 	require.Equal(t, srapi.ComponentReconciling, status.Phase)
-	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), status.ServiceName)
+	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), status.ServiceName)
 
 	var sts appsv1.StatefulSet
 	require.NoError(t, fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &sts))
-	var asvc corev1.Service
-	require.NoError(t, fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &asvc))
-	var rsvc corev1.Service
-	require.NoError(t, fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: service.SearchServiceName(src.Name, src.Spec.StarRocksFeObserverSpec), Namespace: "default"}, &rsvc))
+		types.NamespacedName{Name: "test-fe-observer", Namespace: "default"}, &sts))
+	require.Equal(t, int32(2), *sts.Spec.Replicas)
+	var observerExternalSvc corev1.Service
+	err = fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: "test-fe-observer-service", Namespace: "default"}, &observerExternalSvc)
+	require.True(t, apierrors.IsNotFound(err))
+	var observerSearchSvc corev1.Service
+	err = fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: "test-fe-observer-search", Namespace: "default"}, &observerSearchSvc)
+	require.True(t, apierrors.IsNotFound(err))
 
-	require.Equal(t, asvc.Spec.Selector, sts.Spec.Selector.MatchLabels)
+	require.Equal(t, service.SearchServiceName(src.Name, src.Spec.StarRocksFeSpec), sts.Spec.ServiceName)
+	require.Equal(t, map[string]string{
+		srapi.OwnerReference:    "test-fe-observer",
+		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
+	}, sts.Spec.Selector.MatchLabels)
+	require.Equal(t, "starrocks.com/fe:2.40", sts.Spec.Template.Spec.Containers[0].Image)
+	require.Equal(t, corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("4"),
+		corev1.ResourceMemory: resource.MustParse("16G"),
+	}, sts.Spec.Template.Spec.Containers[0].Resources.Requests)
+	require.Equal(t, []string{"$(FE_SERVICE_NAME)"}, sts.Spec.Template.Spec.Containers[0].Args)
+}
+
+func TestFeObserver_SyncClusterDisabled(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image: "starrocks.com/fe:2.40",
+					},
+				},
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{
+					Enabled: false,
+				},
+			},
+		},
+	}
+
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	err := fc.SyncCluster(context.Background(), src)
+	require.NoError(t, err)
+	err = fc.UpdateClusterStatus(context.Background(), src)
+	require.NoError(t, err)
+	require.Nil(t, src.Status.StarRocksFeObserverStatus)
+
+	var sts appsv1.StatefulSet
+	err = fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: "test-fe-observer", Namespace: "default"}, &sts)
+	require.True(t, apierrors.IsNotFound(err))
 }
 
 func TestFeObserver_Ready(t *testing.T) {
@@ -257,7 +305,7 @@ func TestGetFEObserverConfig(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				observerSpec: &srapi.StarRocksFeObserverSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					ComponentSpec: srapi.StarRocksComponentSpec{
 						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
 							ConfigMapInfo: srapi.ConfigMapInfo{
 								ConfigMapName: "feobserver-config",
@@ -288,7 +336,7 @@ func TestGetFEObserverConfig(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				observerSpec: &srapi.StarRocksFeObserverSpec{
-					StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					ComponentSpec: srapi.StarRocksComponentSpec{
 						ConfigMaps: []srapi.ConfigMapReference{
 							{
 								Name:      "feobserver-config",

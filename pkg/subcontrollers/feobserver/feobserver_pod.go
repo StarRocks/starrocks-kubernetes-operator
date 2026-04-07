@@ -38,7 +38,8 @@ const (
 func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster,
 	config map[string]interface{}) (*corev1.PodTemplateSpec, error) {
 	metaName := src.Name + "-" + srapi.DEFAULT_FE_OBSERVER
-	observerSpec := src.Spec.StarRocksFeObserverSpec
+	observerSpec := src.Spec.StarRocksFeSpec.ToObserverSpec()
+	componentSpec := observerSpec.ComponentSpec
 
 	vols, volMounts := pod.MountStorageVolumes(observerSpec)
 	// add default volume about log, meta if not configure.
@@ -50,28 +51,28 @@ func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster,
 	}
 
 	// mount configmap, secrets to pod if needed
-	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, observerSpec.ConfigMapInfo, _feConfigMountPath)
-	vols, volMounts = pod.MountConfigMaps(observerSpec, vols, volMounts, observerSpec.ConfigMaps)
-	vols, volMounts = pod.MountSecrets(vols, volMounts, observerSpec.Secrets)
+	vols, volMounts = pod.MountConfigMapInfo(vols, volMounts, componentSpec.ConfigMapInfo, _feConfigMountPath)
+	vols, volMounts = pod.MountConfigMaps(observerSpec, vols, volMounts, componentSpec.ConfigMaps)
+	vols, volMounts = pod.MountSecrets(vols, volMounts, componentSpec.Secrets)
 	if err := k8sutils.CheckVolumes(vols, volMounts); err != nil {
 		return nil, err
 	}
 
-	feServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeObserverSpec)
+	feServiceName := service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec)
 	envs := pod.Envs(observerSpec, config, feServiceName, src.Namespace, observerSpec.FeEnvVars)
 	envs = append(envs, corev1.EnvVar{
 		Name:  srapi.FE_SERVICE_NAME,
-		Value: service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec),
+		Value: feServiceName,
 	})
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feObserverContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE_OBSERVER,
-		Image:           observerSpec.Image,
+		Image:           componentSpec.Image,
 		Command:         pod.ContainerCommand(observerSpec),
 		Args:            pod.ContainerArgs(observerSpec),
 		Ports:           pod.Ports(observerSpec, config),
 		Env:             envs,
-		Resources:       observerSpec.ResourceRequirements,
+		Resources:       componentSpec.ResourceRequirements,
 		VolumeMounts:    volMounts,
 		ImagePullPolicy: observerSpec.GetImagePullPolicy(),
 		StartupProbe:    pod.StartupProbe(observerSpec.GetStartupProbeFailureSeconds(), httpPort, pod.HEALTH_API_PATH),
@@ -84,7 +85,7 @@ func (fc *FeObserverController) buildPodTemplate(src *srapi.StarRocksCluster,
 		feObserverContainer.WorkingDir = pod.GetStarRocksRootPath(observerSpec.FeEnvVars)
 	}
 
-	if observerSpec.ConfigMapInfo.ConfigMapName != "" && observerSpec.ConfigMapInfo.ResolveKey != "" {
+	if componentSpec.ConfigMapInfo.ConfigMapName != "" && componentSpec.ConfigMapInfo.ResolveKey != "" {
 		feObserverContainer.Env = append(feObserverContainer.Env, corev1.EnvVar{
 			Name:  _envFeConfigMountPath,
 			Value: _feConfigMountPath,
