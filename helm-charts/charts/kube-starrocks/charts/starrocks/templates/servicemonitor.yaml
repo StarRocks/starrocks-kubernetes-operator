@@ -34,6 +34,11 @@ spec:
           targetLabel: app_starrocks_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "starrockscluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "starrockscluster.namespace" . }}
@@ -66,6 +71,11 @@ spec:
           targetLabel: app_starrocks_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "starrockscluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "starrockscluster.namespace" . }}
@@ -100,6 +110,11 @@ spec:
           targetLabel: app_starrocks_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "starrockscluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "starrockscluster.namespace" . }}
