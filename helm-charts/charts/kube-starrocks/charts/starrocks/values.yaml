@@ -5,6 +5,16 @@
 # nameOverride is used to set the prefix of the resources created by starrocks chart.
 nameOverride: "kube-starrocks"
 
+# Global image registry prefix for use by parent charts.
+# When set, it is prepended to every image repository in the chart.
+# For example, setting registry: "my-registry.example.com" transforms
+# "starrocks/fe-ubuntu:tag" into "my-registry.example.com/starrocks/fe-ubuntu:tag".
+# This can be overridden by starrocksCluster.componentValues.image.registry (cluster-wide)
+# or by the individual image.registry fields in each component spec.
+global:
+  image:
+    registry: ""
+
 # This configuration is used to modify the root password during initial deployment.
 # After deployment is completed, it won't take effect to modify the password here and to do a `helm upgrade`.
 # It also supports providing a secret name that contains a password, using the password in the secret instead of the plaintext in the values.yaml.
@@ -128,6 +138,9 @@ starrocksCluster:
   componentValues:
     image:
       tag: "3.5-latest"
+      # registry overrides global.image.registry for all components (FE, BE, CN).
+      # Individual component image.registry fields take priority over this.
+      registry: ""
     # hostAliases allows adding entries to /etc/hosts inside the containers.
     hostAliases: []
       # - ip: "127.0.0.1"
@@ -199,6 +212,8 @@ starrocksFESpec:
     # image sliced by "repository:tag"
     repository: starrocks/fe-ubuntu
     tag: ""
+    # registry overrides the global image.registry for this component only.
+    registry: ""
   imagePullPolicy: IfNotPresent
   # Specify the entrypoint for FE.
   # By default, the operator will use '/opt/starrocks/fe_entrypoint.sh' as a command and use '$(FE_SERVICE_NAME)' as args in the container spec.
@@ -386,7 +401,7 @@ starrocksFESpec:
     #   mountPath: /tmp
   # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
   # The whenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
-  #	The whenScaled field is only supported for the CN component.
+  # The whenScaled field is only supported for the CN component.
   persistentVolumeClaimRetentionPolicy:
     # whenDeleted: Delete
   # the config for start fe. the base information as follows.
@@ -526,6 +541,8 @@ starrocksCnSpec:
     # image sliced by "repository:tag"
     repository: starrocks/cn-ubuntu
     tag: ""
+    # registry overrides the global image.registry for this component only.
+    registry: ""
   imagePullPolicy: IfNotPresent
   # Specify the entrypoint for CN.
   # By default, the operator will use '/opt/starrocks/cn_entrypoint.sh' as command, and use '$(FE_SERVICE_NAME)' as args in container spec.
@@ -891,6 +908,8 @@ starrocksBeSpec:
     # image sliced by "repository:tag"
     repository: starrocks/be-ubuntu
     tag: ""
+    # registry overrides the global image.registry for this component only.
+    registry: ""
   imagePullPolicy: IfNotPresent
   # Specify the entrypoint for BE.
   # By default, the operator will use '/opt/starrocks/be_entrypoint.sh' as command, and use '$(FE_SERVICE_NAME)' as args in the container spec.
@@ -1249,6 +1268,8 @@ starrocksFeProxySpec:
   image:
     repository: ""
     tag: ""
+    # registry overrides the global image.registry for this component only.
+    registry: ""
   resources:
     requests:
       cpu: 1
