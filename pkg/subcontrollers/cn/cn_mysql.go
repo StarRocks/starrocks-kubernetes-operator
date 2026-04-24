@@ -29,6 +29,7 @@ type SQLExecutor struct {
 	FeServiceName      string
 	FeServiceNamespace string
 	FeServicePort      string
+	FeTlsMode          string
 }
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
@@ -37,6 +38,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 	rootPassword := ""
 	feServiceName := ""
 	feServicePort := ""
+	feTlsMode := ""
 	logger := logr.FromContextOrDiscard(ctx)
 
 	var sts appsv1.StatefulSet
@@ -69,6 +71,12 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 				logger.Error(err, "failed to get FE_QUERY_PORT from env vars")
 				return nil, err
 			}
+		case "FE_TLS_MODE":
+			feTlsMode, err = k8sutils.GetEnvVarValue(ctx, k8sClient, namespace, envVar)
+			if err != nil {
+				logger.Error(err, "failed to get FE_TLS_MODE from env vars")
+				return nil, err
+			}
 		}
 	}
 
@@ -77,6 +85,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 		FeServiceName:      feServiceName,
 		FeServiceNamespace: namespace,
 		FeServicePort:      feServicePort,
+		FeTlsMode:          feTlsMode,
 	}, nil
 }
 
@@ -85,8 +94,15 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, statement string) error {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		var dsn string
+		if executor.FeTlsMode == "true" || executor.FeTlsMode == "skip-verify" || executor.FeTlsMode == "preferred" {
+			dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/?tls=%s",
+				executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort, executor.FeTlsMode)
+		} else {
+			dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
+				executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort)
+		}
+		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			return err
 		}
@@ -104,8 +120,15 @@ func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, sta
 func (executor *SQLExecutor) QueryContext(ctx context.Context, db *sql.DB, statements string) (*sql.Rows, error) {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		var dsn string
+		if executor.FeTlsMode == "true" || executor.FeTlsMode == "skip-verify" || executor.FeTlsMode == "preferred" {
+			dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/?tls=%s",
+				executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort, executor.FeTlsMode)
+		} else {
+			dsn = fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
+				executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort)
+		}
+		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			return nil, err
 		}
