@@ -739,11 +739,11 @@ Get the value of podLabels field in the starrocksBeSpec
 
 {{/*
 Build the Datadog log annotation value for a given component.
-Arguments (passed as a dict via "call"):
-  . = root context (has .Values)
-  $component = "fe", "be", or "cn"
-  $multilinePattern = regex pattern string for multi_line rule
-  $multilineName = name for the multi_line rule
+Arguments (passed as a dict via "include"):
+  .root = root context (has .Values)
+  .component = "fe", "be", or "cn"
+  .multilinePattern = regex pattern string for multi_line rule
+  .multilineName = name for the multi_line rule
 Usage: include "starrockscluster.datadog.log.annotation" (dict "root" . "component" "fe" "multilinePattern" "..." "multilineName" "...")
 */}}
 {{- define "starrockscluster.datadog.log.annotation" -}}
