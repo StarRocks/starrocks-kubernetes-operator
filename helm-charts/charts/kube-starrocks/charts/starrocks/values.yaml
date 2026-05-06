@@ -51,6 +51,11 @@ datadog:
     # besides the attributes you added, the chart will append "source" and "service" attributes to the log config.
     # see https://docs.datadoghq.com/containers/kubernetes/log/?tab=operator for more details.
     logConfig: '{}' # e.g., '{"app": "starrocks", "tags": ["aa", "bb"]}'
+    # Enable multiline log parsing rules compatible with the Datadog agent.
+    # When true, a log_processing_rules entry of type "multi_line" is added to the log annotation.
+    # FE nodes use a Java (log4j) timestamp pattern; BE and CN nodes use a C++ glog timestamp pattern.
+    # If logConfig already contains "log_processing_rules", it takes priority and this flag is ignored.
+    enableMultilineLogParsing: false
   metrics:
     enabled: false
   profiling:
