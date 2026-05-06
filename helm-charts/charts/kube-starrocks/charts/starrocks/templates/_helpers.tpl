@@ -738,6 +738,39 @@ Get the value of podLabels field in the starrocksBeSpec
 {{- end -}}
 
 {{/*
+Build the Datadog log annotation value for a given component.
+Arguments (passed as a dict via "call"):
+  . = root context (has .Values)
+  $component = "fe", "be", or "cn"
+  $multilinePattern = regex pattern string for multi_line rule
+  $multilineName = name for the multi_line rule
+Usage: include "starrockscluster.datadog.log.annotation" (dict "root" . "component" "fe" "multilinePattern" "..." "multilineName" "...")
+*/}}
+{{- define "starrockscluster.datadog.log.annotation" -}}
+{{- $root := .root -}}
+{{- $component := .component -}}
+{{- $multilinePattern := .multilinePattern -}}
+{{- $multilineName := .multilineName -}}
+{{- $logConfig := $root.Values.datadog.log.logConfig -}}
+{{- $base := dict "service" "starrocks" "source" $component -}}
+{{- if eq (kindOf $logConfig) "map" -}}
+  {{- $base = merge $base $logConfig -}}
+{{- else if eq (kindOf $logConfig) "string" -}}
+  {{- if ne (trimAll " {}" $logConfig) "" -}}
+    {{- $extra := fromJson $logConfig -}}
+    {{- $base = merge $base $extra -}}
+  {{- end -}}
+{{- end -}}
+{{- if $root.Values.datadog.log.enableMultilineLogParsing -}}
+  {{- if not (hasKey $base "log_processing_rules") -}}
+    {{- $rule := dict "name" $multilineName "pattern" $multilinePattern "type" "multi_line" -}}
+    {{- $_ := set $base "log_processing_rules" (list $rule) -}}
+  {{- end -}}
+{{- end -}}
+{{- list $base | toJson | squote -}}
+{{- end -}}
+
+{{/*
 Get the value of podLabels field in the starrocksCnSpec
 */}}
 {{- define "starrockscluster.cn.podLabels" -}}
