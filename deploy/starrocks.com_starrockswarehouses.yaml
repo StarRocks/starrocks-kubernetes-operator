@@ -1667,6 +1667,8 @@ spec:
                       ports:
                         items:
                           properties:
+                            appProtocol:
+                              type: string
                             containerPort:
                               format: int32
                               type: integer
@@ -1687,6 +1689,10 @@ spec:
                     type: string
                   shareProcessNamespace:
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   sidecars:
                     items:
                       properties:

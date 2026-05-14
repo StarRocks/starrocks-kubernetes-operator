@@ -18,6 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/hash"
@@ -115,11 +116,10 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 			Protocol:   corev1.ProtocolTCP,
 			TargetPort: intstr.FromInt(int(sp.ContainerPort)),
 		}
-		if servicePort.Name == FeQueryPortName {
-			servicePort.AppProtocol = func() *string {
-				protocol := "mysql"
-				return &protocol
-			}()
+		if sp.AppProtocol != nil {
+			servicePort.AppProtocol = sp.AppProtocol
+		} else if servicePort.Name == FeQueryPortName {
+			servicePort.AppProtocol = ptr.To("mysql")
 		}
 		ports = append(ports, servicePort)
 	}
@@ -226,6 +226,9 @@ func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServi
 			if sp.Port != 0 {
 				port.Port = sp.Port
 			}
+			if sp.AppProtocol != nil {
+				port.AppProtocol = sp.AppProtocol
+			}
 			return port
 		}
 	}
@@ -238,6 +241,9 @@ func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServi
 			}
 			if sp.Port != 0 {
 				port.Port = sp.Port
+			}
+			if sp.AppProtocol != nil {
+				port.AppProtocol = sp.AppProtocol
 			}
 			break
 		}
