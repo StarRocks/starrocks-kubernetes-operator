@@ -161,6 +161,37 @@ type StarRocksFeSpec struct {
 	// +optional
 	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
+
+	// +optional
+	// ingress, if set, makes the operator create an Ingress that routes external HTTP
+	// traffic to the FE web UI (the "http" port, default 8030). The FE query/MySQL port
+	// (9030) is an L4 protocol and cannot be exposed through a standard Ingress, so it is
+	// intentionally not handled here; use service.type (NodePort/LoadBalancer) for that.
+	// Leaving this nil preserves the previous behavior (no Ingress is created).
+	Ingress *FeIngress `json:"ingress,omitempty"`
+}
+
+// FeIngress defines an optional Ingress for the FE web UI ("http") port. When set, the
+// operator creates an Ingress whose backend is the FE external service's "http" port, so
+// the user cannot accidentally point it at the MySQL query port.
+//
+// SECURITY: the FE web UI exposes an administrative HTTP API. Exposing it through an Ingress
+// makes it reachable from outside the cluster, so protect it with authentication (e.g. an
+// ingress-controller basic-auth annotation), source-IP allow lists, or a private
+// IngressClass before using this on an untrusted network.
+type FeIngress struct {
+	// ingressClassName is the name of the IngressClass the Ingress should use. If not set,
+	// the cluster's default IngressClass is used.
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// host is the fully qualified domain name routed to the FE web UI.
+	Host string `json:"host"`
+
+	// annotations are added to the Ingress, e.g. ingress-controller specific configuration
+	// or cert-manager TLS annotations.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // StarRocksBeSpec defines the desired state of be.

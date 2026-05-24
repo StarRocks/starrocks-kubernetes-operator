@@ -12096,6 +12096,33 @@ spec:
                       type: object
                       x-kubernetes-map-type: atomic
                     type: array
+                  ingress:
+                    description: |-
+                      ingress, if set, makes the operator create an Ingress that routes external HTTP
+                      traffic to the FE web UI (the "http" port, default 8030). The FE query/MySQL port
+                      (9030) is an L4 protocol and cannot be exposed through a standard Ingress, so it is
+                      intentionally not handled here; use service.type (NodePort/LoadBalancer) for that.
+                      Leaving this nil preserves the previous behavior (no Ingress is created).
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          annotations are added to the Ingress, e.g. ingress-controller specific configuration
+                          or cert-manager TLS annotations.
+                        type: object
+                      host:
+                        description: host is the fully qualified domain name routed
+                          to the FE web UI.
+                        type: string
+                      ingressClassName:
+                        description: |-
+                          ingressClassName is the name of the IngressClass the Ingress should use. If not set,
+                          the cluster's default IngressClass is used.
+                        type: string
+                    required:
+                    - host
+                    type: object
                   initContainers:
                     description: |-
                       InitContainers is an optional list of containers that are run in the same pod as the starrocks component.

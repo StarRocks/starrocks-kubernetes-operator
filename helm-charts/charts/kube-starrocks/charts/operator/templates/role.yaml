@@ -16,6 +16,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - '*'
+- apiGroups:
   - autoscaling
   resources:
   - horizontalpodautoscalers

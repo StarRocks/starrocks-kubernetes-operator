@@ -371,6 +371,84 @@ If the observed generation is less than the generation, it will trigger disaster
 </tr>
 </tbody>
 </table>
+<h3 id="starrocks.com/v1.FeIngress">FeIngress
+</h3>
+<p>
+(<em>Appears on:</em><a href="#starrocks.com/v1.StarRocksFeSpec">StarRocksFeSpec</a>)
+</p>
+<div>
+<p>FeIngress defines an optional Ingress for the FE web UI (&ldquo;http&rdquo;) port. When set, the
+operator creates an Ingress whose backend is the FE external service&rsquo;s &ldquo;http&rdquo; port, so
+the user cannot accidentally point it at the MySQL query port.</p>
+<p>SECURITY: the FE web UI exposes an administrative HTTP API. Exposing it through an Ingress
+makes it reachable from outside the cluster, so protect it with authentication (e.g. an
+ingress-controller basic-auth annotation), source-IP allow lists, or a private
+IngressClass before using this on an untrusted network.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>ingressClassName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ingressClassName is the name of the IngressClass the Ingress should use. If not set,
+the cluster&rsquo;s default IngressClass is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>host</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>host is the fully qualified domain name routed to the FE web UI.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br/>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>annotations are added to the Ingress, e.g. ingress-controller specific configuration
+or cert-manager TLS annotations.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tls</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#ingresstls-v1-networking">
+[]Kubernetes networking/v1.IngressTLS
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>tls configures TLS for the Ingress. It is required by ingress controllers that read
+spec.tls, such as ingress-nginx with cert-manager or a pre-provisioned TLS secret.
+Cloud controllers that configure TLS through annotations (e.g. AWS ALB
+certificate-arn, GKE managed-certificates) do not need this field.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="starrocks.com/v1.HPAPolicy">HPAPolicy
 </h3>
 <p>
@@ -815,6 +893,23 @@ DisasterRecovery
 <p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>waitForFullRollout</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+same revision) before updating BE/CN components. This prevents cascading failures
+if a bad FE version is deployed.
+When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+Defaults to false for backward compatibility.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -926,6 +1021,23 @@ DisasterRecovery
 <td>
 <em>(Optional)</em>
 <p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>waitForFullRollout</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+same revision) before updating BE/CN components. This prevents cascading failures
+if a bad FE version is deployed.
+When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+Defaults to false for backward compatibility.</p>
 </td>
 </tr>
 </tbody>
@@ -1680,6 +1792,24 @@ StarRocksComponentSpec
 <td>
 <em>(Optional)</em>
 <p>feEnvVars is a slice of environment variables that are added to the pods, the default is empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ingress</code><br/>
+<em>
+<a href="#starrocks.com/v1.FeIngress">
+FeIngress
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ingress, if set, makes the operator create an Ingress that routes external HTTP
+traffic to the FE web UI (the &ldquo;http&rdquo; port, default 8030). The FE query/MySQL port
+(9030) is an L4 protocol and cannot be exposed through a standard Ingress, so it is
+intentionally not handled here; use service.type (NodePort/LoadBalancer) for that.
+Leaving this nil preserves the previous behavior (no Ingress is created).</p>
 </td>
 </tr>
 </tbody>
@@ -2611,5 +2741,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>30cbedfc</code>.
+on git commit <code>f3fc57e</code>.
 </em></p>

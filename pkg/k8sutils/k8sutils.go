@@ -32,6 +32,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
@@ -150,6 +151,49 @@ func ApplyConfigMap(ctx context.Context, k8sClient client.Client, configmap *cor
 		return UpdateClientObject(ctx, k8sClient, configmap)
 	}
 	return nil
+}
+
+// ApplyIngress creates the ingress if it does not exist, or patches it when the
+// operator-managed state changes. It follows the same convention as ApplyDeployment:
+// change detection via the ComponentResourceHash annotation, and updates via a three-way
+// merge patch. Using the patch (instead of a full Update) means annotations that ingress
+// controllers add to the object (ingress-nginx, AWS ALB, GKE) are preserved rather than
+// clobbered, which otherwise causes a reconcile fight.
+func ApplyIngress(ctx context.Context, k8sClient client.Client, expect *networkingv1.Ingress) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("create or update ingress", "name", expect.Name)
+
+	var actual networkingv1.Ingress
+	err := k8sClient.Get(ctx, types.NamespacedName{Name: expect.Name, Namespace: expect.Namespace}, &actual)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return CreateClientObject(ctx, k8sClient, expect)
+		}
+		return err
+	}
+
+	// The hash value calculated from the Ingress in k8s may never equal the hash value from
+	// the StarRocksCluster, because the Ingress may be updated by the ingress controller.
+	// Every time the operator updates the Ingress, a new reconcile will be triggered.
+	expectHash := hash.HashObject(expect)
+	var actualHash string
+	if _, ok := actual.Annotations[srapi.ComponentResourceHash]; ok {
+		actualHash = actual.Annotations[srapi.ComponentResourceHash]
+	} else {
+		actualHash = hash.HashObject(actual)
+	}
+
+	if expectHash == actualHash {
+		logger.Info("expectHash == actualHash, no need to update ingress resource")
+		return nil
+	}
+
+	expect.ResourceVersion = actual.ResourceVersion
+	if expect.Annotations == nil {
+		expect.Annotations = map[string]string{}
+	}
+	expect.Annotations[srapi.ComponentResourceHash] = expectHash
+	return PatchByThreeWayMerge(ctx, k8sClient, expect, &actual)
 }
 
 // ApplyStatefulSet when the object is not exist, create object. if exist and statefulset have been updated, patch the statefulset.
@@ -362,6 +406,21 @@ func DeleteConfigMap(ctx context.Context, k8sClient client.Client, namespace, na
 	}
 
 	return k8sClient.Delete(ctx, &cm)
+}
+
+// DeleteIngress delete ingress.
+func DeleteIngress(ctx context.Context, k8sClient client.Client, namespace, name string) error {
+	logger := logr.FromContextOrDiscard(ctx)
+	logger.Info("delete ingress from kubernetes", "name", name)
+
+	var ingress networkingv1.Ingress
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &ingress); apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return k8sClient.Delete(ctx, &ingress)
 }
 
 func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, name string, version srapi.AutoScalerVersion) error {

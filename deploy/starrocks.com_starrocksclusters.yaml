@@ -5687,6 +5687,19 @@ spec:
                       type: object
                       x-kubernetes-map-type: atomic
                     type: array
+                  ingress:
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      host:
+                        type: string
+                      ingressClassName:
+                        type: string
+                    required:
+                    - host
+                    type: object
                   initContainers:
                     items:
                       properties:

@@ -74,6 +74,10 @@ spec:
         {{- toYaml .Values.starrocksFESpec.service.labels | nindent 8 }}
       {{- end }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.ingress }}
+    ingress:
+      {{- toYaml .Values.starrocksFESpec.ingress | nindent 6 }}
+    {{- end }}
     annotations:
       app.starrocks.io/fe-config-hash: "{{template "starrockscluster.fe.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
