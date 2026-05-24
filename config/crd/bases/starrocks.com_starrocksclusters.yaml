@@ -12120,6 +12120,36 @@ spec:
                           ingressClassName is the name of the IngressClass the Ingress should use. If not set,
                           the cluster's default IngressClass is used.
                         type: string
+                      tls:
+                        description: |-
+                          tls configures TLS for the Ingress. It is required by ingress controllers that read
+                          spec.tls, such as ingress-nginx with cert-manager or a pre-provisioned TLS secret.
+                          Cloud controllers that configure TLS through annotations (e.g. AWS ALB
+                          certificate-arn, GKE managed-certificates) do not need this field.
+                        items:
+                          description: IngressTLS describes the transport layer security
+                            associated with an Ingress.
+                          properties:
+                            hosts:
+                              description: |-
+                                Hosts are a list of hosts included in the TLS certificate. The values in
+                                this list must match the name/s used in the tlsSecret. Defaults to the
+                                wildcard host setting for the loadbalancer controller fulfilling this
+                                Ingress, if left unspecified.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            secretName:
+                              description: |-
+                                SecretName is the name of the secret used to terminate TLS traffic on
+                                port 443. Field is left optional to allow TLS routing based on SNI
+                                hostname alone. If the SNI host in a listener conflicts with the "Host"
+                                header field used by an IngressRule, the SNI host is used for termination
+                                and value of the Host header is used for routing.
+                              type: string
+                          type: object
+                        type: array
                     required:
                     - host
                     type: object

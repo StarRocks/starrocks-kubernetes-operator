@@ -48,6 +48,7 @@ func BuildFeIngress(object object.StarRocksObject, feIngress *srapi.FeIngress,
 		},
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: feIngress.IngressClassName,
+			TLS:              feIngress.TLS,
 			Rules: []networkingv1.IngressRule{
 				{
 					Host: feIngress.Host,

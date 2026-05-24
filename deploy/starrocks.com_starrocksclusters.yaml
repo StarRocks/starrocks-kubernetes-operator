@@ -5697,6 +5697,18 @@ spec:
                         type: string
                       ingressClassName:
                         type: string
+                      tls:
+                        items:
+                          properties:
+                            hosts:
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            secretName:
+                              type: string
+                          type: object
+                        type: array
                     required:
                     - host
                     type: object

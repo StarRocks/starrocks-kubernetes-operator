@@ -21,6 +21,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -192,6 +193,13 @@ type FeIngress struct {
 	// or cert-manager TLS annotations.
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// tls configures TLS for the Ingress. It is required by ingress controllers that read
+	// spec.tls, such as ingress-nginx with cert-manager or a pre-provisioned TLS secret.
+	// Cloud controllers that configure TLS through annotations (e.g. AWS ALB
+	// certificate-arn, GKE managed-certificates) do not need this field.
+	// +optional
+	TLS []networkingv1.IngressTLS `json:"tls,omitempty"`
 }
 
 // StarRocksBeSpec defines the desired state of be.

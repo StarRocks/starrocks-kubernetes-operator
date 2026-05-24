@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -68,4 +69,24 @@ func TestBuildFeIngress(t *testing.T) {
 	require.Equal(t, "test-cluster", owner.Name)
 	require.NotNil(t, owner.Controller)
 	require.True(t, *owner.Controller, "owner reference must be a controller reference for garbage collection")
+}
+
+func TestBuildFeIngress_TLS(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		TypeMeta:   metav1.TypeMeta{Kind: object.StarRocksClusterKind, APIVersion: "starrocks.com/v1"},
+		ObjectMeta: metav1.ObjectMeta{Name: "test-cluster", Namespace: "default"},
+	}
+	feIngress := &srapi.FeIngress{
+		Host: "test-cluster.example.com",
+		TLS: []networkingv1.IngressTLS{{
+			Hosts:      []string{"test-cluster.example.com"},
+			SecretName: "test-cluster-tls",
+		}},
+	}
+
+	got := BuildFeIngress(object.NewFromCluster(src), feIngress, nil)
+
+	require.Len(t, got.Spec.TLS, 1)
+	require.Equal(t, "test-cluster-tls", got.Spec.TLS[0].SecretName)
+	require.Equal(t, []string{"test-cluster.example.com"}, got.Spec.TLS[0].Hosts)
 }
