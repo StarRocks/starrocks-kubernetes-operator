@@ -29,6 +29,11 @@ type StarRocksWarehouseSpec struct {
 	// StarRocksCluster is the name of a StarRocksCluster which the warehouse belongs to.
 	StarRocksCluster string `json:"starRocksCluster"`
 
+	// StarRocksClusterNamespace is the namespace of the StarRocksCluster which the warehouse belongs to.
+	// If empty, defaults to the same namespace as this StarRocksWarehouse.
+	// +optional
+	StarRocksClusterNamespace string `json:"starRocksClusterNamespace,omitempty"`
+
 	// Template define component configuration.
 	Template *WarehouseComponentSpec `json:"template"`
 }

@@ -278,6 +278,148 @@ func Test_SyncWarehouse(t *testing.T) {
 	require.Equal(t, "wh1-warehouse-cn", sts.Name)
 }
 
+// Test_SyncWarehouse_CrossNamespace verifies the warehouse can be deployed in a separate namespace
+// from the main StarRocksCluster (FE), with the linkage carried by spec.starRocksClusterNamespace.
+func Test_SyncWarehouse_CrossNamespace(t *testing.T) {
+	const mainNS = "main-ns"
+	const whNS = "wh-ns"
+
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: mainNS,
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						ConfigMapInfo: srapi.ConfigMapInfo{
+							ConfigMapName: "fe-configMap",
+							ResolveKey:    "fe.conf",
+						},
+					},
+				},
+			},
+			StarRocksCnSpec: &srapi.StarRocksCnSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image:    "test.image",
+						Replicas: rutils.GetInt32Pointer(3),
+					},
+				},
+			},
+		},
+	}
+
+	// fe configMap lives together with the cluster (mainNS).
+	feConfigMap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "fe-configMap",
+			Namespace: mainNS,
+		},
+		Data: map[string]string{
+			"fe.conf": "run_mode = shared_data",
+		},
+	}
+
+	warehouse := &srapi.StarRocksWarehouse{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "wh1",
+			Namespace: whNS, // warehouse lives in a different namespace
+		},
+		Spec: srapi.StarRocksWarehouseSpec{
+			StarRocksCluster:          "test",
+			StarRocksClusterNamespace: mainNS, // cross-namespace pointer
+			Template: &srapi.WarehouseComponentSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image:    "test.image",
+						Replicas: rutils.GetInt32Pointer(3),
+					},
+				},
+			},
+		},
+		Status: srapi.StarRocksWarehouseStatus{WarehouseComponentStatus: &srapi.WarehouseComponentStatus{}},
+	}
+
+	// FE endpoint is in mainNS — CheckFEReady looks it up there via clusterNamespace.
+	ep := &corev1.Endpoints{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-service",
+			Namespace: mainNS,
+		},
+		Subsets: []corev1.EndpointSubset{{
+			Addresses: []corev1.EndpointAddress{{
+				IP:       "172.0.0.1",
+				Hostname: "test-fe-access-01.cluster.local",
+			}},
+		}},
+	}
+
+	cc := New(fake.NewFakeClient(srapi.Scheme, src, feConfigMap, warehouse, ep), fake.GetEventRecorderFor(nil))
+	cc.addEnvForWarehouse = true
+
+	require.NoError(t, cc.SyncWarehouse(context.Background(), warehouse))
+	require.NoError(t, cc.UpdateWarehouseStatus(context.Background(), warehouse))
+	require.Equal(t, srapi.ComponentReconciling, warehouse.Status.Phase)
+
+	// All warehouse-scoped resources should land in whNS.
+	obj := object.NewFromWarehouse(warehouse)
+	require.Equal(t, mainNS, obj.ClusterNamespace,
+		"NewFromWarehouse should pick up Spec.StarRocksClusterNamespace as ClusterNamespace")
+
+	var externalService corev1.Service
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      service.ExternalServiceName(obj.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil)),
+			Namespace: whNS,
+		},
+		&externalService),
+	)
+	require.Equal(t, whNS, externalService.Namespace)
+
+	var sts appsv1.StatefulSet
+	require.NoError(t, cc.k8sClient.Get(context.Background(),
+		types.NamespacedName{
+			Name:      load.Name(obj.SubResourcePrefixName, (*srapi.StarRocksCnSpec)(nil)),
+			Namespace: whNS,
+		},
+		&sts),
+	)
+	require.Equal(t, whNS, sts.Namespace)
+
+	// CN container's FE_SERVICE_NAME should be the FQDN pointing to FE in mainNS.
+	feSvc := service.ExternalServiceName(obj.ClusterName, (*srapi.StarRocksFeSpec)(nil))
+	wantFeServiceName := feSvc + "." + mainNS
+	var foundFeServiceName string
+	require.NotEmpty(t, sts.Spec.Template.Spec.Containers, "expected at least one container in CN sts")
+	for _, env := range sts.Spec.Template.Spec.Containers[0].Env {
+		if env.Name == "FE_SERVICE_NAME" {
+			foundFeServiceName = env.Value
+			break
+		}
+	}
+	require.Equalf(t, wantFeServiceName, foundFeServiceName,
+		"FE_SERVICE_NAME on CN container should be FQDN '<svc>.<mainNS>' for cross-namespace deployment")
+}
+
+// Test_SyncWarehouse_SameNamespaceFallback verifies backward compatibility:
+// when spec.starRocksClusterNamespace is empty, warehouse falls back to the warehouse's own namespace.
+func Test_SyncWarehouse_SameNamespaceFallback(t *testing.T) {
+	warehouse := &srapi.StarRocksWarehouse{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "wh1",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksWarehouseSpec{
+			StarRocksCluster: "test", // no StarRocksClusterNamespace
+		},
+	}
+	obj := object.NewFromWarehouse(warehouse)
+	require.Equal(t, "default", obj.ClusterNamespace,
+		"empty StarRocksClusterNamespace should fall back to warehouse.Namespace")
+}
+
 func TestCnController_UpdateStatus(t *testing.T) {
 	type fields struct {
 		k8sClient client.Client

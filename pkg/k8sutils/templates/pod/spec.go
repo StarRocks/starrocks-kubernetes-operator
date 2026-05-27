@@ -164,7 +164,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 			},
 			{
 				Name:  v1.FE_SERVICE_NAME,
-				Value: feExternalServiceName,
+				Value: feExternalServiceName + "." + namespace,
 			},
 			{
 				Name:  "FE_QUERY_PORT",
@@ -181,7 +181,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 			},
 			{
 				Name:  v1.FE_SERVICE_NAME,
-				Value: feExternalServiceName,
+				Value: feExternalServiceName + "." + namespace,
 			},
 			{
 				Name:  "FE_QUERY_PORT",
