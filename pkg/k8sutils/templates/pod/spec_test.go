@@ -362,7 +362,7 @@ func TestSpec(t *testing.T) {
 				Containers:                    []corev1.Container{{}},
 				ServiceAccountName:            "test",
 				TerminationGracePeriodSeconds: rutils.GetInt64ptr(int64(120)),
-				AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
+				AutomountServiceAccountToken:  nil,
 			},
 		},
 		{
