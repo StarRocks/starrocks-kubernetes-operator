@@ -72,10 +72,18 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 		}
 	}
 
+	// If FE_SERVICE_NAME includes a namespace suffix (e.g. "svc-name.other-ns" for cross-namespace
+	// warehouses), extract it so that the MySQL DSN resolves to the correct FE service.
+	feServiceNamespace := namespace
+	if idx := strings.Index(feServiceName, "."); idx > 0 {
+		feServiceNamespace = feServiceName[idx+1:]
+		feServiceName = feServiceName[:idx]
+	}
+
 	return &SQLExecutor{
 		RootPassword:       rootPassword,
 		FeServiceName:      feServiceName,
-		FeServiceNamespace: namespace,
+		FeServiceNamespace: feServiceNamespace,
 		FeServicePort:      feServicePort,
 	}, nil
 }
