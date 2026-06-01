@@ -19,7 +19,6 @@ package feobserver_test
 import (
 	"context"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -268,112 +267,6 @@ func TestFeObserver_Ready(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := fe.CheckFEReady(tt.args.ctx, tt.args.k8sClient, tt.args.clusterNamespace, tt.args.clusterName); got != tt.want {
 				t.Errorf("CheckFEReady() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetFEObserverConfig(t *testing.T) {
-	type args struct {
-		ctx          context.Context
-		observerSpec *srapi.StarRocksFeObserverSpec
-		namespace    string
-	}
-	type fields struct {
-		k8sClient client.Client
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    map[string]interface{}
-		wantErr bool
-	}{
-		{
-			name: "get config from ConfigMapInfo",
-			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "feobserver-config",
-						Namespace: "default",
-					},
-					Data: map[string]string{
-						"fe.conf": "aa = bb",
-					},
-				}),
-			},
-			args: args{
-				ctx: context.Background(),
-				observerSpec: &srapi.StarRocksFeObserverSpec{
-					ComponentSpec: srapi.StarRocksComponentSpec{
-						StarRocksLoadSpec: srapi.StarRocksLoadSpec{
-							ConfigMapInfo: srapi.ConfigMapInfo{
-								ConfigMapName: "feobserver-config",
-								ResolveKey:    "fe.conf",
-							},
-						},
-					},
-				},
-				namespace: "default",
-			},
-			want: map[string]interface{}{
-				"aa": "bb",
-			},
-		},
-		{
-			name: "get config from configMaps with matching subpath",
-			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme, &corev1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "feobserver-config",
-						Namespace: "default",
-					},
-					Data: map[string]string{
-						"fe.conf": "cc = dd",
-					},
-				}),
-			},
-			args: args{
-				ctx: context.Background(),
-				observerSpec: &srapi.StarRocksFeObserverSpec{
-					ComponentSpec: srapi.StarRocksComponentSpec{
-						ConfigMaps: []srapi.ConfigMapReference{
-							{
-								Name:      "feobserver-config",
-								MountPath: "/opt/starrocks/fe/conf/fe.conf",
-								SubPath:   "fe.conf",
-							},
-						},
-					},
-				},
-				namespace: "default",
-			},
-			want: map[string]interface{}{
-				"cc": "dd",
-			},
-		},
-		{
-			name: "get empty config",
-			fields: fields{
-				k8sClient: fake.NewFakeClient(srapi.Scheme),
-			},
-			args: args{
-				ctx:          context.Background(),
-				observerSpec: &srapi.StarRocksFeObserverSpec{},
-				namespace:    "default",
-			},
-			want: map[string]interface{}{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := feobserver.GetFEObserverConfig(tt.args.ctx, tt.fields.k8sClient, tt.args.observerSpec, tt.args.namespace)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetFEObserverConfig() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetFEObserverConfig() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

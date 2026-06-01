@@ -36,6 +36,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 type FeObserverController struct {
@@ -83,11 +84,11 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 		return err
 	}
 
-	// get the fe observer configMap for resolve ports
-	logger.V(log.DebugLevel).Info("get fe observer configMap to resolve ports", "ConfigMapInfo", observerSpec.ComponentSpec.ConfigMapInfo)
-	observerConfig, err := GetFEObserverConfig(ctx, fc.Client, observerSpec, src.Namespace)
+	// get the fe configMap for resolve ports
+	logger.V(log.DebugLevel).Info("get fe configMap to resolve ports", "ConfigMapInfo", feSpec.ConfigMapInfo)
+	feConfig, err := fe.GetFEConfig(ctx, fc.Client, feSpec, src.Namespace)
 	if err != nil {
-		logger.Error(err, "get fe observer config failed", "ConfigMapInfo", observerSpec.ComponentSpec.ConfigMapInfo)
+		logger.Error(err, "get fe config failed", "ConfigMapInfo", feSpec.ConfigMapInfo)
 		return err
 	}
 
@@ -95,7 +96,7 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 	logger.V(log.DebugLevel).Info("build fe observer statefulset", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
 
-	podTemplateSpec, err := fc.buildPodTemplate(src, observerConfig)
+	podTemplateSpec, err := fc.buildPodTemplate(src, feConfig)
 	if err != nil {
 		logger.Error(err, "build pod template failed")
 		return err
