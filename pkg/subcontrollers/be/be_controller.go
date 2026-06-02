@@ -129,11 +129,21 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	}
 	st := statefulset.MakeStatefulset(object.NewFromCluster(src), beSpec, podTemplateSpec)
 
+	// When waitForTabletBalance is enabled, use OnDelete strategy so the operator
+	// controls pod-by-pod restarts after verifying tablet balance.
+	if beSpec.WaitForTabletBalance {
+		st.Spec.UpdateStrategy = appsv1.StatefulSetUpdateStrategy{
+			Type: appsv1.OnDeleteStatefulSetStrategyType,
+		}
+	}
+
 	// update the statefulset if feSpec be updated.
 	if err = k8sutils.ApplyStatefulSet(ctx, be.Client, &st, true, rutils.StatefulSetDeepEqual); err != nil {
 		logger.Error(err, "apply statefulset failed")
 		return err
 	}
+
+	be.manageBERollout(ctx, src, beSpec, st.Name, logger)
 
 	if err = k8sutils.ApplyService(ctx, be.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "apply internal service failed", "internalService", internalService)
@@ -251,6 +261,16 @@ func (be *BeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 	}
 
 	return nil
+}
+
+func (be *BeController) manageBERollout(ctx context.Context, src *srapi.StarRocksCluster,
+	beSpec *srapi.StarRocksBeSpec, stsName string, logger logr.Logger) {
+	if !beSpec.WaitForTabletBalance {
+		return
+	}
+	if err := be.manageOnDeleteRollout(ctx, src, stsName); err != nil {
+		logger.Error(err, "managed rollout step failed")
+	}
 }
 
 func (be *BeController) validating(beSpec *srapi.StarRocksBeSpec) error {
