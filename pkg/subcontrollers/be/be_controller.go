@@ -143,8 +143,6 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	be.manageBERollout(ctx, src, beSpec, st.Name, logger)
-
 	if err = k8sutils.ApplyService(ctx, be.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "apply internal service failed", "internalService", internalService)
 		return err
@@ -155,7 +153,7 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
-	return err
+	return be.manageBERollout(ctx, src, beSpec, st.Name)
 }
 
 // UpdateClusterStatus update the all resource status about be.
@@ -264,13 +262,11 @@ func (be *BeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 }
 
 func (be *BeController) manageBERollout(ctx context.Context, src *srapi.StarRocksCluster,
-	beSpec *srapi.StarRocksBeSpec, stsName string, logger logr.Logger) {
+	beSpec *srapi.StarRocksBeSpec, stsName string) error {
 	if !beSpec.WaitForTabletBalance {
-		return
+		return nil
 	}
-	if err := be.manageOnDeleteRollout(ctx, src, stsName); err != nil {
-		logger.Error(err, "managed rollout step failed")
-	}
+	return be.manageOnDeleteRollout(ctx, src, stsName)
 }
 
 func (be *BeController) validating(beSpec *srapi.StarRocksBeSpec) error {

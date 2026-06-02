@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
@@ -17,7 +18,10 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	subc "github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 )
+
+const tabletBalanceCheckInterval = 30 * time.Second
 
 // manageOnDeleteRollout implements a controlled rolling update for BE pods.
 // With OnDelete strategy, the StatefulSet controller does not automatically
@@ -56,18 +60,27 @@ func (be *BeController) manageOnDeleteRollout(
 		logger.Info("waiting for all BE pods to be ready",
 			"readyReplicas", actual.Status.ReadyReplicas,
 			"replicas", replicas)
-		return nil
+		return &subc.RequeueAfterError{
+			After:  tabletBalanceCheckInterval,
+			Reason: "waiting for BE pods to be ready",
+		}
 	}
 
 	// Check tablet balance via FE.
 	balanced, err := be.checkTabletBalance(ctx, src.Namespace, stsName)
 	if err != nil {
 		logger.Error(err, "tablet balance check failed, holding rollout")
-		return nil
+		return &subc.RequeueAfterError{
+			After:  tabletBalanceCheckInterval,
+			Reason: "tablet balance check failed, will retry",
+		}
 	}
 	if !balanced {
 		logger.Info("tablets not balanced, holding BE rollout")
-		return nil
+		return &subc.RequeueAfterError{
+			After:  tabletBalanceCheckInterval,
+			Reason: "waiting for tablet balance before next BE pod restart",
+		}
 	}
 
 	// Find the next pod to delete: highest ordinal still at the old revision.
