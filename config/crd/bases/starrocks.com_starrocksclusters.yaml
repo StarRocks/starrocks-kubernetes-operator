@@ -13602,8 +13602,11 @@ spec:
                       of nodeSelectors to match when scheduling pods on nodes"
                     type: object
                   observerSpec:
-                    description: ObserverSpec configures optional FE observer pods.
-                      Observer pods reuse the generic FE resources.
+                    description: |-
+                      ObserverSpec configures optional FE observer pods. Observer pods reuse the generic FE resources.
+                      The FE image must be StarRocks 4.1.0 or later. Removing observers does not automatically
+                      run ALTER SYSTEM DROP OBSERVER; manually drop observer nodes
+                      if SHOW FRONTENDS reports Alive = false.
                     properties:
                       enabled:
                         description: Enabled controls whether FE observer should be

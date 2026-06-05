@@ -631,6 +631,10 @@ starrocks:
     shareProcessNamespace:
     # Optional FE observer pods. Observer pods reuse the FE image, resources, scheduling,
     # config, env, storage, and services from this starrocksFESpec.
+    # FE observer requires the FE image tag to be StarRocks 4.1.0 or later.
+    # Known limitation: scaling observerNumber down or disabling observerSpec removes
+    # Kubernetes pods, but does not run ALTER SYSTEM DROP OBSERVER. Manually drop
+    # observer nodes if SHOW FRONTENDS reports Alive = false.
     observerSpec:
       # specify the FE observer deployment or not.
       enabled: false

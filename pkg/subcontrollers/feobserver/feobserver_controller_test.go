@@ -57,7 +57,7 @@ func TestFeObserver_ClearCluster(t *testing.T) {
 			StarRocksFeObserverStatus: &srapi.StarRocksFeObserverStatus{
 				StarRocksComponentStatus: srapi.StarRocksComponentStatus{
 					ResourceNames: []string{"test-fe-observer"},
-					ServiceName:   "test-fe-observer-access",
+					ServiceName:   "test-fe-observer-service",
 				},
 			},
 		},
@@ -116,7 +116,7 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
 					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
 						Replicas: rutils.GetInt32Pointer(3),
-						Image:    "starrocks.com/fe:2.40",
+						Image:    "starrocks.com/fe:4.1.0",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceCPU:    *resource.NewQuantity(4, resource.DecimalSI),
@@ -133,7 +133,38 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 		},
 	}
 
-	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-observer-service",
+			Namespace: "default",
+		},
+		Spec: corev1.ServiceSpec{},
+	}
+
+	ssvc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-observer-search",
+			Namespace: "default",
+		},
+		Spec: corev1.ServiceSpec{},
+	}
+
+	eq := &corev1.Endpoints{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec),
+			Namespace: "default",
+		},
+		Subsets: []corev1.EndpointSubset{
+			{
+				Addresses: []corev1.EndpointAddress{
+					{IP: "127.0.0.1"},
+				},
+			},
+		},
+	}
+
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc, eq), fake.GetEventRecorderFor(nil))
+
 	err := fc.SyncCluster(context.Background(), src)
 	require.NoError(t, err)
 	err = fc.UpdateClusterStatus(context.Background(), src)
@@ -151,23 +182,60 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	var observerExternalSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-service", Namespace: "default"}, &observerExternalSvc)
-	require.True(t, apierrors.IsNotFound(err))
+	require.NoError(t, err)
 	var observerSearchSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-search", Namespace: "default"}, &observerSearchSvc)
-	require.True(t, apierrors.IsNotFound(err))
+	require.NoError(t, err)
+	require.Equal(t, "None", observerSearchSvc.Spec.ClusterIP)
+	require.Equal(t, map[string]string{
+		srapi.OwnerReference:    "test-fe-observer",
+		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
+	}, observerSearchSvc.Spec.Selector)
 
-	require.Equal(t, service.SearchServiceName(src.Name, src.Spec.StarRocksFeSpec), sts.Spec.ServiceName)
+	require.Equal(t, service.SearchServiceName(src.Name, src.Spec.StarRocksFeSpec.ToObserverSpec()), sts.Spec.ServiceName)
 	require.Equal(t, map[string]string{
 		srapi.OwnerReference:    "test-fe-observer",
 		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
 	}, sts.Spec.Selector.MatchLabels)
-	require.Equal(t, "starrocks.com/fe:2.40", sts.Spec.Template.Spec.Containers[0].Image)
+	require.Equal(t, "starrocks.com/fe:4.1.0", sts.Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("4"),
 		corev1.ResourceMemory: resource.MustParse("16G"),
 	}, sts.Spec.Template.Spec.Containers[0].Resources.Requests)
 	require.Equal(t, []string{"$(FE_SERVICE_NAME)"}, sts.Spec.Template.Spec.Containers[0].Args)
+}
+
+func TestFeObserver_SyncClusterRejectsUnsupportedImage(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Image: "starrocks.com/fe:4.0.10",
+					},
+				},
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{
+					Enabled:        true,
+					ObserverNumber: rutils.GetInt32Pointer(1),
+				},
+			},
+		},
+	}
+
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	err := fc.SyncCluster(context.Background(), src)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "fe observer requires StarRocks FE image version >= 4.1.0")
+
+	var sts appsv1.StatefulSet
+	err = fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: "test-fe-observer", Namespace: "default"}, &sts)
+	require.True(t, apierrors.IsNotFound(err))
 }
 
 func TestFeObserver_SyncClusterDisabled(t *testing.T) {
