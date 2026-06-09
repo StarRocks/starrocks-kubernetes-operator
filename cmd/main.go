@@ -32,11 +32,15 @@ import (
 )
 
 var (
-	_metricsAddr          string
-	_enableLeaderElection bool
-	_probeAddr            string
-	_namespace            string
-	_denyList             string
+	_metricsAddr             string
+	_enableLeaderElection    bool
+	_probeAddr               string
+	_namespace               string
+	_denyList                string
+	_maxConcurrentReconciles int
+	_kubeAPIQPS              float64
+	_kubeAPIBurst            int
+	_syncPeriod              time.Duration
 )
 
 func main() {
@@ -50,6 +54,16 @@ func main() {
 	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
 	flag.BoolVar(&config.VolumeNameWithHash, "volume-name-with-hash", true, "Add a hash to the volume name")
 	flag.StringVar(&_denyList, "deny-list", "", "Comma-separated list of namespaces to exclude from reconciliation")
+	flag.IntVar(&_maxConcurrentReconciles, "max-concurrent-reconciles", 1,
+		"Maximum number of concurrent reconciles for the StarRocksCluster controller.")
+	flag.Float64Var(&_kubeAPIQPS, "kube-api-qps", 0,
+		"QPS to use while talking with the kubernetes API server. "+
+			"If unset (0), the controller-runtime default is used (20).")
+	flag.IntVar(&_kubeAPIBurst, "kube-api-burst", 0,
+		"Burst to use while talking with the kubernetes API server. "+
+			"If unset (0), the controller-runtime default is used (30).")
+	flag.DurationVar(&_syncPeriod, "sync-period", 2*time.Minute,
+		"The minimum interval at which watched resources are reconciled.")
 
 	// Set up logger.
 	opts := zap.Options{}
@@ -61,12 +75,24 @@ func main() {
 	// Register CRD to SchemeBuilder
 	srapi.Register()
 
-	duration := 2 * time.Minute
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	restConfig := ctrl.GetConfigOrDie()
+	// Only override when explicitly set; otherwise let controller-runtime apply its
+	// saner defaults (QPS=20, Burst=30) inside GetConfigOrDie.
+	if _kubeAPIQPS > 0 {
+		restConfig.QPS = float32(_kubeAPIQPS)
+	}
+	if _kubeAPIBurst > 0 {
+		restConfig.Burst = _kubeAPIBurst
+	}
+
+	// NOTE: ctrl.Options.SyncPeriod is deprecated in controller-runtime v0.15+
+	// in favor of cache.Options.SyncPeriod. Migrate when the controller-runtime
+	// dependency is upgraded past v0.14.
+	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
 		Scheme:                 srapi.Scheme,
 		MetricsBindAddress:     _metricsAddr,
 		Port:                   9443,
-		SyncPeriod:             &duration,
+		SyncPeriod:             &_syncPeriod,
 		HealthProbeBindAddress: _probeAddr,
 		LeaderElection:         _enableLeaderElection,
 		LeaderElectionID:       "c6c79638.starrocks.com",
@@ -78,7 +104,7 @@ func main() {
 	}
 
 	// setup all reconciles
-	if err := controllers.SetupClusterReconciler(mgr, _denyList); err != nil {
+	if err := controllers.SetupClusterReconciler(mgr, _denyList, _maxConcurrentReconciles); err != nil {
 		logger.Error(err, "unable to set up cluster reconciler")
 		os.Exit(1)
 	}
