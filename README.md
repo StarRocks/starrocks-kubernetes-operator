@@ -131,14 +131,23 @@ To connect, just use the mysql client and connect to the CelerData cluster port 
 > [!NOTE]  
 >  If you want to connect remotely or through your desktop, you will need to enable the k8s Load Balander.
 
+```sh
+kubectl -n celerdata get svc
 ```
-atwong@Albert-CelerData celerdatatest % kubectl -n celerdata get svc
+
+```sh
 NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                       AGE
 celerdatacluster-sample-be-search    ClusterIP      None            <none>        9050/TCP                                                      5m2s
 celerdatacluster-sample-be-service   ClusterIP      10.103.248.52   <none>        9060/TCP,8040/TCP,9050/TCP,8060/TCP                           5m2s
 celerdatacluster-sample-fe-search    ClusterIP      None            <none>        9030/TCP                                                      6m22s
 celerdatacluster-sample-fe-service   LoadBalancer   10.99.14.222    localhost     8030:32326/TCP,9020:32578/TCP,9030:30774/TCP,9010:32505/TCP   6m22s
-atwong@Albert-CelerData celerdatatest % mysql -h 127.0.0.1 -P 9030 -uroot
+```
+
+```sh
+mysql -h 127.0.0.1 -P 9030 -uroot
+```
+
+```sh
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 3
 Server version: 5.1.0 3.2.1-79ee91d
