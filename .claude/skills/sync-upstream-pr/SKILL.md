@@ -14,8 +14,10 @@ table and "Workflow 2".
 
 > The same shared scripts run locally (this skill) and in CI:
 > `scripts/internal/run-checks.sh` orchestrates `check-celerdata-conventions.sh` (starrocks*→
-> celerdata* identifiers), `check-helm.sh` (lint + render with feature flags), and go
-> build/vet/test. So "passes locally" means "will pass CI".
+> celerdata* identifiers), `check-helm.sh` (lint + render with feature flags + parent-chart
+> values drift via `create-parent-chart-values.sh`), and — for operator/CRD changes — `make test`
+> (= generate/manifests/fmt/vet/UT, the `.github/pull_request_template.md` checklist) plus a
+> generated-code/CRD drift check and golangci-lint. So "passes locally" means "will pass CI".
 
 Run scripts from a branch that contains `scripts/internal/`. In steady state the sync branch
 has it (it is cut from the canonical main, which carries the merged tooling). Until the

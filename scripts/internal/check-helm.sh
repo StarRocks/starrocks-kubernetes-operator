@@ -46,4 +46,22 @@ if [ -d "$WAREHOUSE" ]; then
   helm template warehouse-test "$WAREHOUSE" >/dev/null
 fi
 
+# Parent-chart values drift. The PR-template checklist requires running
+# create-parent-chart-values.sh after editing a subchart's values.yaml, because
+# kube-celerdata/values.yaml is GENERATED from the operator + celerdata subchart
+# values. Regenerate and fail if it differs from what is committed -- a common
+# miss when only the subchart values were edited.
+PARENT_VALUES="$KUBE_CELERDATA/values.yaml"
+if [ -f scripts/create-parent-chart-values.sh ] && [ -f "$PARENT_VALUES" ]; then
+  info "regenerating parent chart values (create-parent-chart-values.sh) and checking for drift"
+  bash scripts/create-parent-chart-values.sh
+  if ! git diff --quiet -- "$PARENT_VALUES"; then
+    err "$PARENT_VALUES is out of sync with the subchart values."
+    err "Run 'bash scripts/create-parent-chart-values.sh' and commit the result. Diff:"
+    git --no-pager diff -- "$PARENT_VALUES" | sed 's/^/    /'
+    die "parent chart values drift"
+  fi
+  info "parent chart values in sync"
+fi
+
 info "helm checks passed."

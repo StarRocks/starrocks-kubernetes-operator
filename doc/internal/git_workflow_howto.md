@@ -137,14 +137,17 @@ also invokes:
 | Check | Script | CI workflow | Runs when |
 |---|---|---|---|
 | Enterprise naming conventions | `check-celerdata-conventions.sh` | `action-check-conventions.yml` (advisory — never blocks) | every PR |
-| Helm lint + render (flags on) | `check-helm.sh` | `action-helm-template.yml` | `helm-charts/**` changed |
-| Go build / vet / test | `make test` | `action-make-test.yml` | `pkg/**` changed |
+| Helm lint + render (flags on) + parent-chart values drift | `check-helm.sh` | `action-helm-template.yml` | `helm-charts/**` changed |
+| `make test` (generate / manifests / fmt / vet / UT) + generated-code/CRD drift | `run-checks.sh` → `make test` | `action-make-test.yml` | Go / `*.mod` / `Makefile` / `pkg/apis/**` / CRD changed |
 | golangci-lint | — | `action-golangci-lint.yml` | every PR |
 
-The convention check flags high-signal `starrocks*` identifiers; `check-helm.sh` renders the
-charts with `serviceMonitor` / `datadog.log` **enabled** so conditional templates are actually
-exercised (a plain default render hides errors like an undefined `starrockscluster.name`
-helper). Namespace / prose / example cases still need a human eye against the table above.
+These mirror the [PR template](../../.github/pull_request_template.md) checklist. The convention
+check flags high-signal `starrocks*` identifiers; `check-helm.sh` renders the charts with
+`serviceMonitor` / `datadog.log` **enabled** so conditional templates are actually exercised (a
+plain default render hides errors like an undefined `starrockscluster.name` helper) and regenerates
+the parent chart's `values.yaml` via `create-parent-chart-values.sh` to catch drift; the `make test`
+step regenerates deepcopy + CRD manifests and fails on uncommitted drift. Namespace / prose /
+example cases still need a human eye against the table above.
 
 ## Workflow 1: Develop a feature in the internal repository
 

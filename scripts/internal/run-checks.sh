@@ -8,7 +8,8 @@
 # stay in lock-step:
 #   - enterprise conventions  -> check-celerdata-conventions.sh   (always)
 #   - helm charts             -> check-helm.sh                    (if helm-charts/** changed)
-#   - go build / vet / tests                                       (if Go/*.mod/Makefile changed)
+#   - operator: go build + `make test` (= generate/manifests/fmt/vet/UT, per the
+#     PR template) + a generated-code/CRD drift check               (if Go/*.mod/Makefile/apis/CRD changed)
 #   - golangci-lint                                                (if installed; matches CI lint)
 #
 # Usage: scripts/internal/run-checks.sh <base-ref> [<head-ref>]
@@ -41,14 +42,29 @@ else
   info "no helm-charts/** changes; skipping helm checks"
 fi
 
-# 3. Go -- only if Go sources / module / Makefile changed.
-if echo "$FILES" | grep -qE '\.go$|^go\.(mod|sum)$|^Makefile$'; then
+# 3. Operator (Go / CRD) -- mirror the PR-template checklist (make generate,
+#    make manifests, make test, golangci-lint). Triggered by Go sources, the Go
+#    module, the Makefile, the API types, or the generated CRD manifests.
+if echo "$FILES" | grep -qE '\.go$|^go\.(mod|sum)$|^Makefile$|^pkg/apis/|^config/crd/|^deploy/'; then
   if command -v go >/dev/null 2>&1; then
     run "go build" go build ./...
-    run "go vet" go vet ./...
-    run "go test ./pkg/..." go test ./pkg/... -timeout 120s
+    # `make test` depends on manifests -> generate -> fmt -> vet -> envtest, so it
+    # covers `make generate` and `make manifests` from the PR-template checklist and
+    # runs the unit tests. (Downloads kubebuilder/envtest assets on first run.)
+    run "make test" make test
+    # Drift: if `make generate` / `make manifests` rewrote tracked files, the branch
+    # is missing the regenerated output -- CI (action-make-test.yml / ci-manifests)
+    # fails on exactly this. git status (vs HEAD) shows what regeneration changed.
+    DRIFT="$(git status --porcelain -- pkg/apis config/crd deploy)"
+    if [ -n "$DRIFT" ]; then
+      err "generated-code / CRD drift after 'make test' -- run 'make generate' and 'make manifests', then commit:"
+      printf '%s\n' "$DRIFT" | sed 's/^/    /'
+      fail=1
+    else
+      info "no generated-code / CRD drift"
+    fi
   else
-    warn "go not installed; skipping go build/vet/test"
+    warn "go not installed; skipping go build / make test"
   fi
   if command -v golangci-lint >/dev/null 2>&1; then
     run "golangci-lint" golangci-lint run --timeout=30m ./...
@@ -56,7 +72,7 @@ if echo "$FILES" | grep -qE '\.go$|^go\.(mod|sum)$|^Makefile$'; then
     warn "golangci-lint not installed; skipping (CI still runs it)"
   fi
 else
-  info "no Go changes; skipping go checks"
+  info "no operator (Go / CRD) changes; skipping operator checks"
 fi
 
 echo
