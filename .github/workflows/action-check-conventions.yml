@@ -1,0 +1,32 @@
+name: Action Check CelerData conventions
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  conventions:
+    name: conventions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Flag upstream starrocks* identifiers in changed files that should be
+      # celerdata* (e.g. an undefined "starrockscluster.name" helper that
+      # cherry-picks cleanly but renders empty). Same script as the local
+      # pre-PR suite (scripts/internal/run-checks.sh), so local == CI.
+      #
+      # ADVISORY ONLY: this check is heuristic. Sometimes "starrocks" is correct
+      # (binary paths, upstream image repos, prose), so a finding must NEVER block
+      # a merge. continue-on-error lets the job stay green (and shows the findings
+      # as a warning annotation) even when the script exits non-zero.
+      - name: Check enterprise naming conventions
+        continue-on-error: true
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          bash scripts/internal/check-celerdata-conventions.sh "origin/${{ github.base_ref }}" HEAD

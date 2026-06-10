@@ -17,6 +17,10 @@ fi
 # List of items to sync (directories or files)
 ITEMS=("doc" "examples" "helm-charts" "deploy" "scripts" "README.md" "README_ZH-CN.md")
 
+# Internal-only paths that must NOT be published to the public repository.
+# Paths are relative to the target repository root.
+EXCLUDE=("doc/internal" "scripts/internal")
+
 echo "Starting synchronization from $HOME_PATH to $TARGET_PATH..."
 
 for item in "${ITEMS[@]}"; do
@@ -32,6 +36,14 @@ for item in "${ITEMS[@]}"; do
     echo "Successfully synced $item"
   else
     echo "Warning: Source $HOME_PATH/$item does not exist, skipping."
+  fi
+done
+
+# Remove internal-only files that should never be published.
+for excluded in "${EXCLUDE[@]}"; do
+  if [ -e "$TARGET_PATH/$excluded" ]; then
+    rm -rf "$TARGET_PATH/$excluded"
+    echo "Excluded internal-only file: $excluded"
   fi
 done
 

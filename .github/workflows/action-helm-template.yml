@@ -20,7 +20,9 @@ jobs:
       uses: azure/setup-helm@v3
       with:
         version: v3.10.0
-    - name: Run helm template
-      run: |
-        cd helm-charts/charts/kube-celerdata/
-        helm template -f values.yaml .
+    # Lint + render every chart, with feature flags (ServiceMonitor, Datadog logs)
+    # enabled so conditional templates are actually exercised -- a plain default
+    # render leaves those blocks unrendered and hides template errors. The same
+    # script runs locally via scripts/internal/run-checks.sh, so local == CI.
+    - name: Check helm charts
+      run: bash scripts/internal/check-helm.sh

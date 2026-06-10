@@ -1,0 +1,4 @@
+# Upstream PRs intentionally NOT synced into the internal repo.
+# Format: "<pr-number>  # reason". Lines starting with # are comments.
+# Managed by: scripts/internal/sync-from-upstream.sh --ignore <N> [reason]
+741  # GitHub Actions version bumps already present in the enterprise base (cherry-pick is a no-op)
