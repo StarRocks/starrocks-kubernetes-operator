@@ -11,6 +11,9 @@ metadata:
     {{- toYaml .Values.starrocksCluster.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.starrocksCluster.waitForFullRollout }}
+  waitForFullRollout: {{ .Values.starrocksCluster.waitForFullRollout }}
+  {{- end }}
   {{- if .Values.starrocksCluster.disasterRecovery }}
   disasterRecovery:
     {{- toYaml .Values.starrocksCluster.disasterRecovery | nindent 4 }}
