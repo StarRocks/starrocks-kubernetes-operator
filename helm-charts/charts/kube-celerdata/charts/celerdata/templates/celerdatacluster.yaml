@@ -77,11 +77,7 @@ spec:
     annotations:
       app.celerdata.io/fe-config-hash: "{{template "celerdatacluster.fe.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
-      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
-      ad.datadoghq.com/fe.logs: '[{"service":"celerdata","source":"fe"}]'
-      {{- else }}
-      ad.datadoghq.com/fe.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"fe\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
-      {{- end }}
+      ad.datadoghq.com/fe.logs: {{ include "celerdatacluster.datadog.log.annotation" (dict "root" . "component" "fe" "multilinePattern" "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d+" "multilineName" "log_start_with_timestamp") }}
       {{- end }}
       {{- if .Values.celerDataFeSpec.entrypoint }}
       app.celerdata.io/fe-entrypoint-hash: "{{ template "celerdatacluster.fe.entrypoint.script.hash" . }}"
@@ -347,11 +343,7 @@ spec:
     annotations:
       app.celerdata.io/be-config-hash: "{{template "celerdatacluster.be.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
-      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
-      ad.datadoghq.com/be.logs: '[{"service":"celerdata","source":"be"}]'
-      {{- else }}
-      ad.datadoghq.com/be.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"be\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
-      {{- end }}
+      ad.datadoghq.com/be.logs: {{ include "celerdatacluster.datadog.log.annotation" (dict "root" . "component" "be" "multilinePattern" "[IWEF]\\d{8}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d+" "multilineName" "log_start_with_timestamp") }}
       {{- end }}
       {{- if .Values.celerDataBeSpec.annotations }}
       {{- toYaml .Values.celerDataBeSpec.annotations | nindent 6 }}
@@ -792,11 +784,7 @@ spec:
     annotations:
       app.celerdata.io/cn-config-hash: "{{template "celerdatacluster.cn.config.hash" . }}"
       {{- if .Values.datadog.log.enabled }}
-      {{- if eq (trimAll " {}" .Values.datadog.log.logConfig) "" }}
-      ad.datadoghq.com/cn.logs: '[{"service":"celerdata","source":"cn"}]'
-      {{- else }}
-      ad.datadoghq.com/cn.logs: {{ printf "[%s]" (printf "{%s, \"source\": \"cn\", \"service\": \"celerdata\"}" (trimAll " {}" .Values.datadog.log.logConfig) | fromJson | toJson) | squote }}
-      {{- end }}
+      ad.datadoghq.com/cn.logs: {{ include "celerdatacluster.datadog.log.annotation" (dict "root" . "component" "cn" "multilinePattern" "[IWEF]\\d{8}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d+" "multilineName" "log_start_with_timestamp") }}
       {{- end }}
       {{- if .Values.celerDataCnSpec.annotations }}
       {{- toYaml .Values.celerDataCnSpec.annotations | nindent 6 }}
