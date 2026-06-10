@@ -36,7 +36,5 @@ gen-crd-api-reference-docs-master/
 temp/
 cmd/cmd
 
-CLAUDE.md
-
 # Claude Code local worktrees
 .claude/worktrees/
