@@ -893,7 +893,7 @@ spec:
     {{- end }}
     replicas: {{ .Values.starrocksFeProxySpec.replicas }}
     imagePullPolicy: {{ .Values.starrocksFeProxySpec.imagePullPolicy }}
-    resolver: {{ .Values.starrocksFeProxySpec.resolver }}
+    resolver: "{{ .Values.starrocksFeProxySpec.resolver }}"
     {{- if .Values.starrocksFeProxySpec.resources }}
       {{- toYaml .Values.starrocksFeProxySpec.resources | nindent 4 }}
     {{- end }}
