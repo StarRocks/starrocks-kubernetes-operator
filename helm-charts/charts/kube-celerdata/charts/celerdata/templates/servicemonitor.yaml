@@ -34,6 +34,11 @@ spec:
           targetLabel: app_celerdata_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "celerdatacluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "celerdatacluster.namespace" . }}
@@ -68,6 +73,11 @@ spec:
           targetLabel: app_celerdata_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "celerdatacluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "celerdatacluster.namespace" . }}
@@ -104,6 +114,11 @@ spec:
           targetLabel: app_celerdata_ownerreference_name
         - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
           targetLabel: app_kubernetes_io_component
+        - sourceLabels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+          targetLabel: group
+        - action: replace
+          replacement: {{ template "celerdatacluster.name" . }}
+          targetLabel: cluster
   namespaceSelector:
     matchNames:
       - {{ template "celerdatacluster.namespace" . }}
