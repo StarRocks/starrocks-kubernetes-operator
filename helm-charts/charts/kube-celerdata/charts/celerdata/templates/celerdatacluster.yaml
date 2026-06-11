@@ -896,7 +896,7 @@ spec:
     {{- end }}
     replicas: {{ .Values.celerDataFeProxySpec.replicas }}
     imagePullPolicy: {{ .Values.celerDataFeProxySpec.imagePullPolicy }}
-    resolver: {{ .Values.celerDataFeProxySpec.resolver }}
+    resolver: "{{ .Values.celerDataFeProxySpec.resolver }}"
     {{- if .Values.celerDataFeProxySpec.resources }}
       {{- toYaml .Values.celerDataFeProxySpec.resources | nindent 4 }}
     {{- end }}
