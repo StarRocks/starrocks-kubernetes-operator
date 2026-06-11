@@ -35,7 +35,7 @@ spec:
         {{- if .Values.initPassword.image }}
         image: {{ .Values.initPassword.image }}
         {{- else }}
-        image: {{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}
+        image: {{ include "starrockscluster.fe.image" . }}
         {{- end }}
         imagePullPolicy: IfNotPresent
         {{- if .Values.initPassword.resources }}

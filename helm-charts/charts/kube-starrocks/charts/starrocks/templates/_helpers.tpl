@@ -716,6 +716,69 @@ Get the value of tag field in the starrocksCnSpec
 {{- end -}}
 
 {{/*
+Build the full FE image reference, prepending the registry when set.
+Priority (highest wins): component image.registry > componentValues.image.registry > global.image.registry.
+*/}}
+{{- define "starrockscluster.fe.image" -}}
+{{- $registry := coalesce .Values.starrocksFESpec.image.registry .Values.starrocksCluster.componentValues.image.registry .Values.global.image.registry -}}
+{{- $repo := .Values.starrocksFESpec.image.repository -}}
+{{- $tag := include "starrockscluster.fe.image.tag" . -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repo $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build the full BE image reference, prepending the registry when set.
+Priority (highest wins): component image.registry > componentValues.image.registry > global.image.registry.
+*/}}
+{{- define "starrockscluster.be.image" -}}
+{{- $registry := coalesce .Values.starrocksBeSpec.image.registry .Values.starrocksCluster.componentValues.image.registry .Values.global.image.registry -}}
+{{- $repo := .Values.starrocksBeSpec.image.repository -}}
+{{- $tag := include "starrockscluster.be.image.tag" . -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repo $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build the full CN image reference, prepending the registry when set.
+Priority (highest wins): component image.registry > componentValues.image.registry > global.image.registry.
+*/}}
+{{- define "starrockscluster.cn.image" -}}
+{{- $registry := coalesce .Values.starrocksCnSpec.image.registry .Values.starrocksCluster.componentValues.image.registry .Values.global.image.registry -}}
+{{- $repo := .Values.starrocksCnSpec.image.repository -}}
+{{- $tag := include "starrockscluster.cn.image.tag" . -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repo $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build the full FE proxy image reference, prepending the registry when set.
+Only used when starrocksFeProxySpec.image.repository is non-empty; otherwise
+the operator falls back to its built-in default (nginx:1.24.0).
+Priority (highest wins): component image.registry > global.image.registry.
+Note: feproxy is not covered by componentValues.
+*/}}
+{{- define "starrockscluster.feproxy.image" -}}
+{{- $registry := coalesce .Values.starrocksFeProxySpec.image.registry .Values.global.image.registry -}}
+{{- $repo := .Values.starrocksFeProxySpec.image.repository -}}
+{{- $tag := .Values.starrocksFeProxySpec.image.tag -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repo $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Get the value of podLabels field in the starrocksFESpec
 */}}
 {{- define "starrockscluster.fe.podLabels" -}}

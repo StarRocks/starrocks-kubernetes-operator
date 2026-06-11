@@ -26,7 +26,7 @@ spec:
     {{- if .Values.starrocksFESpec.shareProcessNamespace }}
     shareProcessNamespace: {{ .Values.starrocksFESpec.shareProcessNamespace }}
     {{- end }}
-    image: "{{ .Values.starrocksFESpec.image.repository }}:{{ include "starrockscluster.fe.image.tag" . }}"
+    image: "{{ include "starrockscluster.fe.image" . }}"
     {{- if .Values.starrocksFESpec.entrypoint }}
     command: ["bash", "-c"]
     args:
@@ -292,7 +292,7 @@ spec:
     {{- if .Values.starrocksBeSpec.shareProcessNamespace }}
     shareProcessNamespace: {{ .Values.starrocksBeSpec.shareProcessNamespace }}
     {{- end }}
-    image: "{{ .Values.starrocksBeSpec.image.repository }}:{{ include "starrockscluster.be.image.tag" . }}"
+    image: "{{ include "starrockscluster.be.image" . }}"
     {{- if .Values.starrocksBeSpec.entrypoint }}
     command: ["bash", "-c"]
     args:
@@ -589,7 +589,7 @@ spec:
     {{- if .Values.starrocksCnSpec.shareProcessNamespace }}
     shareProcessNamespace: {{ .Values.starrocksCnSpec.shareProcessNamespace }}
     {{- end }}
-    image: "{{ .Values.starrocksCnSpec.image.repository }}:{{ include "starrockscluster.cn.image.tag" . }}"
+    image: "{{ include "starrockscluster.cn.image" . }}"
     {{- if .Values.starrocksCnSpec.entrypoint }}
     command: ["bash", "-c"]
     args:
@@ -888,7 +888,7 @@ spec:
   {{- if .Values.starrocksFeProxySpec.enabled }}
   starRocksFeProxySpec:
     {{- if .Values.starrocksFeProxySpec.image.repository }}
-    image: "{{ .Values.starrocksFeProxySpec.image.repository }}:{{ .Values.starrocksFeProxySpec.image.tag }}"
+    image: "{{ include "starrockscluster.feproxy.image" . }}"
     {{- end }}
     {{- if .Values.starrocksFeProxySpec.imagePullSecrets }}
     imagePullSecrets:
