@@ -1,0 +1,28 @@
+{{- if and .Values.starrocksFeProxySpec.enabled .Values.starrocksFeProxySpec.pdb.enabled }}
+{{- if and .Values.starrocksFeProxySpec.pdb.minAvailable .Values.starrocksFeProxySpec.pdb.maxUnavailable }}
+  {{- fail "starrocksFeProxySpec.pdb: Cannot set both minAvailable and maxUnavailable. Please specify only one." }}
+{{- end }}
+{{- if not (or .Values.starrocksFeProxySpec.pdb.minAvailable .Values.starrocksFeProxySpec.pdb.maxUnavailable) }}
+  {{- fail "starrocksFeProxySpec.pdb: Must set either minAvailable or maxUnavailable when pdb.enabled is true." }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "starrockscluster.name" . }}-fe-proxy-pdb
+  namespace: {{ include "starrockscluster.namespace" . }}
+  labels:
+    app.kubernetes.io/component: fe-proxy
+    {{- include "starrockscluster.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.starrocksFeProxySpec.pdb.minAvailable }}
+  minAvailable: {{ .Values.starrocksFeProxySpec.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.starrocksFeProxySpec.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.starrocksFeProxySpec.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: fe-proxy
+      app.starrocks.ownerreference/name: {{ include "starrockscluster.name" . }}-fe-proxy
+{{- end }}
+
