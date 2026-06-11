@@ -391,6 +391,21 @@ starrocks:
       # specifies the source IP ranges for the load balancer when the type=LoadBalancer.
       loadBalancerSourceRanges: []
         # - 10.0.0.0/8
+    # ingress, if set, makes the operator create an Ingress that routes external HTTP traffic
+    # to the FE web UI (the "http" port, 8030). The FE MySQL/query port (9030) is L4 and cannot
+    # be exposed through a standard Ingress; use service.type=NodePort/LoadBalancer for that.
+    # SECURITY: the FE web UI exposes an admin HTTP API. Protect it (auth annotations, allow
+    # lists, or a private IngressClass) before exposing it to untrusted networks.
+    # Leave unset (the default) to create no Ingress.
+    ingress: {}
+      # host: starrocks.example.com
+      # ingressClassName: nginx
+      # annotations:
+      #   nginx.ingress.kubernetes.io/auth-type: basic
+      # tls:
+      #   - hosts:
+      #       - starrocks.example.com
+      #     secretName: starrocks-tls
     # imagePullSecrets allows you to use secrets to pull images for pods.
     imagePullSecrets: []
       # - name: "image-pull-secret"

@@ -142,6 +142,21 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
+	// Optionally expose the FE web UI through an Ingress. Presence of feSpec.Ingress enables
+	// it; clearing the field removes a previously created Ingress. This block does not touch
+	// the statefulset or services above, so clusters without an Ingress configured reconcile
+	// exactly as before.
+	if feSpec.Ingress != nil {
+		ingress := rutils.BuildFeIngress(object, feSpec.Ingress, defaultLabels)
+		if err = k8sutils.ApplyIngress(ctx, fc.Client, &ingress); err != nil {
+			logger.Error(err, "deploy fe ingress failed", "ingress", ingress.Name)
+			return err
+		}
+	} else if err = k8sutils.DeleteIngress(ctx, fc.Client, src.Namespace, rutils.FeIngressName(src.Name)); err != nil {
+		logger.Error(err, "delete stale fe ingress failed")
+		return err
+	}
+
 	return nil
 }
 
@@ -212,6 +227,12 @@ func (fc *FeController) ClearCluster(ctx context.Context, src *srapi.StarRocksCl
 	err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName)
 	if err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete external service failed", "externalServiceName", externalServiceName)
+		return err
+	}
+
+	ingressName := rutils.FeIngressName(src.Name)
+	if err := k8sutils.DeleteIngress(ctx, fc.Client, src.Namespace, ingressName); err != nil && !apierrors.IsNotFound(err) {
+		logger.Error(err, "delete fe ingress failed", "ingressName", ingressName)
 		return err
 	}
 
