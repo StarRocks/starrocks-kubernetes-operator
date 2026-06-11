@@ -449,6 +449,13 @@ type StorageVolume struct {
 	// SubPath within the volume from which the container's volume should be mounted.
 	// Defaults to "" (volume's root).
 	SubPath string `json:"subPath,omitempty"`
+
+	// VolumeAttributeClassName is the name of a VolumeAttributesClass to use for modifying
+	// volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+	// VolumeAttributesClass feature gate enabled.
+	// More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
+	// +optional
+	VolumeAttributeClassName *string `json:"volumeAttributeClassName,omitempty"`
 }
 
 var ErrHostPathRequired = errors.New("if storageClassName is hostPath, hostPath and hostPath.path is required")

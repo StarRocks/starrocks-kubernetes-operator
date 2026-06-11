@@ -504,6 +504,10 @@ starrocks:
       #    sys_log_dir = xxx
       #    audit_log_dir = xxx
       logMountPath: ""
+      # The name of a VolumeAttributesClass to apply to all FE PVCs.
+      # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
+      # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
+      volumeAttributeClassName: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent metadata and log.
     emptyDirs: []
@@ -872,6 +876,10 @@ starrocks:
       # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/cn/spill.
       # If spillMountPath is not /opt/starrocks/cn/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
       spillMountPath: ""
+      # The name of a VolumeAttributesClass to apply to all CN PVCs.
+      # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
+      # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
+      volumeAttributeClassName: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []
@@ -1209,6 +1217,10 @@ starrocks:
       # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/be/spill.
       # If spillMountPath is not /opt/starrocks/be/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
       spillMountPath: ""
+      # The name of a VolumeAttributesClass to apply to all BE PVCs.
+      # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
+      # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
+      volumeAttributeClassName: ""
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []

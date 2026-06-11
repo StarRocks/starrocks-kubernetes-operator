@@ -131,6 +131,11 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
+	if err = k8sutils.PatchPVCVolumeAttributeClass(ctx, fc.Client,
+		src.Namespace, expectSts.Name, feSpec.StorageVolumes); err != nil {
+		logger.Error(err, "patch PVC volumeAttributeClassName failed")
+	}
+
 	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "deploy search service failed", "internalService", internalService)
 		fc.Recorder.Event(src, corev1.EventTypeWarning, "DeployFeFailed", err.Error())

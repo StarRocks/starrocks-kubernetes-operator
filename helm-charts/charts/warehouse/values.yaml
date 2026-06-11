@@ -184,6 +184,10 @@ spec:
     storageSize: 100Gi
     # Setting this parameter can persist log storage
     logStorageSize: 1Gi
+    # The name of a VolumeAttributesClass to apply to all warehouse PVCs.
+    # Used to modify volume attributes (e.g. IOPS, throughput) on the fly.
+    # Requires Kubernetes 1.31+ with VolumeAttributesClass feature gate enabled.
+    volumeAttributeClassName: ""
   # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
   # See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/ for more information.
   persistentVolumeClaimRetentionPolicy:

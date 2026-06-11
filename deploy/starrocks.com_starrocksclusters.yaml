@@ -2005,6 +2005,8 @@ spec:
                           type: string
                         subPath:
                           type: string
+                        volumeAttributeClassName:
+                          type: string
                       required:
                       - mountPath
                       - name
@@ -4391,6 +4393,8 @@ spec:
                           type: string
                         subPath:
                           type: string
+                        volumeAttributeClassName:
+                          type: string
                       required:
                       - mountPath
                       - name
@@ -5105,6 +5109,8 @@ spec:
                           pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
                           type: string
                         subPath:
+                          type: string
+                        volumeAttributeClassName:
                           type: string
                       required:
                       - mountPath
@@ -7129,6 +7135,8 @@ spec:
                           pattern: (^0|([0-9]*l[.])?[0-9]+((M|G|T|E|P)i))$
                           type: string
                         subPath:
+                          type: string
+                        volumeAttributeClassName:
                           type: string
                       required:
                       - mountPath

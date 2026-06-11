@@ -4201,6 +4201,13 @@ spec:
                             SubPath within the volume from which the container's volume should be mounted.
                             Defaults to "" (volume's root).
                           type: string
+                        volumeAttributeClassName:
+                          description: |-
+                            VolumeAttributeClassName is the name of a VolumeAttributesClass to use for modifying
+                            volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+                            VolumeAttributesClass feature gate enabled.
+                            More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
+                          type: string
                       required:
                       - mountPath
                       - name
@@ -9240,6 +9247,13 @@ spec:
                             SubPath within the volume from which the container's volume should be mounted.
                             Defaults to "" (volume's root).
                           type: string
+                        volumeAttributeClassName:
+                          description: |-
+                            VolumeAttributeClassName is the name of a VolumeAttributesClass to use for modifying
+                            volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+                            VolumeAttributesClass feature gate enabled.
+                            More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
+                          type: string
                       required:
                       - mountPath
                       - name
@@ -10818,6 +10832,13 @@ spec:
                           description: |-
                             SubPath within the volume from which the container's volume should be mounted.
                             Defaults to "" (volume's root).
+                          type: string
+                        volumeAttributeClassName:
+                          description: |-
+                            VolumeAttributeClassName is the name of a VolumeAttributesClass to use for modifying
+                            volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+                            VolumeAttributesClass feature gate enabled.
+                            More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
                           type: string
                       required:
                       - mountPath
@@ -15165,6 +15186,13 @@ spec:
                           description: |-
                             SubPath within the volume from which the container's volume should be mounted.
                             Defaults to "" (volume's root).
+                          type: string
+                        volumeAttributeClassName:
+                          description: |-
+                            VolumeAttributeClassName is the name of a VolumeAttributesClass to use for modifying
+                            volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+                            VolumeAttributesClass feature gate enabled.
+                            More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
                           type: string
                       required:
                       - mountPath

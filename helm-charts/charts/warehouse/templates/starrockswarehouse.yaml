@@ -129,6 +129,9 @@ spec:
       storageSize: {{ .Values.spec.storageSpec.storageSize }}
       {{- end }}
       mountPath: {{template "starrockscluster.cn.data.path" . }}
+      {{- if .Values.spec.storageSpec.volumeAttributeClassName }}
+      volumeAttributeClassName: {{ .Values.spec.storageSpec.volumeAttributeClassName }}
+      {{- end }}
     {{- if .Values.spec.storageSpec.logStorageSize }}
     - name: {{ .Values.spec.storageSpec.name }}{{template "starrockscluster.cn.log.suffix" . }}
       {{- if .Values.spec.storageSpec.storageClassName }}
@@ -138,6 +141,9 @@ spec:
       storageSize: {{ .Values.spec.storageSpec.logStorageSize }}
       {{- end }}
       mountPath: {{template "starrockscluster.cn.log.path" . }}
+      {{- if .Values.spec.storageSpec.volumeAttributeClassName }}
+      volumeAttributeClassName: {{ .Values.spec.storageSpec.volumeAttributeClassName }}
+      {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.spec.persistentVolumeClaimRetentionPolicy }}
