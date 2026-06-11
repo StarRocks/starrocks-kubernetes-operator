@@ -11,6 +11,9 @@ metadata:
     {{- toYaml .Values.celerDataCluster.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.celerDataCluster.waitForFullRollout }}
+  waitForFullRollout: {{ .Values.celerDataCluster.waitForFullRollout }}
+  {{- end }}
   {{- if .Values.celerDataCluster.disasterRecovery }}
   disasterRecovery:
     {{- toYaml .Values.celerDataCluster.disasterRecovery | nindent 4 }}

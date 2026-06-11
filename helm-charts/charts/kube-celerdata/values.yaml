@@ -237,6 +237,10 @@ celerdata:
     # specify the BE/CN deployment or not.
     enabledBe: true
     enabledCn: false
+    # When true, the operator waits for the FE StatefulSet to be fully rolled out (all replicas ready
+    # and at the same revision) before updating BE/CN. This prevents a bad FE rollout from cascading
+    # to BE/CN. Defaults to false for backward compatibility.
+    waitForFullRollout: false
     # Disaster recovery configuration. If you want to enable disaster recovery, you need to set the enabled field to true.
     # Note:
     #  1. If you are using an existing CelerData cluster, you need to clean up the meta of the FE component and the data of the CN
