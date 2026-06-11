@@ -54,6 +54,11 @@ spec:
                 description: StarRocksCluster is the name of a StarRocksCluster which
                   the warehouse belongs to.
                 type: string
+              starRocksClusterNamespace:
+                description: |-
+                  StarRocksClusterNamespace is the namespace of the StarRocksCluster which the warehouse belongs to.
+                  If empty, defaults to the same namespace as this StarRocksWarehouse.
+                type: string
               template:
                 description: Template define component configuration.
                 properties:

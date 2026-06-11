@@ -25,8 +25,12 @@ const (
 // Component CN needs to connect to mysql and execute sql statements. E.g.: When StarRocksWarehouse is deleted, the
 // related 'DROP WAREHOUSE <name>' statement needs to be executed.
 type SQLExecutor struct {
-	RootPassword       string
-	FeServiceName      string
+	RootPassword string
+	// FeServiceName is the FQDN of the FE service, e.g. "<svc>.<namespace>".
+	// It is read from the FE_SERVICE_NAME environment variable of the CN StatefulSet.
+	FeServiceName string
+	// FeServiceNamespace is kept for backward compatibility but is no longer used in connection strings,
+	// since FeServiceName already contains the full FQDN (including namespace).
 	FeServiceNamespace string
 	FeServicePort      string
 }
@@ -85,8 +89,8 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, statement string) error {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/",
+			executor.RootPassword, executor.FeServiceName, executor.FeServicePort))
 		if err != nil {
 			return err
 		}
@@ -104,8 +108,8 @@ func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, sta
 func (executor *SQLExecutor) QueryContext(ctx context.Context, db *sql.DB, statements string) (*sql.Rows, error) {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/",
+			executor.RootPassword, executor.FeServiceName, executor.FeServicePort))
 		if err != nil {
 			return nil, err
 		}

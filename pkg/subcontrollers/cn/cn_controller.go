@@ -85,8 +85,15 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return ErrWarehouseNameIsNotAllowed
 	}
 
+	// clusterNamespace is the namespace where the StarRocksCluster resides.
+	// It may differ from warehouse.Namespace when cross-namespace deployment is configured.
+	clusterNamespace := warehouse.Namespace
+	if warehouse.Spec.StarRocksClusterNamespace != "" {
+		clusterNamespace = warehouse.Spec.StarRocksClusterNamespace
+	}
+
 	logger.Info("get StarRocksCluster CR from kubernetes")
-	_, err := cc.getStarRocksCluster(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	_, err := cc.getStarRocksCluster(ctx, clusterNamespace, warehouse.Spec.StarRocksCluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return ErrStarRocksClusterIsMissing
@@ -95,7 +102,7 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 	}
 
 	logger.Info("get fe config to make sure StarRocks run in shared_data mode")
-	feConfig, err := cc.getFeConfig(ctx, warehouse.Namespace, warehouse.Spec.StarRocksCluster)
+	feConfig, err := cc.getFeConfig(ctx, clusterNamespace, warehouse.Spec.StarRocksCluster)
 	if err != nil {
 		return err
 	}
@@ -103,7 +110,7 @@ func (cc *CnController) SyncWarehouse(ctx context.Context, warehouse *srapi.Star
 		return ErrShouldRunInSharedDataMode
 	}
 
-	if !fe.CheckFEReady(ctx, cc.k8sClient, warehouse.Namespace, warehouse.Spec.StarRocksCluster) {
+	if !fe.CheckFEReady(ctx, cc.k8sClient, clusterNamespace, warehouse.Spec.StarRocksCluster) {
 		return ErrFeIsNotReady
 	}
 
@@ -174,7 +181,7 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 	logger.V(log.DebugLevel).Info("get fe config to resolve ports", "ConfigMapInfo", cnSpec.ConfigMapInfo)
-	feconfig, err := cc.getFeConfig(ctx, object.Namespace, object.ClusterName)
+	feconfig, err := cc.getFeConfig(ctx, object.ClusterNamespace, object.ClusterName)
 	if err != nil {
 		return err
 	}

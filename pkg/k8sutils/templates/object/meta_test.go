@@ -42,6 +42,33 @@ func TestNewFromCluster(t *testing.T) {
 				SubResourcePrefixName: "starrocks",
 			},
 		},
+		{
+			name: "NewFromCluster fills ClusterNamespace from cluster.Namespace",
+			args: args{
+				cluster: &srapi.StarRocksCluster{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "StarRocksCluster",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "starrocks",
+						Namespace: "main-ns",
+					},
+				},
+			},
+			want: StarRocksObject{
+				TypeMeta: &metav1.TypeMeta{
+					Kind: "StarRocksCluster",
+				},
+				ObjectMeta: &metav1.ObjectMeta{
+					Name:      "starrocks",
+					Namespace: "main-ns",
+				},
+				ClusterName:           "starrocks",
+				ClusterNamespace:      "main-ns",
+				Kind:                  "StarRocksCluster",
+				SubResourcePrefixName: "starrocks",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -86,6 +113,69 @@ func TestNewFromWarehouse(t *testing.T) {
 				ClusterName:           "starrocks",
 				Kind:                  "StarRocksWarehouse",
 				SubResourcePrefixName: "starrocks-warehouse",
+				IsWarehouseObject:     true,
+			},
+		},
+		{
+			name: "warehouse same namespace falls back to warehouse.Namespace",
+			args: args{
+				warehouse: &srapi.StarRocksWarehouse{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "StarRocksWarehouse",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "wh1",
+						Namespace: "wh-ns",
+					},
+					Spec: srapi.StarRocksWarehouseSpec{
+						StarRocksCluster: "main",
+					},
+				},
+			},
+			want: StarRocksObject{
+				TypeMeta: &metav1.TypeMeta{
+					Kind: "StarRocksWarehouse",
+				},
+				ObjectMeta: &metav1.ObjectMeta{
+					Name:      "wh1",
+					Namespace: "wh-ns",
+				},
+				ClusterName:           "main",
+				ClusterNamespace:      "wh-ns",
+				Kind:                  "StarRocksWarehouse",
+				SubResourcePrefixName: "wh1-warehouse",
+				IsWarehouseObject:     true,
+			},
+		},
+		{
+			name: "warehouse cross namespace uses Spec.StarRocksClusterNamespace",
+			args: args{
+				warehouse: &srapi.StarRocksWarehouse{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "StarRocksWarehouse",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "wh1",
+						Namespace: "wh-ns",
+					},
+					Spec: srapi.StarRocksWarehouseSpec{
+						StarRocksCluster:          "main",
+						StarRocksClusterNamespace: "main-ns",
+					},
+				},
+			},
+			want: StarRocksObject{
+				TypeMeta: &metav1.TypeMeta{
+					Kind: "StarRocksWarehouse",
+				},
+				ObjectMeta: &metav1.ObjectMeta{
+					Name:      "wh1",
+					Namespace: "wh-ns",
+				},
+				ClusterName:           "main",
+				ClusterNamespace:      "main-ns",
+				Kind:                  "StarRocksWarehouse",
+				SubResourcePrefixName: "wh1-warehouse",
 				IsWarehouseObject:     true,
 			},
 		},
