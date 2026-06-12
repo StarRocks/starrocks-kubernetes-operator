@@ -12,6 +12,11 @@
 # re-run this script (from the main checkout) to finalize. git rerere is enabled so
 # a given celerData* -> starrocks* rename conflict replays automatically next time.
 #
+# Round-trip guard: once the OSS PR exists, its number is recorded in
+# scripts/internal/sync-from-upstream-ignore.txt (via sync-from-upstream.sh
+# --ignore) so the reverse-direction sync never tries to pull this change back
+# into internal. The edit lands in the working tree -- commit it.
+#
 # Usage:
 #   scripts/internal/port-to-oss.sh --pr <internal-pr-number>   # normal: PR already merged to internal main
 #   scripts/internal/port-to-oss.sh --commit <sha>             # escape hatch: not-yet-merged commit
@@ -23,6 +28,22 @@
 set -euo pipefail
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# record_no_sync_back <oss-pr-number> — mark a just-ported OSS PR as never-sync.
+# A PR ported FROM internal TO open source is a round-trip: its change is already
+# in the enterprise base, so sync-from-upstream.sh must NOT pull it back in. We
+# key the never-sync list on the OSS PR number (known the moment the PR exists),
+# which is exactly what sync-from-upstream.sh scans -- so no detection-logic
+# change is needed on that side. Delegates to sync-from-upstream.sh --ignore for
+# the dedup + file-format logic. The edit lands in the working tree; commit it.
+record_no_sync_back() {
+  local num="${1#\#}"
+  [ -n "$num" ] || return 0
+  local reason="round-trip: ported from internal${INT_PR:+ #$INT_PR} to OSS via port-to-oss.sh; change already in enterprise base, do not sync back"
+  bash "$SELF_DIR/sync-from-upstream.sh" --ignore "$num" "$reason" \
+    || warn "could not record OSS PR #$num in the never-sync list; add it manually: scripts/internal/sync-from-upstream.sh --ignore $num"
+}
 
 # --- args: exactly one of --pr / --commit -----------------------------------
 PR=""
@@ -161,6 +182,9 @@ EXISTING_PR="$(gh pr list --repo "$SLUG_UPSTREAM" --head "$BRANCH" --state all \
   --json number --jq '.[0].number // empty' 2>/dev/null || true)"
 
 if [ -n "$EXISTING_PR" ]; then
+  # The round-trip relationship holds whether or not we update the body, so
+  # record it before the (skippable) update confirmation.
+  record_no_sync_back "$EXISTING_PR"
   if ! confirm "PR $SLUG_UPSTREAM#$EXISTING_PR already exists; update its title + body?"; then
     exit 0
   fi
@@ -179,6 +203,7 @@ else
     --head "$FORK_OWNER:$BRANCH" \
     --title "$TITLE" \
     --body "$PR_BODY")"
+  record_no_sync_back "$(basename "$OSS_URL")"
   info "created $OSS_URL"
 fi
 
