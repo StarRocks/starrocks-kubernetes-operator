@@ -92,7 +92,7 @@ Add the following snippets to `values.yaml` to configure the automatic scaling p
   starrocksCnSpec:
     image:
       repository: starrocks/cn-ubuntu
-      tag: 3.5-latest
+      tag: 4.1-latest
     resources:
       requests:
         cpu: 4
