@@ -76,6 +76,15 @@ type StarRocksComponentSpec struct {
 	// See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container for how to configure a container.
 	InitContainers []corev1.Container `json:"initContainers,omitempty"`
 
+	// DNSConfig defines the DNS parameters of a pod in addition to those generated from DNSPolicy.
+	// +optional
+	DNSConfig *corev1.PodDNSConfig `json:"dnsConfig,omitempty"`
+
+	// DNSPolicy defines the DNS policy for the pod.
+	// Defaults to "ClusterFirst".
+	// + optional
+	DNSPolicy corev1.DNSPolicy `json:"dnsPolicy,omitempty"`
+
 	// Entrypoint array. Not executed within a shell.
 	// If this is not provided, it will use default entrypoint for different components:
 	//	1. For FE, it will use /opt/starrocks/fe_entrypoint.sh as the entrypoint.
@@ -230,6 +239,15 @@ func (spec *StarRocksComponentSpec) GetSidecars() []corev1.Container {
 
 func (spec *StarRocksComponentSpec) GetInitContainers() []corev1.Container {
 	return spec.InitContainers
+}
+
+func (spec *StarRocksComponentSpec) GetDNSConfig() *corev1.PodDNSConfig { return spec.DNSConfig }
+
+func (spec *StarRocksComponentSpec) GetDNSPolicy() corev1.DNSPolicy {
+	if spec.DNSPolicy == "" {
+		return corev1.DNSClusterFirst
+	}
+	return spec.DNSPolicy
 }
 
 func (spec *StarRocksComponentSpec) GetCommand() []string {

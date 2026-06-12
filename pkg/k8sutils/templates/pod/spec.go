@@ -273,6 +273,8 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 	podSpec := corev1.PodSpec{
 		InitContainers:                spec.GetInitContainers(),
 		Containers:                    containers,
+		DNSConfig:                     spec.GetDNSConfig(),
+		DNSPolicy:                     spec.GetDNSPolicy(),
 		Volumes:                       volumes,
 		ServiceAccountName:            spec.GetServiceAccount(),
 		TerminationGracePeriodSeconds: spec.GetTerminationGracePeriodSeconds(),
