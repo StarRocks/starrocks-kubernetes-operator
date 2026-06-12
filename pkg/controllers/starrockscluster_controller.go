@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/go-logr/logr"
@@ -92,6 +93,11 @@ func (r *StarRocksClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		kvs := []interface{}{"subController", rc.GetControllerName()}
 		logger.Info("sub controller sync spec", kvs...)
 		if err = rc.SyncCluster(ctx, src); err != nil {
+			var requeueErr *subcontrollers.RequeueAfterError
+			if errors.As(err, &requeueErr) {
+				logger.Info(requeueErr.Reason, kvs...)
+				return ctrl.Result{RequeueAfter: requeueErr.After}, nil
+			}
 			logger.Error(err, "sub controller reconciles spec failed", kvs...)
 			handleSyncClusterError(src, rc, err)
 			if updateError := r.UpdateStarRocksClusterStatus(ctx, src); updateError != nil {

@@ -170,6 +170,15 @@ type StarRocksBeSpec struct {
 	// +optional
 	// beEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	BeEnvVars []corev1.EnvVar `json:"beEnvVars,omitempty"`
+
+	// +optional
+	// WaitForTabletBalance controls rolling update behavior for BE pods.
+	// When enabled, the operator queries the FE for tablet balance status
+	// (pending_tablets and running_tablets) before allowing the next BE pod
+	// to be updated during a rolling restart. This prevents write errors
+	// caused by under-replicated tablets during rolling upgrades.
+	// Defaults to false.
+	WaitForTabletBalance bool `json:"waitForTabletBalance,omitempty"`
 }
 
 // StarRocksCnSpec defines the desired state of cn.

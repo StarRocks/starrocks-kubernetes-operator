@@ -1291,6 +1291,10 @@ starrocks:
     #       updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy',
     #       'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
     podManagementPolicy: Parallel
+    # waitForTabletBalance controls rolling update behavior for BE pods.
+    # When enabled, the operator checks tablet balance (pending_tablets, running_tablets) before restarting
+    # the next BE pod during a rolling update. This prevents write errors caused by under-replicated tablets.
+    waitForTabletBalance: false
     # Lifecycle describes actions that the management system should take in response to container lifecycle events.
     # By default, Operator will add corresponding preStop hooks for different components. For example, the preStop
     # script for the FE Component is /opt/starrocks/fe_prestop.sh, for the BE Component is /opt/starrocks/be_prestop.sh,

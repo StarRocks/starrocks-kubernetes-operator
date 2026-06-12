@@ -4495,6 +4495,15 @@ spec:
                           Default is RollingUpdate.
                         type: string
                     type: object
+                  waitForTabletBalance:
+                    description: |-
+                      WaitForTabletBalance controls rolling update behavior for BE pods.
+                      When enabled, the operator queries the FE for tablet balance status
+                      (pending_tablets and running_tablets) before allowing the next BE pod
+                      to be updated during a rolling restart. This prevents write errors
+                      caused by under-replicated tablets during rolling upgrades.
+                      Defaults to false.
+                    type: boolean
                 type: object
               starRocksCnSpec:
                 description: StarRocksCnSpec define cn configuration for start cn

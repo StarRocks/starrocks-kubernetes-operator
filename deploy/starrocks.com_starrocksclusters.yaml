@@ -2109,6 +2109,8 @@ spec:
                       type:
                         type: string
                     type: object
+                  waitForTabletBalance:
+                    type: boolean
                 type: object
               starRocksCnSpec:
                 properties:

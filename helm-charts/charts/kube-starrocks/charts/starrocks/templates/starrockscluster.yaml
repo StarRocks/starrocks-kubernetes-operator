@@ -476,6 +476,9 @@ spec:
     readinessProbeFailureSeconds: {{ .Values.starrocksBeSpec.readinessProbeFailureSeconds }}
     {{- end }}
     minReadySeconds: {{ .Values.starrocksBeSpec.minReadySeconds }}
+    {{- if .Values.starrocksBeSpec.waitForTabletBalance }}
+    waitForTabletBalance: {{ .Values.starrocksBeSpec.waitForTabletBalance }}
+    {{- end }}
     podManagementPolicy: {{ .Values.starrocksBeSpec.podManagementPolicy }}
     {{- if .Values.starrocksBeSpec.lifecycle }}
     lifecycle:
