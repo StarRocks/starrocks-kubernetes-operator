@@ -88,6 +88,18 @@ internal-only PRs/issues (e.g. "added in #5" → the **upstream** PR #739), inte
 (`scripts/internal/check-helm.sh` → `helm lint`/`helm template`), or internal-only Notes. Fix those
 on the OSS PR (re-running overwrites the body, so make these the last touch-up).
 
+## Never port release artifacts (`index.yaml`, `doc/api.md`)
+`index.yaml` (the Helm repo index) and `doc/api.md` are **generated per-repo** by
+`scripts/artifacts.sh` — and that script is itself **different** on `main` vs
+`celerdata-internal-main` (the internal one packages `kube-celerdata` and points at
+`github.com/celerdata/…`). The enterprise `index.yaml` / `api.md` must **NEVER** reach the OSS PR
+in either direction.
+
+- If the internal commit touches `index.yaml` / `doc/api.md`, do **not** carry the internal copy
+  into the OSS PR. Drop those hunks in the worktree; if the OSS PR actually needs them, regenerate
+  the OSS edition with `bash scripts/artifacts.sh <tag>` (the worktree is off `upstream/main`, so its
+  `artifacts.sh` → `kube-starrocks`, `github.com/starrocks/…`) and commit those instead. Then finalize.
+
 ## Notes
 - One internal PR ⇒ one `port-oss-<short-sha>` worktree/branch ⇒ one OSS PR. Never batch.
 - Provenance lives in the internal-PR comment, not in the public PR body.

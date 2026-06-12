@@ -122,6 +122,17 @@ these mappings:
 `/opt/starrocks/…`, upstream image repository names, and the legacy `kube-starrocks/` chart
 tree itself.
 
+**Never crosses repos — `index.yaml` and `doc/api.md`.** Both are **generated per-repo** by
+`scripts/artifacts.sh` (`bash scripts/artifacts.sh <tag>`), and that script is itself **different**
+on `main` vs `celerdata-internal-main` — OSS packages `kube-starrocks` and publishes from
+`github.com/starrocks/…`; the internal version packages `kube-celerdata` and publishes from
+`github.com/celerdata/…`. So these files are **never** synced or ported in either direction. An
+upstream PR consisting only of them (e.g. `[Chore] Update index.yaml for vX`) is recorded with
+`sync-from-upstream.sh --ignore`. A PR that **also** touches them is still synced/ported, but the
+source copy is **not** carried over: drop those hunks, then regenerate the target edition's content
+with `bash scripts/artifacts.sh <tag>` (run from the target's checkout, so the edition-appropriate
+`index.yaml` / `doc/api.md` is produced) and commit that instead before continuing.
+
 ## Commit & PR title conventions
 
 **Both repositories use the same bracket-tag style** as the open-source StarRocks project, so a

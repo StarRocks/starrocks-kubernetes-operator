@@ -68,6 +68,22 @@ bash scripts/internal/sync-from-upstream.sh --pr <N>     # resumes the branch
 Answer **Y** to push (to your fork) and **Y** to open the draft PR. The PR appears already
 validated; CI re-runs the same shared checks.
 
+## Never sync release artifacts (`index.yaml`, `doc/api.md`)
+`index.yaml` (the Helm repo index) and `doc/api.md` are **generated per-repo** by
+`scripts/artifacts.sh` — and that script is itself **different** on `main` vs
+`celerdata-internal-main` (OSS publishes `kube-starrocks` from
+`github.com/starrocks/…`; internal publishes `kube-celerdata` from
+`github.com/celerdata/…`). They must **NEVER** be carried across repos in either direction.
+
+- A PR whose changes are **only** these files (e.g. `[Chore] Update index.yaml for vX`) is never
+  synced → `sync-from-upstream.sh --ignore <N> "release artifact, generated per-repo by artifacts.sh"`.
+  (The internal edition regenerates its own at its next release; there is nothing else to carry over.)
+- If a real PR **also** touches `index.yaml` / `doc/api.md`, do **not** carry the upstream copy.
+  Cherry-pick the rest, then **regenerate the internal edition's artifacts**: `bash
+  scripts/artifacts.sh <tag>` from `celerdata-internal-main` (which has the internal `artifacts.sh`
+  → `kube-celerdata`, `github.com/celerdata/…`), commit the regenerated `index.yaml` / `doc/api.md`
+  in place of the upstream ones, then continue the sync.
+
 ## Notes
 - One upstream PR ⇒ one branch `celerdata-internal-main-sync-<N>` ⇒ one PR. Never batch.
 - Fixes are always follow-up commits (never amend / force-push the sync commit).

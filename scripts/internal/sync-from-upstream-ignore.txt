@@ -4,3 +4,4 @@
 741  # GitHub Actions version bumps already present in the enterprise base (cherry-pick is a no-op)
 770  # round-trip: ported from internal (#15/#16) to OSS via port-to-oss.sh; change already in enterprise base, do not sync back
 771  # round-trip: ported from internal (#12/#14) to OSS via port-to-oss.sh; change already in enterprise base, do not sync back
+773  # release artifact only (index.yaml + generated doc/api.md); generated per-repo by scripts/artifacts.sh, never synced across repos
