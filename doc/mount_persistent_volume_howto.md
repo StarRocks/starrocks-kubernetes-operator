@@ -28,7 +28,7 @@ metadata:
     cluster: kube-celerdata
 spec:
   celerDataFeSpec:
-    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest"
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:4.1-latest"
     replicas: 1
     storageVolumes:
     - name: fe-meta
@@ -41,7 +41,7 @@ spec:
       storageSize: 5Gi
       mountPath: /opt/starrocks/fe/log
   celerDataBeSpec:
-    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest"
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:4.1-latest"
     replicas: 3
     storageVolumes:
     - name: be-data
@@ -107,7 +107,7 @@ celerdata:
    celerDataFeSpec:
       image:
          repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu
-         tag: 3.5-latest
+         tag: 4.1-latest
       storageSpec:
          name: fe-data
          storageClassName: standard-rwo   # standard-rwo is the default storageClassName in GKE.
@@ -116,7 +116,7 @@ celerdata:
    celerDataBeSpec:
       image:
          repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu
-         tag: 3.5-latest
+         tag: 4.1-latest
       replicas: 3
       storageSpec:
          name: be-storage

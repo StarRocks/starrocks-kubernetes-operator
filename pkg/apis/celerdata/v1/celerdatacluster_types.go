@@ -370,7 +370,7 @@ type HorizontalScaler struct {
 
 // CelerDataCluster defines a CelerData cluster deployment.
 // +kubebuilder:object:root=true
-// +kubebuilder:metadata:annotations="version=v1.11.4"
+// +kubebuilder:metadata:annotations="version=v1.11.5"
 // +kubebuilder:resource:shortName=cdc
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status

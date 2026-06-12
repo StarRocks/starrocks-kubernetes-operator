@@ -35,7 +35,7 @@ spec:
     # image sliced by "repository:tag"
     repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
     # Note: the image tag must be greater than or equal to 3.2.0
-    tag: 3.5-latest
+    tag: 4.1-latest
   # serviceAccount for pod access cloud service.
   serviceAccount: ""
   # add annotations for pods. for example, if you want to config monitor for datadog, you can config the annotations.

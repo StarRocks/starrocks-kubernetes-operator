@@ -36,7 +36,7 @@ celerDataOperator:
   image:
     # image sliced by "repository:tag"
     repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/operator
-    tag: v1.11.4
+    tag: v1.11.5
   imagePullPolicy: Always
   replicaCount: 1
   resources:

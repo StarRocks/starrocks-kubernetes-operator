@@ -136,7 +136,7 @@ celerDataCluster:
   #   2. The values in their own spec will replace all the values in this field, not merge.
   componentValues:
     image:
-      tag: "3.5-latest"
+      tag: "4.1-latest"
     # hostAliases allows adding entries to /etc/hosts inside the containers.
     hostAliases: []
       # - ip: "127.0.0.1"

@@ -48,7 +48,7 @@ type CelerDataWarehouseStatus struct {
 
 // CelerDataWarehouse defines a CelerData warehouse.
 // +kubebuilder:object:root=true
-// +kubebuilder:metadata:annotations="version=v1.11.4"
+// +kubebuilder:metadata:annotations="version=v1.11.5"
 // +kubebuilder:resource:shortName=cdw
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status

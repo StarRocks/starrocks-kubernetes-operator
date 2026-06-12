@@ -92,7 +92,7 @@ Add the following snippets to `values.yaml` to configure the automatic scaling p
   celerDataCnSpec:
     image:
       repository: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/cn-ubuntu
-      tag: 3.5-latest
+      tag: 4.1-latest
     resources:
       requests:
         cpu: 4

@@ -110,7 +110,7 @@ spec:
     configMapInfo:
       configMapName: kube-celerdata-be-cm
       resolveKey: be.conf
-    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:4.1-latest
     limits:
       cpu: 4
       memory: 4Gi
@@ -127,7 +127,7 @@ spec:
     configMapInfo:
       configMapName: kube-celerdata-fe-cm
       resolveKey: fe.conf
-    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest
+    image: us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:4.1-latest
     limits:
       cpu: 4
       memory: 4Gi

@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 spec:
   celerDataFeSpec:
-    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:3.5-latest"
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/fe-ubuntu:4.1-latest"
     replicas: 1
     limits:
       cpu: 8
@@ -20,7 +20,7 @@ spec:
     service:
       type: ClusterIP
     annotations:
-      app.starrocks.io/fe-config-hash: e615d940
+      app.celerdata.io/fe-config-hash: e615d940
     runAsNonRoot: false
     feEnvVars:
       - name: TZ
@@ -30,7 +30,7 @@ spec:
       configMapName: kube-celerdata-fe-cm
       resolveKey: fe.conf
   celerDataBeSpec:
-    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:3.5-latest"
+    image: "us-west1-docker.pkg.dev/phrasal-verve-350013/celerdata/be-ubuntu:4.1-latest"
     replicas: 1
     limits:
       cpu: 8
@@ -41,7 +41,7 @@ spec:
     service:
       type: ClusterIP
     annotations:
-      app.starrocks.io/be-config-hash: 951886d3
+      app.celerdata.io/be-config-hash: 951886d3
     runAsNonRoot: false
     capabilities:
       add:
