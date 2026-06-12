@@ -37,3 +37,4 @@ temp/
 cmd/cmd
 
 CLAUDE.md
+.claude/
