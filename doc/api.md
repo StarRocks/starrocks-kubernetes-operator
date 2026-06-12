@@ -309,6 +309,23 @@ DisasterRecovery
 <p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>waitForFullRollout</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+same revision) before updating BE/CN components. This prevents cascading failures
+if a bad FE version is deployed.
+When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+Defaults to false for backward compatibility.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -420,6 +437,23 @@ DisasterRecovery
 <td>
 <em>(Optional)</em>
 <p>DisasterRecovery is used to determine whether to enter disaster recovery mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>waitForFullRollout</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WaitForFullRollout controls rolling upgrade behavior. When set to true, the operator
+will wait for FE StatefulSet to be fully rolled out (all replicas ready and at the
+same revision) before updating BE/CN components. This prevents cascading failures
+if a bad FE version is deployed.
+When false (default), BE/CN updates can proceed as soon as any FE pod is ready.
+Defaults to false for backward compatibility.</p>
 </td>
 </tr>
 </tbody>
@@ -2611,5 +2645,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>424be985</code>.
+on git commit <code>1d9351e7</code>.
 </em></p>
