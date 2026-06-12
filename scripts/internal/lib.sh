@@ -3,7 +3,7 @@
 # Shared helpers for the internal git-workflow automation scripts.
 #
 # This file is meant to be sourced, not executed directly. It is kept under
-# scripts/internal/ which is excluded from scripts/sync-to-public-repo.sh, so
+# scripts/internal/ which is excluded by scripts/internal/sync-to-public-repo.sh, so
 # none of this tooling leaks into the public repository.
 
 # Resolve the repository root via the existing common.sh helper.

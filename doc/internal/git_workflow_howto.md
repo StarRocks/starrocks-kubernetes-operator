@@ -4,7 +4,7 @@
 > repository, the internal enterprise repository, and the public-facing repository, plus
 > the day-to-day branching, syncing, and release workflows. It is intended for CelerData
 > maintainers. It lives under `doc/internal/`, which is in the `EXCLUDE` list of
-> `scripts/sync-to-public-repo.sh`, so it is never published to the public repository.
+> `scripts/internal/sync-to-public-repo.sh`, so it is never published to the public repository.
 
 ## The three repositories
 
@@ -48,7 +48,7 @@ live in the same parent directory as this repository:
 ```
 
 Content is pushed into it by copying files (see [Release](#workflow-3-release), not by
-git push/pull. `scripts/sync-to-public-repo.sh` resolves the target as
+git push/pull. `scripts/internal/sync-to-public-repo.sh` resolves the target as
 `<this-repo>/../celerdata-kubernetes-operator`.
 
 ## One-time setup
@@ -78,7 +78,7 @@ git clone https://github.com/celerdata/celerdata-kubernetes-operator.git
 
 Local helper scripts under `scripts/internal/` automate the mechanical parts of the three
 workflows below. They live in `scripts/internal/` precisely because that directory is in the
-`EXCLUDE` list of `scripts/sync-to-public-repo.sh`, so this internal tooling is never
+`EXCLUDE` list of `scripts/internal/sync-to-public-repo.sh`, so this internal tooling is never
 published to the public repository.
 
 | Workflow | Script |
@@ -304,7 +304,7 @@ Releases are cut from the **internal** repository, then published to the public 
 2. **Sync the public-facing content** into repository #3 using the script:
 
    ```bash
-   ./scripts/sync-to-public-repo.sh
+   ./scripts/internal/sync-to-public-repo.sh
    ```
 
    The script copies the following items from this checkout into
@@ -331,7 +331,7 @@ bash scripts/artifacts.sh <vX.Y.Z>   # build + sign Helm chart artifacts under a
 ```
 
 > TODO: the exact release steps (which repo the GitHub release lives in, operator image
-> build/push, and whether `scripts/sync-to-public-repo.sh` is run as part of a release) will
+> build/push, and whether `scripts/internal/sync-to-public-repo.sh` is run as part of a release) will
 > be filled in here from the next real release.
 
 ## Quick reference

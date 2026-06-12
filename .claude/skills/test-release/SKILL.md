@@ -98,7 +98,7 @@ explicit pass criterion.
    service annotation, configmap value, probe change, etc.).
 
 Write to `doc/internal/test/<YYYY-MM-DD>-<branch>-test-plan.md` (under `doc/internal/`, which is
-in the `sync-to-public-repo.sh` EXCLUDE list — never published). Include: diff range, PR list,
+in the `scripts/internal/sync-to-public-repo.sh` EXCLUDE list — never published). Include: diff range, PR list,
 per-PR cases with pass criteria and dimensions. **Then stop and ask the user to review the plan
 before executing.**
 
