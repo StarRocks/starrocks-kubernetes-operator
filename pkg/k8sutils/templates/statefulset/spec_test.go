@@ -69,10 +69,33 @@ func TestMakePVCList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := PVCList(tt.args.volumes); !reflect.DeepEqual(got, tt.want) {
+			if got := PVCList(tt.args.volumes, nil); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PVCList() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestMakePVCListWithLabels(t *testing.T) {
+	labels := map[string]string{
+		"app.starrocks.ownerreference/name": "test",
+		"app.kubernetes.io/component":       "fe",
+		"team":                              "data",
+		"env":                               "prod",
+	}
+	volumes := []v1.StorageVolume{
+		{
+			Name:             "data",
+			StorageClassName: func() *string { name := "standard"; return &name }(),
+			StorageSize:      "10Gi",
+		},
+	}
+	got := PVCList(volumes, labels)
+	if len(got) != 1 {
+		t.Fatalf("expected 1 PVC, got %d", len(got))
+	}
+	if !reflect.DeepEqual(got[0].Labels, labels) {
+		t.Errorf("PVCList() labels = %v, want %v", got[0].Labels, labels)
 	}
 }
 
@@ -163,6 +186,80 @@ func TestMakeStatefulset(t *testing.T) {
 						Type: appsv1.RollingUpdateStatefulSetStrategyType,
 						RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
 							Partition: func() *int32 { i := int32(0); return &i }(),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test Statefulset with sharedLabels",
+			args: args{
+				cluster: cluster,
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							Replicas:     &replicas,
+							SharedLabels: map[string]string{"team": "data", "env": "prod"},
+							StorageVolumes: []v1.StorageVolume{
+								{
+									Name:             "fe-meta",
+									StorageClassName: func() *string { name := "standard"; return &name }(),
+									StorageSize:      "10Gi",
+								},
+							},
+						},
+					},
+				},
+			},
+			want: appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-fe",
+					Namespace: "namespace",
+					Labels: map[string]string{
+						"app.starrocks.ownerreference/name": "test",
+						"app.kubernetes.io/component":       "fe",
+						"team":                              "data",
+						"env":                               "prod",
+					},
+					Annotations: map[string]string{},
+				},
+				Spec: appsv1.StatefulSetSpec{
+					Replicas: &replicas,
+					Template: corev1.PodTemplateSpec{},
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"app.kubernetes.io/component":       "fe",
+							"app.starrocks.ownerreference/name": "test-fe",
+						},
+					},
+					ServiceName:         "test-fe-search",
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+						Type: appsv1.RollingUpdateStatefulSetStrategyType,
+						RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+							Partition: func() *int32 { i := int32(0); return &i }(),
+						},
+					},
+					VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "fe-meta",
+								Labels: map[string]string{
+									"app.starrocks.ownerreference/name": "test",
+									"app.kubernetes.io/component":       "fe",
+									"team":                              "data",
+									"env":                               "prod",
+								},
+							},
+							Spec: corev1.PersistentVolumeClaimSpec{
+								AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+								StorageClassName: func() *string { name := "standard"; return &name }(),
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										corev1.ResourceStorage: resource.MustParse("10Gi"),
+									},
+								},
+							},
 						},
 					},
 				},

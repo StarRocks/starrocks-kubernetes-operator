@@ -121,6 +121,10 @@ spec:
       admission.datadoghq.com/enabled: "true"
       {{- end }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.sharedLabels }}
+    sharedLabels:
+      {{- toYaml .Values.starrocksFESpec.sharedLabels | nindent 6 }}
+    {{- end }}
     {{- if or .Values.starrocksFESpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
       {{- include "starrockscluster.fe.hostAliases" . | nindent 6 }}
@@ -400,6 +404,10 @@ spec:
       admission.datadoghq.com/enabled: "true"
       {{- end }}
     {{- end }}
+    {{- if .Values.starrocksBeSpec.sharedLabels }}
+    sharedLabels:
+      {{- toYaml .Values.starrocksBeSpec.sharedLabels | nindent 6 }}
+    {{- end }}
     {{- if or .Values.starrocksBeSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
       {{- include "starrockscluster.be.hostAliases" . | nindent 6 }}
@@ -645,6 +653,10 @@ spec:
       admission.datadoghq.com/config.mode: {{ .Values.datadog.profiling.configMode }}
       admission.datadoghq.com/enabled: "true"
       {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.sharedLabels }}
+    sharedLabels:
+      {{- toYaml .Values.starrocksCnSpec.sharedLabels | nindent 6 }}
     {{- end }}
     {{- if or .Values.starrocksCnSpec.hostAliases .Values.starrocksCluster.componentValues.hostAliases }}
     hostAliases:
@@ -952,5 +964,9 @@ spec:
     {{- if .Values.starrocksFeProxySpec.podLabels }}
     podLabels:
       {{- toYaml .Values.starrocksFeProxySpec.podLabels | nindent 6 }}
+    {{- end }}
+    {{- if .Values.starrocksFeProxySpec.sharedLabels }}
+    sharedLabels:
+      {{- toYaml .Values.starrocksFeProxySpec.sharedLabels | nindent 6 }}
     {{- end }}
   {{- end }}

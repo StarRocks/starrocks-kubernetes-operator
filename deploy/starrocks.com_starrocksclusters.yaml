@@ -1353,6 +1353,8 @@ spec:
                       ports:
                         items:
                           properties:
+                            appProtocol:
+                              type: string
                             containerPort:
                               format: int32
                               type: integer
@@ -1373,6 +1375,10 @@ spec:
                     type: string
                   shareProcessNamespace:
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   sidecars:
                     items:
                       properties:
@@ -3739,6 +3745,8 @@ spec:
                       ports:
                         items:
                           properties:
+                            appProtocol:
+                              type: string
                             containerPort:
                               format: int32
                               type: integer
@@ -3759,6 +3767,10 @@ spec:
                     type: string
                   shareProcessNamespace:
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   sidecars:
                     items:
                       properties:
@@ -5059,6 +5071,8 @@ spec:
                       ports:
                         items:
                           properties:
+                            appProtocol:
+                              type: string
                             containerPort:
                               format: int32
                               type: integer
@@ -5079,6 +5093,10 @@ spec:
                     type: string
                   shareProcessNamespace:
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   startupProbeFailureSeconds:
                     format: int32
                     type: integer
@@ -6478,6 +6496,8 @@ spec:
                       ports:
                         items:
                           properties:
+                            appProtocol:
+                              type: string
                             containerPort:
                               format: int32
                               type: integer
@@ -6498,6 +6518,10 @@ spec:
                     type: string
                   shareProcessNamespace:
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   sidecars:
                     items:
                       properties:

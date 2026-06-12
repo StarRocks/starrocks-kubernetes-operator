@@ -32,8 +32,31 @@ func Name(clusterName string, spec v1.SpecInterface) string {
 	return ""
 }
 
+// SelectorLabels returns only the operator-managed labels used for resource selection.
+// These must remain immutable after StatefulSet creation.
+func SelectorLabels(ownerReference string, spec v1.SpecInterface) map[string]string {
+	labels := map[string]string{}
+	labels[v1.OwnerReference] = ownerReference
+	switch spec.(type) {
+	case *v1.StarRocksFeSpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE
+	case *v1.StarRocksBeSpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_BE
+	case *v1.StarRocksCnSpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_CN
+	case *v1.StarRocksFeProxySpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE_PROXY
+	}
+	return labels
+}
+
+// Labels returns the full set of labels for a resource, including operator-managed labels and user-defined sharedLabels.
+// Operator-managed labels take precedence over sharedLabels to prevent users from breaking resource selection.
 func Labels(ownerReference string, spec v1.SpecInterface) map[string]string {
 	labels := map[string]string{}
+	for k, v := range spec.GetSharedLabels() {
+		labels[k] = v
+	}
 	labels[v1.OwnerReference] = ownerReference
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:

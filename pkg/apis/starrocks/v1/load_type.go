@@ -49,6 +49,9 @@ type loadInterface interface {
 	// GetShareProcessNamespace returns whether to share process namespace between containers
 	GetShareProcessNamespace() *bool
 
+	// GetSharedLabels returns additional labels to apply to all sub-resources
+	GetSharedLabels() map[string]string
+
 	// GetStorageVolumes returns the storage volume configurations
 	GetStorageVolumes() []StorageVolume
 
@@ -73,7 +76,12 @@ type StarRocksLoadSpec struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// +optional
-	// the pod labels for user select or classify pods.
+	// SharedLabels defines additional labels to apply to all sub-resources created for this component,
+	// including the StatefulSet/Deployment, pods, Services, VolumeClaimTemplates, ConfigMaps, and HPAs.
+	SharedLabels map[string]string `json:"sharedLabels,omitempty"`
+
+	// +optional
+	// the pod labels for user select or classify pods. These are applied in addition to sharedLabels.
 	PodLabels map[string]string `json:"podLabels,omitempty"`
 
 	// Replicas is the number of desired Pods.
@@ -280,6 +288,12 @@ type StarRocksServicePort struct {
 	// The range of valid ports is 30000-32767
 	// +optional
 	NodePort int32 `json:"nodePort,omitempty"`
+
+	// AppProtocol specifies the application protocol for this port.
+	// This is used as a hint for implementations to offer richer behavior for protocols that they understand.
+	// For example: "mysql", "http", "https", "grpc".
+	// +optional
+	AppProtocol *string `json:"appProtocol,omitempty"`
 }
 
 // StarRocksProbe defines the mode for probe be alive.
@@ -299,6 +313,10 @@ type StarRocksProbe struct {
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	PeriodSeconds *int32 `json:"periodSeconds,omitempty"`
+}
+
+func (spec *StarRocksLoadSpec) GetSharedLabels() map[string]string {
+	return spec.SharedLabels
 }
 
 func (spec *StarRocksLoadSpec) GetReplicas() *int32 {
