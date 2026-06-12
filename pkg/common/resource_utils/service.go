@@ -89,6 +89,8 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 	switch spec.(type) {
 	case *srapi.StarRocksFeSpec:
 		srPorts = getFeServicePorts(config, starRocksService)
+	case *srapi.StarRocksFeObserverSpec:
+		srPorts = getFeServicePorts(config, starRocksService)
 	case *srapi.StarRocksBeSpec:
 		srPorts = getBeServicePorts(config, starRocksService)
 	case *srapi.StarRocksCnSpec:

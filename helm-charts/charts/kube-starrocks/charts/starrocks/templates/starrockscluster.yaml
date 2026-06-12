@@ -283,6 +283,11 @@ spec:
     persistentVolumeClaimRetentionPolicy:
       {{- toYaml .Values.starrocksFESpec.persistentVolumeClaimRetentionPolicy | nindent 6 }}
     {{- end }}
+    {{- if .Values.starrocksFESpec.observerSpec.enabled }}
+    observerSpec:
+      enabled: true
+      observerNumber: {{ .Values.starrocksFESpec.observerSpec.observerNumber }}
+    {{- end }}
   {{- if .Values.starrocksCluster.enabledBe }}
   starRocksBeSpec:
     {{- if .Values.starrocksBeSpec.initContainers }}

@@ -90,6 +90,8 @@ type SpecInterface interface {
 
 var _ SpecInterface = &StarRocksFeSpec{}
 
+var _ SpecInterface = &StarRocksFeObserverSpec{}
+
 var _ SpecInterface = &StarRocksBeSpec{}
 
 var _ SpecInterface = &StarRocksCnSpec{}
@@ -140,6 +142,9 @@ type StarRocksClusterStatus struct {
 	// Represents the status of fe. the status have running, failed and creating pods.
 	StarRocksFeStatus *StarRocksFeStatus `json:"starRocksFeStatus,omitempty"`
 
+	// Represents the status of fe observer. the status have running, failed and creating pods.
+	StarRocksFeObserverStatus *StarRocksFeObserverStatus `json:"starRocksFeObserverStatus,omitempty"`
+
 	// Represents the status of be. the status have running, failed and creating pods.
 	StarRocksBeStatus *StarRocksBeStatus `json:"starRocksBeStatus,omitempty"`
 
@@ -157,10 +162,29 @@ type StarRocksClusterStatus struct {
 // StarRocksFeSpec defines the desired state of fe.
 type StarRocksFeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
-
 	// +optional
 	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`
+
+	// ObserverSpec configures optional FE observer pods. Observer pods reuse the generic FE resources.
+	// +optional
+	ObserverSpec *StarRocksFeObserverSpec `json:"observerSpec,omitempty"`
+}
+
+// StarRocksFeObserverSpec defines the FE observer options under StarRocksFeSpec.
+type StarRocksFeObserverSpec struct {
+	// Enabled controls whether FE observer should be reconciled.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ObserverNumber is the number of desired FE observer Pods.
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:default=1
+	// +optional
+	ObserverNumber *int32 `json:"observerNumber,omitempty"`
+
+	ComponentSpec StarRocksComponentSpec `json:"-"`
+
+	FeEnvVars []corev1.EnvVar `json:"-"`
 }
 
 // StarRocksBeSpec defines the desired state of be.
@@ -194,6 +218,11 @@ type StarRocksFeProxySpec struct {
 
 // StarRocksFeStatus represents the status of starrocks fe.
 type StarRocksFeStatus struct {
+	StarRocksComponentStatus `json:",inline"`
+}
+
+// StarRocksFeObserverStatus represents the status of starrocks fe observer.
+type StarRocksFeObserverStatus struct {
 	StarRocksComponentStatus `json:",inline"`
 }
 
@@ -231,11 +260,169 @@ func (spec *StarRocksFeSpec) GetReplicas() *int32 {
 	return spec.StarRocksComponentSpec.GetReplicas()
 }
 
+func (spec *StarRocksFeObserverSpec) GetReplicas() *int32 {
+	if spec == nil {
+		return nil
+	}
+	return spec.ObserverNumber
+}
+
+func (spec *StarRocksFeObserverSpec) IsEnabled() bool {
+	return spec != nil && spec.Enabled
+}
+
+func (spec *StarRocksFeSpec) IsObserverEnabled() bool {
+	return spec != nil && spec.ObserverSpec.IsEnabled()
+}
+
+func (spec *StarRocksFeSpec) ToObserverSpec() *StarRocksFeObserverSpec {
+	if spec == nil || !spec.IsObserverEnabled() {
+		return nil
+	}
+
+	observerSpec := spec.ObserverSpec.DeepCopy()
+	spec.StarRocksComponentSpec.DeepCopyInto(&observerSpec.ComponentSpec)
+	if spec.FeEnvVars != nil {
+		observerSpec.FeEnvVars = make([]corev1.EnvVar, len(spec.FeEnvVars))
+		for i := range spec.FeEnvVars {
+			spec.FeEnvVars[i].DeepCopyInto(&observerSpec.FeEnvVars[i])
+		}
+	}
+	return observerSpec
+}
+
 func (spec *StarRocksBeSpec) GetReplicas() *int32 {
 	if spec == nil {
 		return nil
 	}
 	return spec.StarRocksComponentSpec.GetReplicas()
+}
+
+func (spec *StarRocksFeObserverSpec) componentSpec() *StarRocksComponentSpec {
+	if spec == nil {
+		return &StarRocksComponentSpec{}
+	}
+	return &spec.ComponentSpec
+}
+
+func (spec *StarRocksFeObserverSpec) GetAnnotations() map[string]string {
+	return spec.componentSpec().GetAnnotations()
+}
+
+func (spec *StarRocksFeObserverSpec) GetImagePullSecrets() []corev1.LocalObjectReference {
+	return spec.componentSpec().GetImagePullSecrets()
+}
+
+func (spec *StarRocksFeObserverSpec) GetSchedulerName() string {
+	return spec.componentSpec().GetSchedulerName()
+}
+
+func (spec *StarRocksFeObserverSpec) GetNodeSelector() map[string]string {
+	return spec.componentSpec().GetNodeSelector()
+}
+
+func (spec *StarRocksFeObserverSpec) GetAffinity() *corev1.Affinity {
+	return spec.componentSpec().GetAffinity()
+}
+
+func (spec *StarRocksFeObserverSpec) GetTopologySpreadConstraints() []corev1.TopologySpreadConstraint {
+	return spec.componentSpec().GetTopologySpreadConstraints()
+}
+
+func (spec *StarRocksFeObserverSpec) GetTolerations() []corev1.Toleration {
+	return spec.componentSpec().GetTolerations()
+}
+
+func (spec *StarRocksFeObserverSpec) GetStartupProbeFailureSeconds() *int32 {
+	return spec.componentSpec().GetStartupProbeFailureSeconds()
+}
+
+func (spec *StarRocksFeObserverSpec) GetLivenessProbeFailureSeconds() *int32 {
+	return spec.componentSpec().GetLivenessProbeFailureSeconds()
+}
+
+func (spec *StarRocksFeObserverSpec) GetReadinessProbeFailureSeconds() *int32 {
+	return spec.componentSpec().GetReadinessProbeFailureSeconds()
+}
+
+func (spec *StarRocksFeObserverSpec) GetLifecycle() *corev1.Lifecycle {
+	return spec.componentSpec().GetLifecycle()
+}
+
+func (spec *StarRocksFeObserverSpec) GetService() *StarRocksService {
+	return spec.componentSpec().GetService()
+}
+
+func (spec *StarRocksFeObserverSpec) GetShareProcessNamespace() *bool {
+	return spec.componentSpec().GetShareProcessNamespace()
+}
+
+func (spec *StarRocksFeObserverSpec) GetStorageVolumes() []StorageVolume {
+	return spec.componentSpec().GetStorageVolumes()
+}
+
+func (spec *StarRocksFeObserverSpec) GetServiceAccount() string {
+	return spec.componentSpec().GetServiceAccount()
+}
+
+func (spec *StarRocksFeObserverSpec) GetImagePullPolicy() corev1.PullPolicy {
+	return spec.componentSpec().GetImagePullPolicy()
+}
+
+func (spec *StarRocksFeObserverSpec) GetImage() string {
+	return spec.componentSpec().GetImage()
+}
+
+func (spec *StarRocksFeObserverSpec) GetHostAliases() []corev1.HostAlias {
+	return spec.componentSpec().GetHostAliases()
+}
+
+func (spec *StarRocksFeObserverSpec) GetRunAsNonRoot() (*int64, *int64) {
+	return spec.componentSpec().GetRunAsNonRoot()
+}
+
+func (spec *StarRocksFeObserverSpec) GetTerminationGracePeriodSeconds() *int64 {
+	return spec.componentSpec().GetTerminationGracePeriodSeconds()
+}
+
+func (spec *StarRocksFeObserverSpec) GetCapabilities() *corev1.Capabilities {
+	return spec.componentSpec().GetCapabilities()
+}
+
+func (spec *StarRocksFeObserverSpec) GetSidecars() []corev1.Container {
+	return spec.componentSpec().GetSidecars()
+}
+
+func (spec *StarRocksFeObserverSpec) GetInitContainers() []corev1.Container {
+	return spec.componentSpec().GetInitContainers()
+}
+
+func (spec *StarRocksFeObserverSpec) IsReadOnlyRootFilesystem() *bool {
+	return spec.componentSpec().IsReadOnlyRootFilesystem()
+}
+
+func (spec *StarRocksFeObserverSpec) GetSysctls() []corev1.Sysctl {
+	return spec.componentSpec().GetSysctls()
+}
+
+func (spec *StarRocksFeObserverSpec) GetCommand() []string {
+	return spec.componentSpec().GetCommand()
+}
+
+func (spec *StarRocksFeObserverSpec) GetArgs() []string {
+	return spec.componentSpec().GetArgs()
+}
+
+func (spec *StarRocksFeObserverSpec) GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy {
+	return spec.componentSpec().GetUpdateStrategy()
+}
+
+func (spec *StarRocksFeObserverSpec) GetMinReadySeconds() *int32 {
+	return spec.componentSpec().GetMinReadySeconds()
+}
+
+func (spec *StarRocksFeObserverSpec) GetPodManagementPolicy() appsv1.PodManagementPolicyType {
+	return spec.componentSpec().GetPodManagementPolicy()
 }
 
 func (spec *StarRocksCnSpec) GetReplicas() *int32 {

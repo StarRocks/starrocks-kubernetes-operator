@@ -6413,6 +6413,16 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  observerSpec:
+                    properties:
+                      enabled:
+                        type: boolean
+                      observerNumber:
+                        default: 1
+                        format: int32
+                        minimum: 0
+                        type: integer
+                    type: object
                   persistentVolumeClaimRetentionPolicy:
                     properties:
                       whenDeleted:
@@ -7323,6 +7333,33 @@ spec:
                     type: array
                   selector:
                     type: string
+                  serviceName:
+                    type: string
+                required:
+                - phase
+                type: object
+              starRocksFeObserverStatus:
+                properties:
+                  creatingInstances:
+                    items:
+                      type: string
+                    type: array
+                  failedInstances:
+                    items:
+                      type: string
+                    type: array
+                  phase:
+                    type: string
+                  reason:
+                    type: string
+                  resourceNames:
+                    items:
+                      type: string
+                    type: array
+                  runningInstances:
+                    items:
+                      type: string
+                    type: array
                   serviceName:
                     type: string
                 required:

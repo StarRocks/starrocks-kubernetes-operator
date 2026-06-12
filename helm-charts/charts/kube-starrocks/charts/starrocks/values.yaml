@@ -522,6 +522,13 @@ starrocksFESpec:
   # When this is set, containers will be able to view and signal processes from other containers
   # in the same pod, and the first process in each container will not be assigned PID 1.
   shareProcessNamespace:
+  # Optional FE observer pods. Observer pods reuse the FE image, resources, scheduling,
+  # config, env, storage, and services from this starrocksFESpec.
+  observerSpec:
+    # specify the FE observer deployment or not.
+    enabled: false
+    # number of FE observer pods to deploy.
+    observerNumber: 1
 
 # spec for compute node, compute node provide compute function.
 starrocksCnSpec:

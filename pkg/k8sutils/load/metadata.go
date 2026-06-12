@@ -22,6 +22,8 @@ func Name(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		return clusterName + "-" + v1.DEFAULT_FE
+	case *v1.StarRocksFeObserverSpec:
+		return clusterName + "-" + v1.DEFAULT_FE_OBSERVER
 	case *v1.StarRocksBeSpec:
 		return clusterName + "-" + v1.DEFAULT_BE
 	case *v1.StarRocksCnSpec:
@@ -38,6 +40,8 @@ func Labels(ownerReference string, spec v1.SpecInterface) map[string]string {
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE
+	case *v1.StarRocksFeObserverSpec:
+		labels[v1.ComponentLabelKey] = v1.DEFAULT_FE_OBSERVER
 	case *v1.StarRocksBeSpec:
 		labels[v1.ComponentLabelKey] = v1.DEFAULT_BE
 	case *v1.StarRocksCnSpec:
