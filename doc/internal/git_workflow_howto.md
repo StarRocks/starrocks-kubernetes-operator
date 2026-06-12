@@ -122,6 +122,36 @@ these mappings:
 `/opt/starrocks/…`, upstream image repository names, and the legacy `kube-starrocks/` chart
 tree itself.
 
+## Commit & PR title conventions
+
+**Both repositories use the same bracket-tag style** as the open-source StarRocks project, so a
+title reads the same whichever repo it lands in and no translation is needed when porting or
+syncing:
+
+| Tag | Use for |
+|---|---|
+| `[Feature]` | new capability |
+| `[Enhancement]` | improving existing behavior |
+| `[BugFix]` | fixing a bug |
+| `[Chore]` | release prep, deps, renames, non-functional housekeeping |
+| `[Documentation]` | docs only |
+
+Example: `[BugFix] Quote feProxy resolver so empty value renders "" not null`. Use the **same** tag
+in the commit subject and the PR title; keep both in English.
+
+- **Sync PRs (Workflow 2)** keep the upstream subject verbatim behind a `sync #N:` prefix, e.g.
+  `sync #747: [Feature] Add cluster and group metric labels`. `sync-from-upstream.sh` builds this
+  title automatically.
+- **Ported PRs (Workflow 1, step 3)** carry the internal commit subject across unchanged.
+  `port-to-oss.sh` does **not** rewrite the style — because both repos already use these brackets,
+  the title is correct on the open-source side as-is.
+- `scripts/internal/add-labels-to-pr.sh` derives a category label from these same tags, so a
+  consistent title style is what makes release labeling work. It deliberately handles only this
+  one style (no Conventional-Commits fallback).
+
+> Older internal history (and some upstream PRs) used Conventional Commits (`feat(scope): …`) or
+> ad-hoc subjects. New work uses the bracket tags above.
+
 ## Pre-PR checks (shared local ⇄ CI)
 
 The same check scripts run **locally before a PR is opened** and **in CI** on every PR, so

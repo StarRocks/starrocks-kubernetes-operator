@@ -79,6 +79,12 @@ Anything matching `zz_generated*.go` is produced by `controller-gen` / `deepcopy
 - **Go version:** `go.mod` declares 1.22; CI runs tests on 1.22 and lint on 1.24.
 - `go.sum` / `vendor/` — this repo vendors dependencies. Adding a new dependency changes both and the lockfile; avoid introducing new deps in a focused task.
 
-## Commit messages
+## Commit & PR titles
 
-Conventional Commits: `feat(scope): …`, `fix(scope): …`, `test(scope): …`, `refactor(scope): …`. Scope is usually the package or sub-controller (`be`, `fe`, `cn`, `feproxy`, `k8sutils`, …). Per global instructions, write code and commit messages in English.
+Bracket-tag style, matching the open-source StarRocks project so both repos read the same:
+`[Feature]`, `[BugFix]`, `[Enhancement]`, `[Chore]`, `[Documentation]` — e.g.
+`[BugFix] Quote feProxy resolver so empty value renders "" not null`. Sync PRs (an upstream PR
+pulled into this repo) keep the original upstream subject behind a `sync #N:` prefix, e.g.
+`sync #747: [Feature] Add cluster and group metric labels`. Per global instructions, write code,
+commit messages, and PR titles in English. See `doc/internal/git_workflow_howto.md` for the full
+cross-repo title conventions.
