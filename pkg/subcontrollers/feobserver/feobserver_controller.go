@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -37,6 +36,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/pod"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/service"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/statefulset"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
@@ -140,7 +140,7 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 }
 
 // UpdateClusterStatus update the all resource status about fe observer.
-func (fc *FeObserverController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srapi.StarRocksCluster) error {
 	feSpec := src.Spec.StarRocksFeSpec
 	observerSpec := feSpec.ToObserverSpec()
 	if observerSpec == nil {
