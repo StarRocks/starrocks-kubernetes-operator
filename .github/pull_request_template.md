@@ -13,7 +13,7 @@ Please list any related issues and link them here.
 For operator, please complete the following checklist:
 
 - [ ] run `make generate` to generate the code.
-- [ ] run `golangci-lint run` to check the code style.
+- [ ] run `make lint` to check the code style.
 - [ ] run `make test` to run UT.
 - [ ] run `make manifests` to update the yaml files of CRD.
 

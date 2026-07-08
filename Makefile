@@ -2,6 +2,7 @@
 # Image URL to use all building/pushing image targets
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25
+GOLANGCI_LINT_VERSION = v2.2.2
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -84,6 +85,14 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: golangci-lint
+golangci-lint: ## Download golangci-lint locally if necessary.
+	$(call go-get-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION))
+
+.PHONY: lint
+lint: golangci-lint ## Run golangci-lint with CI-pinned version.
+	$(GOLANGCI_LINT) run --timeout=30m
+
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
 	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
@@ -142,6 +151,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 #CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 CONTROLLER_GEN = $(GOBIN)/controller-gen
+GOLANGCI_LINT = $(GOBIN)/golangci-lint
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.14.0)
@@ -163,7 +173,7 @@ gen-api:
 .PHONY: crd-all
 crd-all: generate manifests gen-api
 
-# go-get-tool will 'go get' any package $2 and install it to $1.
+# go-get-tool will install package $2 to $1 if missing.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 
 define go-get-tool
