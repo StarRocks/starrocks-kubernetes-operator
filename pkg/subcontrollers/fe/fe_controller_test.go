@@ -530,3 +530,78 @@ func TestGetFeConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestValidatingObserverReplicas(t *testing.T) {
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme), fake.GetEventRecorderFor(nil))
+
+	validReplicas := int32(3)
+	forbiddenReplicas := int32(2)
+	validSpec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: &validReplicas,
+			},
+		},
+		ObserverReplicas: 2,
+	}
+	require.NoError(t, fc.Validating(validSpec))
+
+	invalidSpec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: &forbiddenReplicas,
+			},
+		},
+		ObserverReplicas: 2,
+	}
+	require.Error(t, fc.Validating(invalidSpec))
+
+	invalidCommandSpec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: &validReplicas,
+			},
+			Command: []string{"/bin/bash"},
+		},
+		ObserverReplicas: 1,
+	}
+	require.Error(t, fc.Validating(invalidCommandSpec))
+}
+
+func TestSyncDeployWithObserverReplicas(t *testing.T) {
+	replicas := int32(4)
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-observer",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: &replicas,
+						Image:    "starrocks/fe-ubuntu:latest",
+					},
+				},
+				ObserverReplicas: 1,
+			},
+		},
+	}
+
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
+
+	var st appsv1.StatefulSet
+	require.NoError(t, fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &st))
+
+	require.Equal(t, []string{"/bin/bash", "-c"}, st.Spec.Template.Spec.Containers[0].Command)
+	require.Contains(t, st.Spec.Template.Spec.Containers[0].Args[0], "IS_FE_OBSERVER")
+
+	envMap := map[string]string{}
+	for _, env := range st.Spec.Template.Spec.Containers[0].Env {
+		envMap[env.Name] = env.Value
+	}
+	require.Equal(t, "4", envMap["FE_REPLICAS"])
+	require.Equal(t, "1", envMap["FE_OBSERVER_REPLICAS"])
+}

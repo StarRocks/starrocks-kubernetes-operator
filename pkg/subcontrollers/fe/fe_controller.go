@@ -18,6 +18,7 @@ package fe
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -224,6 +225,18 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 			return err
 		}
 	}
+
+	replicas := int32(1)
+	if feSpec.GetReplicas() != nil {
+		replicas = *feSpec.GetReplicas()
+	}
+	if feSpec.ObserverReplicas >= replicas {
+		return fmt.Errorf("observerReplicas (%d) must be less than replicas (%d)", feSpec.ObserverReplicas, replicas)
+	}
+	if feSpec.ObserverReplicas > 0 && (feSpec.GetCommand() != nil || feSpec.GetArgs() != nil) {
+		return fmt.Errorf("observerReplicas requires default FE command and args")
+	}
+
 	if err := srapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
 		return err
 	}

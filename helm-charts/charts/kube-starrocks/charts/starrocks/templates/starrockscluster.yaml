@@ -33,6 +33,9 @@ spec:
       - {{template "starrockscluster.entrypoint.mount.path" .}}/{{template "starrockscluster.entrypoint.script.name" .}}
     {{- end }}
     replicas: {{ .Values.starrocksFESpec.replicas }}
+    {{- if .Values.starrocksFESpec.observerReplicas }}
+    observerReplicas: {{ .Values.starrocksFESpec.observerReplicas }}
+    {{- end }}
     imagePullPolicy: {{ .Values.starrocksFESpec.imagePullPolicy }}
     {{- if .Values.starrocksFESpec.maxUnavailablePods }}
     updateStrategy:

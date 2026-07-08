@@ -13601,6 +13601,13 @@ spec:
                     description: (Optional) If specified, the pod's nodeSelector，displayName="Map
                       of nodeSelectors to match when scheduling pods on nodes"
                     type: object
+                  observerReplicas:
+                    description: |-
+                      ObserverReplicas is the number of FE pods that should join as OBSERVER.
+                      The value must be strictly less than replicas to keep at least one FOLLOWER.
+                    format: int32
+                    minimum: 0
+                    type: integer
                   persistentVolumeClaimRetentionPolicy:
                     description: |-
                       PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.

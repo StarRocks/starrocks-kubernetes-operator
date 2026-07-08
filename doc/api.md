@@ -1704,6 +1704,19 @@ StarRocksComponentSpec
 </tr>
 <tr>
 <td>
+<code>observerReplicas</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ObserverReplicas is the number of FE pods that should join as OBSERVER.
+The value must be strictly less than replicas to keep at least one FOLLOWER.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>feEnvVars</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#envvar-v1-core">

@@ -158,6 +158,12 @@ type StarRocksClusterStatus struct {
 type StarRocksFeSpec struct {
 	StarRocksComponentSpec `json:",inline"`
 
+	// ObserverReplicas is the number of FE pods that should join as OBSERVER.
+	// The value must be strictly less than replicas to keep at least one FOLLOWER.
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	ObserverReplicas int32 `json:"observerReplicas,omitempty"`
+
 	// +optional
 	// feEnvVars is a slice of environment variables that are added to the pods, the default is empty.
 	FeEnvVars []corev1.EnvVar `json:"feEnvVars,omitempty"`

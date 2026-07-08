@@ -17,6 +17,9 @@ limitations under the License.
 package fe
 
 import (
+	"fmt"
+	"strconv"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -28,10 +31,12 @@ import (
 )
 
 const (
-	_metaName             = "fe-meta"
-	_logName              = "fe-log"
-	_feConfigMountPath    = "/etc/starrocks/fe/conf"
-	_envFeConfigMountPath = "CONFIGMAP_MOUNT_PATH"
+	_metaName              = "fe-meta"
+	_logName               = "fe-log"
+	_feConfigMountPath     = "/etc/starrocks/fe/conf"
+	_envFeConfigMountPath  = "CONFIGMAP_MOUNT_PATH"
+	_envFeReplicas         = "FE_REPLICAS"
+	_envFeObserverReplicas = "FE_OBSERVER_REPLICAS"
 )
 
 // buildPodTemplate construct the podTemplate for deploy fe.
@@ -58,12 +63,30 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 
 	feExternalServiceName := service.ExternalServiceName(src.Name, feSpec)
 	envs := pod.Envs(src.Spec.StarRocksFeSpec, config, feExternalServiceName, src.Namespace, feSpec.FeEnvVars)
+	replicas := int32(1)
+	if feSpec.GetReplicas() != nil {
+		replicas = *feSpec.GetReplicas()
+	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  _envFeReplicas,
+		Value: strconv.FormatInt(int64(replicas), 10),
+	}, corev1.EnvVar{
+		Name:  _envFeObserverReplicas,
+		Value: strconv.FormatInt(int64(feSpec.ObserverReplicas), 10),
+	})
+
+	command := pod.ContainerCommand(feSpec)
+	args := pod.ContainerArgs(feSpec)
+	if feSpec.ObserverReplicas > 0 {
+		command, args = buildObserverAwareEntrypoint(feSpec)
+	}
+
 	httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
 	feContainer := corev1.Container{
 		Name:            srapi.DEFAULT_FE,
 		Image:           feSpec.Image,
-		Command:         pod.ContainerCommand(feSpec),
-		Args:            pod.ContainerArgs(feSpec),
+		Command:         command,
+		Args:            args,
 		Ports:           pod.Ports(feSpec, config),
 		Env:             envs,
 		Resources:       feSpec.ResourceRequirements,
@@ -98,4 +121,18 @@ func (fc *FeController) buildPodTemplate(src *srapi.StarRocksCluster, config map
 		},
 		Spec: podSpec,
 	}, nil
+}
+
+func buildObserverAwareEntrypoint(feSpec *srapi.StarRocksFeSpec) ([]string, []string) {
+	entrypoint := fmt.Sprintf("%s/fe_entrypoint.sh", pod.GetStarRocksRootPath(feSpec.FeEnvVars))
+	script := fmt.Sprintf(`set -euo pipefail
+ordinal="${POD_NAME##*-}"
+follower_replicas=$((FE_REPLICAS-FE_OBSERVER_REPLICAS))
+if [ "$ordinal" -ge "$follower_replicas" ]; then
+  export IS_FE_OBSERVER=true
+else
+  export IS_FE_OBSERVER=false
+fi
+exec %s "${FE_SERVICE_NAME}"`, entrypoint)
+	return []string{"/bin/bash", "-c"}, []string{script}
 }
