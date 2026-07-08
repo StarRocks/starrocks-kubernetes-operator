@@ -169,12 +169,7 @@ PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-get-tool
 @[ -f $(1) ] || { \
 set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-echo $TMP_DIR; \
-cd $$TMP_DIR ;\
-go mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(GOBIN) go install $(2) ;\
-rm -rf $$TMP_DIR ;\
 }
 endef
