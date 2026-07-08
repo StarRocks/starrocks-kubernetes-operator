@@ -230,7 +230,7 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 	if feSpec.GetReplicas() != nil {
 		replicas = *feSpec.GetReplicas()
 	}
-	if feSpec.ObserverReplicas >= replicas {
+	if feSpec.ObserverReplicas > 0 && feSpec.ObserverReplicas >= replicas {
 		return fmt.Errorf("observerReplicas (%d) must be less than replicas (%d)", feSpec.ObserverReplicas, replicas)
 	}
 	if feSpec.ObserverReplicas > 0 && (feSpec.GetCommand() != nil || feSpec.GetArgs() != nil) {

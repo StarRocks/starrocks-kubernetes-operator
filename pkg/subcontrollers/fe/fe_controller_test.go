@@ -536,6 +536,7 @@ func TestValidatingObserverReplicas(t *testing.T) {
 
 	validReplicas := int32(3)
 	forbiddenReplicas := int32(2)
+	zeroReplicas := int32(0)
 	validSpec := &srapi.StarRocksFeSpec{
 		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
 			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
@@ -566,6 +567,27 @@ func TestValidatingObserverReplicas(t *testing.T) {
 		ObserverReplicas: 1,
 	}
 	require.Error(t, fc.Validating(invalidCommandSpec))
+
+	// Backward compatibility: observerReplicas defaults to 0 when omitted,
+	// and replicas=0 should continue to validate.
+	zeroReplicaSpec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: &zeroReplicas,
+			},
+		},
+	}
+	require.NoError(t, fc.Validating(zeroReplicaSpec))
+
+	zeroReplicaWithObserverSpec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Replicas: &zeroReplicas,
+			},
+		},
+		ObserverReplicas: 1,
+	}
+	require.Error(t, fc.Validating(zeroReplicaWithObserverSpec))
 }
 
 func TestSyncDeployWithObserverReplicas(t *testing.T) {
