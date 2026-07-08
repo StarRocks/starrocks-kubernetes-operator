@@ -618,7 +618,12 @@ func TestSyncDeployWithObserverReplicas(t *testing.T) {
 		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &st))
 
 	require.Equal(t, []string{"/bin/bash", "-c"}, st.Spec.Template.Spec.Containers[0].Command)
-	require.Contains(t, st.Spec.Template.Spec.Containers[0].Args[0], "IS_FE_OBSERVER")
+	observerScript := st.Spec.Template.Spec.Containers[0].Args[0]
+	require.Contains(t, observerScript, "ordinal=\"${POD_NAME##*-}\"")
+	require.Contains(t, observerScript, "follower_replicas=$((FE_REPLICAS-FE_OBSERVER_REPLICAS))")
+	require.Contains(t, observerScript, "export IS_FE_OBSERVER=true")
+	require.Contains(t, observerScript, "export IS_FE_OBSERVER=false")
+	require.Contains(t, observerScript, "exec /opt/starrocks/fe_entrypoint.sh \"${FE_SERVICE_NAME}\"")
 
 	envMap := map[string]string{}
 	for _, env := range st.Spec.Template.Spec.Containers[0].Env {
@@ -626,4 +631,44 @@ func TestSyncDeployWithObserverReplicas(t *testing.T) {
 	}
 	require.Equal(t, "4", envMap["FE_REPLICAS"])
 	require.Equal(t, "1", envMap["FE_OBSERVER_REPLICAS"])
+}
+
+func TestSyncDeployWithoutObserverReplicasUsesDefaultEntrypoint(t *testing.T) {
+	replicas := int32(3)
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-no-observer",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+						Replicas: &replicas,
+						Image:    "starrocks/fe-ubuntu:latest",
+					},
+				},
+				ObserverReplicas: 0,
+			},
+		},
+	}
+
+	fc := fe.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
+
+	var st appsv1.StatefulSet
+	require.NoError(t, fc.Client.Get(context.Background(),
+		types.NamespacedName{Name: load.Name(src.Name, src.Spec.StarRocksFeSpec), Namespace: "default"}, &st))
+
+	// No observer replicas means default FE entrypoint should be used
+	// (without the observer-aware shell wrapper).
+	require.Equal(t, []string{"/opt/starrocks/fe_entrypoint.sh"}, st.Spec.Template.Spec.Containers[0].Command)
+	require.Equal(t, []string{"$(FE_SERVICE_NAME)"}, st.Spec.Template.Spec.Containers[0].Args)
+
+	envMap := map[string]string{}
+	for _, env := range st.Spec.Template.Spec.Containers[0].Env {
+		envMap[env.Name] = env.Value
+	}
+	require.Equal(t, "3", envMap["FE_REPLICAS"])
+	require.Equal(t, "0", envMap["FE_OBSERVER_REPLICAS"])
 }
