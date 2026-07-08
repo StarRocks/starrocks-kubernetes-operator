@@ -330,6 +330,9 @@ starrocks:
   starrocksFESpec:
     # number of replicas to deploy for a FE statefulset.
     replicas: 1
+    # number of FE pods to join as OBSERVER.
+    # must be strictly less than replicas to ensure at least one FOLLOWER.
+    observerReplicas: 0
     image:
       # image sliced by "repository:tag"
       repository: starrocks/fe-ubuntu
