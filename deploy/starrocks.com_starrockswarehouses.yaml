@@ -1654,6 +1654,11 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      externalTrafficPolicy:
+                        enum:
+                        - Cluster
+                        - Local
+                        type: string
                       labels:
                         additionalProperties:
                           type: string

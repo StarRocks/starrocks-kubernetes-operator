@@ -227,6 +227,9 @@ func (fc *FeController) Validating(feSpec *srapi.StarRocksFeSpec) error {
 	if err := srapi.ValidUpdateStrategy(feSpec.UpdateStrategy); err != nil {
 		return err
 	}
+	if err := feSpec.GetService().Validate(); err != nil {
+		return err
+	}
 	return nil
 }
 

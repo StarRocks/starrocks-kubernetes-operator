@@ -64,6 +64,9 @@ spec:
       {{- if and (eq "LoadBalancer" .Values.spec.service.type) .Values.spec.service.loadbalancerIP }}
       loadBalancerIP: {{ .Values.spec.service.loadbalancerIP }}
       {{- end }}
+      {{- if and (or (eq "LoadBalancer" .Values.spec.service.type) (eq "NodePort" .Values.spec.service.type)) .Values.spec.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.spec.service.externalTrafficPolicy }}
+      {{- end }}
       {{- if .Values.spec.service.ports }}
       ports:
         {{- toYaml .Values.spec.service.ports | nindent 8 }}

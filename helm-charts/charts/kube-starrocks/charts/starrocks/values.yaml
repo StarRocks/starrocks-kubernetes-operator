@@ -265,6 +265,9 @@ starrocksFESpec:
     # specifies the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
+    # specifies how nodes distribute service traffic. Possible values: Cluster, Local.
+    # Only applies when the type is NodePort or LoadBalancer. Local preserves the client source IP.
+    externalTrafficPolicy: ""
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -594,6 +597,9 @@ starrocksCnSpec:
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
+    # Specify how nodes distribute service traffic. Possible values: Cluster, Local.
+    # Only applies when the type is NodePort or LoadBalancer. Local preserves the client source IP.
+    externalTrafficPolicy: ""
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -959,6 +965,9 @@ starrocksBeSpec:
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
+    # Specify how nodes distribute service traffic. Possible values: Cluster, Local.
+    # Only applies when the type is NodePort or LoadBalancer. Local preserves the client source IP.
+    externalTrafficPolicy: ""
   # imagePullSecrets allows you to use secrets to pull images for pods.
   imagePullSecrets: []
     # - name: "image-pull-secret"
@@ -1288,6 +1297,9 @@ starrocksFeProxySpec:
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
+    # Specify how nodes distribute service traffic. Possible values: Cluster, Local.
+    # Only applies when the type is NodePort or LoadBalancer. Local preserves the client source IP.
+    externalTrafficPolicy: ""
   # imagePullSecrets allows you to use secrets for pulling images for your pods.
   imagePullSecrets: []
   # - name: "image-pull-secret"

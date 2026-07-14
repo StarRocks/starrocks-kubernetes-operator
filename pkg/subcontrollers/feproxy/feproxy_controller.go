@@ -90,6 +90,10 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 		}
 	}()
 
+	if err = controller.validating(feProxySpec); err != nil {
+		return err
+	}
+
 	err = controller.SyncConfigMap(ctx, src)
 	if err != nil {
 		logger.Error(err, "sync fe proxy configmap failed", "StarRocksCluster", src)
@@ -112,6 +116,10 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 	}
 
 	return nil
+}
+
+func (controller *FeProxyController) validating(feProxySpec *srapi.StarRocksFeProxySpec) error {
+	return feProxySpec.GetService().Validate()
 }
 
 // UpdateClusterStatus update the all resource status about fe.

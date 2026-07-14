@@ -529,6 +529,10 @@ func (cc *CnController) validating(cnSpec *srapi.StarRocksCnSpec) error {
 		return err
 	}
 
+	if err := cnSpec.GetService().Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 

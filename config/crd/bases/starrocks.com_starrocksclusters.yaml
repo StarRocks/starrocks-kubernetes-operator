@@ -2761,6 +2761,20 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      externalTrafficPolicy:
+                        description: |-
+                          ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+                          Service's "externally-facing" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+                          "Local" preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+                          "Cluster" obscures the client source IP and may cause a second hop to another node, but should have good
+                          overall load-spreading.
+                          Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+                          another type, reconciliation fails and the error is reported in the cluster status.
+                          More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+                        enum:
+                        - Cluster
+                        - Local
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -7800,6 +7814,20 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      externalTrafficPolicy:
+                        description: |-
+                          ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+                          Service's "externally-facing" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+                          "Local" preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+                          "Cluster" obscures the client source IP and may cause a second hop to another node, but should have good
+                          overall load-spreading.
+                          Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+                          another type, reconciliation fails and the error is reported in the cluster status.
+                          More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+                        enum:
+                        - Cluster
+                        - Local
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -10657,6 +10685,20 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      externalTrafficPolicy:
+                        description: |-
+                          ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+                          Service's "externally-facing" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+                          "Local" preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+                          "Cluster" obscures the client source IP and may cause a second hop to another node, but should have good
+                          overall load-spreading.
+                          Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+                          another type, reconciliation fails and the error is reported in the cluster status.
+                          More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+                        enum:
+                        - Cluster
+                        - Local
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -13726,6 +13768,20 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      externalTrafficPolicy:
+                        description: |-
+                          ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+                          Service's "externally-facing" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+                          "Local" preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+                          "Cluster" obscures the client source IP and may cause a second hop to another node, but should have good
+                          overall load-spreading.
+                          Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+                          another type, reconciliation fails and the error is reported in the cluster status.
+                          More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+                        enum:
+                        - Cluster
+                        - Local
+                        type: string
                       labels:
                         additionalProperties:
                           type: string

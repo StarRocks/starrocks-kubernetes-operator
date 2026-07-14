@@ -140,7 +140,7 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 					Name:      "test-warehouse-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2811429284",
+						srapi.ComponentResourceHash: "817368047",
 					},
 					OwnerReferences: func() []metav1.OwnerReference {
 						ref := metav1.NewControllerRef(warehouse, warehouse.GroupVersionKind())
@@ -264,7 +264,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-fe-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2323011486",
+						srapi.ComponentResourceHash: "1344577517",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -304,7 +304,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-be-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "2811174334",
+						srapi.ComponentResourceHash: "2400127693",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -341,7 +341,7 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 					Name:      "test-cn-service",
 					Namespace: "default",
 					Annotations: map[string]string{
-						srapi.ComponentResourceHash: "4173513860",
+						srapi.ComponentResourceHash: "187143055",
 					},
 					Labels: map[string]string{
 						"starrocks_default_label": "test",
@@ -755,5 +755,126 @@ func Test_mergePort(t *testing.T) {
 				t.Errorf("mergePort() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_setServiceType_ExternalTrafficPolicy(t *testing.T) {
+	type args struct {
+		svc *srapi.StarRocksService
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantType   corev1.ServiceType
+		wantPolicy corev1.ServiceExternalTrafficPolicyType
+	}{
+		{
+			name: "LoadBalancer with Local policy",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Type:                  corev1.ServiceTypeLoadBalancer,
+					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+				},
+			},
+			wantType:   corev1.ServiceTypeLoadBalancer,
+			wantPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+		},
+		{
+			name: "NodePort with Local policy",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Type:                  corev1.ServiceTypeNodePort,
+					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+				},
+			},
+			wantType:   corev1.ServiceTypeNodePort,
+			wantPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+		},
+		{
+			name: "LoadBalancer with Cluster policy",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Type:                  corev1.ServiceTypeLoadBalancer,
+					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
+				},
+			},
+			wantType:   corev1.ServiceTypeLoadBalancer,
+			wantPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
+		},
+		{
+			name: "explicit ClusterIP with policy does not set the field",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Type:                  corev1.ServiceTypeClusterIP,
+					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+				},
+			},
+			wantType: corev1.ServiceTypeClusterIP,
+		},
+		{
+			name: "default ClusterIP with policy does not set the field",
+			args: args{
+				svc: &srapi.StarRocksService{
+					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+				},
+			},
+			wantType: corev1.ServiceTypeClusterIP,
+		},
+		{
+			name: "LoadBalancer without policy keeps it unset",
+			args: args{
+				svc: &srapi.StarRocksService{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			wantType: corev1.ServiceTypeLoadBalancer,
+		},
+		{
+			name:     "nil service defaults to ClusterIP",
+			args:     args{svc: nil},
+			wantType: corev1.ServiceTypeClusterIP,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := &corev1.Service{}
+			setServiceType(tt.args.svc, service)
+			if service.Spec.Type != tt.wantType {
+				t.Errorf("setServiceType() type = %v, want %v", service.Spec.Type, tt.wantType)
+			}
+			if service.Spec.ExternalTrafficPolicy != tt.wantPolicy {
+				t.Errorf("setServiceType() externalTrafficPolicy = %v, want %v",
+					service.Spec.ExternalTrafficPolicy, tt.wantPolicy)
+			}
+		})
+	}
+}
+
+func Test_ServiceDeepEqual_ExternalTrafficPolicy(t *testing.T) {
+	buildService := func(policy corev1.ServiceExternalTrafficPolicyType) *corev1.Service {
+		svc := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "test-fe-service",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: corev1.ServiceSpec{
+				Type:                  corev1.ServiceTypeLoadBalancer,
+				ExternalTrafficPolicy: policy,
+			},
+		}
+		return svc
+	}
+
+	// changing externalTrafficPolicy must change the service hash so that the operator updates the service
+	local := buildService(corev1.ServiceExternalTrafficPolicyTypeLocal)
+	cluster := buildService(corev1.ServiceExternalTrafficPolicyTypeCluster)
+	if _, equal := ServiceDeepEqual(local, cluster); equal {
+		t.Errorf("ServiceDeepEqual() = true, want false when externalTrafficPolicy differs")
+	}
+
+	// the same externalTrafficPolicy must keep the hash stable so that no spurious update happens
+	if _, equal := ServiceDeepEqual(buildService(corev1.ServiceExternalTrafficPolicyTypeLocal), local); !equal {
+		t.Errorf("ServiceDeepEqual() = false, want true when services are identical")
 	}
 }

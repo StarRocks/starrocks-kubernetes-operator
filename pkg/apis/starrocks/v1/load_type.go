@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -250,6 +252,38 @@ type StarRocksService struct {
 	// More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/
 	// +optional
 	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty"`
+
+	// ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+	// Service's "externally-facing" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+	// "Local" preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+	// "Cluster" obscures the client source IP and may cause a second hop to another node, but should have good
+	// overall load-spreading.
+	// Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+	// another type, reconciliation fails and the error is reported in the cluster status.
+	// More info: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+	// +kubebuilder:validation:Enum=Cluster;Local
+	// +optional
+	ExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType `json:"externalTrafficPolicy,omitempty"`
+}
+
+// Validate checks constraints that the Kubernetes API server enforces on the Service object built
+// from this spec, so that every controller can reject an invalid spec up front with a clear
+// message instead of failing when the Service is applied.
+func (svc *StarRocksService) Validate() error {
+	if svc == nil {
+		return nil
+	}
+	if svc.ExternalTrafficPolicy != "" {
+		serviceType := svc.Type
+		if serviceType == "" {
+			serviceType = corev1.ServiceTypeClusterIP
+		}
+		if serviceType != corev1.ServiceTypeNodePort && serviceType != corev1.ServiceTypeLoadBalancer {
+			return fmt.Errorf("service: externalTrafficPolicy %s may only be set when the service type is "+
+				"NodePort or LoadBalancer, but the type is %s", svc.ExternalTrafficPolicy, serviceType)
+		}
+	}
+	return nil
 }
 
 // StarRocksServicePort defines the port that will be exposed by this service.

@@ -57,6 +57,9 @@ spec:
       loadBalancerSourceRanges:
         {{- toYaml .Values.starrocksFESpec.service.loadBalancerSourceRanges | nindent 8 }}
       {{- end }}
+      {{- if and (or (eq "LoadBalancer" .Values.starrocksFESpec.service.type) (eq "NodePort" .Values.starrocksFESpec.service.type)) .Values.starrocksFESpec.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.starrocksFESpec.service.externalTrafficPolicy }}
+      {{- end }}
       {{- if .Values.starrocksFESpec.service.ports }}
       ports:
         {{- toYaml .Values.starrocksFESpec.service.ports | nindent 8 }}
@@ -322,6 +325,9 @@ spec:
       {{- if and (eq "LoadBalancer" .Values.starrocksBeSpec.service.type) .Values.starrocksBeSpec.service.loadBalancerSourceRanges}}
       loadBalancerSourceRanges:
         {{- toYaml .Values.starrocksBeSpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if and (or (eq "LoadBalancer" .Values.starrocksBeSpec.service.type) (eq "NodePort" .Values.starrocksBeSpec.service.type)) .Values.starrocksBeSpec.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.starrocksBeSpec.service.externalTrafficPolicy }}
       {{- end }}
       {{- if .Values.starrocksBeSpec.service.ports }}
       ports:
@@ -764,6 +770,9 @@ spec:
       loadBalancerSourceRanges:
         {{- toYaml .Values.starrocksCnSpec.service.loadBalancerSourceRanges | nindent 8 }}
       {{- end }}
+      {{- if and (or (eq "LoadBalancer" .Values.starrocksCnSpec.service.type) (eq "NodePort" .Values.starrocksCnSpec.service.type)) .Values.starrocksCnSpec.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.starrocksCnSpec.service.externalTrafficPolicy }}
+      {{- end }}
       {{- if .Values.starrocksCnSpec.service.ports }}
       ports:
         {{- toYaml .Values.starrocksCnSpec.service.ports | nindent 8 }}
@@ -917,6 +926,9 @@ spec:
       {{- if and (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) .Values.starrocksFeProxySpec.service.loadBalancerSourceRanges}}
       loadBalancerSourceRanges:
         {{- toYaml .Values.starrocksFeProxySpec.service.loadBalancerSourceRanges | nindent 8 }}
+      {{- end }}
+      {{- if and (or (eq "LoadBalancer" .Values.starrocksFeProxySpec.service.type) (eq "NodePort" .Values.starrocksFeProxySpec.service.type)) .Values.starrocksFeProxySpec.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.starrocksFeProxySpec.service.externalTrafficPolicy }}
       {{- end }}
       {{- if .Values.starrocksFeProxySpec.service.ports }}
       ports:

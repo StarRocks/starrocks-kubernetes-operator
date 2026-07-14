@@ -56,6 +56,7 @@ type hashService struct {
 	labels                   map[string]string
 	annotations              map[string]string
 	loadBalancerSourceRanges []string
+	externalTrafficPolicy    corev1.ServiceExternalTrafficPolicyType
 }
 
 // BuildExternalService build the external service. not have selector
@@ -208,6 +209,14 @@ func setServiceType(svc *srapi.StarRocksService, service *corev1.Service) {
 	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && svc.LoadBalancerIP != "" {
 		service.Spec.LoadBalancerIP = svc.LoadBalancerIP
 	}
+
+	// The spec is validated up front by StarRocksService.Validate; the type guard here only keeps an
+	// invalid combination from reaching the API server, which rejects externalTrafficPolicy on
+	// service types other than NodePort and LoadBalancer.
+	if svc != nil && svc.ExternalTrafficPolicy != "" &&
+		(service.Spec.Type == corev1.ServiceTypeLoadBalancer || service.Spec.Type == corev1.ServiceTypeNodePort) {
+		service.Spec.ExternalTrafficPolicy = svc.ExternalTrafficPolicy
+	}
 }
 
 func mergePort(service *srapi.StarRocksService, defaultPort srapi.StarRocksServicePort) srapi.StarRocksServicePort {
@@ -298,6 +307,7 @@ func serviceHashObject(svc *corev1.Service) hashService {
 		serviceType:              svc.Spec.Type,
 		labels:                   svc.Labels,
 		annotations:              svc.Annotations,
+		externalTrafficPolicy:    svc.Spec.ExternalTrafficPolicy,
 	}
 }
 
