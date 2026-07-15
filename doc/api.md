@@ -2249,6 +2249,27 @@ cloud-provider does not support the feature.
 More info: <a href="https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/">https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/</a></p>
 </td>
 </tr>
+<tr>
+<td>
+<code>externalTrafficPolicy</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#serviceexternaltrafficpolicytype-v1-core">
+Kubernetes core/v1.ServiceExternalTrafficPolicyType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
+Service&rsquo;s &ldquo;externally-facing&rdquo; addresses (NodePorts, ExternalIPs, and LoadBalancer IPs).
+&ldquo;Local&rdquo; preserves the client source IP and avoids a second hop, but risks unbalanced traffic spreading.
+&ldquo;Cluster&rdquo; obscures the client source IP and may cause a second hop to another node, but should have good
+overall load-spreading.
+Kubernetes only allows this field when type is NodePort or LoadBalancer; if it is set for a service of
+another type, reconciliation fails and the error is reported in the cluster status.
+More info: <a href="https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip">https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip</a></p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="starrocks.com/v1.StarRocksServicePort">StarRocksServicePort
@@ -2645,5 +2666,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>e9f3a7c9</code>.
+on git commit <code>0553e99f</code>.
 </em></p>
