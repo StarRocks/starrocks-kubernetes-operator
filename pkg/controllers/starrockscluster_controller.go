@@ -40,9 +40,10 @@ import (
 // StarRocksClusterReconciler reconciles a StarRocksCluster object
 type StarRocksClusterReconciler struct {
 	client.Client
-	Recorder record.EventRecorder
-	Scs      []subcontrollers.ClusterSubController
-	denyList string
+	Recorder                record.EventRecorder
+	Scs                     []subcontrollers.ClusterSubController
+	denyList                string
+	MaxConcurrentReconciles int
 }
 
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrocksclusters,verbs=get;list;watch;create;update;patch;delete

@@ -122,6 +122,27 @@ operator:
     # If users plan to use a sidecar or init container to mount the same volume, it will be challenging to get the volume name.
     # In this situation, you can set this value to false.
     volumeNameWithHash: true
+    # Maximum number of concurrent reconciles for the StarRocksCluster controller.
+    # Increase this value to improve throughput when many StarRocksCluster resources exist in the cluster.
+    # Defaults to 1 (controller-runtime default).
+    # Note: applies only to the StarRocksCluster controller. The StarRocksWarehouse
+    # controller (optional CRD) is intentionally left at the controller-runtime default of 1.
+    maxConcurrentReconciles: 1
+    # QPS to use while talking with the kubernetes API server.
+    # Leave empty to use the controller-runtime default (20).
+    # Increase for large clusters where the operator is rate-limited by the API server.
+    # Note: setting this to 0 has no effect via helm (treated the same as empty).
+    # The "unlimited QPS" mode of client-go is intentionally not exposed.
+    kubeAPIQPS: ""
+    # Burst to use while talking with the kubernetes API server.
+    # Leave empty to use the controller-runtime default (30).
+    # Should be set together with kubeAPIQPS.
+    kubeAPIBurst: ""
+    # The minimum interval at which watched resources are reconciled.
+    # Set to a longer value (e.g. 10m) to reduce reconcile overhead on stable clusters,
+    # or shorter (e.g. 30s) when faster drift correction is needed.
+    # Accepts any value parseable by time.ParseDuration (e.g. "30s", "2m", "1h"). Defaults to "2m".
+    syncPeriod: 2m
 
 starrocks:
   # set the nameOverride values for creating the same resources with the parent chart.

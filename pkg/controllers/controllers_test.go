@@ -42,7 +42,7 @@ func TestSetupClusterReconciler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetupClusterReconciler(tt.args.mgr, ""); (err != nil) != tt.wantErr {
+			if err := SetupClusterReconciler(tt.args.mgr, "", 1); (err != nil) != tt.wantErr {
 				t.Errorf("SetupClusterReconciler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

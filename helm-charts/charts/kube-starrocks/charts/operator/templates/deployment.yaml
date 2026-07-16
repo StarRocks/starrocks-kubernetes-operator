@@ -47,6 +47,18 @@ spec:
         {{- if .Values.starrocksOperator.denyList }}
         - --deny-list={{ .Values.starrocksOperator.denyList }}
         {{- end }}
+        {{- if .Values.starrocksOperator.maxConcurrentReconciles }}
+        - --max-concurrent-reconciles={{ .Values.starrocksOperator.maxConcurrentReconciles }}
+        {{- end }}
+        {{- if .Values.starrocksOperator.kubeAPIQPS }}
+        - --kube-api-qps={{ .Values.starrocksOperator.kubeAPIQPS }}
+        {{- end }}
+        {{- if .Values.starrocksOperator.kubeAPIBurst }}
+        - --kube-api-burst={{ .Values.starrocksOperator.kubeAPIBurst }}
+        {{- end }}
+        {{- if .Values.starrocksOperator.syncPeriod }}
+        - --sync-period={{ .Values.starrocksOperator.syncPeriod }}
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

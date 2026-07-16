@@ -8,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/predicates"
@@ -18,7 +19,11 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/feproxy"
 )
 
-func SetupClusterReconciler(mgr ctrl.Manager, denyList string) error {
+// SetupClusterReconciler wires the StarRocksCluster controller into mgr.
+// maxConcurrentReconciles applies only to this controller; the Warehouse
+// reconciler (an optional CRD) is intentionally left at the controller-runtime
+// default of 1.
+func SetupClusterReconciler(mgr ctrl.Manager, denyList string, maxConcurrentReconciles int) error {
 	feController := fe.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	beController := be.New(mgr.GetClient(), mgr.GetEventRecorderFor)
 	cnController := cn.New(mgr.GetClient(), mgr.GetEventRecorderFor)
@@ -28,10 +33,11 @@ func SetupClusterReconciler(mgr ctrl.Manager, denyList string) error {
 	}
 
 	reconciler := &StarRocksClusterReconciler{
-		Client:   mgr.GetClient(),
-		Recorder: mgr.GetEventRecorderFor("starrockscluster-controller"),
-		Scs:      subcs,
-		denyList: denyList,
+		Client:                  mgr.GetClient(),
+		Recorder:                mgr.GetEventRecorderFor("starrockscluster-controller"),
+		Scs:                     subcs,
+		denyList:                denyList,
+		MaxConcurrentReconciles: maxConcurrentReconciles,
 	}
 
 	if err := reconciler.SetupWithManager(mgr); err != nil {
@@ -52,6 +58,7 @@ func (r *StarRocksClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		WithEventFilter(predicates.NewGenericPredicates(r.denyList)).
+		WithOptions(controller.Options{MaxConcurrentReconciles: r.MaxConcurrentReconciles}).
 		Complete(r)
 }
 
