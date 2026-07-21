@@ -270,6 +270,23 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 	if len(spec.GetSidecars()) > 0 {
 		containers = append(containers, spec.GetSidecars()...)
 	}
+
+	// AutomountServiceAccountToken policy:
+	//   - Without an explicit ServiceAccount the original behavior is kept:
+	//     hard-disable token mounting so the cluster's "default" SA token
+	//     is never auto-injected into FE/BE/CN/FeProxy pods.
+	//   - When the user explicitly assigns a ServiceAccount via the CR field
+	//     spec.<role>.serviceAccount, automount is left to the K8s default
+	//     (true) so the SA token is projected to
+	//     /var/run/secrets/kubernetes.io/serviceaccount/, which is required
+	//     by in-cluster clients running inside the main / sidecar containers
+	//     (e.g. components calling rest.InClusterConfig).
+	var automount *bool
+	if spec.GetServiceAccount() == "" {
+		b := false
+		automount = &b
+	}
+
 	podSpec := corev1.PodSpec{
 		InitContainers:                spec.GetInitContainers(),
 		Containers:                    containers,
@@ -283,7 +300,7 @@ func Spec(spec v1.SpecInterface, container corev1.Container, volumes []corev1.Vo
 		NodeSelector:                  spec.GetNodeSelector(),
 		HostAliases:                   spec.GetHostAliases(),
 		SchedulerName:                 spec.GetSchedulerName(),
-		AutomountServiceAccountToken:  func() *bool { b := false; return &b }(),
+		AutomountServiceAccountToken:  automount,
 		ShareProcessNamespace:         spec.GetShareProcessNamespace(),
 	}
 	return podSpec
