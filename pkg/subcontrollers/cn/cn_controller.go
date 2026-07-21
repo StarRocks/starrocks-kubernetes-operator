@@ -440,15 +440,25 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.Star
 	return nil
 }
 
-// ClearResources clear the deployed resource about cn. statefulset, services, hpa.
+// ClearCluster clears the deployed resources about cn (statefulset, services, hpa)
+// when StarRocksCnSpec has been removed from the StarRocksCluster spec.
+//
+// As a defensive guard, return early if the user still declares the CN spec, so
+// that we never accidentally delete a CN that is still expected to be running.
 func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	if src.Spec.StarRocksCnSpec != nil {
+		// CN is still declared in the spec, nothing to clear.
 		return nil
 	}
 
-	cnSpec := src.Spec.StarRocksCnSpec
+	// At this point cnSpec is guaranteed to be nil. Pass a typed nil pointer to
+	// the load/service helpers so the resource name is computed from the
+	// *srapi.StarRocksCnSpec type (the helpers are nil-safe). This makes the
+	// intent explicit and avoids the misleading
+	// `cnSpec := src.Spec.StarRocksCnSpec` placeholder variable.
+	var cnSpec *srapi.StarRocksCnSpec
 	statefulSetName := load.Name(src.Name, cnSpec)
 	err := k8sutils.DeleteStatefulset(ctx, cc.k8sClient, src.Namespace, statefulSetName)
 	if err != nil && !apierrors.IsNotFound(err) {
