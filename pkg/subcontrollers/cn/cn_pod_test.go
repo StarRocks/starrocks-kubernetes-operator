@@ -41,6 +41,36 @@ func TestCnController_addWarehouseEnv1(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "FE returns MULTI_WAREHOUSE (uppercase + underscore) is recognized",
+			args: args{
+				ctx: context.Background(),
+				ServerFunc: func(rw http.ResponseWriter, _ *http.Request) {
+					_, _ = rw.Write([]byte(`{"features": [{"name": "MULTI_WAREHOUSE"}], "version": "", "status": "OK"}`))
+				},
+			},
+			want: true,
+		},
+		{
+			name: "FE returns Multi-Warehouse (mixed case) is recognized",
+			args: args{
+				ctx: context.Background(),
+				ServerFunc: func(rw http.ResponseWriter, _ *http.Request) {
+					_, _ = rw.Write([]byte(`{"features": [{"name": "Multi-Warehouse"}], "version": "", "status": "OK"}`))
+				},
+			},
+			want: true,
+		},
+		{
+			name: "FE returns unrelated feature is not recognized",
+			args: args{
+				ctx: context.Background(),
+				ServerFunc: func(rw http.ResponseWriter, _ *http.Request) {
+					_, _ = rw.Write([]byte(`{"features": [{"name": "some-other-feature"}], "version": "", "status": "OK"}`))
+				},
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

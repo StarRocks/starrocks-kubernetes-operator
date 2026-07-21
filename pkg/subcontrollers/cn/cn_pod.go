@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -59,10 +60,10 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	}
 
 	feExternalServiceName := service.ExternalServiceName(object.ClusterName, (*srapi.StarRocksFeSpec)(nil))
-	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
+	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.ClusterNamespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature", feExternalServiceName, object.Namespace, rutils.GetPort(config, rutils.HTTP_PORT))
+		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature", feExternalServiceName, object.ClusterNamespace, rutils.GetPort(config, rutils.HTTP_PORT))
 		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
@@ -173,8 +174,10 @@ func (cc *CnController) addWarehouseEnv(ctx context.Context, url string) bool {
 	}
 
 	for _, feature := range result.Features {
-		if feature.Name == "multi-warehouse" {
-			logger.Info("FE support multi-warehouse")
+		// Match both "multi-warehouse" (community) and "MULTI_WAREHOUSE" (TBDS/enterprise) formats.
+		normalized := strings.ToLower(strings.ReplaceAll(feature.Name, "_", "-"))
+		if normalized == "multi-warehouse" {
+			logger.Info("FE support multi-warehouse", "featureName", feature.Name)
 			return true
 		}
 	}

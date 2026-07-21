@@ -92,6 +92,62 @@ func TestNewSQLExecutor(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		{
+			name: "FE_SERVICE_NAME env carries FQDN form (svc.namespace) is preserved",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(
+					func() *runtime.Scheme {
+						schema := runtime.NewScheme()
+						_ = clientgoscheme.AddToScheme(schema)
+						return schema
+					}(),
+					&appsv1.StatefulSet{
+						TypeMeta: metav1.TypeMeta{
+							Kind:       "StatefulSet",
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+						},
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "wh-cn",
+							Namespace: "wh-ns",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Template: corev1.PodTemplateSpec{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Env: []corev1.EnvVar{
+												{
+													Name:  "MYSQL_PWD",
+													Value: "pwd",
+												},
+												{
+													Name:  "FE_SERVICE_NAME",
+													Value: "fe-svc.main-ns",
+												},
+												{
+													Name:  "FE_QUERY_PORT",
+													Value: "9030",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				),
+				namespace: "wh-ns",
+				name:      "wh-cn",
+			},
+			want: &SQLExecutor{
+				RootPassword:       "pwd",
+				FeServiceName:      "fe-svc.main-ns",
+				FeServiceNamespace: "wh-ns",
+				FeServicePort:      "9030",
+			},
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

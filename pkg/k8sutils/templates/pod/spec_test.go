@@ -254,7 +254,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -277,7 +277,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
 				},
 				{
 					Name:  "FE_QUERY_PORT",
@@ -300,7 +300,7 @@ func TestEnvs(t *testing.T) {
 				},
 				{
 					Name:  v1.FE_SERVICE_NAME,
-					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}),
+					Value: service.ExternalServiceName("test", &v1.StarRocksFeSpec{}) + "." + "ns",
 				},
 				{
 					Name:  "FE_QUERY_PORT",
