@@ -193,6 +193,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
+	if err = k8sutils.PatchPVCVolumeAttributeClass(ctx, cc.k8sClient,
+		object.Namespace, expectSTS.Name, cnSpec.StorageVolumes); err != nil {
+		logger.Error(err, "patch PVC volumeAttributeClassName failed")
+	}
+
 	// build and deploy service
 	defaultLabels := load.Labels(object.SubResourcePrefixName, cnSpec)
 	externalsvc := rutils.BuildExternalService(object, cnSpec, cnConfig,
