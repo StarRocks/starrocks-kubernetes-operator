@@ -2298,6 +2298,27 @@ spec:
                   storageVolumes:
                     items:
                       properties:
+                        csi:
+                          properties:
+                            driver:
+                              type: string
+                            fsType:
+                              type: string
+                            nodePublishSecretRef:
+                              properties:
+                                name:
+                                  type: string
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            readOnly:
+                              type: boolean
+                            volumeAttributes:
+                              additionalProperties:
+                                type: string
+                              type: object
+                          required:
+                          - driver
+                          type: object
                         hostPath:
                           properties:
                             path:

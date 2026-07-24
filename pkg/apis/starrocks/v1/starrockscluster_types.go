@@ -407,6 +407,7 @@ type StarRocksCluster struct {
 const (
 	EmptyDir = "emptyDir"
 	HostPath = "hostPath"
+	CSI      = "csi"
 )
 
 // StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC.
@@ -433,6 +434,11 @@ type StorageVolume struct {
 	// If StorageClassName is hostPath, HostPath is required.
 	// +optional
 	HostPath *corev1.HostPathVolumeSource `json:"hostPath,omitempty"`
+
+	// CSI represents an ephemeral inline CSI volume mapped into a pod (e.g. the SPIFFE
+	// workload API socket via driver csi.spiffe.io). If StorageClassName is csi, CSI is required.
+	// +optional
+	CSI *corev1.CSIVolumeSource `json:"csi,omitempty"`
 
 	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath"`
