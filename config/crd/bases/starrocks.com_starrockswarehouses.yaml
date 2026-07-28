@@ -4765,6 +4765,55 @@ spec:
                       description: StorageVolume defines additional PVC template for
                         StatefulSets and volumeMount for pods that mount this PVC.
                       properties:
+                        csi:
+                          description: |-
+                            CSI represents an ephemeral inline CSI volume mounted into the pod, for example the SPIFFE
+                            workload API socket provided by driver csi.spiffe.io. Unlike a PVC-backed volume, its lifecycle
+                            is tied to the pod and no PersistentVolumeClaim is created for it.
+                            If StorageClassName is csi, CSI is required.
+                          properties:
+                            driver:
+                              description: |-
+                                driver is the name of the CSI driver that handles this volume.
+                                Consult with your admin for the correct name as registered in the cluster.
+                              type: string
+                            fsType:
+                              description: |-
+                                fsType to mount. Ex. "ext4", "xfs", "ntfs".
+                                If not provided, the empty value is passed to the associated CSI driver
+                                which will determine the default filesystem to apply.
+                              type: string
+                            nodePublishSecretRef:
+                              description: |-
+                                nodePublishSecretRef is a reference to the secret object containing
+                                sensitive information to pass to the CSI driver to complete the CSI
+                                NodePublishVolume and NodeUnpublishVolume calls.
+                                This field is optional, and  may be empty if no secret is required. If the
+                                secret object contains more than one secret, all secret references are passed.
+                              properties:
+                                name:
+                                  description: |-
+                                    Name of the referent.
+                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind, uid?
+                                  type: string
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            readOnly:
+                              description: |-
+                                readOnly specifies a read-only configuration for the volume.
+                                Defaults to false (read/write).
+                              type: boolean
+                            volumeAttributes:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                volumeAttributes stores driver-specific properties that are passed to the CSI
+                                driver. Consult your driver's documentation for supported values.
+                              type: object
+                          required:
+                          - driver
+                          type: object
                         hostPath:
                           description: |-
                             HostPath Represents a host path mapped into a pod.
@@ -4792,11 +4841,21 @@ spec:
                           description: name of a storage volume.
                           pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                           type: string
+                        readOnly:
+                          description: |-
+                            ReadOnly mounts the volume read-only inside the container if true, read-write otherwise.
+                            This sets readOnly on the container's volumeMount, which is what the container's mount
+                            table reports. It is independent of any read-only flag on the volume source itself: for a
+                            CSI volume, csi.readOnly asks the driver to publish the volume read-only, while this field
+                            controls how the volume is mounted into the container. Setting both is the usual intent.
+                            Defaults to false.
+                          type: boolean
                         storageClassName:
                           description: |-
                             storageClassName is the name of the StorageClass required by the claim.
                             If storageClassName is not set, the default StorageClass of kubernetes will be used.
-                            there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
+                            there are some special storageClassName: emptyDir, hostPath, csi. In this case, It will use
+                            emptyDir, hostPath or an ephemeral inline CSI volume, not PVC.
                             More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
                           type: string
                         storageSize:

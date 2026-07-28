@@ -12,7 +12,7 @@ import (
 )
 
 // SpecialStorageClassName returns the special storage class name of the storage volume, else return "".
-// Now we support HostPath and EmptyDir as special storage class.
+// Now we support HostPath, EmptyDir and CSI as special storage class.
 func SpecialStorageClassName(sv v1.StorageVolume) string {
 	storageClassName := sv.StorageClassName
 	if storageClassName != nil {
@@ -20,12 +20,18 @@ func SpecialStorageClassName(sv v1.StorageVolume) string {
 			return v1.EmptyDir
 		} else if common.EqualsIgnoreCase(*storageClassName, v1.HostPath) {
 			return v1.HostPath
+		} else if common.EqualsIgnoreCase(*storageClassName, v1.CSI) {
+			return v1.CSI
 		}
 		return ""
 	}
 
 	if sv.HostPath != nil {
 		return v1.HostPath
+	}
+
+	if sv.CSI != nil {
+		return v1.CSI
 	}
 
 	return ""
@@ -45,8 +51,17 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 			volumes, volumeMounts = MountEmptyDirVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
 		case v1.HostPath:
 			volumes, volumeMounts = MountHostPathVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.HostPath)
+		case v1.CSI:
+			volumes, volumeMounts = MountCSIVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.CSI)
 		default:
 			volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+		}
+		// ReadOnly is applied here rather than inside each Mount* helper: those helpers are also
+		// called directly by the component pod builders to mount the log and meta directories,
+		// which are always writable, so only a user-declared StorageVolume can carry this flag.
+		// Every branch above appends exactly one volumeMount, so the last entry is this volume's.
+		if sv.ReadOnly && len(volumeMounts) > 0 {
+			volumeMounts[len(volumeMounts)-1].ReadOnly = true
 		}
 	}
 	return volumes, volumeMounts
@@ -94,6 +109,26 @@ func MountHostPathVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMo
 		Name: volumeName,
 		VolumeSource: corev1.VolumeSource{
 			HostPath: hostPath,
+		},
+	})
+	volumeMounts = append(
+		volumeMounts, corev1.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			SubPath:   subPath,
+		})
+	return volumes, volumeMounts
+}
+
+// MountCSIVolume mounts an ephemeral inline CSI volume into the pod. No PersistentVolumeClaim is
+// created for it: the volume is published by the CSI driver at pod start and torn down with the pod.
+func MountCSIVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	volumeName string, mountPath string, subPath string,
+	csi *corev1.CSIVolumeSource) ([]corev1.Volume, []corev1.VolumeMount) {
+	volumes = append(volumes, corev1.Volume{
+		Name: volumeName,
+		VolumeSource: corev1.VolumeSource{
+			CSI: csi,
 		},
 	})
 	volumeMounts = append(

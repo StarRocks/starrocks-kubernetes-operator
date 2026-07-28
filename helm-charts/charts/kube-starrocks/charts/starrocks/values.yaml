@@ -396,6 +396,20 @@ starrocksFESpec:
     #     path: /tmp
     #     type: Directory
     #   mountPath: /tmp
+  # mount CSI ephemeral inline volumes if necessary.
+  # Unlike storageSpec, no PersistentVolumeClaim is created: the volume is published by the CSI
+  # driver when the pod starts and is torn down with the pod. The driver must already be installed
+  # in the cluster.
+  csiVolumes: []
+    # e.g., mount the SPIFFE workload API socket provided by the SPIFFE CSI driver
+    # - name: spiffe-workload-api
+    #   mountPath: /spiffe-workload-api
+    #   # readOnly here mounts it read-only inside the container; csi.readOnly below asks the
+    #   # driver to publish the volume read-only. Set both for a genuinely read-only mount.
+    #   readOnly: true
+    #   csi:
+    #     driver: csi.spiffe.io
+    #     readOnly: true
   # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
   # The whenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
   #	The whenScaled field is only supported for the CN component.
@@ -770,6 +784,20 @@ starrocksCnSpec:
     #     path: /tmp
     #     type: Directory
     #   mountPath: /tmp
+  # mount CSI ephemeral inline volumes if necessary.
+  # Unlike storageSpec, no PersistentVolumeClaim is created: the volume is published by the CSI
+  # driver when the pod starts and is torn down with the pod. The driver must already be installed
+  # in the cluster.
+  csiVolumes: []
+    # e.g., mount the SPIFFE workload API socket provided by the SPIFFE CSI driver
+    # - name: spiffe-workload-api
+    #   mountPath: /spiffe-workload-api
+    #   # readOnly here mounts it read-only inside the container; csi.readOnly below asks the
+    #   # driver to publish the volume read-only. Set both for a genuinely read-only mount.
+    #   readOnly: true
+    #   csi:
+    #     driver: csi.spiffe.io
+    #     readOnly: true
   # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
   # The whenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
   #	The whenScaled field is only supported for the CN component.
@@ -1107,6 +1135,20 @@ starrocksBeSpec:
     #     path: /tmp
     #     type: Directory
     #   mountPath: /tmp
+  # mount CSI ephemeral inline volumes if necessary.
+  # Unlike storageSpec, no PersistentVolumeClaim is created: the volume is published by the CSI
+  # driver when the pod starts and is torn down with the pod. The driver must already be installed
+  # in the cluster.
+  csiVolumes: []
+    # e.g., mount the SPIFFE workload API socket provided by the SPIFFE CSI driver
+    # - name: spiffe-workload-api
+    #   mountPath: /spiffe-workload-api
+    #   # readOnly here mounts it read-only inside the container; csi.readOnly below asks the
+    #   # driver to publish the volume read-only. Set both for a genuinely read-only mount.
+    #   readOnly: true
+    #   csi:
+    #     driver: csi.spiffe.io
+    #     readOnly: true
   # persistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
   # The whenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
   #	The whenScaled field is only supported for the CN component.

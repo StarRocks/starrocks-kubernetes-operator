@@ -18,6 +18,7 @@ package v1
 
 import (
 	"errors"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -416,6 +417,7 @@ type StarRocksCluster struct {
 const (
 	EmptyDir = "emptyDir"
 	HostPath = "hostPath"
+	CSI      = "csi"
 )
 
 // StorageVolume defines additional PVC template for StatefulSets and volumeMount for pods that mount this PVC.
@@ -426,7 +428,8 @@ type StorageVolume struct {
 
 	// storageClassName is the name of the StorageClass required by the claim.
 	// If storageClassName is not set, the default StorageClass of kubernetes will be used.
-	// there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
+	// there are some special storageClassName: emptyDir, hostPath, csi. In this case, It will use
+	// emptyDir, hostPath or an ephemeral inline CSI volume, not PVC.
 	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
@@ -443,17 +446,42 @@ type StorageVolume struct {
 	// +optional
 	HostPath *corev1.HostPathVolumeSource `json:"hostPath,omitempty"`
 
+	// CSI represents an ephemeral inline CSI volume mounted into the pod, for example the SPIFFE
+	// workload API socket provided by driver csi.spiffe.io. Unlike a PVC-backed volume, its lifecycle
+	// is tied to the pod and no PersistentVolumeClaim is created for it.
+	// If StorageClassName is csi, CSI is required.
+	// +optional
+	CSI *corev1.CSIVolumeSource `json:"csi,omitempty"`
+
 	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath"`
 
 	// SubPath within the volume from which the container's volume should be mounted.
 	// Defaults to "" (volume's root).
 	SubPath string `json:"subPath,omitempty"`
+
+	// ReadOnly mounts the volume read-only inside the container if true, read-write otherwise.
+	// This sets readOnly on the container's volumeMount, which is what the container's mount
+	// table reports. It is independent of any read-only flag on the volume source itself: for a
+	// CSI volume, csi.readOnly asks the driver to publish the volume read-only, while this field
+	// controls how the volume is mounted into the container. Setting both is the usual intent.
+	// Defaults to false.
+	// +optional
+	ReadOnly bool `json:"readOnly,omitempty"`
 }
 
 var ErrHostPathRequired = errors.New("if storageClassName is hostPath, hostPath and hostPath.path is required")
 
+var (
+	ErrCSIRequired     = errors.New("csi is required if storageClassName is csi, and csi.driver must not be empty")
+	ErrCSIConflict     = errors.New("csi and hostPath can not be set at the same time")
+	ErrCSIStorageClass = errors.New(`if csi is set, storageClassName must be empty or "csi"`)
+)
+
 func (storageVolume *StorageVolume) Validate() error {
+	if err := storageVolume.validateCSI(); err != nil {
+		return err
+	}
 	if storageVolume.StorageClassName != nil {
 		if *storageVolume.StorageClassName == HostPath {
 			if storageVolume.HostPath == nil {
@@ -467,6 +495,28 @@ func (storageVolume *StorageVolume) Validate() error {
 		if storageVolume.HostPath.Path == "" {
 			return ErrHostPathRequired
 		}
+	}
+	return nil
+}
+
+// validateCSI checks that a CSI ephemeral inline volume is described consistently.
+// A CSI volume is only rendered when the storage class name is omitted or set to the csi pseudo
+// class; with any other value the volume would silently fall back to the PersistentVolumeClaim
+// path and the csi field would be discarded, so that combination is rejected instead.
+func (storageVolume *StorageVolume) validateCSI() error {
+	isCSIClass := storageVolume.StorageClassName != nil &&
+		strings.EqualFold(*storageVolume.StorageClassName, CSI)
+	if !isCSIClass && storageVolume.CSI == nil {
+		return nil
+	}
+	if storageVolume.CSI != nil && storageVolume.HostPath != nil {
+		return ErrCSIConflict
+	}
+	if !isCSIClass && storageVolume.StorageClassName != nil {
+		return ErrCSIStorageClass
+	}
+	if storageVolume.CSI == nil || storageVolume.CSI.Driver == "" {
+		return ErrCSIRequired
 	}
 	return nil
 }

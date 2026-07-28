@@ -257,6 +257,119 @@ func TestMountStorageVolumes(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "storage volume with csi",
+			args: args{
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							StorageVolumes: []v1.StorageVolume{
+								{
+									Name:      "spiffe-workload-api",
+									MountPath: "/spiffe-workload-api",
+									SubPath:   "sub",
+									CSI: &corev1.CSIVolumeSource{
+										Driver:   "csi.spiffe.io",
+										ReadOnly: func() *bool { b := true; return &b }(),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []corev1.Volume{
+				{
+					Name: "spiffe-workload-api",
+					VolumeSource: corev1.VolumeSource{
+						CSI: &corev1.CSIVolumeSource{
+							Driver:   "csi.spiffe.io",
+							ReadOnly: func() *bool { b := true; return &b }(),
+						},
+					},
+				},
+			},
+			want1: []corev1.VolumeMount{
+				{
+					Name:      "spiffe-workload-api",
+					MountPath: "/spiffe-workload-api",
+					SubPath:   "sub",
+				},
+			},
+		},
+		{
+			name: "readOnly sets the volumeMount read-only for every volume kind",
+			args: args{
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							StorageVolumes: []v1.StorageVolume{
+								{
+									Name:      "ro-csi",
+									MountPath: "/ro-csi",
+									CSI:       &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+									ReadOnly:  true,
+								},
+								{
+									Name:             "ro-emptydir",
+									MountPath:        "/ro-emptydir",
+									StorageClassName: func() *string { s := v1.EmptyDir; return &s }(),
+									ReadOnly:         true,
+								},
+								{
+									Name:      "ro-hostpath",
+									MountPath: "/ro-hostpath",
+									HostPath:  &corev1.HostPathVolumeSource{Path: "/host/data"},
+									ReadOnly:  true,
+								},
+								{
+									Name:             "ro-pvc",
+									MountPath:        "/ro-pvc",
+									StorageClassName: func() *string { s := "gp3"; return &s }(),
+									ReadOnly:         true,
+								},
+								{
+									Name:      "rw-csi",
+									MountPath: "/rw-csi",
+									CSI:       &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []corev1.Volume{
+				{
+					Name:         "ro-csi",
+					VolumeSource: corev1.VolumeSource{CSI: &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"}},
+				},
+				{
+					Name:         "ro-emptydir",
+					VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}},
+				},
+				{
+					Name:         "ro-hostpath",
+					VolumeSource: corev1.VolumeSource{HostPath: &corev1.HostPathVolumeSource{Path: "/host/data"}},
+				},
+				{
+					Name: "ro-pvc",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: "ro-pvc"},
+					},
+				},
+				{
+					Name:         "rw-csi",
+					VolumeSource: corev1.VolumeSource{CSI: &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"}},
+				},
+			},
+			want1: []corev1.VolumeMount{
+				{Name: "ro-csi", MountPath: "/ro-csi", ReadOnly: true},
+				{Name: "ro-emptydir", MountPath: "/ro-emptydir", ReadOnly: true},
+				{Name: "ro-hostpath", MountPath: "/ro-hostpath", ReadOnly: true},
+				{Name: "ro-pvc", MountPath: "/ro-pvc", ReadOnly: true},
+				{Name: "rw-csi", MountPath: "/rw-csi"},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -414,6 +527,43 @@ func TestSpecialStorageClassName(t *testing.T) {
 			},
 			want: "",
 		},
+		{
+			name: "test storage volume with csi storage class",
+			args: args{
+				sv: v1.StorageVolume{
+					StorageClassName: func() *string { s := v1.CSI; return &s }(),
+				},
+			},
+			want: v1.CSI,
+		},
+		{
+			name: "test storage volume with csi storage class in upper case",
+			args: args{
+				sv: v1.StorageVolume{
+					StorageClassName: func() *string { s := "CSI"; return &s }(),
+				},
+			},
+			want: v1.CSI,
+		},
+		{
+			name: "test storage volume with csi source only",
+			args: args{
+				sv: v1.StorageVolume{
+					CSI: &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+				},
+			},
+			want: v1.CSI,
+		},
+		{
+			name: "test storage volume with csi source and pvc name",
+			args: args{
+				sv: v1.StorageVolume{
+					CSI:              &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+					StorageClassName: func() *string { s := "pvc"; return &s }(),
+				},
+			},
+			want: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -421,5 +571,16 @@ func TestSpecialStorageClassName(t *testing.T) {
 				t.Errorf("SpecialStorageClassName() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestMountCSIVolume(t *testing.T) {
+	csi := &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"}
+	volumes, mounts := MountCSIVolume(nil, nil, "data", "/data", "sub", csi)
+	if len(volumes) != 1 || volumes[0].Name != "data" || volumes[0].CSI != csi {
+		t.Errorf("MountCSIVolume() volumes = %v", volumes)
+	}
+	if len(mounts) != 1 || mounts[0].Name != "data" || mounts[0].MountPath != "/data" || mounts[0].SubPath != "sub" {
+		t.Errorf("MountCSIVolume() mounts = %v", mounts)
 	}
 }

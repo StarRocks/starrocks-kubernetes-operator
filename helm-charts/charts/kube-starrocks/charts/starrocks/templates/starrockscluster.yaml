@@ -249,7 +249,7 @@ spec:
     configMapInfo:
       configMapName: {{ template  "starrockscluster.fe.configmap.name" . }}
       resolveKey: fe.conf
-    {{- if or .Values.starrocksFESpec.storageSpec.name .Values.starrocksFESpec.emptyDirs .Values.starrocksFESpec.hostPaths }}
+    {{- if or .Values.starrocksFESpec.storageSpec.name .Values.starrocksFESpec.emptyDirs .Values.starrocksFESpec.hostPaths .Values.starrocksFESpec.csiVolumes }}
     storageVolumes:
     {{- if .Values.starrocksFESpec.storageSpec.name }}
     - name: {{ .Values.starrocksFESpec.storageSpec.name }}{{ template "starrockscluster.fe.meta.suffix" . }}
@@ -270,6 +270,9 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "emptyDir"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.starrocksFESpec.hostPaths }}
@@ -277,8 +280,23 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
       hostPath:
         {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksFESpec.csiVolumes }}
+    {{- range .Values.starrocksFESpec.csiVolumes }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "csi"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
+      csi:
+        {{- toYaml .csi | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -527,7 +545,7 @@ spec:
     configMapInfo:
       configMapName: {{template "starrockscluster.be.configmap.name" . }}
       resolveKey: be.conf
-    {{- if or .Values.starrocksBeSpec.storageSpec.name .Values.starrocksBeSpec.emptyDirs .Values.starrocksBeSpec.hostPaths }}
+    {{- if or .Values.starrocksBeSpec.storageSpec.name .Values.starrocksBeSpec.emptyDirs .Values.starrocksBeSpec.hostPaths .Values.starrocksBeSpec.csiVolumes }}
     storageVolumes:
     {{- if .Values.starrocksBeSpec.storageSpec.name }}
     {{- if gt (int .Values.starrocksBeSpec.storageSpec.storageCount) 1 }}
@@ -569,6 +587,9 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "emptyDir"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.starrocksBeSpec.hostPaths }}
@@ -576,8 +597,23 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
       hostPath:
         {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksBeSpec.csiVolumes }}
+    {{- range .Values.starrocksBeSpec.csiVolumes }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "csi"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
+      csi:
+        {{- toYaml .csi | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -834,7 +870,7 @@ spec:
     configMapInfo:
       configMapName: {{template  "starrockscluster.cn.configmap.name" . }}
       resolveKey: cn.conf
-    {{- if or .Values.starrocksCnSpec.storageSpec.name .Values.starrocksCnSpec.emptyDirs .Values.starrocksCnSpec.hostPaths }}
+    {{- if or .Values.starrocksCnSpec.storageSpec.name .Values.starrocksCnSpec.emptyDirs .Values.starrocksCnSpec.hostPaths .Values.starrocksCnSpec.csiVolumes }}
     storageVolumes:
     {{- if .Values.starrocksCnSpec.storageSpec.name }}
     {{- if gt (int .Values.starrocksCnSpec.storageSpec.storageCount) 1 }}
@@ -876,6 +912,9 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "emptyDir"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.starrocksCnSpec.hostPaths }}
@@ -883,8 +922,23 @@ spec:
     - name: {{ .name }}
       mountPath: {{ .mountPath }}
       storageClassName: "hostPath"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
       hostPath:
         {{- toYaml .hostPath | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.starrocksCnSpec.csiVolumes }}
+    {{- range .Values.starrocksCnSpec.csiVolumes }}
+    - name: {{ .name }}
+      mountPath: {{ .mountPath }}
+      storageClassName: "csi"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
+      csi:
+        {{- toYaml .csi | nindent 8 }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -958,6 +1012,9 @@ spec:
     {{- range .Values.starrocksFeProxySpec.emptyDirs }}
     - name: {{ .name }}
       storageClassName: "emptyDir"
+      {{- if .readOnly }}
+      readOnly: {{ .readOnly }}
+      {{- end }}
       mountPath: {{ .mountPath }}
     {{- end }}
     {{- end }}

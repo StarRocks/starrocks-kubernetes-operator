@@ -66,6 +66,24 @@ func TestMakePVCList(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "csi volume never becomes a pvc",
+			args: args{
+				volumes: []v1.StorageVolume{
+					{
+						Name:             "csi-class",
+						StorageClassName: func() *string { s := v1.CSI; return &s }(),
+						MountPath:        "/spiffe-workload-api",
+					},
+					{
+						Name:      "csi-implicit",
+						CSI:       &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+						MountPath: "/spiffe-workload-api",
+					},
+				},
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

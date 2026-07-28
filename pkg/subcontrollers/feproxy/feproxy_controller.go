@@ -119,6 +119,11 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 }
 
 func (controller *FeProxyController) validating(feProxySpec *srapi.StarRocksFeProxySpec) error {
+	for i := range feProxySpec.StorageVolumes {
+		if err := feProxySpec.StorageVolumes[i].Validate(); err != nil {
+			return err
+		}
+	}
 	return feProxySpec.GetService().Validate()
 }
 
