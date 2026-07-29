@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
@@ -29,6 +30,11 @@ type SQLExecutor struct {
 	FeServiceName      string
 	FeServiceNamespace string
 	FeServicePort      string
+
+	// SSLMode decides whether the connection to FE negotiates TLS; see the SSLMode* constants.
+	// It is captured per executor rather than read from the flag at connect time so that tests can
+	// exercise each mode without mutating process-wide state.
+	SSLMode string
 }
 
 // NewSQLExecutor creates a SQLExecutor instance. It will get the root password, fe service name, and fe service port
@@ -77,7 +83,16 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 		FeServiceName:      feServiceName,
 		FeServiceNamespace: namespace,
 		FeServicePort:      feServicePort,
+		SSLMode:            config.FeSslMode,
 	}, nil
+}
+
+// dsn builds the go-sql-driver DSN for the FE connection. Both ExecuteContext and QueryContext go
+// through it so the SSL mode can never be honored by one path and skipped by the other.
+func (executor *SQLExecutor) dsn() string {
+	return fmt.Sprintf("root:%s@tcp(%s.%s:%s)/%s",
+		executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace,
+		executor.FeServicePort, sslModeDSNSuffix(executor.SSLMode))
 }
 
 // ExecuteContext sql statements. Every time a SQL statement needs to be executed, a new sql.DB instance will be created.
@@ -85,8 +100,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, statement string) error {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		db, err = sql.Open("mysql", executor.dsn())
 		if err != nil {
 			return err
 		}
@@ -104,8 +118,7 @@ func (executor *SQLExecutor) ExecuteContext(ctx context.Context, db *sql.DB, sta
 func (executor *SQLExecutor) QueryContext(ctx context.Context, db *sql.DB, statements string) (*sql.Rows, error) {
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(%s.%s:%s)/",
-			executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace, executor.FeServicePort))
+		db, err = sql.Open("mysql", executor.dsn())
 		if err != nil {
 			return nil, err
 		}

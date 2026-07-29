@@ -47,6 +47,9 @@ spec:
         {{- if .Values.starrocksOperator.denyList }}
         - --deny-list={{ .Values.starrocksOperator.denyList }}
         {{- end }}
+        {{- if .Values.starrocksOperator.feSslMode }}
+        - --fe-ssl-mode={{ .Values.starrocksOperator.feSslMode }}
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}

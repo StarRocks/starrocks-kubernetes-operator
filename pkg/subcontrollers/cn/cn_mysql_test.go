@@ -17,6 +17,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
 )
 
@@ -27,6 +28,12 @@ func TestNewSQLExecutor(t *testing.T) {
 		namespace string
 		name      string
 	}
+
+	// NewSQLExecutor copies the process-wide flag value onto the executor, so pin it for this test.
+	originalSslMode := config.FeSslMode
+	config.FeSslMode = SSLModeRequired
+	t.Cleanup(func() { config.FeSslMode = originalSslMode })
+
 	tests := []struct {
 		name    string
 		args    args
@@ -89,6 +96,7 @@ func TestNewSQLExecutor(t *testing.T) {
 				FeServiceName:      "fe",
 				FeServiceNamespace: "default",
 				FeServicePort:      "9030",
+				SSLMode:            SSLModeRequired,
 			},
 			wantErr: assert.NoError,
 		},
@@ -353,6 +361,42 @@ func TestSQLExecutor_ExecuteDropWarehouse(t *testing.T) {
 				FeServicePort:      tt.fields.FeServicePort,
 			}
 			tt.wantErr(t, executor.ExecuteDropWarehouse(tt.args.ctx, tt.args.db, tt.args.warehouseName), fmt.Sprintf("ExecuteDropWarehouse(%v, %v, %v)", tt.args.ctx, tt.args.db, tt.args.warehouseName))
+		})
+	}
+}
+
+func TestSQLExecutorDSN(t *testing.T) {
+	tests := []struct {
+		name string
+		mode string
+		want string
+	}{
+		{
+			name: "disabled keeps the plaintext DSN unchanged",
+			mode: SSLModeDisabled,
+			want: "root:123456@tcp(fe.default:9030)/",
+		},
+		{
+			name: "preferred appends the opportunistic tls parameter",
+			mode: SSLModePreferred,
+			want: "root:123456@tcp(fe.default:9030)/?tls=preferred",
+		},
+		{
+			name: "required appends the mandatory tls parameter",
+			mode: SSLModeRequired,
+			want: "root:123456@tcp(fe.default:9030)/?tls=skip-verify",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &SQLExecutor{
+				RootPassword:       "123456",
+				FeServiceName:      "fe",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+				SSLMode:            tt.mode,
+			}
+			assert.Equal(t, tt.want, executor.dsn())
 		})
 	}
 }
