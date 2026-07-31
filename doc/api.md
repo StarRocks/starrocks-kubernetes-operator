@@ -2545,7 +2545,8 @@ string
 <em>(Optional)</em>
 <p>storageClassName is the name of the StorageClass required by the claim.
 If storageClassName is not set, the default StorageClass of kubernetes will be used.
-there are some special storageClassName: emptyDir, hostPath. In this case, It will use emptyDir or hostPath, not PVC.
+there are some special storageClassName: emptyDir, hostPath, csi. In this case, It will use
+emptyDir, hostPath or an ephemeral inline CSI volume, not PVC.
 More info: <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1">https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1</a></p>
 </td>
 </tr>
@@ -2580,6 +2581,23 @@ If StorageClassName is hostPath, HostPath is required.</p>
 </tr>
 <tr>
 <td>
+<code>csi</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#csivolumesource-v1-core">
+Kubernetes core/v1.CSIVolumeSource
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CSI represents an ephemeral inline CSI volume mounted into the pod, for example the SPIFFE
+workload API socket provided by driver csi.spiffe.io. Unlike a PVC-backed volume, its lifecycle
+is tied to the pod and no PersistentVolumeClaim is created for it.
+If StorageClassName is csi, CSI is required.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>mountPath</code><br/>
 <em>
 string
@@ -2599,6 +2617,23 @@ string
 <td>
 <p>SubPath within the volume from which the container&rsquo;s volume should be mounted.
 Defaults to &ldquo;&rdquo; (volume&rsquo;s root).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>readOnly</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReadOnly mounts the volume read-only inside the container if true, read-write otherwise.
+This sets readOnly on the container&rsquo;s volumeMount, which is what the container&rsquo;s mount
+table reports. It is independent of any read-only flag on the volume source itself: for a
+CSI volume, csi.readOnly asks the driver to publish the volume read-only, while this field
+controls how the volume is mounted into the container. Setting both is the usual intent.
+Defaults to false.</p>
 </td>
 </tr>
 </tbody>
@@ -2666,5 +2701,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>0553e99f</code>.
+on git commit <code>7027f915</code>.
 </em></p>
