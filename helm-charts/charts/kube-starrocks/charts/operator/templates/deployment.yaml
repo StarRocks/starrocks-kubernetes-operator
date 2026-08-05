@@ -6,6 +6,9 @@ metadata:
   namespace: {{ template "operator.namespace" . }}
   labels:
     app: {{ template "operator.name" . }}-operator
+    {{- with .Values.starrocksOperator.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- if .Values.starrocksOperator.annotations }}
   annotations:
     {{- toYaml .Values.starrocksOperator.annotations | nindent 4 }}
@@ -25,6 +28,9 @@ spec:
       labels:
         app: {{ template "operator.name" . }}-operator
         version: {{ $.Chart.Version }}
+        {{- with .Values.starrocksOperator.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       automountServiceAccountToken: true
       {{- if .Values.starrocksOperator.imagePullSecrets }}
