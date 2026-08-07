@@ -271,6 +271,58 @@ func TestFeObserver_SyncClusterDisabled(t *testing.T) {
 	require.True(t, apierrors.IsNotFound(err))
 }
 
+func TestFeObserver_SyncClusterDisabledClearsExistingResources(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{
+					Enabled: false,
+				},
+			},
+		},
+		Status: srapi.StarRocksClusterStatus{
+			StarRocksFeObserverStatus: &srapi.StarRocksFeObserverStatus{},
+		},
+	}
+
+	sts := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-observer",
+			Namespace: "default",
+		},
+	}
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-observer-service",
+			Namespace: "default",
+		},
+	}
+	searchSvc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-fe-observer-search",
+			Namespace: "default",
+		},
+	}
+
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, sts, svc, searchSvc), fake.GetEventRecorderFor(nil))
+	err := fc.SyncCluster(context.Background(), src)
+	require.NoError(t, err)
+
+	var existingSTS appsv1.StatefulSet
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: sts.Name, Namespace: "default"}, &existingSTS)
+	require.True(t, apierrors.IsNotFound(err))
+	var existingSvc corev1.Service
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: svc.Name, Namespace: "default"}, &existingSvc)
+	require.True(t, apierrors.IsNotFound(err))
+	var existingSearchSvc corev1.Service
+	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: searchSvc.Name, Namespace: "default"}, &existingSearchSvc)
+	require.True(t, apierrors.IsNotFound(err))
+}
+
 func TestFeObserver_Ready(t *testing.T) {
 	type args struct {
 		ctx              context.Context

@@ -69,6 +69,10 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 	feSpec := src.Spec.StarRocksFeSpec
 	observerSpec := feSpec.ToObserverSpec()
 	if observerSpec == nil {
+		if err := fc.ClearCluster(ctx, src); err != nil {
+			logger.Error(err, "clear resource failed")
+			return err
+		}
 		logger.Info("src.Spec.StarRocksFeObserverSpec == nil, skip sync fe observer")
 		return nil
 	}
@@ -181,15 +185,11 @@ func (fc *FeObserverController) ClearCluster(ctx context.Context, src *srapi.Sta
 	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionCluster)
 	ctx = logr.NewContext(ctx, logger)
 
-	if src.Status.StarRocksFeObserverStatus == nil {
-		return nil
-	}
-
-	if src.DeletionTimestamp.IsZero() {
-		return nil
-	}
-
 	observerSpec := src.Spec.StarRocksFeSpec.ToObserverSpec()
+	if observerSpec != nil && src.DeletionTimestamp.IsZero() {
+		return nil
+	}
+
 	statefulSetName := load.Name(src.Name, observerSpec)
 	if err := k8sutils.DeleteStatefulset(ctx, fc.Client, src.Namespace, statefulSetName); err != nil && !apierrors.IsNotFound(err) {
 		return err
