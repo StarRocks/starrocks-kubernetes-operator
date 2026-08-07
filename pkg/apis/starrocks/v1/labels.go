@@ -26,6 +26,9 @@ const (
 
 	// ComponentResourceHash the component hash
 	ComponentResourceHash string = "app.starrocks.components/hash"
+
+	// FeServiceLabelKey marks pods that should be exposed through the FE external service.
+	FeServiceLabelKey string = "app.starrocks.io/fe-service"
 )
 
 // the labels value. default statefulset name

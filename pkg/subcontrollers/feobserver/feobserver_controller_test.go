@@ -133,14 +133,6 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 		},
 	}
 
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-fe-observer-service",
-			Namespace: "default",
-		},
-		Spec: corev1.ServiceSpec{},
-	}
-
 	ssvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-fe-observer-search",
@@ -163,7 +155,7 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 		},
 	}
 
-	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, svc, ssvc, eq), fake.GetEventRecorderFor(nil))
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, ssvc, eq), fake.GetEventRecorderFor(nil))
 
 	err := fc.SyncCluster(context.Background(), src)
 	require.NoError(t, err)
@@ -173,7 +165,7 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	status := src.Status.StarRocksFeObserverStatus
 	require.NotNil(t, status)
 	require.Equal(t, srapi.ComponentReconciling, status.Phase)
-	require.Equal(t, service.ExternalServiceName(src.Name, src.Spec.StarRocksFeSpec), status.ServiceName)
+	require.Empty(t, status.ServiceName)
 
 	var sts appsv1.StatefulSet
 	require.NoError(t, fc.Client.Get(context.Background(),
@@ -182,7 +174,7 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	var observerExternalSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-service", Namespace: "default"}, &observerExternalSvc)
-	require.NoError(t, err)
+	require.True(t, apierrors.IsNotFound(err))
 	var observerSearchSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-search", Namespace: "default"}, &observerSearchSvc)
@@ -198,12 +190,39 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 		srapi.OwnerReference:    "test-fe-observer",
 		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
 	}, sts.Spec.Selector.MatchLabels)
+	require.Equal(t, "test-fe", sts.Spec.Template.Labels[srapi.FeServiceLabelKey])
 	require.Equal(t, "starrocks.com/fe:4.1.0", sts.Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("4"),
 		corev1.ResourceMemory: resource.MustParse("16G"),
 	}, sts.Spec.Template.Spec.Containers[0].Resources.Requests)
 	require.Equal(t, []string{"$(FE_SERVICE_NAME)"}, sts.Spec.Template.Spec.Containers[0].Args)
+}
+
+func TestFeObserver_UpdateClusterStatusAllowsMissingStatefulSet(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: srapi.StarRocksClusterSpec{
+			StarRocksFeSpec: &srapi.StarRocksFeSpec{
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{
+					Enabled:        true,
+					ObserverNumber: rutils.GetInt32Pointer(1),
+				},
+			},
+		},
+	}
+
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+
+	err := fc.UpdateClusterStatus(context.Background(), src)
+
+	require.NoError(t, err)
+	require.NotNil(t, src.Status.StarRocksFeObserverStatus)
+	require.Equal(t, srapi.ComponentReconciling, src.Status.StarRocksFeObserverStatus.Phase)
+	require.Empty(t, src.Status.StarRocksFeObserverStatus.ResourceNames)
 }
 
 func TestFeObserver_SyncClusterRejectsUnsupportedImage(t *testing.T) {
@@ -268,58 +287,6 @@ func TestFeObserver_SyncClusterDisabled(t *testing.T) {
 	var sts appsv1.StatefulSet
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer", Namespace: "default"}, &sts)
-	require.True(t, apierrors.IsNotFound(err))
-}
-
-func TestFeObserver_SyncClusterDisabledClearsExistingResources(t *testing.T) {
-	src := &srapi.StarRocksCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-		Spec: srapi.StarRocksClusterSpec{
-			StarRocksFeSpec: &srapi.StarRocksFeSpec{
-				ObserverSpec: &srapi.StarRocksFeObserverSpec{
-					Enabled: false,
-				},
-			},
-		},
-		Status: srapi.StarRocksClusterStatus{
-			StarRocksFeObserverStatus: &srapi.StarRocksFeObserverStatus{},
-		},
-	}
-
-	sts := &appsv1.StatefulSet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-fe-observer",
-			Namespace: "default",
-		},
-	}
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-fe-observer-service",
-			Namespace: "default",
-		},
-	}
-	searchSvc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-fe-observer-search",
-			Namespace: "default",
-		},
-	}
-
-	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, sts, svc, searchSvc), fake.GetEventRecorderFor(nil))
-	err := fc.SyncCluster(context.Background(), src)
-	require.NoError(t, err)
-
-	var existingSTS appsv1.StatefulSet
-	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: sts.Name, Namespace: "default"}, &existingSTS)
-	require.True(t, apierrors.IsNotFound(err))
-	var existingSvc corev1.Service
-	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: svc.Name, Namespace: "default"}, &existingSvc)
-	require.True(t, apierrors.IsNotFound(err))
-	var existingSearchSvc corev1.Service
-	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: searchSvc.Name, Namespace: "default"}, &existingSearchSvc)
 	require.True(t, apierrors.IsNotFound(err))
 }
 

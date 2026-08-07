@@ -108,9 +108,7 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 	logger.V(log.DebugLevel).Info("build fe observer statefulset", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
 	defaultLabels := load.Labels(src.Name, observerSpec)
-	svc := rutils.BuildExternalService(object, observerSpec, feConfig, load.Selector(src.Name, observerSpec), defaultLabels)
-	searchServiceName := service.SearchServiceName(src.Name, observerSpec)
-	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
+	internalService := service.MakeSearchServiceForSpec(object, observerSpec, []corev1.ServicePort{
 		{
 			Name:        "query-port",
 			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
@@ -136,15 +134,14 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 		return err
 	}
 
-	if err = k8sutils.ApplyService(ctx, fc.Client, &svc, rutils.ServiceDeepEqual); err != nil {
-		logger.Error(err, "deploy external service failed", "externalService", svc)
-		return err
-	}
 	return nil
 }
 
 // UpdateClusterStatus update the all resource status about fe observer.
-func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srapi.StarRocksCluster) error {
+func (fc *FeObserverController) UpdateClusterStatus(ctx context.Context, src *srapi.StarRocksCluster) error {
+	logger := logr.FromContextOrDiscard(ctx).WithName(fc.GetControllerName()).WithValues(log.ActionKey, log.ActionUpdateClusterStatus)
+	ctx = logr.NewContext(ctx, logger)
+
 	feSpec := src.Spec.StarRocksFeSpec
 	observerSpec := feSpec.ToObserverSpec()
 	if observerSpec == nil {
@@ -163,17 +160,17 @@ func (fc *FeObserverController) UpdateClusterStatus(_ context.Context, src *srap
 	}
 
 	src.Status.StarRocksFeObserverStatus = fs
-	fs.ServiceName = service.ExternalServiceName(src.Name, feSpec)
 	statefulSetName := load.Name(src.Name, observerSpec)
+	var st appsv1.StatefulSet
+	if err := fc.Client.Get(ctx, types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); apierrors.IsNotFound(err) {
+		logger.Info("fe observer statefulset is not found")
+		return nil
+	}
+
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
 	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
 		src.Namespace, statefulSetName, pod.Labels(src.Name, observerSpec), subcontrollers.StatefulSetLoadType); err != nil {
-		return err
-	}
-
-	var st appsv1.StatefulSet
-	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
 		return err
 	}
 
@@ -197,12 +194,6 @@ func (fc *FeObserverController) ClearCluster(ctx context.Context, src *srapi.Sta
 	searchServiceName := service.SearchServiceName(src.Name, observerSpec)
 	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, searchServiceName); err != nil && !apierrors.IsNotFound(err) {
 		logger.Error(err, "delete search service failed", "searchServiceName", searchServiceName)
-		return err
-	}
-	externalServiceName := service.ExternalServiceName(src.Name, observerSpec)
-	err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName)
-	if err != nil && !apierrors.IsNotFound(err) {
-		logger.Error(err, "delete external service failed", "externalServiceName", externalServiceName)
 		return err
 	}
 	return nil

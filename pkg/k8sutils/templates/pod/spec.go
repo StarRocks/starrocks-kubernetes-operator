@@ -77,10 +77,12 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 		if v != nil {
 			addLabels(labels, v.PodLabels)
 		}
+		labels[v1.FeServiceLabelKey] = load.Name(clusterName, (*v1.StarRocksFeSpec)(nil))
 	case *v1.StarRocksFeObserverSpec:
 		if v != nil {
 			addLabels(labels, v.ComponentSpec.PodLabels)
 		}
+		labels[v1.FeServiceLabelKey] = load.Name(clusterName, (*v1.StarRocksFeSpec)(nil))
 	case *v1.StarRocksFeProxySpec:
 		if v != nil {
 			addLabels(labels, v.PodLabels)

@@ -173,8 +173,12 @@ func Test_SyncDeploy(t *testing.T) {
 	require.Equal(t, service.SearchServiceName(src.Name, spec), rsvc.Name)
 	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
-	// validate service selector matches statefulset selector
-	require.Equal(t, asvc.Spec.Selector, st.Spec.Selector.MatchLabels)
+	require.Equal(t, map[string]string{
+		srapi.FeServiceLabelKey: "test-fe",
+	}, asvc.Spec.Selector)
+	require.Equal(t, load.Selector(src.Name, spec), rsvc.Spec.Selector)
+	require.Equal(t, load.Selector(src.Name, spec), st.Spec.Selector.MatchLabels)
+	require.Equal(t, "test-fe", st.Spec.Template.Labels[srapi.FeServiceLabelKey])
 }
 
 func TestCheckFEReady(t *testing.T) {

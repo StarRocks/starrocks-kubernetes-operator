@@ -16,8 +16,11 @@ package service
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
 
 func MakeSearchService(serviceName string, externalService *corev1.Service, ports []corev1.ServicePort,
@@ -43,6 +46,26 @@ func MakeSearchService(serviceName string, externalService *corev1.Service, port
 	return searchSvc
 }
 
+func MakeSearchServiceForSpec(starRocksObject object.StarRocksObject, spec v1.SpecInterface, ports []corev1.ServicePort,
+	defaultLabels map[string]string) *corev1.Service {
+	serviceName := SearchServiceName(starRocksObject.ClusterName, spec)
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            serviceName,
+			Namespace:       starRocksObject.GetNamespace(),
+			Labels:          defaultLabels,
+			OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(starRocksObject, starRocksObject.GroupVersionKind())},
+		},
+		Spec: corev1.ServiceSpec{
+			ClusterIP: "None",
+			Ports:     ports,
+			Selector:  load.Selector(starRocksObject.ClusterName, spec),
+			// value = true, Pod don't need to become ready that be search by domain.
+			PublishNotReadyAddresses: true,
+		},
+	}
+}
+
 // SearchServiceName get the domain service name, the domain service for statefulset.
 // domain service have PublishNotReadyAddresses. while used PublishNotReadyAddresses, the fe start need all instance domain can resolve.
 func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
@@ -65,8 +88,6 @@ func ExternalServiceName(clusterName string, spec v1.SpecInterface) string {
 	switch spec.(type) {
 	case *v1.StarRocksFeSpec:
 		return clusterName + "-" + v1.DEFAULT_FE + "-service"
-	case *v1.StarRocksFeObserverSpec:
-		return clusterName + "-" + v1.DEFAULT_FE_OBSERVER + "-service"
 	case *v1.StarRocksBeSpec:
 		return clusterName + "-" + v1.DEFAULT_BE + "-service"
 	case *v1.StarRocksCnSpec:
