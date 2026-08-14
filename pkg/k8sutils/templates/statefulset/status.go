@@ -25,8 +25,12 @@ import (
 // Status returns a message describing statefulset status, and a bool value indicating if the status is considered done.
 // Copy from kubelet
 func Status(sts *appsv1.StatefulSet) (string, bool, error) {
+	if sts.Spec.UpdateStrategy.Type == appsv1.OnDeleteStatefulSetStrategyType {
+		return onDeleteStatus(sts)
+	}
 	if sts.Spec.UpdateStrategy.Type != appsv1.RollingUpdateStatefulSetStrategyType {
-		return "", true, fmt.Errorf("rollout status is only available for %s strategy type", appsv1.RollingUpdateStatefulSetStrategyType)
+		return "", true, fmt.Errorf("rollout status is only available for %s and %s strategy types",
+			appsv1.RollingUpdateStatefulSetStrategyType, appsv1.OnDeleteStatefulSetStrategyType)
 	}
 	if sts.Status.ObservedGeneration == 0 || sts.Generation > sts.Status.ObservedGeneration {
 		return "Waiting for statefulset spec update to be observed", false, nil
@@ -34,7 +38,7 @@ func Status(sts *appsv1.StatefulSet) (string, bool, error) {
 	if sts.Spec.Replicas != nil && sts.Status.ReadyReplicas < *sts.Spec.Replicas {
 		return fmt.Sprintf("Waiting for %d pods to be ready", *sts.Spec.Replicas-sts.Status.ReadyReplicas), false, nil
 	}
-	if sts.Spec.UpdateStrategy.Type == appsv1.RollingUpdateStatefulSetStrategyType && sts.Spec.UpdateStrategy.RollingUpdate != nil {
+	if sts.Spec.UpdateStrategy.RollingUpdate != nil {
 		if sts.Spec.Replicas != nil && sts.Spec.UpdateStrategy.RollingUpdate.Partition != nil {
 			if sts.Status.UpdatedReplicas < (*sts.Spec.Replicas - *sts.Spec.UpdateStrategy.RollingUpdate.Partition) {
 				return fmt.Sprintf("Waiting for partitioned roll out to finish: %d out of %d new pods have been updated",
@@ -48,5 +52,25 @@ func Status(sts *appsv1.StatefulSet) (string, bool, error) {
 			sts.Status.UpdatedReplicas, sts.Status.UpdateRevision), false, nil
 	}
 	return fmt.Sprintf("statefulset rolling update complete %d pods at revision %s",
+		sts.Status.CurrentReplicas, sts.Status.CurrentRevision), true, nil
+}
+
+// onDeleteStatus reports status for the OnDelete update strategy.
+// Unlike RollingUpdate, OnDelete never auto-replaces pods, so CurrentRevision/UpdateRevision
+// staying out of sync is expected and must not be treated as "not done" indefinitely -
+// otherwise the owning StarRocksCluster/StarRocksWarehouse would be stuck "reconciling" forever.
+func onDeleteStatus(sts *appsv1.StatefulSet) (string, bool, error) {
+	if sts.Status.ObservedGeneration == 0 || sts.Generation > sts.Status.ObservedGeneration {
+		return "Waiting for statefulset spec update to be observed", false, nil
+	}
+	if sts.Spec.Replicas != nil && sts.Status.ReadyReplicas < *sts.Spec.Replicas {
+		return fmt.Sprintf("Waiting for %d pods to be ready", *sts.Spec.Replicas-sts.Status.ReadyReplicas), false, nil
+	}
+	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
+		return fmt.Sprintf("statefulset uses OnDelete strategy: %d pod(s) still run revision %s and"+
+			" require manual deletion to pick up revision %s",
+			sts.Status.Replicas-sts.Status.UpdatedReplicas, sts.Status.CurrentRevision, sts.Status.UpdateRevision), true, nil
+	}
+	return fmt.Sprintf("statefulset OnDelete rollout complete: %d pods at revision %s",
 		sts.Status.CurrentReplicas, sts.Status.CurrentRevision), true, nil
 }
