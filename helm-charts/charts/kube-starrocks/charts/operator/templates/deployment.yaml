@@ -1,4 +1,10 @@
 {{- if .Values.starrocksOperator.enabled }}
+{{- $operatorLabels := .Values.starrocksOperator.labels | default dict }}
+{{- range $reservedLabel := list "app" "version" }}
+{{- if hasKey $operatorLabels $reservedLabel }}
+{{- fail (printf "starrocksOperator.labels cannot override reserved label %q" $reservedLabel) }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +12,7 @@ metadata:
   namespace: {{ template "operator.namespace" . }}
   labels:
     app: {{ template "operator.name" . }}-operator
-    {{- with .Values.starrocksOperator.labels }}
+    {{- with $operatorLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- if .Values.starrocksOperator.annotations }}
@@ -28,7 +34,7 @@ spec:
       labels:
         app: {{ template "operator.name" . }}-operator
         version: {{ $.Chart.Version }}
-        {{- with .Values.starrocksOperator.labels }}
+        {{- with $operatorLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:

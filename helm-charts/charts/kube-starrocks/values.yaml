@@ -37,7 +37,7 @@ operator:
     # If enabled, the operator-related resources will be created, including the operator deployment, service account,
     # clusterrole, clusterrolebinding, and service account.
     enabled: true
-    # labels for the starrocks operator Deployment and pod.
+    # labels for the starrocks operator Deployment and pod. The "app" and "version" keys are reserved.
     labels: {}
     # annotations for starrocks operator.
     annotations: {}
