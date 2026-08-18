@@ -187,9 +187,12 @@ func TestBuildExternalService_ForStarRocksWarehouse(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(_ *testing.T) {
-			gotCnService := BuildExternalService(object.NewFromWarehouse(warehouse),
+		t.Run(tt.name, func(t *testing.T) {
+			gotCnService, err := BuildExternalService(object.NewFromWarehouse(warehouse),
 				warehouse.Spec.Template.ToCnSpec(), map[string]interface{}{}, map[string]string{}, map[string]string{})
+			if err != nil {
+				t.Fatalf("BuildExternalService() error = %v", err)
+			}
 			equal(gotCnService, tt.wantCnService)
 		})
 	}
@@ -395,18 +398,212 @@ func TestBuildExternalService_ForStarRocksCluster(t *testing.T) {
 		"starrocks_default_label": "test",
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(_ *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			object := object.NewFromCluster(src)
-			gotFeService := BuildExternalService(object, src.Spec.StarRocksFeSpec,
+			gotFeService, err := BuildExternalService(object, src.Spec.StarRocksFeSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
+			if err != nil {
+				t.Fatalf("BuildExternalService() FE error = %v", err)
+			}
 			equal(gotFeService, tt.wantFeService)
-			gotBeService := BuildExternalService(object, src.Spec.StarRocksBeSpec,
+
+			gotBeService, err := BuildExternalService(object, src.Spec.StarRocksBeSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
+			if err != nil {
+				t.Fatalf("BuildExternalService() BE error = %v", err)
+			}
 			equal(gotBeService, tt.wantBeService)
-			gotCnService := BuildExternalService(object, src.Spec.StarRocksCnSpec,
+
+			gotCnService, err := BuildExternalService(object, src.Spec.StarRocksCnSpec,
 				map[string]interface{}{}, map[string]string{}, starrocksDefaultLabels)
+			if err != nil {
+				t.Fatalf("BuildExternalService() CN error = %v", err)
+			}
 			equal(gotCnService, tt.wantCnService)
 		})
+	}
+}
+
+func TestBuildExternalService_ExposedPorts(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+	}
+
+	newService := func(exposedPorts []string) *srapi.StarRocksService {
+		return &srapi.StarRocksService{
+			Type:         corev1.ServiceTypeLoadBalancer,
+			ExposedPorts: exposedPorts,
+		}
+	}
+
+	newComponentSpec := func(exposedPorts []string) srapi.StarRocksComponentSpec {
+		return srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Service: newService(exposedPorts),
+			},
+		}
+	}
+
+	tests := []struct {
+		name          string
+		spec          srapi.SpecInterface
+		config        map[string]interface{}
+		wantPortNames []string
+		wantErr       string
+	}{
+		{
+			name: "all FE ports when exposedPorts is omitted",
+			spec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: newComponentSpec(nil),
+			},
+			wantPortNames: []string{"http", "rpc", "query", "edit-log"},
+		},
+		{
+			name: "expose only FE query port",
+			spec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"query"}),
+			},
+			wantPortNames: []string{"query"},
+		},
+		{
+			name: "expose only BE webserver port",
+			spec: &srapi.StarRocksBeSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"webserver"}),
+			},
+			wantPortNames: []string{"webserver"},
+		},
+		{
+			name: "expose selected CN ports in component order",
+			spec: &srapi.StarRocksCnSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"heartbeat", "thrift"}),
+			},
+			wantPortNames: []string{"thrift", "heartbeat"},
+		},
+		{
+			name: "expose FE Proxy HTTP port",
+			spec: &srapi.StarRocksFeProxySpec{
+				StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+					Service: newService([]string{"http-port"}),
+				},
+			},
+			wantPortNames: []string{"http-port"},
+		},
+		{
+			name: "reject unavailable FE port",
+			spec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"qeury"}),
+			},
+			wantErr: `service: exposed port "qeury" is not available`,
+		},
+		{
+			name: "expose configured FE arrow flight port",
+			spec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"arrow-flight"}),
+			},
+			config: map[string]interface{}{
+				ARROW_FLIGHT_PORT: "8070",
+			},
+			wantPortNames: []string{"arrow-flight"},
+		},
+		{
+			name: "reject unconfigured FE arrow flight port",
+			spec: &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: newComponentSpec([]string{"arrow-flight"}),
+			},
+			wantErr: `service: exposed port "arrow-flight" is not available`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotService, err := BuildExternalService(
+				object.NewFromCluster(src),
+				tt.spec,
+				tt.config,
+				nil,
+				nil,
+			)
+
+			if tt.wantErr != "" {
+				if err == nil {
+					t.Fatalf("BuildExternalService() error = nil, want %q", tt.wantErr)
+				}
+				if err.Error() != tt.wantErr {
+					t.Errorf("BuildExternalService() error = %q, want %q", err.Error(), tt.wantErr)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("BuildExternalService() error = %v", err)
+			}
+
+			gotPortNames := make([]string, 0, len(gotService.Spec.Ports))
+			for _, port := range gotService.Spec.Ports {
+				gotPortNames = append(gotPortNames, port.Name)
+			}
+
+			if !reflect.DeepEqual(gotPortNames, tt.wantPortNames) {
+				t.Errorf("BuildExternalService() port names = %v, want %v", gotPortNames, tt.wantPortNames)
+			}
+		})
+	}
+}
+
+func TestBuildExternalService_ExposedPortsWithPortOverride(t *testing.T) {
+	src := &srapi.StarRocksCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+	}
+
+	spec := &srapi.StarRocksFeSpec{
+		StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+			StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+				Service: &srapi.StarRocksService{
+					Type:         corev1.ServiceTypeLoadBalancer,
+					ExposedPorts: []string{"query"},
+					Ports: []srapi.StarRocksServicePort{
+						{
+							Name: "query",
+							Port: 3306,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	gotService, err := BuildExternalService(
+		object.NewFromCluster(src),
+		spec,
+		map[string]interface{}{},
+		nil,
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("BuildExternalService() error = %v", err)
+	}
+
+	if len(gotService.Spec.Ports) != 1 {
+		t.Fatalf("BuildExternalService() ports = %v, want one port", gotService.Spec.Ports)
+	}
+
+	gotPort := gotService.Spec.Ports[0]
+	if gotPort.Name != "query" {
+		t.Errorf("port name = %q, want %q", gotPort.Name, "query")
+	}
+	if gotPort.Port != 3306 {
+		t.Errorf("port = %d, want %d", gotPort.Port, 3306)
+	}
+
+	wantTargetPort := intstr.FromInt(int(DefMap[QUERY_PORT]))
+	if gotPort.TargetPort != wantTargetPort {
+		t.Errorf("targetPort = %v, want %v", gotPort.TargetPort, wantTargetPort)
 	}
 }
 
