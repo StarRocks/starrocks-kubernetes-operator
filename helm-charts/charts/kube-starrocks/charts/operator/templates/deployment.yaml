@@ -1,8 +1,16 @@
 {{- if .Values.starrocksOperator.enabled }}
 {{- $operatorLabels := .Values.starrocksOperator.labels | default dict }}
-{{- range $reservedLabel := list "app" "version" }}
+{{- if not (kindIs "map" $operatorLabels) }}
+{{- fail "starrocksOperator.labels must be a map" }}
+{{- end }}
+{{- range $reservedLabel := list "app" "version" "app.kubernetes.io/managed-by" }}
 {{- if hasKey $operatorLabels $reservedLabel }}
 {{- fail (printf "starrocksOperator.labels cannot override reserved label %q" $reservedLabel) }}
+{{- end }}
+{{- end }}
+{{- range $key, $value := $operatorLabels }}
+{{- if or (kindIs "map" $value) (kindIs "slice" $value) (kindIs "invalid" $value) }}
+{{- fail (printf "starrocksOperator.labels value for %q must be a string, number, or boolean" $key) }}
 {{- end }}
 {{- end }}
 apiVersion: apps/v1
@@ -12,8 +20,8 @@ metadata:
   namespace: {{ template "operator.namespace" . }}
   labels:
     app: {{ template "operator.name" . }}-operator
-    {{- with $operatorLabels }}
-    {{- toYaml . | nindent 4 }}
+    {{- range $key, $value := $operatorLabels }}
+    {{ $key | quote }}: {{ $value | quote }}
     {{- end }}
   {{- if .Values.starrocksOperator.annotations }}
   annotations:
@@ -34,8 +42,8 @@ spec:
       labels:
         app: {{ template "operator.name" . }}-operator
         version: {{ $.Chart.Version }}
-        {{- with $operatorLabels }}
-        {{- toYaml . | nindent 8 }}
+        {{- range $key, $value := $operatorLabels }}
+        {{ $key | quote }}: {{ $value | quote }}
         {{- end }}
     spec:
       automountServiceAccountToken: true
