@@ -273,6 +273,8 @@ starrocksFESpec:
     # - name: "image-pull-secret"
   # serviceAccount for FE access cloud service.
   serviceAccount: ""
+  # seccompProfile defines a pod/container's seccomp profile settings
+  seccompProfile: {}
   # If specified, the pod's nodeSelector，displayName="Map of nodeSelectors to match when scheduling pods on nodes"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
@@ -947,6 +949,8 @@ starrocksBeSpec:
     #   exec /opt/starrocks/be_entrypoint.sh $FE_SERVICE_NAME
   # serviceAccount for BE access cloud service.
   serviceAccount: ""
+  # seccompProfile defines a pod/container's seccomp profile settings
+  seccompProfile: {}
   # add annotations for BE pods. for example, if you want to config monitor for datadog, you can config the annotations.
   annotations: {}
   # If runAsNonRoot is true, the container is run as a non-root user.

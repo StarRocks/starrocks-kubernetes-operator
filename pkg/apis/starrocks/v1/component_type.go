@@ -118,6 +118,8 @@ type StarRocksComponentSpec struct {
 	// See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.
 	Sysctls []corev1.Sysctl `json:"sysctls,omitempty"`
 
+	SeccompProfile *corev1.SeccompProfile `json:"seccompProfile,omitempty" protobuf:"bytes,10,opt,name=seccompProfile"`
+
 	// PersistentVolumeClaimRetentionPolicy specifies the retention policy for PersistentVolumeClaims associated with the component.
 	// The WhenDeleted field is supported for all components, and it determines whether to delete PVCs when the StatefulSet is deleted.
 	// The WhenScaled field is only supported for the CN component.
@@ -242,6 +244,10 @@ func (spec *StarRocksComponentSpec) GetArgs() []string {
 
 func (spec *StarRocksComponentSpec) GetSysctls() []corev1.Sysctl {
 	return spec.Sysctls
+}
+
+func (spec *StarRocksComponentSpec) GetSeccompProfile() *corev1.SeccompProfile {
+	return spec.SeccompProfile
 }
 
 func (spec *StarRocksComponentSpec) GetUpdateStrategy() *appsv1.StatefulSetUpdateStrategy {

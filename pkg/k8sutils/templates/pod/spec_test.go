@@ -419,6 +419,24 @@ func TestSecurityContext(t *testing.T) {
 				FSGroupChangePolicy: &onrootMismatch,
 			},
 		},
+		{
+			name: "test seccomp profile",
+			args: args{
+				spec: &v1.StarRocksFeSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: "RuntimeDefault",
+						},
+					},
+				},
+			},
+			want: &corev1.PodSecurityContext{
+				SeccompProfile: &corev1.SeccompProfile{
+					Type: "RuntimeDefault",
+				},
+				FSGroupChangePolicy: &onrootMismatch,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

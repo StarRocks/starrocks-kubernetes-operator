@@ -482,6 +482,11 @@ func (in *StarRocksComponentSpec) DeepCopyInto(out *StarRocksComponentSpec) {
 		*out = make([]corev1.Sysctl, len(*in))
 		copy(*out, *in)
 	}
+	if in.SeccompProfile != nil {
+		in, out := &in.SeccompProfile, &out.SeccompProfile
+		*out = new(corev1.SeccompProfile)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.PersistentVolumeClaimRetentionPolicy != nil {
 		in, out := &in.PersistentVolumeClaimRetentionPolicy, &out.PersistentVolumeClaimRetentionPolicy
 		*out = new(appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy)

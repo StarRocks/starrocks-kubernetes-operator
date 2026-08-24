@@ -308,6 +308,7 @@ func PodSecurityContext(spec v1.SpecInterface) *corev1.PodSecurityContext {
 		FSGroupChangePolicy: &onRootMismatch,
 		FSGroup:             fsGroup,
 		Sysctls:             spec.GetSysctls(),
+		SeccompProfile:      spec.GetSeccompProfile(),
 	}
 	return sc
 }
