@@ -444,11 +444,16 @@ func (cc *CnController) deleteAutoScaler(ctx context.Context, object object.Star
 func (cc *CnController) ClearCluster(ctx context.Context, src *srapi.StarRocksCluster) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
+	// Only tear down CN resources when the CN spec has been removed from the cluster.
+	// Callers already gate on Spec == nil; keep the guard so a mistaken call is a no-op.
 	if src.Spec.StarRocksCnSpec != nil {
 		return nil
 	}
 
-	cnSpec := src.Spec.StarRocksCnSpec
+	// Spec is nil here by construction. Use a typed nil so name helpers match other
+	// call sites (e.g. generateAutoScalerName) instead of a placeholder that looks
+	// like it might still hold a live config.
+	var cnSpec *srapi.StarRocksCnSpec
 	statefulSetName := load.Name(src.Name, cnSpec)
 	err := k8sutils.DeleteStatefulset(ctx, cc.k8sClient, src.Namespace, statefulSetName)
 	if err != nil && !apierrors.IsNotFound(err) {
