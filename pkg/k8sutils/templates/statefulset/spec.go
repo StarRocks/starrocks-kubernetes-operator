@@ -102,6 +102,13 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 				WhenDeleted: v.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
 			}
 		}
+	case *v1.StarRocksFeObserverSpec:
+		if v.ComponentSpec.PersistentVolumeClaimRetentionPolicy != nil {
+			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenScaled:  "",
+				WhenDeleted: v.ComponentSpec.PersistentVolumeClaimRetentionPolicy.WhenDeleted,
+			}
+		}
 	case *v1.StarRocksBeSpec:
 		if v.PersistentVolumeClaimRetentionPolicy != nil {
 			expectSTS.Spec.PersistentVolumeClaimRetentionPolicy = &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{

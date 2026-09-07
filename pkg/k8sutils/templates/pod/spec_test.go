@@ -146,6 +146,7 @@ func TestLabels(t *testing.T) {
 				"l1":                 "v1",
 				v1.OwnerReference:    "test-fe",
 				v1.ComponentLabelKey: v1.DEFAULT_FE,
+				v1.FeServiceLabelKey: "test-fe",
 			},
 		},
 	}
