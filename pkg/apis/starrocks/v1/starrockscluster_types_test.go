@@ -23,6 +23,7 @@ import (
 
 func TestStorageVolumeValidate(t *testing.T) {
 	hostPathClass := HostPath
+	hostPathClassUpper := "HostPath"
 	otherClass := "standard"
 	csiClass := CSI
 	csiClassUpper := "CSI"
@@ -118,6 +119,48 @@ func TestStorageVolumeValidate(t *testing.T) {
 				HostPath:         &corev1.HostPathVolumeSource{Path: "/data"},
 			},
 			wantErr: ErrCSIConflict,
+		},
+		{
+			name:    "ephemeral with a real storage class is valid",
+			volume:  StorageVolume{StorageClassName: &otherClass, Ephemeral: true},
+			wantErr: nil,
+		},
+		{
+			name:    "ephemeral without a storage class is valid",
+			volume:  StorageVolume{Ephemeral: true},
+			wantErr: nil,
+		},
+		{
+			name:    "ephemeral with emptyDir class is invalid",
+			volume:  StorageVolume{StorageClassName: &emptyDirClass, Ephemeral: true},
+			wantErr: ErrEphemeralConflict,
+		},
+		{
+			name:    "ephemeral with hostPath class is invalid, case insensitively",
+			volume:  StorageVolume{StorageClassName: &hostPathClassUpper, Ephemeral: true},
+			wantErr: ErrEphemeralConflict,
+		},
+		{
+			name:    "ephemeral with csi class is invalid",
+			volume:  StorageVolume{StorageClassName: &csiClass, Ephemeral: true},
+			wantErr: ErrEphemeralConflict,
+		},
+		{
+			name: "ephemeral with hostPath is invalid",
+			volume: StorageVolume{
+				HostPath:  &corev1.HostPathVolumeSource{Path: "/data"},
+				Ephemeral: true,
+			},
+			wantErr: ErrEphemeralConflict,
+		},
+		{
+			name: "ephemeral with csi is invalid",
+			volume: StorageVolume{
+				StorageClassName: &csiClass,
+				CSI:              &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
+				Ephemeral:        true,
+			},
+			wantErr: ErrEphemeralConflict,
 		},
 	}
 	for _, tt := range tests {

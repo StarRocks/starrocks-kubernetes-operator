@@ -888,6 +888,11 @@ starrocks:
       storageCount: 1
       # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
+      # If true, the volumes for data are mounted as generic ephemeral volumes: the PersistentVolumeClaim
+      # is declared in the pod spec, owned by the pod and deleted with it, so a replacement pod provisions
+      # a new volume where it is scheduled.
+      # A CN keeps only cached data locally, so what is lost is rebuilt from object storage on the next read.
+      storageEphemeral: false
       # If not set will use the value of the storageClassName field.
       logStorageClassName: ""
       # The storage size of persistent volume for log, and the mount path is /opt/starrocks/cn/log.
@@ -905,6 +910,9 @@ starrocks:
       # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/cn/spill.
       # If spillMountPath is not /opt/starrocks/cn/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
       spillMountPath: ""
+      # If true, the volume for spill is mounted as a generic ephemeral volume. Spilled data belongs to a
+      # running query and is never read again once the pod is gone.
+      spillEphemeral: false
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []
@@ -1242,6 +1250,13 @@ starrocks:
       storageCount: 1
       # see the comment of storageCount for the usage of storageMountPath.
       storageMountPath: ""
+      # If true, the volumes for data are mounted as generic ephemeral volumes: the PersistentVolumeClaim
+      # is declared in the pod spec, owned by the pod and deleted with it, so a replacement pod provisions
+      # a new volume where it is scheduled.
+      # In a shared-nothing cluster a BE holds tablet replicas locally, and enabling this makes every
+      # replacement pod start from an empty disk. It is meant for a shared-data cluster, where a BE only
+      # caches data that lives in object storage.
+      storageEphemeral: false
       # If not set will use the value of the storageClassName field.
       logStorageClassName: ""
       # Setting this parameter can persist log storage, and the mount path is /opt/starrocks/be/log.
@@ -1259,6 +1274,9 @@ starrocks:
       # If spillMountPath is empty, the spillMountPath will be set to /opt/starrocks/be/spill.
       # If spillMountPath is not /opt/starrocks/be/spill, you must add in config the following configuration: spill_local_storage_dir = xxx.
       spillMountPath: ""
+      # If true, the volume for spill is mounted as a generic ephemeral volume. Spilled data belongs to a
+      # running query and is never read again once the pod is gone.
+      spillEphemeral: false
     # mount emptyDir volumes if necessary.
     # Note: please use storageSpec field for persistent storage data and log.
     emptyDirs: []

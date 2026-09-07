@@ -4814,6 +4814,14 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          description: |-
+                            Ephemeral makes this volume a generic ephemeral volume: its PersistentVolumeClaim is declared
+                            in the pod spec, owned by the pod and deleted with it, so a replacement pod provisions a new
+                            volume. StorageClassName and StorageSize still apply, but the data does not outlive the pod,
+                            so use it for a cache or a spill directory. It can not be set with emptyDir, hostPath or csi.
+                            More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes
+                          type: boolean
                         hostPath:
                           description: |-
                             HostPath Represents a host path mapped into a pod.

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -39,6 +40,7 @@ func SpecialStorageClassName(sv v1.StorageVolume) string {
 
 // MountStorageVolumes parse StorageVolumes from spec and mount them to pod.
 // If StorageClassName is EmptyDir, mount an emptyDir volume to pod.
+// If Ephemeral is true, mount a generic ephemeral volume to pod.
 func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.VolumeMount) {
 	var volumes []corev1.Volume
 	var volumeMounts []corev1.VolumeMount
@@ -54,7 +56,12 @@ func MountStorageVolumes(spec v1.SpecInterface) ([]corev1.Volume, []corev1.Volum
 		case v1.CSI:
 			volumes, volumeMounts = MountCSIVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath, sv.CSI)
 		default:
-			volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+			if sv.Ephemeral {
+				volumes, volumeMounts = MountEphemeralVolume(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath,
+					PersistentVolumeClaimSpec(sv))
+			} else {
+				volumes, volumeMounts = MountPersistentVolumeClaim(volumes, volumeMounts, sv.Name, sv.MountPath, sv.SubPath)
+			}
 		}
 		// ReadOnly is applied here rather than inside each Mount* helper: those helpers are also
 		// called directly by the component pod builders to mount the log and meta directories,
@@ -74,6 +81,48 @@ func MountPersistentVolumeClaim(volumes []corev1.Volume, volumeMounts []corev1.V
 		VolumeSource: corev1.VolumeSource{
 			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 				ClaimName: volumeName,
+			},
+		},
+	})
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{
+		Name:      volumeName,
+		MountPath: mountPath,
+		SubPath:   subPath,
+	})
+	return volumes, volumeMounts
+}
+
+// PersistentVolumeClaimSpec builds the claim a storage volume asks for. The StatefulSet declares
+// it as a volumeClaimTemplate, and a generic ephemeral volume declares it in the pod spec.
+func PersistentVolumeClaimSpec(sv v1.StorageVolume) corev1.PersistentVolumeClaimSpec {
+	spec := corev1.PersistentVolumeClaimSpec{
+		AccessModes: []corev1.PersistentVolumeAccessMode{
+			corev1.ReadWriteOnce,
+		},
+		StorageClassName: sv.StorageClassName,
+	}
+	if sv.StorageSize != "" {
+		spec.Resources = corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceStorage: resource.MustParse(sv.StorageSize),
+			},
+		}
+	}
+	return spec
+}
+
+// MountEphemeralVolume mounts a generic ephemeral volume into the pod. The claim template is part of
+// the pod spec, so the PersistentVolumeClaim is created with the pod and deleted with it.
+func MountEphemeralVolume(volumes []corev1.Volume, volumeMounts []corev1.VolumeMount,
+	volumeName string, mountPath string, subPath string,
+	claim corev1.PersistentVolumeClaimSpec) ([]corev1.Volume, []corev1.VolumeMount) {
+	volumes = append(volumes, corev1.Volume{
+		Name: volumeName,
+		VolumeSource: corev1.VolumeSource{
+			Ephemeral: &corev1.EphemeralVolumeSource{
+				VolumeClaimTemplate: &corev1.PersistentVolumeClaimTemplate{
+					Spec: claim,
+				},
 			},
 		},
 	})

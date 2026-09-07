@@ -93,6 +93,24 @@ func TestFeProxyController_validating(t *testing.T) {
 			wantErrIs: srapi.ErrHostPathRequired,
 		},
 		{
+			name: "ephemeral on a hostPath volume returns ErrEphemeralConflict",
+			feProxySpec: &srapi.StarRocksFeProxySpec{
+				StarRocksLoadSpec: srapi.StarRocksLoadSpec{
+					StorageVolumes: []srapi.StorageVolume{
+						{
+							Name:             "cache",
+							StorageClassName: &hostPathStorageClass,
+							MountPath:        "/cache",
+							HostPath:         &corev1.HostPathVolumeSource{Path: "/cache"},
+							Ephemeral:        true,
+						},
+					},
+				},
+			},
+			wantErr:   true,
+			wantErrIs: srapi.ErrEphemeralConflict,
+		},
+		{
 			name: "no storage volumes still validates the service as before",
 			feProxySpec: &srapi.StarRocksFeProxySpec{
 				StarRocksLoadSpec: srapi.StarRocksLoadSpec{

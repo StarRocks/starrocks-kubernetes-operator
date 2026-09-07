@@ -453,6 +453,14 @@ type StorageVolume struct {
 	// +optional
 	CSI *corev1.CSIVolumeSource `json:"csi,omitempty"`
 
+	// Ephemeral makes this volume a generic ephemeral volume: its PersistentVolumeClaim is declared
+	// in the pod spec, owned by the pod and deleted with it, so a replacement pod provisions a new
+	// volume. StorageClassName and StorageSize still apply, but the data does not outlive the pod,
+	// so use it for a cache or a spill directory. It can not be set with emptyDir, hostPath or csi.
+	// More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes
+	// +optional
+	Ephemeral bool `json:"ephemeral,omitempty"`
+
 	// MountPath specify the path of volume mount.
 	MountPath string `json:"mountPath"`
 
@@ -478,7 +486,12 @@ var (
 	ErrCSIStorageClass = errors.New(`if csi is set, storageClassName must be empty or "csi"`)
 )
 
+var ErrEphemeralConflict = errors.New("ephemeral can not be used together with emptyDir, hostPath or csi")
+
 func (storageVolume *StorageVolume) Validate() error {
+	if err := storageVolume.validateEphemeral(); err != nil {
+		return err
+	}
 	if err := storageVolume.validateCSI(); err != nil {
 		return err
 	}
@@ -517,6 +530,26 @@ func (storageVolume *StorageVolume) validateCSI() error {
 	}
 	if storageVolume.CSI == nil || storageVolume.CSI.Driver == "" {
 		return ErrCSIRequired
+	}
+	return nil
+}
+
+// validateEphemeral rejects ephemeral together with emptyDir, hostPath or csi. Those render a volume
+// source that is not a PersistentVolumeClaim, so the flag would otherwise be dropped silently.
+func (storageVolume *StorageVolume) validateEphemeral() error {
+	if !storageVolume.Ephemeral {
+		return nil
+	}
+	if storageVolume.HostPath != nil || storageVolume.CSI != nil {
+		return ErrEphemeralConflict
+	}
+	if storageVolume.StorageClassName == nil {
+		return nil
+	}
+	for _, name := range []string{EmptyDir, HostPath, CSI} {
+		if strings.EqualFold(*storageVolume.StorageClassName, name) {
+			return ErrEphemeralConflict
+		}
 	}
 	return nil
 }

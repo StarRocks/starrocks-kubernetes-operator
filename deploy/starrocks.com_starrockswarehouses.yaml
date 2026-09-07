@@ -2324,6 +2324,8 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          type: boolean
                         hostPath:
                           properties:
                             path:

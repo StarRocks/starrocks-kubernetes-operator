@@ -19,7 +19,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -37,26 +36,17 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 		if name := pod.SpecialStorageClassName(vm); name != "" {
 			continue
 		}
+		// a generic ephemeral volume declares its claim in the pod spec, not here
+		if vm.Ephemeral {
+			continue
+		}
 		if strings.HasPrefix(vm.StorageSize, "0") {
 			continue
 		}
-		pvc := corev1.PersistentVolumeClaim{
+		pvcs = append(pvcs, corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{Name: vm.Name},
-			Spec: corev1.PersistentVolumeClaimSpec{
-				AccessModes: []corev1.PersistentVolumeAccessMode{
-					corev1.ReadWriteOnce,
-				},
-				StorageClassName: vm.StorageClassName,
-			},
-		}
-		if vm.StorageSize != "" {
-			pvc.Spec.Resources = corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceStorage: resource.MustParse(vm.StorageSize),
-				},
-			}
-		}
-		pvcs = append(pvcs, pvc)
+			Spec:       pod.PersistentVolumeClaimSpec(vm),
+		})
 	}
 	return pvcs
 }

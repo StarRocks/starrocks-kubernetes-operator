@@ -84,6 +84,42 @@ func TestMakePVCList(t *testing.T) {
 			},
 			want: nil,
 		},
+		{
+			name: "ephemeral volume is skipped, the rest of the list is not",
+			args: args{
+				volumes: []v1.StorageVolume{
+					{
+						Name:             "cache",
+						StorageClassName: func() *string { name := "test"; return &name }(),
+						StorageSize:      "1Gi",
+						MountPath:        "/opt/starrocks/cn/storage",
+						Ephemeral:        true,
+					},
+					{
+						Name:             "log",
+						StorageClassName: func() *string { name := "test"; return &name }(),
+						StorageSize:      "1Gi",
+						MountPath:        "/opt/starrocks/cn/log",
+					},
+				},
+			},
+			want: []corev1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "log"},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes: []corev1.PersistentVolumeAccessMode{
+							corev1.ReadWriteOnce,
+						},
+						StorageClassName: &[]string{"test"}[0],
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceStorage: resource.MustParse("1Gi"),
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
