@@ -2236,6 +2236,26 @@ StarRocksServicePort.NodePort field.</p>
 </tr>
 <tr>
 <td>
+<code>exposedPorts</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExposedPorts is an optional allowlist of port names exposed by the external Service.
+When omitted, all available ports for the component are exposed for backward compatibility.
+When specified, only ports whose names are listed are exposed.
+It does not affect the internal headless Service.</p>
+<p>Valid port names depend on the component.
+FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+BE supports be, webserver, heartbeat, and brpc.
+CN supports thrift, webserver, heartbeat, and brpc.
+FE Proxy supports http-port.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>loadBalancerSourceRanges</code><br/>
 <em>
 []string
@@ -2701,5 +2721,5 @@ AutoScalingPolicy
 <hr/>
 <p><em>
 Generated with <code>gen-crd-api-reference-docs</code>
-on git commit <code>7027f915</code>.
+on git commit <code>342e8e2</code>.
 </em></p>

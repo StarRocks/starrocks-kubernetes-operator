@@ -2761,6 +2761,25 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      exposedPorts:
+                        description: |-
+                          ExposedPorts is an optional allowlist of port names exposed by the external Service.
+                          When omitted, all available ports for the component are exposed for backward compatibility.
+                          When specified, only ports whose names are listed are exposed.
+                          It does not affect the internal headless Service.
+
+
+                          Valid port names depend on the component.
+                          FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+                          BE supports be, webserver, heartbeat, and brpc.
+                          CN supports thrift, webserver, heartbeat, and brpc.
+                          FE Proxy supports http-port.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         description: |-
                           ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
@@ -7873,6 +7892,25 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      exposedPorts:
+                        description: |-
+                          ExposedPorts is an optional allowlist of port names exposed by the external Service.
+                          When omitted, all available ports for the component are exposed for backward compatibility.
+                          When specified, only ports whose names are listed are exposed.
+                          It does not affect the internal headless Service.
+
+
+                          Valid port names depend on the component.
+                          FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+                          BE supports be, webserver, heartbeat, and brpc.
+                          CN supports thrift, webserver, heartbeat, and brpc.
+                          FE Proxy supports http-port.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         description: |-
                           ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
@@ -10803,6 +10841,25 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      exposedPorts:
+                        description: |-
+                          ExposedPorts is an optional allowlist of port names exposed by the external Service.
+                          When omitted, all available ports for the component are exposed for backward compatibility.
+                          When specified, only ports whose names are listed are exposed.
+                          It does not affect the internal headless Service.
+
+
+                          Valid port names depend on the component.
+                          FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+                          BE supports be, webserver, heartbeat, and brpc.
+                          CN supports thrift, webserver, heartbeat, and brpc.
+                          FE Proxy supports http-port.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         description: |-
                           ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the
@@ -13945,6 +14002,25 @@ spec:
                           Annotations' store Kubernetes Service annotations. These will be added to the external service
                           only (not internal).
                         type: object
+                      exposedPorts:
+                        description: |-
+                          ExposedPorts is an optional allowlist of port names exposed by the external Service.
+                          When omitted, all available ports for the component are exposed for backward compatibility.
+                          When specified, only ports whose names are listed are exposed.
+                          It does not affect the internal headless Service.
+
+
+                          Valid port names depend on the component.
+                          FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+                          BE supports be, webserver, heartbeat, and brpc.
+                          CN supports thrift, webserver, heartbeat, and brpc.
+                          FE Proxy supports http-port.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         description: |-
                           ExternalTrafficPolicy describes how nodes distribute service traffic they receive on one of the

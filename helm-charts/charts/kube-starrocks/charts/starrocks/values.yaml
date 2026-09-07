@@ -262,6 +262,15 @@ starrocksFESpec:
       # e.g., specify a dedicated node port for FE service by containerPort.
       # - nodePort: 30030 # The range of valid ports is 30000-32767
       #   containerPort: 8030 # The port exported on the container
+    # Select the FE ports exposed by the external Service.
+    # Leave empty to omit exposedPorts and preserve the existing behavior.
+    # Valid values include http, rpc, query, edit-log, and arrow-flight when configured.
+    exposedPorts: []
+      # - http
+      # - rpc
+      # - query
+      # - edit-log
+      # - arrow-flight
     # specifies the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
@@ -608,6 +617,14 @@ starrocksCnSpec:
       # e.g., specify a dedicated node port for CN service by containerPort.
       # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose.
+    # Select the CN ports exposed by the external Service.
+    # Leave empty to omit exposedPorts and preserve the existing behavior.
+    # Valid values include thrift, webserver, heartbeat, and brpc.
+    exposedPorts: []
+      # - thrift
+      # - webserver
+      # - heartbeat
+      # - brpc
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
@@ -990,6 +1007,14 @@ starrocksBeSpec:
       # e.g., specify a dedicated node port for BE service by containerPort.
       # - nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose.
+    # Select the BE ports exposed by the external Service.
+    # Leave empty to omit exposedPorts and preserve the existing behavior.
+    # Valid values include be, webserver, heartbeat, and brpc.
+    exposedPorts: []
+      # - be
+      # - webserver
+      # - heartbeat
+      # - brpc
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8
@@ -1336,6 +1361,11 @@ starrocksFeProxySpec:
       # e.g., specify a dedicated node port for FE proxy service by containerPort.
       # - nodePort: 30080 # The range of valid ports is 30000-32767
       #   containerPort: 8080 # The port on the container to expose.
+    # Select the FE Proxy ports exposed by the external Service.
+    # Leave empty to omit exposedPorts and preserve the existing behavior.
+    # The valid value is http-port.
+    exposedPorts: []
+      # - http-port
     # Specify the source IP ranges for the load balancer when the type=LoadBalancer.
     loadBalancerSourceRanges: []
       # - 10.0.0.0/8

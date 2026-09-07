@@ -187,8 +187,11 @@ NodePort. This topic uses LoadBalancer as an example:
     ```YAML
     spec:
       starRocksFeSpec:
-        service:            
+        service:
           type: LoadBalancer # specified as LoadBalancer
+          exposedPorts:
+            - http
+            - query
     ```
 
 2. Obtain the IP address `EXTERNAL-IP` and port `PORT(S)` that the FE Service exposes to the outside.
@@ -199,7 +202,7 @@ NodePort. This topic uses LoadBalancer as an example:
     starrockscluster-sample-be-search    ClusterIP      None           <none>        9050/TCP                                                      6m39s
     starrockscluster-sample-be-service   ClusterIP      10.96.86.207   <none>        9060/TCP,8040/TCP,9050/TCP,8060/TCP                           6m39s
     starrockscluster-sample-fe-search    ClusterIP      None           <none>        9030/TCP                                                      8m
-    starrockscluster-sample-fe-service   LoadBalancer   10.96.26.146   a7509284bf3784983a596c6eec7fc212-618xxxxxx.us-west-2.elb.amazonaws.com     8030:30028/TCP,9020:32241/TCP,9030:32640/TCP,9010:32384/TCP   8m
+    starrockscluster-sample-fe-service   LoadBalancer   10.96.26.146   a7509284bf3784983a596c6eec7fc212-618xxxxxx.us-west-2.elb.amazonaws.com     8030:30028/TCP,9030:32640/TCP   8m
     ```
 
 3. Log in to your machine host and access the StarRocks cluster by using the MySQL client.

@@ -761,6 +761,11 @@ func (in *StarRocksService) DeepCopyInto(out *StarRocksService) {
 		*out = make([]StarRocksServicePort, len(*in))
 		copy(*out, *in)
 	}
+	if in.ExposedPorts != nil {
+		in, out := &in.ExposedPorts, &out.ExposedPorts
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.LoadBalancerSourceRanges != nil {
 		in, out := &in.LoadBalancerSourceRanges, &out.LoadBalancerSourceRanges
 		*out = make([]string, len(*in))

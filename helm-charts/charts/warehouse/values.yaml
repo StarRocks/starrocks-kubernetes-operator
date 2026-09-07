@@ -63,6 +63,14 @@ spec:
       #   nodePort: 30040 # The range of valid ports is 30000-32767
       #   containerPort: 8040 # The port on the container to expose
       #   port: 8040 # The port to expose on the service
+    # Select the CN ports exposed by the external Service.
+    # Leave empty to omit exposedPorts and preserve the existing behavior.
+    # Valid values include thrift, webserver, heartbeat, and brpc.
+    exposedPorts: []
+      # - thrift
+      # - webserver
+      # - heartbeat
+      # - brpc
     # Specify how nodes distribute service traffic. Possible values: Cluster, Local.
     # Only applies when the type is NodePort or LoadBalancer. Local preserves the client source IP.
     externalTrafficPolicy: ""
