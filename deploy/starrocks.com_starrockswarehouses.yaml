@@ -1637,6 +1637,15 @@ spec:
                     type: boolean
                   schedulerName:
                     type: string
+                  seccompProfile:
+                    properties:
+                      localhostProfile:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                    - type
+                    type: object
                   secrets:
                     items:
                       properties:
