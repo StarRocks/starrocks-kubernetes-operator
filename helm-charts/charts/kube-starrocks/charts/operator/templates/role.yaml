@@ -14,19 +14,37 @@ rules:
   - deployments
   - statefulsets
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - autoscaling
   resources:
   - horizontalpodautoscalers
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - batch
   resources:
   - cronjobs
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -34,7 +52,13 @@ rules:
   - serviceaccounts
   - services
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -51,7 +75,9 @@ rules:
   - starrocksclusters
   - starrockswarehouses
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
 # when deploying to OpenShift, the following permission is also necessary
 - apiGroups:
   - starrocks.com
