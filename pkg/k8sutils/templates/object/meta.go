@@ -22,6 +22,10 @@ type StarRocksObject struct {
 	// ClusterName is the name of StarRocksCluster.
 	ClusterName string
 
+	// ClusterNamespace is the namespace of the StarRocksCluster. This may differ from
+	// Namespace when a StarRocksWarehouse is deployed in a different namespace.
+	ClusterNamespace string
+
 	// Kind is StarRocksCluster or StarRocksWarehouse.
 	// The reason why we need this field is that we can't make sure ObjectMeta.Kind is filled.
 	Kind string
@@ -40,6 +44,7 @@ func NewFromCluster(cluster *srapi.StarRocksCluster) StarRocksObject {
 		TypeMeta:              &cluster.TypeMeta,
 		ObjectMeta:            &cluster.ObjectMeta,
 		ClusterName:           cluster.Name,
+		ClusterNamespace:      cluster.Namespace,
 		Kind:                  StarRocksClusterKind,
 		SubResourcePrefixName: cluster.Name,
 		IsWarehouseObject:     false,
@@ -47,10 +52,15 @@ func NewFromCluster(cluster *srapi.StarRocksCluster) StarRocksObject {
 }
 
 func NewFromWarehouse(warehouse *srapi.StarRocksWarehouse) StarRocksObject {
+	clusterNamespace := warehouse.Namespace
+	if warehouse.Spec.StarRocksClusterNamespace != "" {
+		clusterNamespace = warehouse.Spec.StarRocksClusterNamespace
+	}
 	return StarRocksObject{
 		TypeMeta:              &warehouse.TypeMeta,
 		ObjectMeta:            &warehouse.ObjectMeta,
 		ClusterName:           warehouse.Spec.StarRocksCluster,
+		ClusterNamespace:      clusterNamespace,
 		Kind:                  StarRocksWarehouseKind,
 		SubResourcePrefixName: GetPrefixNameForWarehouse(warehouse.Name),
 		IsWarehouseObject:     true,

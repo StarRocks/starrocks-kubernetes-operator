@@ -8,6 +8,9 @@ metadata:
     {{- include "starrockswarehouse.labels" . | nindent 4 }}
 spec:
   starRocksCluster: {{ .Values.spec.starRocksClusterName }}
+  {{- if .Values.spec.starRocksClusterNamespace }}
+  starRocksClusterNamespace: {{ .Values.spec.starRocksClusterNamespace }}
+  {{- end }}
   template:
     image: "{{ .Values.spec.image.repository }}:{{ .Values.spec.image.tag }}"
     {{- if .Values.spec.replicas }}

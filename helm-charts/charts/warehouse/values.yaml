@@ -21,6 +21,10 @@ spec:
   #   3. The starrocks cluster must run in shared-data mode.
   starRocksClusterName:
 
+  # The namespace of the StarRocksCluster. If empty, the warehouse's own namespace is used.
+  # Set this when deploying the warehouse in a different namespace from the cluster.
+  starRocksClusterNamespace: ""
+
   # Number of replicas to deploy.
   # In the implementation of the operator: Even when both the replicas and autoScalingPolicy are set in the spec
   # field, the replicas field of the statefulset created by the operator will be set to null. This ensures that the replicas
