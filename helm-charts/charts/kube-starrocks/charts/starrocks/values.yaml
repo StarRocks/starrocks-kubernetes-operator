@@ -280,6 +280,8 @@ starrocksFESpec:
     # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
+  # additional labels applied to all sub-resources (StatefulSet, pods, Services, VolumeClaimTemplates, etc).
+  sharedLabels: {}
   # hostAliases allows adding entries to /etc/hosts inside the containers
   hostAliases: []
     # - ip: "127.0.0.1"
@@ -624,6 +626,8 @@ starrocksCnSpec:
     # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
+  # additional labels applied to all sub-resources (StatefulSet, pods, Services, VolumeClaimTemplates, etc).
+  sharedLabels: {}
   ## hostAliases allows adding entries to /etc/hosts inside the containers
   hostAliases: []
     # - ip: "127.0.0.1"
@@ -1006,6 +1010,8 @@ starrocksBeSpec:
     # kubernetes.io/os: linux
   # the pod labels for user select or classify pods.
   podLabels: {}
+  # additional labels applied to all sub-resources (StatefulSet, pods, Services, VolumeClaimTemplates, etc).
+  sharedLabels: {}
   ## hostAliases allows adding entries to /etc/hosts inside the containers
   hostAliases: []
     # - ip: "127.0.0.1"
@@ -1395,3 +1401,5 @@ starrocksFeProxySpec:
       #   mountPath: /tmp
   # the pod labels for user select or classify pods.
   podLabels: {}
+  # additional labels applied to all sub-resources (Deployment, pods, Services, etc).
+  sharedLabels: {}

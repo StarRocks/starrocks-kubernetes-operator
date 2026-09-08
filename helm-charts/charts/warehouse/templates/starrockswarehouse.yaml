@@ -21,6 +21,10 @@ spec:
     podLabels:
       {{- toYaml .Values.spec.podLabels | nindent 6 }}
     {{- end }}
+    {{- if .Values.spec.sharedLabels }}
+    sharedLabels:
+      {{- toYaml .Values.spec.sharedLabels | nindent 6 }}
+    {{- end }}
     {{- if .Values.spec.hostAliases }}
     hostAliases:
       {{- toYaml .Values.spec.hostAliases | nindent 6 }}

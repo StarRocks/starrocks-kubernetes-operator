@@ -19,5 +19,5 @@ import (
 )
 
 func Selector(clusterName string, spec v1.SpecInterface) map[string]string {
-	return Labels(Name(clusterName, spec), spec)
+	return SelectorLabels(Name(clusterName, spec), spec)
 }
