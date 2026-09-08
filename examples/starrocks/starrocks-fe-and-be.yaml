@@ -8,15 +8,15 @@ metadata:
 spec:
   starRocksFeSpec:
     image: starrocks/fe-ubuntu:latest
-    replicas: 3
+    replicas: 2
     # If you just want to start a running StarRocks cluster, you can set a smaller request/limit, such as 1 core and 2GB.
     # See https://docs.starrocks.io/docs/deployment/plan_cluster/#cpu-and-memory for more information about how to configure CPU and memory in production.
     limits:
-      cpu: 4
-      memory: 8Gi
+      cpu: 1
+      memory: 2Gi
     requests:
-      cpu: 4
-      memory: 8Gi
+      cpu: 1
+      memory: 2Gi
     # storageVolumes is optional. If you don't specify it, emptyDir will be used to store FE meta and log, and be aware
     # that the files and directories written to the volume will be completely lost upon container restarting.
     storageVolumes:
@@ -31,15 +31,15 @@ spec:
       mountPath: /opt/starrocks/fe/log
   starRocksBeSpec:
     image: starrocks/be-ubuntu:latest
-    replicas: 3
+    replicas: 2
     # If you just want to start a running StarRocks cluster, you can set a smaller request/limit, such as 1 core and 2GB.
     # See https://docs.starrocks.io/docs/deployment/plan_cluster/#cpu-and-memory for more information about how to configure CPU and memory in production.
     limits:
-      cpu: 4
-      memory: 8Gi
+      cpu: 1
+      memory: 2Gi
     requests:
-      cpu: 4
-      memory: 8Gi
+      cpu: 1
+      memory: 2Gi
     # storageVolumes is optional. If you don't specify it, emptyDir will be used to store BE data and log, and be aware
     # that the files and directories written to the volume will be completely lost upon container restarting.
     storageVolumes:
