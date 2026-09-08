@@ -1,0 +1,50 @@
+{{- if .Values.ingress.enabled }}
+{{- $defaultIngressName := printf "%s-mysql-ingress" (include "starrockscluster.name" .) }}
+{{- $defaultMysqlServiceName := printf "%s-fe-service" (include "starrockscluster.name" .) }}
+{{- $mysqlServiceName := default (default $defaultMysqlServiceName .Values.ingress.serviceName) .Values.ingress.mysqlServiceName }}
+{{- $mysqlServicePort := default .Values.ingress.servicePort .Values.ingress.mysqlServicePort }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ default $defaultIngressName .Values.ingress.name }}
+  namespace: {{ template "starrockscluster.namespace" . }}
+  labels:
+    cluster: {{ template "starrockscluster.name" . }}
+    {{- include "starrockscluster.labels" . | nindent 4 }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - {{- if .host }}
+      host: {{ .host | quote }}
+      {{- end }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ default "Prefix" .pathType }}
+            backend:
+              service:
+                name: {{ $mysqlServiceName }}
+                port:
+                  {{- if kindIs "string" $mysqlServicePort }}
+                  name: {{ $mysqlServicePort }}
+                  {{- else }}
+                  number: {{ $mysqlServicePort }}
+                  {{- end }}
+          {{- end }}
+    {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
