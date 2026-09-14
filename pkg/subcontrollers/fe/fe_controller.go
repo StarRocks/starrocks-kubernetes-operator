@@ -281,6 +281,20 @@ func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, cluster
 		return false
 	}
 
+	// Check that the StatefulSet controller has observed the current spec. Right
+	// after the FE spec is updated, Status still describes the previous generation:
+	// ReadyReplicas is unchanged and UpdateRevision still equals CurrentRevision,
+	// because the new revision has not been computed yet. Without this guard the
+	// checks below pass against stale Status, so CN is synced in the same reconcile
+	// that updated FE and both roll at once -- precisely the cascading update
+	// waitForFullRollout exists to prevent.
+	if sts.Status.ObservedGeneration < sts.Generation {
+		logger.Info("FE StatefulSet status has not caught up with the latest spec",
+			"generation", sts.Generation,
+			"observedGeneration", sts.Status.ObservedGeneration)
+		return false
+	}
+
 	// Check if all replicas are ready
 	if sts.Spec.Replicas != nil && sts.Status.ReadyReplicas < *sts.Spec.Replicas {
 		logger.Info("FE StatefulSet not fully ready",

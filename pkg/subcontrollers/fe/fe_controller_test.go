@@ -382,6 +382,71 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			// Regression test: the moment right after the FE spec is updated. The
+			// StatefulSet controller has not reconciled the new generation yet, so
+			// Status still describes the old one -- all replicas ready, revisions
+			// equal. Without the ObservedGeneration guard this reports "fully rolled
+			// out" and CN is updated in the same reconcile, rolling FE and CN at once.
+			name: "statefulset spec updated but status not yet observed",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "kube-starrocks-fe",
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 1,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    3,
+						CurrentRevision:    "v1",
+						UpdateRevision:     "v1",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "statefulset fully rolled out with observed generation",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "kube-starrocks-fe",
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: &replicas,
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 2,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    3,
+						CurrentRevision:    "v2",
+						UpdateRevision:     "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
