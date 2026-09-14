@@ -468,6 +468,13 @@ type StorageVolume struct {
 	// Defaults to false.
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty"`
+
+	// VolumeAttributesClassName is the name of a VolumeAttributesClass to use for modifying
+	// volume attributes (e.g. IOPS, throughput) on the fly. Requires Kubernetes 1.31+ with the
+	// VolumeAttributesClass feature gate enabled.
+	// More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
+	// +optional
+	VolumeAttributesClassName *string `json:"volumeAttributesClassName,omitempty"`
 }
 
 var ErrHostPathRequired = errors.New("if storageClassName is hostPath, hostPath and hostPath.path is required")

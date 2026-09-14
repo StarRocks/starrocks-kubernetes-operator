@@ -2347,6 +2347,8 @@ spec:
                           type: string
                         subPath:
                           type: string
+                        volumeAttributesClassName:
+                          type: string
                       required:
                       - mountPath
                       - name

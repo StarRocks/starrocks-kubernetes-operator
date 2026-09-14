@@ -135,6 +135,11 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
+	if err = k8sutils.PatchPVCVolumeAttributesClass(ctx, be.Client,
+		src.Namespace, st.Name, beSpec.StorageVolumes); err != nil {
+		logger.Error(err, "patch PVC volumeAttributesClassName failed")
+	}
+
 	if err = k8sutils.ApplyService(ctx, be.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "apply internal service failed", "internalService", internalService)
 		return err
