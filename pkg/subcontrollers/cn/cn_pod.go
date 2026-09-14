@@ -59,10 +59,18 @@ func (cc *CnController) buildPodTemplate(ctx context.Context, object srobject.St
 	}
 
 	feExternalServiceName := service.ExternalServiceName(object.ClusterName, (*srapi.StarRocksFeSpec)(nil))
-	envs := pod.Envs(cnSpec, config, feExternalServiceName, object.Namespace, cnSpec.CnEnvVars)
+	// When the warehouse is in a different namespace from the cluster, include the cluster
+	// namespace so that DNS resolution reaches the FE service across namespaces.
+	feExternalServiceNameForEnv := feExternalServiceName
+	if object.ClusterNamespace != object.Namespace {
+		feExternalServiceNameForEnv = feExternalServiceName + "." + object.ClusterNamespace
+	}
+	envs := pod.Envs(cnSpec, config, feExternalServiceNameForEnv, object.Namespace, cnSpec.CnEnvVars)
 	webServerPort := rutils.GetPort(config, rutils.WEBSERVER_PORT)
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature", feExternalServiceName, object.Namespace, rutils.GetPort(config, rutils.HTTP_PORT))
+		httpPort := rutils.GetPort(config, rutils.HTTP_PORT)
+		url := fmt.Sprintf("http://%v.%v:%v/api/v2/feature",
+			feExternalServiceName, object.ClusterNamespace, httpPort)
 		if cc.addEnvForWarehouse || cc.addWarehouseEnv(ctx, url) {
 			envs = append(envs, corev1.EnvVar{
 				Name: "KUBE_STARROCKS_MULTI_WAREHOUSE",
