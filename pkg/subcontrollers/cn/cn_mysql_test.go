@@ -230,6 +230,25 @@ func TestSQLExecutor_QueryShowComputeNodes(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:   "shared_nothing rows without WarehouseName",
+			fields: fields{FeServiceName: "localhost", FeServicePort: "9030"},
+			args: args{
+				ctx: context.Background(),
+				rows: sqlmock.NewRows([]string{"ComputeNodeId", "IP", "HeartbeatPort"}).
+					AddRow([]byte("1"), []byte("kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local"), []byte("9050")).
+					AddRow([]byte("2"), []byte("kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local"), []byte("9050")),
+			},
+			wantErr: assert.NoError,
+			wantData: &ShowComputeNodesResult{
+				ComputeNodesByWarehouse: map[string][]ComputeNode{
+					"": {
+						{ComputeNodeId: "1", FQDN: "kube-starrocks-cn-2.kube-starrocks-cn-search.default.svc.cluster.local", HeartbeatPort: "9050", index: 2},
+						{ComputeNodeId: "2", FQDN: "kube-starrocks-cn-10.kube-starrocks-cn-search.default.svc.cluster.local", HeartbeatPort: "9050", index: 10},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -294,6 +313,30 @@ func TestSQLExecutor_ExecuteDropComputeNode(t *testing.T) {
 					FQDN:          "fqdn",
 					HeartbeatPort: "9010",
 					WarehouseName: "wh1",
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "drop without FROM WAREHOUSE when WarehouseName is empty",
+			fields: fields{
+				RootPassword:       "root",
+				FeServiceName:      "fe-search",
+				FeServiceNamespace: "default",
+				FeServicePort:      "9030",
+			},
+			args: args{
+				ctx: context.Background(),
+				db: func() *sql.DB {
+					db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+					require.NoError(t, err)
+					mock.ExpectExec(`ALTER SYSTEM DROP COMPUTE NODE "fqdn:9050"`).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+					return db
+				}(),
+				cn: ComputeNode{
+					FQDN:          "fqdn",
+					HeartbeatPort: "9050",
 				},
 			},
 			wantErr: assert.NoError,

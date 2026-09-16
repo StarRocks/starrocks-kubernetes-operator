@@ -225,11 +225,6 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 		return err
 	}
 
-	// only take effect for shared-data mode
-	if !fe.IsRunInSharedDataMode(feconfig) {
-		return nil
-	}
-
 	// get actual statefulset object
 	var actualSTS appsv1.StatefulSet
 	namespacedName := types.NamespacedName{
@@ -616,6 +611,10 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		warehouseNameInFE = object.GetWarehouseNameInFE()
 	}
 	computeNodes := result.ComputeNodesByWarehouse[warehouseNameInFE]
+	// shared_nothing SHOW COMPUTE NODES has no WarehouseName, so rows are keyed "".
+	if !object.IsWarehouseObject && len(computeNodes) == 0 {
+		computeNodes = result.ComputeNodesByWarehouse[""]
+	}
 	if len(computeNodes) > int(expectReplicas) {
 		for i := len(computeNodes) - 1; i >= int(expectReplicas); i-- {
 			err = executor.ExecuteDropComputeNode(ctx, db, computeNodes[i])

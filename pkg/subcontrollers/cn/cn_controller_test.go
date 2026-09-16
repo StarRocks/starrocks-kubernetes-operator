@@ -541,6 +541,78 @@ func TestCnController_GetCnConfig(t *testing.T) {
 	}
 }
 
+func kubeStarrocksClusterObject() object.StarRocksObject {
+	return object.StarRocksObject{
+		ObjectMeta: &metav1.ObjectMeta{
+			Name:      "kube-starrocks",
+			Namespace: "default",
+		},
+		ClusterName:           "kube-starrocks",
+		SubResourcePrefixName: "kube-starrocks",
+	}
+}
+
+func cnSearchFQDN(ordinal int) string {
+	return fmt.Sprintf("kube-starrocks-cn-%d.kube-starrocks-cn-search.default.svc.cluster.local", ordinal)
+}
+
+func cnSTSWithFEEnv(name string) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{Kind: "StatefulSet", APIVersion: appsv1.SchemeGroupVersion.String()},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Env: []corev1.EnvVar{
+							{Name: "MYSQL_PWD", Value: "123456"},
+							{Name: "FE_SERVICE_NAME", Value: "fe"},
+							{Name: "FE_QUERY_PORT", Value: "9030"},
+						},
+					}},
+				},
+			},
+		},
+	}
+}
+
+func cnSTSPair(name string, replicas int32, revision string) (*appsv1.StatefulSet, *appsv1.StatefulSet) {
+	expect := &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       rutils.StatefulSetKind,
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas: rutils.GetInt32Pointer(replicas),
+		},
+	}
+	actual := expect.DeepCopy()
+	actual.Status.UpdateRevision = revision
+	return expect, actual
+}
+
+func cnPods(name string, n int, revision string) *corev1.PodList {
+	list := &corev1.PodList{}
+	for i := 0; i < n; i++ {
+		list.Items = append(list.Items, corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: fmt.Sprintf("%s-%d", name, i),
+				Labels: map[string]string{
+					"controller-revision-hash": revision,
+				},
+			},
+		})
+	}
+	return list
+}
+
 func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 	type fields struct {
 		k8sClient client.Client
@@ -552,6 +624,7 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 		actualSTS    *appsv1.StatefulSet
 		actualCNPods *corev1.PodList
 		db           *sql.DB
+		sqlMock      sqlmock.Sqlmock
 	}
 	tests := []struct {
 		name    string
@@ -884,6 +957,81 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 				return true
 			},
 		},
+		{
+			name: "shared_nothing scale-in drops tail without FROM WAREHOUSE",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(
+					func() *runtime.Scheme {
+						schema := runtime.NewScheme()
+						_ = clientgoscheme.AddToScheme(schema)
+						return schema
+					}(),
+					cnSTSWithFEEnv("kube-starrocks-cn"),
+				),
+			},
+			args: func() args {
+				db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+				require.NoError(t, err)
+				rows := sqlmock.NewRows([]string{"ComputeNodeId", "IP", "HeartbeatPort"})
+				for i := 0; i < 20; i++ {
+					rows.AddRow([]byte(fmt.Sprintf("%d", i)), []byte(cnSearchFQDN(i)), []byte("9050"))
+				}
+				mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(rows)
+				for i := 19; i >= 5; i-- {
+					mock.ExpectExec(fmt.Sprintf(`ALTER SYSTEM DROP COMPUTE NODE "%s:9050"`, cnSearchFQDN(i))).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				}
+				expectSTS, actualSTS := cnSTSPair("kube-starrocks-cn", 5, "v2")
+				return args{
+					ctx:          context.Background(),
+					object:       kubeStarrocksClusterObject(),
+					expectSTS:    expectSTS,
+					actualSTS:    actualSTS,
+					actualCNPods: cnPods("kube-starrocks-cn", 5, "v2"),
+					db:           db,
+					sqlMock:      mock,
+				}
+			}(),
+			wantErr: assert.NoError,
+		},
+		{
+			name: "shared_data scale-in still uses FROM WAREHOUSE default_warehouse",
+			fields: fields{
+				k8sClient: fake.NewFakeClient(
+					func() *runtime.Scheme {
+						schema := runtime.NewScheme()
+						_ = clientgoscheme.AddToScheme(schema)
+						return schema
+					}(),
+					cnSTSWithFEEnv("kube-starrocks-cn"),
+				),
+			},
+			args: func() args {
+				db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+				require.NoError(t, err)
+				rows := sqlmock.NewRows([]string{"ComputeNodeId", "IP", "HeartbeatPort", "WarehouseName"})
+				for i := 0; i < 7; i++ {
+					rows.AddRow([]byte(fmt.Sprintf("%d", i)), []byte(cnSearchFQDN(i)), []byte("9050"), []byte("default_warehouse"))
+				}
+				rows.AddRow([]byte("99"), []byte("wh1-warehouse-cn-9.wh1-warehouse-cn-search.default.svc.cluster.local"), []byte("9050"), []byte("wh1"))
+				mock.ExpectQuery(ShowComputeNodesStatement).WillReturnRows(rows)
+				for _, i := range []int{6, 5} {
+					mock.ExpectExec(fmt.Sprintf(`ALTER SYSTEM DROP COMPUTE NODE "%s:9050" FROM WAREHOUSE default_warehouse`, cnSearchFQDN(i))).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				}
+				expectSTS, actualSTS := cnSTSPair("kube-starrocks-cn", 5, "v2")
+				return args{
+					ctx:          context.Background(),
+					object:       kubeStarrocksClusterObject(),
+					expectSTS:    expectSTS,
+					actualSTS:    actualSTS,
+					actualCNPods: cnPods("kube-starrocks-cn", 5, "v2"),
+					db:           db,
+					sqlMock:      mock,
+				}
+			}(),
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -892,7 +1040,11 @@ func TestCnController_SyncComputeNodesInFE(t *testing.T) {
 				k8sClient: tt.fields.k8sClient,
 			}
 
-			tt.wantErr(t, cc.SyncComputeNodesInFE(tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods, tt.args.db), fmt.Sprintf("SyncComputeNodesInFE(%v, %v, %v, %v, %v)", tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods))
+			err := cc.SyncComputeNodesInFE(tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods, tt.args.db)
+			if tt.args.sqlMock != nil {
+				require.NoError(t, tt.args.sqlMock.ExpectationsWereMet())
+			}
+			tt.wantErr(t, err, fmt.Sprintf("SyncComputeNodesInFE(%v, %v, %v, %v, %v)", tt.args.ctx, tt.args.object, tt.args.expectSTS, tt.args.actualSTS, tt.args.actualCNPods))
 		})
 	}
 }
