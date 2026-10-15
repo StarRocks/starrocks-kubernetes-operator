@@ -45,6 +45,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups:
   - starrocks.com
   resources:
   - starrocksclusters
