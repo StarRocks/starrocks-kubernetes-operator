@@ -225,8 +225,8 @@ func (fc *FeObserverController) Validating(feSpec *srapi.StarRocksFeSpec) error 
 
 func validateObserverImageVersion(image string) error {
 	imageVersion := pod.GetImageVersion(image)
-	_, err := pod.IsLowerThanAny(imageVersion, []string{"4.1.0"})
-	if err != nil {
+	isLower, err := pod.IsLowerThan(imageVersion, minFeObserverImageVersion)
+	if err != nil || isLower {
 		return fmt.Errorf("fe observer requires StarRocks FE image version >= %s "+
 			"Current image version %s does not enable FE observer", minFeObserverImageVersion, imageVersion)
 	}

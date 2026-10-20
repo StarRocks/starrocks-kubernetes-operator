@@ -174,7 +174,11 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 	var observerExternalSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-service", Namespace: "default"}, &observerExternalSvc)
-	require.True(t, apierrors.IsNotFound(err))
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{
+		srapi.OwnerReference:    "test-fe-observer",
+		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
+	}, observerExternalSvc.Spec.Selector)
 	var observerSearchSvc corev1.Service
 	err = fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: "test-fe-observer-search", Namespace: "default"}, &observerSearchSvc)
@@ -223,6 +227,41 @@ func TestFeObserver_UpdateClusterStatusAllowsMissingStatefulSet(t *testing.T) {
 	require.NotNil(t, src.Status.StarRocksFeObserverStatus)
 	require.Equal(t, srapi.ComponentReconciling, src.Status.StarRocksFeObserverStatus.Phase)
 	require.Empty(t, src.Status.StarRocksFeObserverStatus.ResourceNames)
+}
+
+func TestFeObserver_ValidatingImageVersion(t *testing.T) {
+	tests := []struct {
+		version string
+		wantErr bool
+	}{
+		{version: "3.5.20", wantErr: true},
+		{version: "4.0.10", wantErr: true},
+		{version: "4.1.0"},
+		{version: "4.1.1"},
+		{version: "4.2.0"},
+		{version: "5.0.0"},
+		{version: "4.2.0-ee"},
+		{version: "latest"},
+		{version: "4.2.invalid", wantErr: true},
+		{version: "invalid", wantErr: true},
+	}
+	fc := &feobserver.FeObserverController{}
+	for _, tt := range tests {
+		t.Run(tt.version, func(t *testing.T) {
+			spec := &srapi.StarRocksFeSpec{
+				StarRocksComponentSpec: srapi.StarRocksComponentSpec{
+					StarRocksLoadSpec: srapi.StarRocksLoadSpec{Image: "starrocks/fe:" + tt.version},
+				},
+				ObserverSpec: &srapi.StarRocksFeObserverSpec{Enabled: true},
+			}
+			err := fc.Validating(spec)
+			if tt.wantErr {
+				require.ErrorContains(t, err, "fe observer requires StarRocks FE image version >= 4.1.0")
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestFeObserver_SyncClusterRejectsUnsupportedImage(t *testing.T) {
