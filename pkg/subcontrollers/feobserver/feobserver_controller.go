@@ -108,7 +108,9 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 	logger.V(log.DebugLevel).Info("build fe observer statefulset", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
 	defaultLabels := load.Labels(src.Name, observerSpec)
-	internalService := service.MakeSearchServiceForSpec(object, observerSpec, []corev1.ServicePort{
+	svc := rutils.BuildExternalService(object, observerSpec, feConfig, load.Selector(src.Name, observerSpec), defaultLabels)
+	searchServiceName := service.SearchServiceName(src.Name, observerSpec)
+	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{
 			Name:        "query-port",
 			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
@@ -131,6 +133,11 @@ func (fc *FeObserverController) SyncCluster(ctx context.Context, src *srapi.Star
 	if err = k8sutils.ApplyService(ctx, fc.Client, internalService, rutils.ServiceDeepEqual); err != nil {
 		logger.Error(err, "deploy search service failed", "internalService", internalService)
 		fc.Recorder.Event(src, corev1.EventTypeWarning, "DeployFeObserverFailed", err.Error())
+		return err
+	}
+
+	if err = k8sutils.ApplyService(ctx, fc.Client, &svc, rutils.ServiceDeepEqual); err != nil {
+		logger.Error(err, "deploy external service failed", "externalService", svc)
 		return err
 	}
 

@@ -23,7 +23,6 @@ import (
 
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/load"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
 )
 
 func TestMakeSearchService(t *testing.T) {
@@ -97,7 +96,7 @@ func TestMakeSearchService(t *testing.T) {
 	}
 }
 
-func TestMakeSearchServiceForSpec(t *testing.T) {
+func TestMakeSearchServiceForObserver(t *testing.T) {
 	cluster := &v1.StarRocksCluster{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.GroupVersion.String(),
@@ -117,31 +116,41 @@ func TestMakeSearchServiceForSpec(t *testing.T) {
 		},
 	}
 
-	got := MakeSearchServiceForSpec(object.NewFromCluster(cluster), observerSpec, ports, labels)
+	externalService := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            ExternalServiceName(cluster.Name, observerSpec),
+			Namespace:       cluster.Namespace,
+			OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(cluster, cluster.GroupVersionKind())},
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: load.Selector(cluster.Name, observerSpec),
+		},
+	}
+	got := MakeSearchService(SearchServiceName(cluster.Name, observerSpec), externalService, ports, labels)
 
 	if got.Name != "test-fe-observer-search" {
-		t.Errorf("MakeSearchServiceForSpec() name = %v, want %v", got.Name, "test-fe-observer-search")
+		t.Errorf("MakeSearchService() name = %v, want %v", got.Name, "test-fe-observer-search")
 	}
 	if got.Namespace != "default" {
-		t.Errorf("MakeSearchServiceForSpec() namespace = %v, want %v", got.Namespace, "default")
+		t.Errorf("MakeSearchService() namespace = %v, want %v", got.Namespace, "default")
 	}
 	if !reflect.DeepEqual(got.Labels, labels) {
-		t.Errorf("MakeSearchServiceForSpec() labels = %v, want %v", got.Labels, labels)
+		t.Errorf("MakeSearchService() labels = %v, want %v", got.Labels, labels)
 	}
 	if !reflect.DeepEqual(got.Spec.Selector, load.Selector(cluster.Name, observerSpec)) {
-		t.Errorf("MakeSearchServiceForSpec() selector = %v, want %v", got.Spec.Selector, load.Selector(cluster.Name, observerSpec))
+		t.Errorf("MakeSearchService() selector = %v, want %v", got.Spec.Selector, load.Selector(cluster.Name, observerSpec))
 	}
 	if got.Spec.ClusterIP != "None" {
-		t.Errorf("MakeSearchServiceForSpec() ClusterIP = %v, want %v", got.Spec.ClusterIP, "None")
+		t.Errorf("MakeSearchService() ClusterIP = %v, want %v", got.Spec.ClusterIP, "None")
 	}
 	if !got.Spec.PublishNotReadyAddresses {
-		t.Errorf("MakeSearchServiceForSpec() PublishNotReadyAddresses = %v, want %v", got.Spec.PublishNotReadyAddresses, true)
+		t.Errorf("MakeSearchService() PublishNotReadyAddresses = %v, want %v", got.Spec.PublishNotReadyAddresses, true)
 	}
 	if !reflect.DeepEqual(got.Spec.Ports, ports) {
-		t.Errorf("MakeSearchServiceForSpec() ports = %v, want %v", got.Spec.Ports, ports)
+		t.Errorf("MakeSearchService() ports = %v, want %v", got.Spec.Ports, ports)
 	}
 	if len(got.OwnerReferences) != 1 || got.OwnerReferences[0].Name != "test" || got.OwnerReferences[0].Kind != "StarRocksCluster" {
-		t.Errorf("MakeSearchServiceForSpec() OwnerReferences = %v, want one StarRocksCluster owner named test", got.OwnerReferences)
+		t.Errorf("MakeSearchService() OwnerReferences = %v, want one StarRocksCluster owner named test", got.OwnerReferences)
 	}
 }
 
@@ -262,12 +271,12 @@ func TestGetFeExternalServiceName(t *testing.T) {
 			want: "test-fe-service",
 		},
 		{
-			name: "fe observer does not have external service",
+			name: "fe observer external service name",
 			args: args{
 				clusterName: "test",
 				spec:        &v1.StarRocksFeObserverSpec{},
 			},
-			want: "",
+			want: "test-fe-observer-service",
 		},
 	}
 	for _, tt := range tests {
