@@ -174,7 +174,8 @@ func Test_SyncDeploy(t *testing.T) {
 	require.NoError(t, fc.Client.Get(context.Background(),
 		types.NamespacedName{Name: load.Name(src.Name, spec), Namespace: "default"}, &st))
 	require.Equal(t, map[string]string{
-		srapi.FeServiceLabelKey: "test-fe",
+		srapi.OwnerReference:    "test-fe",
+		srapi.ComponentLabelKey: srapi.DEFAULT_FE,
 	}, asvc.Spec.Selector)
 	require.Equal(t, load.Selector(src.Name, spec), rsvc.Spec.Selector)
 	require.Equal(t, load.Selector(src.Name, spec), st.Spec.Selector.MatchLabels)
