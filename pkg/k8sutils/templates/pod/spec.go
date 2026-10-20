@@ -17,6 +17,7 @@ package pod
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -107,11 +108,16 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 		}
 	}
 
-	addEnv := func(envVar corev1.EnvVar) {
-		if !keys[envVar.Name] && !unsupportedEnvironments[envVar.Name] {
-			keys[envVar.Name] = true
-			envs = append(envs, envVar)
+	addEnv := func(envVar corev1.EnvVar, overwrite bool) {
+		if overwrite {
+			envs = slices.DeleteFunc(envs, func(env corev1.EnvVar) bool {
+				return env.Name == envVar.Name
+			})
+		} else if keys[envVar.Name] || unsupportedEnvironments[envVar.Name] {
+			return
 		}
+		keys[envVar.Name] = true
+		envs = append(envs, envVar)
 	}
 
 	for _, envVar := range []corev1.EnvVar{
@@ -144,7 +150,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 			Value: "FQDN",
 		},
 	} {
-		addEnv(envVar)
+		addEnv(envVar, false)
 	}
 
 	switch spec.(type) {
@@ -159,7 +165,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 				Value: feExternalServiceName + "." + namespace,
 			},
 		} {
-			addEnv(envVar)
+			addEnv(envVar, false)
 		}
 	case *v1.StarRocksFeObserverSpec:
 		for _, envVar := range []corev1.EnvVar{
@@ -180,7 +186,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 				Value: feExternalServiceName,
 			},
 		} {
-			addEnv(envVar)
+			addEnv(envVar, envVar.Name == v1.IS_FE_OBSERVER)
 		}
 	case *v1.StarRocksBeSpec:
 		for _, envVar := range []corev1.EnvVar{
@@ -197,7 +203,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 				Value: strconv.FormatInt(int64(rutils.GetPort(config, rutils.QUERY_PORT)), 10),
 			},
 		} {
-			addEnv(envVar)
+			addEnv(envVar, false)
 		}
 	case *v1.StarRocksCnSpec:
 		for _, envVar := range []corev1.EnvVar{
@@ -214,7 +220,7 @@ func Envs(spec v1.SpecInterface, config map[string]interface{},
 				Value: strconv.FormatInt(int64(rutils.GetPort(config, rutils.QUERY_PORT)), 10),
 			},
 		} {
-			addEnv(envVar)
+			addEnv(envVar, false)
 		}
 	}
 
