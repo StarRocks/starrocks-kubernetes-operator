@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	v1 "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -329,6 +330,13 @@ func TestMountStorageVolumes(t *testing.T) {
 									ReadOnly:         true,
 								},
 								{
+									Name:             "ro-ephemeral",
+									MountPath:        "/ro-ephemeral",
+									StorageClassName: func() *string { s := "gp3"; return &s }(),
+									Ephemeral:        true,
+									ReadOnly:         true,
+								},
+								{
 									Name:      "rw-csi",
 									MountPath: "/rw-csi",
 									CSI:       &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"},
@@ -358,6 +366,19 @@ func TestMountStorageVolumes(t *testing.T) {
 					},
 				},
 				{
+					Name: "ro-ephemeral",
+					VolumeSource: corev1.VolumeSource{
+						Ephemeral: &corev1.EphemeralVolumeSource{
+							VolumeClaimTemplate: &corev1.PersistentVolumeClaimTemplate{
+								Spec: corev1.PersistentVolumeClaimSpec{
+									AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+									StorageClassName: func() *string { s := "gp3"; return &s }(),
+								},
+							},
+						},
+					},
+				},
+				{
 					Name:         "rw-csi",
 					VolumeSource: corev1.VolumeSource{CSI: &corev1.CSIVolumeSource{Driver: "csi.spiffe.io"}},
 				},
@@ -367,7 +388,72 @@ func TestMountStorageVolumes(t *testing.T) {
 				{Name: "ro-emptydir", MountPath: "/ro-emptydir", ReadOnly: true},
 				{Name: "ro-hostpath", MountPath: "/ro-hostpath", ReadOnly: true},
 				{Name: "ro-pvc", MountPath: "/ro-pvc", ReadOnly: true},
+				{Name: "ro-ephemeral", MountPath: "/ro-ephemeral", ReadOnly: true},
 				{Name: "rw-csi", MountPath: "/rw-csi"},
+			},
+		},
+		{
+			name: "storage volume with ephemeral",
+			args: args{
+				spec: &v1.StarRocksCnSpec{
+					StarRocksComponentSpec: v1.StarRocksComponentSpec{
+						StarRocksLoadSpec: v1.StarRocksLoadSpec{
+							StorageVolumes: []v1.StorageVolume{
+								{
+									Name:             "cache",
+									MountPath:        "/opt/starrocks/cn/storage",
+									StorageClassName: func() *string { s := "sc1"; return &s }(),
+									StorageSize:      "1Gi",
+									Ephemeral:        true,
+								},
+								{
+									Name:             "cache-no-size",
+									MountPath:        "/opt/starrocks/cn/spill",
+									SubPath:          "sub",
+									StorageClassName: func() *string { s := "sc1"; return &s }(),
+									Ephemeral:        true,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []corev1.Volume{
+				{
+					Name: "cache",
+					VolumeSource: corev1.VolumeSource{
+						Ephemeral: &corev1.EphemeralVolumeSource{
+							VolumeClaimTemplate: &corev1.PersistentVolumeClaimTemplate{
+								Spec: corev1.PersistentVolumeClaimSpec{
+									AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+									StorageClassName: func() *string { s := "sc1"; return &s }(),
+									Resources: corev1.ResourceRequirements{
+										Requests: corev1.ResourceList{
+											corev1.ResourceStorage: resource.MustParse("1Gi"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "cache-no-size",
+					VolumeSource: corev1.VolumeSource{
+						Ephemeral: &corev1.EphemeralVolumeSource{
+							VolumeClaimTemplate: &corev1.PersistentVolumeClaimTemplate{
+								Spec: corev1.PersistentVolumeClaimSpec{
+									AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+									StorageClassName: func() *string { s := "sc1"; return &s }(),
+								},
+							},
+						},
+					},
+				},
+			},
+			want1: []corev1.VolumeMount{
+				{Name: "cache", MountPath: "/opt/starrocks/cn/storage"},
+				{Name: "cache-no-size", MountPath: "/opt/starrocks/cn/spill", SubPath: "sub"},
 			},
 		},
 	}

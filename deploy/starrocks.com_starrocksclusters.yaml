@@ -2010,6 +2010,8 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          type: boolean
                         hostPath:
                           properties:
                             path:
@@ -4424,6 +4426,8 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          type: boolean
                         hostPath:
                           properties:
                             path:
@@ -5167,6 +5171,8 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          type: boolean
                         hostPath:
                           properties:
                             path:
@@ -7219,6 +7225,8 @@ spec:
                           required:
                           - driver
                           type: object
+                        ephemeral:
+                          type: boolean
                         hostPath:
                           properties:
                             path:
