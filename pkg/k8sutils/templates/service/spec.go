@@ -53,6 +53,8 @@ func SearchServiceName(clusterName string, spec v1.SpecInterface) string {
 		return clusterName + "-cn-search"
 	case *v1.StarRocksFeSpec:
 		return clusterName + "-fe-search"
+	case *v1.StarRocksFeObserverSpec:
+		return clusterName + "-fe-observer-search"
 	default:
 		return ""
 	}
@@ -69,6 +71,8 @@ func ExternalServiceName(clusterName string, spec v1.SpecInterface) string {
 		return clusterName + "-" + v1.DEFAULT_CN + "-service"
 	case *v1.StarRocksFeProxySpec:
 		return clusterName + "-" + v1.DEFAULT_FE_PROXY + "-service"
+	case *v1.StarRocksFeObserverSpec:
+		return clusterName + "-" + v1.DEFAULT_FE_OBSERVER + "-service"
 	}
 	return ""
 }

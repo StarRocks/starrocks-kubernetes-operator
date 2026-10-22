@@ -146,6 +146,7 @@ func TestLabels(t *testing.T) {
 				"l1":                 "v1",
 				v1.OwnerReference:    "test-fe",
 				v1.ComponentLabelKey: v1.DEFAULT_FE,
+				v1.FeServiceLabelKey: "test-fe",
 			},
 		},
 	}
@@ -329,6 +330,83 @@ func TestEnvs(t *testing.T) {
 				} else if got[i] != tt.want[i] {
 					t.Errorf("Envs() = %v, want %v", got[i], tt.want[i])
 				}
+			}
+		})
+	}
+}
+
+func TestObserverEnvsEnforceRole(t *testing.T) {
+	tests := []struct {
+		name            string
+		envs            []corev1.EnvVar
+		unsupportedEnvs string
+	}{
+		{name: "default"},
+		{
+			name: "false value",
+			envs: []corev1.EnvVar{{Name: v1.IS_FE_OBSERVER, Value: "false"}},
+		},
+		{
+			name: "true value",
+			envs: []corev1.EnvVar{{Name: v1.IS_FE_OBSERVER, Value: "true"}},
+		},
+		{
+			name: "value from config map",
+			envs: []corev1.EnvVar{{
+				Name: v1.IS_FE_OBSERVER,
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{Name: "fe-env"},
+						Key:                  v1.IS_FE_OBSERVER,
+					},
+				},
+			}},
+		},
+		{
+			name: "duplicate values",
+			envs: []corev1.EnvVar{
+				{Name: v1.IS_FE_OBSERVER, Value: "true"},
+				{Name: v1.IS_FE_OBSERVER, Value: "false"},
+			},
+		},
+		{
+			name:            "unsupported environment setting",
+			unsupportedEnvs: v1.IS_FE_OBSERVER,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("KUBE_STARROCKS_UNSUPPORTED_ENVS", tt.unsupportedEnvs)
+			customEnv := corev1.EnvVar{Name: "HOST_TYPE", Value: "IP"}
+			feSpec := &v1.StarRocksFeSpec{
+				FeEnvVars:    append([]corev1.EnvVar{customEnv}, tt.envs...),
+				ObserverSpec: &v1.StarRocksFeObserverSpec{Enabled: true},
+			}
+			original := feSpec.DeepCopy()
+			observerSpec := feSpec.ToObserverSpec()
+			got := Envs(observerSpec, nil, "test-fe-service", "ns", observerSpec.FeEnvVars)
+			var roleEnvs []corev1.EnvVar
+			var customEnvs []corev1.EnvVar
+			for _, env := range got {
+				switch env.Name {
+				case v1.IS_FE_OBSERVER:
+					roleEnvs = append(roleEnvs, env)
+				case customEnv.Name:
+					customEnvs = append(customEnvs, env)
+				}
+			}
+			want := []corev1.EnvVar{{Name: v1.IS_FE_OBSERVER, Value: "true"}}
+			if !reflect.DeepEqual(roleEnvs, want) {
+				t.Errorf("observer role envs = %v, want %v", roleEnvs, want)
+			}
+			if !reflect.DeepEqual(customEnvs, []corev1.EnvVar{customEnv}) {
+				t.Errorf("user environment was not preserved: %v", customEnvs)
+			}
+			if !reflect.DeepEqual(feSpec, original) {
+				t.Error("parent FE spec was modified")
+			}
+			if !reflect.DeepEqual(observerSpec.FeEnvVars, original.FeEnvVars) {
+				t.Error("inherited observer environment was modified")
 			}
 		})
 	}

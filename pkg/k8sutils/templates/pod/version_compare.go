@@ -12,6 +12,28 @@ type Version struct {
 	Patch int
 }
 
+// IsLowerThan compares complete versions across release lines.
+func IsLowerThan(checkVersion, targetVersion string) (bool, error) {
+	if strings.Contains(checkVersion, "latest") {
+		return false, nil
+	}
+	checkVer, err := parseVersion(checkVersion)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse check version %s: %w", checkVersion, err)
+	}
+	targetVer, err := parseVersion(targetVersion)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse target version %s: %w", targetVersion, err)
+	}
+	if checkVer.Major != targetVer.Major {
+		return checkVer.Major < targetVer.Major, nil
+	}
+	if checkVer.Minor != targetVer.Minor {
+		return checkVer.Minor < targetVer.Minor, nil
+	}
+	return checkVer.Patch < targetVer.Patch, nil
+}
+
 func IsLowerThanAny(checkVersion string, targetVersions []string) (bool, error) {
 	if strings.Contains(checkVersion, "latest") {
 		return false, nil

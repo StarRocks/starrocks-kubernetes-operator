@@ -21,3 +21,9 @@ import (
 func Selector(clusterName string, spec v1.SpecInterface) map[string]string {
 	return Labels(Name(clusterName, spec), spec)
 }
+
+func FeServiceSelector(clusterName string) map[string]string {
+	return map[string]string{
+		v1.FeServiceLabelKey: Name(clusterName, (*v1.StarRocksFeSpec)(nil)),
+	}
+}
