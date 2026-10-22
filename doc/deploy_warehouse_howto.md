@@ -214,3 +214,66 @@ If you deployed the warehouse by Helm chart, you can delete it by running the fo
 ```console
 helm -n starrocks uninstall wh1
 ```
+
+Deleting a warehouse CR normally also removes the warehouse from the cluster: before it lets the
+warehouse's CN StatefulSet go, the operator runs `DROP WAREHOUSE` in the FE. Everything set on the
+warehouse inside the database (its properties and the privileges granted on it) is dropped with it.
+
+This is best effort. If the FE is unreachable or rejects the statement, the operator logs the error and
+lets the StatefulSet go anyway, so the warehouse stays in the cluster. After deleting a warehouse CR,
+run `SHOW WAREHOUSES` to confirm it is gone, and drop it with `DROP WAREHOUSE` if it is still listed.
+
+### 4.1 Delete the CR but keep the warehouse in the cluster
+
+Sometimes the CR is deleted only to be applied again under the same name, for example when moving the
+warehouse between operators or rolling such a move back. To keep the warehouse, its properties and its
+grants in the cluster across that, annotate the CR first:
+
+```console
+kubectl -n starrocks annotate starrockswarehouse wh1 starrocks.com/skip-fe-cleanup=true
+```
+
+Or put the annotation in the manifest:
+
+```yaml
+apiVersion: starrocks.com/v1
+kind: StarRocksWarehouse
+metadata:
+  name: wh1
+  namespace: starrocks
+  annotations:
+    starrocks.com/skip-fe-cleanup: "true"
+```
+
+For a warehouse deployed by Helm chart, use the `kubectl annotate` command above; `helm upgrade` leaves
+the annotation in place.
+
+The annotation takes effect once the operator has copied it onto the warehouse's CN StatefulSet and
+removed its protection finalizer there. Check it before you delete the CR:
+
+```console
+kubectl -n starrocks get sts wh1-warehouse-cn \
+  -o jsonpath='{.metadata.finalizers}{"\n"}{.metadata.annotations.starrocks\.com/skip-fe-cleanup}{"\n"}'
+```
+
+The first line must not list `starrocks.com.starrockswarehouse/protection`, and the second line must
+print `true`. Adding the annotation changes only the StatefulSet's metadata, so no CN pod restarts.
+
+From then on, deleting the CR is an ordinary Kubernetes delete. The operator sends nothing to the FE,
+and the CN StatefulSet is removed even if the operator is not running at that moment. In the cluster,
+the warehouse stays as it was and its compute nodes show `Alive = false` in `SHOW COMPUTE NODES` until a
+same-named warehouse brings them back. If the new CR has fewer replicas than the old one, the extra
+compute nodes stay offline; drop them with `ALTER SYSTEM DROP COMPUTE NODE`.
+
+To delete the warehouse for good later, remove the annotation first:
+
+```console
+kubectl -n starrocks annotate starrockswarehouse wh1 starrocks.com/skip-fe-cleanup-
+```
+
+Then wait until the operator has put the protection finalizer back, and only then delete the CR. Run the
+same check as above: the first line must list `starrocks.com.starrockswarehouse/protection`, and the
+second line must be empty. If you delete the CR before that, the StatefulSet still carries the opt-out,
+so the operator skips `DROP WAREHOUSE` and the warehouse stays in the cluster.
+
+If you delete an annotated CR and no longer need the warehouse, drop it yourself with `DROP WAREHOUSE`.

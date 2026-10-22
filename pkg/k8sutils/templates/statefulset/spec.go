@@ -90,8 +90,14 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 
 	// When Warehouse CR is deleted, the operator needs to get some environments from the statefulset to
 	// execute the dropping warehouse statement.
+	// A warehouse that opted out of that cleanup needs no finalizer; the opt-out is mirrored onto the
+	// statefulset instead, for ClearWarehouse to read.
 	if object.Kind == srobject.StarRocksWarehouseKind {
-		expectSTS.Finalizers = append(expectSTS.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
+		if srobject.SkipsFECleanup(object.GetAnnotations()) {
+			expectSTS.Annotations[srobject.SkipFECleanupAnnotation] = "true"
+		} else {
+			expectSTS.Finalizers = append(expectSTS.Finalizers, STARROCKS_WAREHOUSE_FINALIZER)
+		}
 	}
 
 	switch v := spec.(type) {
