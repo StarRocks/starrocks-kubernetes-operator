@@ -344,6 +344,33 @@ func (cc *CnController) ClearWarehouse(ctx context.Context, namespace string, wa
 	ctx = logr.NewContext(ctx, logger)
 
 	cnSTSName := load.Name(object.GetPrefixNameForWarehouse(warehouseName), (*srapi.StarRocksCnSpec)(nil))
+
+	// The statefulset is the only place the FE connection details and the opt-out can be read from.
+	// Without it there is nothing to clean up with: a warehouse that opted out keeps no finalizer, so
+	// its statefulset can be collected before this runs.
+	var current appsv1.StatefulSet
+	if err := cc.k8sClient.Get(ctx, types.NamespacedName{Namespace: namespace, Name: cnSTSName}, &current); err != nil {
+		if apierrors.IsNotFound(err) {
+			logger.Info("the CN statefulset is already gone, so there is nothing left to clear", "statefulset", cnSTSName)
+			return nil
+		}
+		return err
+	}
+
+	// The warehouse opted out of the FE cleanup: it is left in the FE, untouched, for a same-named CR
+	// to take over. Nothing is asked of the FE, so its reachability does not matter here. The
+	// statefulset normally carries no finalizer by now; one can still be there when the apply that
+	// dropped it had no last-applied record to merge against, and it must not hold the deletion up.
+	if object.SkipsFECleanup(current.Annotations) {
+		logger.Info("FE cleanup skipped by annotation, the warehouse stays in the FE",
+			"annotation", object.SkipFECleanupAnnotation, "warehouse", warehouseName)
+		if len(current.Finalizers) == 0 {
+			return nil
+		}
+		current.Finalizers = nil
+		return k8sutils.UpdateClientObject(ctx, cc.k8sClient, &current)
+	}
+
 	executor, err := NewSQLExecutor(ctx, cc.k8sClient, namespace, cnSTSName)
 	if err != nil {
 		logger.Error(err, "new SQL executor failed")

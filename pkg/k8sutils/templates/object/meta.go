@@ -12,7 +12,24 @@ import (
 const (
 	StarRocksClusterKind   = "StarRocksCluster"
 	StarRocksWarehouseKind = "StarRocksWarehouse"
+
+	// SkipFECleanupAnnotation, set to "true" on a StarRocksWarehouse, hands the warehouse's life in
+	// the FE over to whoever deletes the CR: the operator then holds no protection finalizer on the
+	// warehouse's CN StatefulSet, and deleting the CR runs no FE cleanup (no DROP WAREHOUSE). It
+	// exists so a warehouse can move between operators -- a migration, or its rollback -- by deleting
+	// one CR and applying a same-named one, with the warehouse, its properties and its grants left
+	// intact in the FE and nothing stuck in Terminating.
+	//
+	// The operator mirrors it onto the CN StatefulSet, because the CR is already gone when the
+	// cleanup runs and the StatefulSet is all it has left to read.
+	SkipFECleanupAnnotation = "starrocks.com/skip-fe-cleanup"
 )
+
+// SkipsFECleanup reports whether annotations carry SkipFECleanupAnnotation set to "true", in any
+// case. Any other value counts as not set.
+func SkipsFECleanup(annotations map[string]string) bool {
+	return strings.EqualFold(annotations[SkipFECleanupAnnotation], "true")
+}
 
 // StarRocksObject is a wrapper of metav1.TypeMeta and metav1.ObjectMeta for StarRocksCluster and StarRocksWarehouse.
 type StarRocksObject struct {
