@@ -220,9 +220,13 @@ func (executor *SQLExecutor) QueryShowComputeNodes(ctx context.Context, db *sql.
 	return &result, nil
 }
 
-// ExecuteDropComputeNode executes the SQL statement to drop a compute node from a warehouse.
+// ExecuteDropComputeNode drops a compute node from FE.
+// FROM WAREHOUSE is omitted when WarehouseName is empty (shared_nothing).
 func (executor *SQLExecutor) ExecuteDropComputeNode(ctx context.Context, db *sql.DB, cn ComputeNode) error {
-	dropStatement := fmt.Sprintf("ALTER SYSTEM DROP COMPUTE NODE \"%v:%v\" FROM WAREHOUSE %v", cn.FQDN, cn.HeartbeatPort, cn.WarehouseName)
+	dropStatement := fmt.Sprintf("ALTER SYSTEM DROP COMPUTE NODE \"%v:%v\"", cn.FQDN, cn.HeartbeatPort)
+	if cn.WarehouseName != "" {
+		dropStatement += fmt.Sprintf(" FROM WAREHOUSE %v", cn.WarehouseName)
+	}
 	return executor.ExecuteContext(ctx, db, dropStatement)
 }
 

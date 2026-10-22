@@ -155,7 +155,6 @@ func (cc *CnController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	return err
 }
 
-//nolint:gocyclo
 func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksObject,
 	cnSpec *srapi.StarRocksCnSpec, cnStatus *srapi.StarRocksCnStatus) error {
 	logger := logr.FromContextOrDiscard(ctx)
@@ -223,11 +222,6 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 	if err != nil {
 		logger.Error(err, "sync autoscaler failed")
 		return err
-	}
-
-	// only take effect for shared-data mode
-	if !fe.IsRunInSharedDataMode(feconfig) {
-		return nil
 	}
 
 	// get actual statefulset object
@@ -638,11 +632,7 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 		logger.Error(err, "query SHOW COMPUTE NODES failed", "sql", "SHOW COMPUTE NODES")
 		return err
 	}
-	warehouseNameInFE := "default_warehouse"
-	if object.IsWarehouseObject {
-		warehouseNameInFE = object.GetWarehouseNameInFE()
-	}
-	computeNodes := result.ComputeNodesByWarehouse[warehouseNameInFE]
+	computeNodes := computeNodesForDrop(object, result)
 	if len(computeNodes) > int(expectReplicas) {
 		for i := len(computeNodes) - 1; i >= int(expectReplicas); i-- {
 			err = executor.ExecuteDropComputeNode(ctx, db, computeNodes[i])
@@ -655,6 +645,19 @@ func (cc *CnController) SyncComputeNodesInFE(ctx context.Context, object object.
 	}
 
 	return nil
+}
+
+func computeNodesForDrop(object object.StarRocksObject, result *ShowComputeNodesResult) []ComputeNode {
+	warehouseNameInFE := "default_warehouse"
+	if object.IsWarehouseObject {
+		warehouseNameInFE = object.GetWarehouseNameInFE()
+	}
+	computeNodes := result.ComputeNodesByWarehouse[warehouseNameInFE]
+	// shared_nothing SHOW COMPUTE NODES has no WarehouseName, so rows are keyed "".
+	if !object.IsWarehouseObject && len(computeNodes) == 0 {
+		return result.ComputeNodesByWarehouse[""]
+	}
+	return computeNodes
 }
 
 func generateInternalService(object object.StarRocksObject, cnSpec *srapi.StarRocksCnSpec,
