@@ -15,6 +15,8 @@
 package resource_utils
 
 import (
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -61,7 +63,7 @@ type hashService struct {
 
 // BuildExternalService build the external service. not have selector
 func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterface,
-	config map[string]interface{}, selector map[string]string, labels map[string]string) corev1.Service {
+	config map[string]interface{}, selector map[string]string, labels map[string]string) (corev1.Service, error) {
 	// the k8s service type.
 	var srPorts []srapi.StarRocksServicePort
 	svc := corev1.Service{
@@ -104,6 +106,14 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 		}
 	}
 
+	if starRocksService != nil {
+		filteredPorts, err := filterServicePorts(srPorts, starRocksService.ExposedPorts)
+		if err != nil {
+			return corev1.Service{}, err
+		}
+		srPorts = filteredPorts
+	}
+
 	ref := metav1.NewControllerRef(object, object.GroupVersionKind())
 	svc.OwnerReferences = []metav1.OwnerReference{*ref}
 
@@ -135,7 +145,39 @@ func BuildExternalService(object object.StarRocksObject, spec srapi.SpecInterfac
 
 	anno[srapi.ComponentResourceHash] = hash.HashObject(serviceHashObject(&svc))
 	svc.Annotations = anno
-	return svc
+	return svc, nil
+}
+
+func filterServicePorts(
+	ports []srapi.StarRocksServicePort,
+	exposedPorts []string,
+) ([]srapi.StarRocksServicePort, error) {
+	if len(exposedPorts) == 0 {
+		return ports, nil
+	}
+
+	requestedPorts := make(map[string]struct{}, len(exposedPorts))
+	for _, name := range exposedPorts {
+		requestedPorts[name] = struct{}{}
+	}
+
+	filteredPorts := make([]srapi.StarRocksServicePort, 0, len(ports))
+	for _, port := range ports {
+		if _, ok := requestedPorts[port.Name]; ok {
+			filteredPorts = append(filteredPorts, port)
+			delete(requestedPorts, port.Name)
+		}
+	}
+
+	if len(requestedPorts) != 0 {
+		for _, name := range exposedPorts {
+			if _, ok := requestedPorts[name]; ok {
+				return nil, fmt.Errorf("service: exposed port %q is not available", name)
+			}
+		}
+	}
+
+	return filteredPorts, nil
 }
 
 func getFeServicePorts(config map[string]interface{}, service *srapi.StarRocksService) (srPorts []srapi.StarRocksServicePort) {

@@ -1340,6 +1340,13 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      exposedPorts:
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         enum:
                         - Cluster
@@ -3754,6 +3761,13 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      exposedPorts:
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         enum:
                         - Cluster
@@ -5102,6 +5116,13 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      exposedPorts:
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         enum:
                         - Cluster
@@ -6549,6 +6570,13 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      exposedPorts:
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        uniqueItems: true
+                        x-kubernetes-list-type: set
                       externalTrafficPolicy:
                         enum:
                         - Cluster

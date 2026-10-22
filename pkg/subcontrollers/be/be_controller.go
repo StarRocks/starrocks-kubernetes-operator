@@ -116,8 +116,11 @@ func (be *BeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	beConfig[rutils.QUERY_PORT] = strconv.FormatInt(int64(rutils.GetPort(feConfig, rutils.QUERY_PORT)), 10)
 	// generate new be external service.
 	defaultLabels := load.Labels(src.Name, beSpec)
-	externalsvc := rutils.BuildExternalService(object.NewFromCluster(src),
+	externalsvc, err := rutils.BuildExternalService(object.NewFromCluster(src),
 		beSpec, beConfig, load.Selector(src.Name, beSpec), defaultLabels)
+	if err != nil {
+		return err
+	}
 	// generate internal fe service, update the status of cn on src.
 	internalService := GenerateInternalService(src, &externalsvc, beConfig, defaultLabels)
 

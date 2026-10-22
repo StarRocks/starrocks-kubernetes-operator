@@ -109,8 +109,11 @@ func (controller *FeProxyController) SyncCluster(ctx context.Context, src *srapi
 	}
 
 	object := object.NewFromCluster(src)
-	externalsvc := rutils.BuildExternalService(object, feProxySpec, nil,
+	externalsvc, err := rutils.BuildExternalService(object, feProxySpec, nil,
 		load.Selector(src.Name, feProxySpec), load.Labels(src.Name, feProxySpec))
+	if err != nil {
+		return err
+	}
 	if err := k8sutils.ApplyService(ctx, controller.k8sClient, &externalsvc, rutils.ServiceDeepEqual); err != nil {
 		return err
 	}

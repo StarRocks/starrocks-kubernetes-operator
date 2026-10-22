@@ -195,8 +195,11 @@ func (cc *CnController) SyncCnSpec(ctx context.Context, object object.StarRocksO
 
 	// build and deploy service
 	defaultLabels := load.Labels(object.SubResourcePrefixName, cnSpec)
-	externalsvc := rutils.BuildExternalService(object, cnSpec, cnConfig,
+	externalsvc, err := rutils.BuildExternalService(object, cnSpec, cnConfig,
 		load.Selector(object.SubResourcePrefixName, cnSpec), defaultLabels)
+	if err != nil {
+		return err
+	}
 	internalService := generateInternalService(object, cnSpec, &externalsvc, cnConfig, defaultLabels)
 
 	if err := k8sutils.ApplyService(ctx, cc.k8sClient, &externalsvc, rutils.ServiceDeepEqual); err != nil {

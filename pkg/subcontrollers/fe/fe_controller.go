@@ -92,7 +92,10 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	logger.V(log.DebugLevel).Info("build fe service", "StarRocksCluster", src)
 	object := object.NewFromCluster(src)
 	defaultLabels := load.Labels(src.Name, feSpec)
-	svc := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), defaultLabels)
+	svc, err := rutils.BuildExternalService(object, feSpec, feConfig, load.Selector(src.Name, feSpec), defaultLabels)
+	if err != nil {
+		return err
+	}
 	searchServiceName := service.SearchServiceName(src.Name, feSpec)
 	internalService := service.MakeSearchService(searchServiceName, &svc, []corev1.ServicePort{
 		{

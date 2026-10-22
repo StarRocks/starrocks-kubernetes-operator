@@ -246,6 +246,22 @@ type StarRocksService struct {
 	// +optional
 	Ports []StarRocksServicePort `json:"ports,omitempty"`
 
+	// ExposedPorts is an optional allowlist of port names exposed by the external Service.
+	// When omitted, all available ports for the component are exposed for backward compatibility.
+	// When specified, only ports whose names are listed are exposed.
+	// It does not affect the internal headless Service.
+	//
+	// Valid port names depend on the component.
+	// FE supports http, rpc, query, edit-log, and arrow-flight when configured.
+	// BE supports be, webserver, heartbeat, and brpc.
+	// CN supports thrift, webserver, heartbeat, and brpc.
+	// FE Proxy supports http-port.
+	// +optional
+	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:UniqueItems=true
+	// +listType=set
+	ExposedPorts []string `json:"exposedPorts,omitempty"`
+
 	// If specified and supported by the platform, this will restrict traffic through the cloud-provider
 	// load-balancer will be restricted to the specified client IPs. This field will be ignored if the
 	// cloud-provider does not support the feature.
