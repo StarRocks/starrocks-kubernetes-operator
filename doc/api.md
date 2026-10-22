@@ -1452,6 +1452,18 @@ See <a href="https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
 </tr>
 <tr>
 <td>
+<code>seccompProfile</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#seccompprofile-v1-core">
+Kubernetes core/v1.SeccompProfile
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
 <code>persistentVolumeClaimRetentionPolicy</code><br/>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#statefulsetpersistentvolumeclaimretentionpolicy-v1-apps">

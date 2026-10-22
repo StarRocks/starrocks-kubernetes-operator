@@ -70,6 +70,9 @@ type SpecInterface interface {
 	// Sysctls allow configuring kernel parameters at runtime.
 	GetSysctls() []corev1.Sysctl
 
+	// GetSeccompProfile returns the seccomp profile to set for the pod.
+	GetSeccompProfile() *corev1.SeccompProfile
+
 	// GetCommand returns the command to run in the container.
 	// This overrides the container image's default entrypoint.
 	GetCommand() []string
@@ -325,6 +328,8 @@ func (spec *StarRocksFeProxySpec) IsReadOnlyRootFilesystem() *bool {
 // fe proxy does not have field Sysctls, the reason why implementing this method is
 // that StarRocksFeProxySpec needs to implement SpecInterface interface
 func (spec *StarRocksFeProxySpec) GetSysctls() []corev1.Sysctl { return nil }
+
+func (spec *StarRocksFeProxySpec) GetSeccompProfile() *corev1.SeccompProfile { return nil }
 
 // GetMinReadySeconds
 // fe proxy does not have field MinReadySeconds, the reason why implementing this method is
