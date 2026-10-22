@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -33,6 +34,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
@@ -168,7 +170,14 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 
 	// When user delete the statefulset, we should remove the finalizers.
 	if actual.DeletionTimestamp != nil && actual.Finalizers != nil {
-		actual.Finalizers = nil
+		// keep the orphan finalizer: removing it before the garbage collector releases the pods deletes them
+		finalizers := slices.DeleteFunc(slices.Clone(actual.Finalizers), func(f string) bool {
+			return f != metav1.FinalizerOrphanDependents
+		})
+		if len(finalizers) == len(actual.Finalizers) {
+			return nil
+		}
+		actual.Finalizers = finalizers
 		return k8sClient.Update(ctx, &actual)
 	}
 
@@ -178,6 +187,10 @@ func ApplyStatefulSet(ctx context.Context, k8sClient client.Client, expect *apps
 				return fmt.Errorf("the replicas of statefulset %s can not be scaled to 1", expect.Name)
 			}
 		}
+	}
+
+	if handled, err := expandVolumeClaims(ctx, k8sClient, expect, &actual); handled || err != nil {
+		return err
 	}
 
 	// for compatible version <= v1.5, before v1.5 we use order policy to deploy pods.

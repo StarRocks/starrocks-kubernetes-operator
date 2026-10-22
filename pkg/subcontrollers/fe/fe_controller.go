@@ -169,17 +169,16 @@ func (fc *FeController) UpdateClusterStatus(_ context.Context, src *srapi.StarRo
 	statefulSetName := load.Name(src.Name, src.Spec.StarRocksFeSpec)
 	fs.ResourceNames = rutils.MergeSlices(fs.ResourceNames, []string{statefulSetName})
 
-	if err := subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
-		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), subcontrollers.StatefulSetLoadType); err != nil {
-		return err
-	}
-
 	var st appsv1.StatefulSet
-	if err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st); err != nil {
+	err := fc.Client.Get(context.Background(), types.NamespacedName{Namespace: src.Namespace, Name: statefulSetName}, &st)
+	if apierrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
 		return err
 	}
 
-	return nil
+	return subcontrollers.UpdateStatus(&fs.StarRocksComponentStatus, fc.Client,
+		src.Namespace, load.Name(src.Name, feSpec), pod.Labels(src.Name, feSpec), subcontrollers.StatefulSetLoadType)
 }
 
 // ClearCluster clears resource about fe.

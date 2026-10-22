@@ -45,6 +45,7 @@ type StarRocksWarehouseReconciler struct {
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrockswarehouses/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=starrocks.com,resources=starrockswarehouses/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;patch
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
