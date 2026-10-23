@@ -20,6 +20,7 @@ package subcontrollers
 
 import (
 	"context"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -48,6 +49,16 @@ type ClusterSubController interface {
 }
 
 type GetEventRecorderForFunc func(name string) record.EventRecorder
+
+// RequeueAfterError signals that the reconcile should be requeued after a
+// delay. It is not a real failure — the main controller should not set the
+// cluster status to Failed when it receives this error.
+type RequeueAfterError struct {
+	After  time.Duration
+	Reason string
+}
+
+func (e *RequeueAfterError) Error() string { return e.Reason }
 
 type WarehouseSubController interface {
 	// ClearWarehouse will clear all resource about warehouse.
