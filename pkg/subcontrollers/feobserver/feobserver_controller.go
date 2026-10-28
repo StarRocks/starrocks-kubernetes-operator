@@ -203,6 +203,11 @@ func (fc *FeObserverController) ClearCluster(ctx context.Context, src *srapi.Sta
 		logger.Error(err, "delete search service failed", "searchServiceName", searchServiceName)
 		return err
 	}
+	externalServiceName := service.ExternalServiceName(src.Name, observerSpec)
+	if err := k8sutils.DeleteService(ctx, fc.Client, src.Namespace, externalServiceName); err != nil && !apierrors.IsNotFound(err) {
+		logger.Error(err, "delete external service failed", "externalServiceName", externalServiceName)
+		return err
+	}
 	return nil
 }
 

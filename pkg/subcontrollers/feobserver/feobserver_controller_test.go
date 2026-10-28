@@ -96,13 +96,13 @@ func TestFeObserver_ClearCluster(t *testing.T) {
 
 	var est appsv1.StatefulSet
 	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: sts.Name, Namespace: "default"}, &est)
-	require.True(t, err == nil || apierrors.IsNotFound(err))
+	require.True(t, apierrors.IsNotFound(err))
 	var esvc corev1.Service
 	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: svc.Name, Namespace: "default"}, &esvc)
-	require.True(t, err == nil || apierrors.IsNotFound(err))
+	require.True(t, apierrors.IsNotFound(err))
 	var essvc corev1.Service
 	err = fc.Client.Get(context.Background(), types.NamespacedName{Name: ssvc.Name, Namespace: "default"}, &essvc)
-	require.True(t, err == nil || apierrors.IsNotFound(err))
+	require.True(t, apierrors.IsNotFound(err))
 }
 
 func TestFeObserver_SyncCluster(t *testing.T) {
@@ -316,17 +316,33 @@ func TestFeObserver_SyncClusterDisabled(t *testing.T) {
 		},
 	}
 
-	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src), fake.GetEventRecorderFor(nil))
+	sts := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-fe-observer", Namespace: "default"},
+	}
+	externalSvc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-fe-observer-service", Namespace: "default"},
+	}
+	searchSvc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-fe-observer-search", Namespace: "default"},
+	}
+	fc := feobserver.New(fake.NewFakeClient(srapi.Scheme, src, sts, externalSvc, searchSvc), fake.GetEventRecorderFor(nil))
 	err := fc.SyncCluster(context.Background(), src)
 	require.NoError(t, err)
 	err = fc.UpdateClusterStatus(context.Background(), src)
 	require.NoError(t, err)
 	require.Nil(t, src.Status.StarRocksFeObserverStatus)
 
-	var sts appsv1.StatefulSet
+	var actualSts appsv1.StatefulSet
 	err = fc.Client.Get(context.Background(),
-		types.NamespacedName{Name: "test-fe-observer", Namespace: "default"}, &sts)
+		types.NamespacedName{Name: sts.Name, Namespace: "default"}, &actualSts)
 	require.True(t, apierrors.IsNotFound(err))
+	for _, name := range []string{externalSvc.Name, searchSvc.Name} {
+		var svc corev1.Service
+		err = fc.Client.Get(context.Background(), types.NamespacedName{Name: name, Namespace: "default"}, &svc)
+		require.True(t, apierrors.IsNotFound(err), "service %s should be deleted", name)
+	}
+
+	require.NoError(t, fc.SyncCluster(context.Background(), src))
 }
 
 func TestFeObserver_Ready(t *testing.T) {
