@@ -92,6 +92,36 @@ func TestParseVersion(t *testing.T) {
 	}
 }
 
+func TestIsLowerThan(t *testing.T) {
+	tests := []struct {
+		checkVersion  string
+		targetVersion string
+		wantLower     bool
+		wantErr       bool
+	}{
+		{checkVersion: "3.9.99", targetVersion: "4.1.0", wantLower: true},
+		{checkVersion: "4.0.99", targetVersion: "4.1.0", wantLower: true},
+		{checkVersion: "4.1.0", targetVersion: "4.1.0"},
+		{checkVersion: "4.2.0", targetVersion: "4.1.0"},
+		{checkVersion: "5.0.0", targetVersion: "4.1.0"},
+		{checkVersion: "4.1.1", targetVersion: "4.1.2", wantLower: true},
+		{checkVersion: "4.1.10", targetVersion: "4.1.2"},
+		{checkVersion: "4.2.0-ee", targetVersion: "4.1.0"},
+		{checkVersion: "latest", targetVersion: "4.1.0"},
+		{checkVersion: "invalid", targetVersion: "4.1.0", wantErr: true},
+		{checkVersion: "4.1.0", targetVersion: "invalid", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.checkVersion+"_vs_"+tt.targetVersion, func(t *testing.T) {
+			got, err := IsLowerThan(tt.checkVersion, tt.targetVersion)
+			if (err != nil) != tt.wantErr || got != tt.wantLower {
+				t.Errorf("IsLowerThan(%q, %q) = %t, %v; want %t, error=%t",
+					tt.checkVersion, tt.targetVersion, got, err, tt.wantLower, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestIsLowerThanAny(t *testing.T) {
 	targetVersions := []string{"3.3.17", "3.4.6", "3.5.2"}
 
