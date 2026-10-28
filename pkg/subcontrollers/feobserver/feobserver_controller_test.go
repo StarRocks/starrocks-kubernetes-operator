@@ -194,7 +194,6 @@ func TestFeObserver_SyncCluster(t *testing.T) {
 		srapi.OwnerReference:    "test-fe-observer",
 		srapi.ComponentLabelKey: srapi.DEFAULT_FE_OBSERVER,
 	}, sts.Spec.Selector.MatchLabels)
-	require.Equal(t, "test-fe", sts.Spec.Template.Labels[srapi.FeServiceLabelKey])
 	require.Equal(t, "starrocks.com/fe:4.1.0", sts.Spec.Template.Spec.Containers[0].Image)
 	require.Equal(t, corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("4"),

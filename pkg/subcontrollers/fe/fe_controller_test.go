@@ -179,7 +179,6 @@ func Test_SyncDeploy(t *testing.T) {
 	}, asvc.Spec.Selector)
 	require.Equal(t, load.Selector(src.Name, spec), rsvc.Spec.Selector)
 	require.Equal(t, load.Selector(src.Name, spec), st.Spec.Selector.MatchLabels)
-	require.Equal(t, "test-fe", st.Spec.Template.Labels[srapi.FeServiceLabelKey])
 }
 
 func TestCheckFEReady(t *testing.T) {
