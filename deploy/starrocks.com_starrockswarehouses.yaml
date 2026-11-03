@@ -38,6 +38,8 @@ spec:
             properties:
               starRocksCluster:
                 type: string
+              starRocksClusterNamespace:
+                type: string
               template:
                 properties:
                   affinity:
