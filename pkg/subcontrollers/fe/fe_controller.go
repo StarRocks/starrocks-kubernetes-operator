@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
@@ -99,7 +100,7 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 			Name:        "query-port",
 			Port:        rutils.GetPort(feConfig, rutils.QUERY_PORT),
 			TargetPort:  intstr.FromInt(int(rutils.GetPort(feConfig, rutils.QUERY_PORT))),
-			AppProtocol: func() *string { mysql := "mysql"; return &mysql }(),
+			AppProtocol: ptr.To("mysql"),
 		},
 	}, defaultLabels)
 

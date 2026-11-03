@@ -63,6 +63,7 @@ func Labels(clusterName string, spec v1.SpecInterface) map[string]string {
 		}
 	}
 	labels := load.Selector(clusterName, spec)
+	addLabels(labels, spec.GetSharedLabels())
 
 	switch v := spec.(type) {
 	case *v1.StarRocksBeSpec:

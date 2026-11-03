@@ -2662,6 +2662,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
+                      These are applied in addition to sharedLabels.
                     type: object
                   podManagementPolicy:
                     description: |-
@@ -2814,6 +2815,12 @@ spec:
                             To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
                             containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
                           properties:
+                            appProtocol:
+                              description: |-
+                                AppProtocol specifies the application protocol for this port.
+                                This is used as a hint for implementations to offer richer behavior for protocols that they understand.
+                                For example: "mysql", "http", "https", "grpc".
+                              type: string
                             containerPort:
                               description: |-
                                 ContainerPort of the service port.
@@ -2859,6 +2866,13 @@ spec:
                       in the same pod, and the first process in each container will not be assigned PID 1.
                       Optional: Default to false.
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      SharedLabels defines additional labels to apply to all sub-resources created for this component,
+                      including the StatefulSet/Deployment, pods, Services, VolumeClaimTemplates, ConfigMaps, and HPAs.
+                    type: object
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
@@ -7774,6 +7788,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
+                      These are applied in addition to sharedLabels.
                     type: object
                   podManagementPolicy:
                     description: |-
@@ -7926,6 +7941,12 @@ spec:
                             To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
                             containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
                           properties:
+                            appProtocol:
+                              description: |-
+                                AppProtocol specifies the application protocol for this port.
+                                This is used as a hint for implementations to offer richer behavior for protocols that they understand.
+                                For example: "mysql", "http", "https", "grpc".
+                              type: string
                             containerPort:
                               description: |-
                                 ContainerPort of the service port.
@@ -7971,6 +7992,13 @@ spec:
                       in the same pod, and the first process in each container will not be assigned PID 1.
                       Optional: Default to false.
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      SharedLabels defines additional labels to apply to all sub-resources created for this component,
+                      including the StatefulSet/Deployment, pods, Services, VolumeClaimTemplates, ConfigMaps, and HPAs.
+                    type: object
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.
@@ -10751,6 +10779,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
+                      These are applied in addition to sharedLabels.
                     type: object
                   readinessProbeFailureSeconds:
                     description: |-
@@ -10856,6 +10885,12 @@ spec:
                             To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
                             containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
                           properties:
+                            appProtocol:
+                              description: |-
+                                AppProtocol specifies the application protocol for this port.
+                                This is used as a hint for implementations to offer richer behavior for protocols that they understand.
+                                For example: "mysql", "http", "https", "grpc".
+                              type: string
                             containerPort:
                               description: |-
                                 ContainerPort of the service port.
@@ -10901,6 +10936,13 @@ spec:
                       in the same pod, and the first process in each container will not be assigned PID 1.
                       Optional: Default to false.
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      SharedLabels defines additional labels to apply to all sub-resources created for this component,
+                      including the StatefulSet/Deployment, pods, Services, VolumeClaimTemplates, ConfigMaps, and HPAs.
+                    type: object
                   startupProbeFailureSeconds:
                     description: |-
                       StartupProbeFailureSeconds defines the total failure seconds of startup Probe.
@@ -13846,6 +13888,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: the pod labels for user select or classify pods.
+                      These are applied in addition to sharedLabels.
                     type: object
                   podManagementPolicy:
                     description: |-
@@ -13998,6 +14041,12 @@ spec:
                             To assign a specific port or nodePort to a service, you should specify them by the corresponding name or
                             containerPort in the service configuration. If both containerPort and name are specified, containerPort takes precedence.
                           properties:
+                            appProtocol:
+                              description: |-
+                                AppProtocol specifies the application protocol for this port.
+                                This is used as a hint for implementations to offer richer behavior for protocols that they understand.
+                                For example: "mysql", "http", "https", "grpc".
+                              type: string
                             containerPort:
                               description: |-
                                 ContainerPort of the service port.
@@ -14043,6 +14092,13 @@ spec:
                       in the same pod, and the first process in each container will not be assigned PID 1.
                       Optional: Default to false.
                     type: boolean
+                  sharedLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      SharedLabels defines additional labels to apply to all sub-resources created for this component,
+                      including the StatefulSet/Deployment, pods, Services, VolumeClaimTemplates, ConfigMaps, and HPAs.
+                    type: object
                   sidecars:
                     description: |-
                       Sidecars is an optional list of containers that are run in the same pod as the starrocks component.

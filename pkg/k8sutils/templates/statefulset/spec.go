@@ -31,7 +31,7 @@ import (
 
 const STARROCKS_WAREHOUSE_FINALIZER = "starrocks.com.starrockswarehouse/protection"
 
-func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
+func PVCList(volumes []v1.StorageVolume, labels map[string]string) []corev1.PersistentVolumeClaim {
 	var pvcs []corev1.PersistentVolumeClaim
 	for _, vm := range volumes {
 		if name := pod.SpecialStorageClassName(vm); name != "" {
@@ -41,7 +41,7 @@ func PVCList(volumes []v1.StorageVolume) []corev1.PersistentVolumeClaim {
 			continue
 		}
 		pvc := corev1.PersistentVolumeClaim{
-			ObjectMeta: metav1.ObjectMeta{Name: vm.Name},
+			ObjectMeta: metav1.ObjectMeta{Name: vm.Name, Labels: labels},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					corev1.ReadWriteOnce,
@@ -80,7 +80,7 @@ func MakeStatefulset(object srobject.StarRocksObject, spec v1.SpecInterface, pod
 			UpdateStrategy:       *spec.GetUpdateStrategy(),
 			Template:             *podTemplateSpec,
 			ServiceName:          service.SearchServiceName(object.SubResourcePrefixName, spec),
-			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes()),
+			VolumeClaimTemplates: PVCList(spec.GetStorageVolumes(), load.Labels(object.SubResourcePrefixName, spec)),
 			PodManagementPolicy:  spec.GetPodManagementPolicy(),
 		},
 	}
