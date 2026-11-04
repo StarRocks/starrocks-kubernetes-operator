@@ -29,7 +29,7 @@ import (
 	srapi "github.com/StarRocks/starrocks-kubernetes-operator/pkg/apis/starrocks/v1"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
-	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/cn"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 var (
@@ -51,7 +51,7 @@ func main() {
 	flag.StringVar(&config.DNSDomainSuffix, "dns-domain-suffix", "cluster.local", "The suffix of the dns domain in k8s")
 	flag.BoolVar(&config.VolumeNameWithHash, "volume-name-with-hash", true, "Add a hash to the volume name")
 	flag.StringVar(&_denyList, "deny-list", "", "Comma-separated list of namespaces to exclude from reconciliation")
-	flag.StringVar(&config.FeSslMode, "fe-ssl-mode", cn.SSLModePreferred,
+	flag.StringVar(&config.FeSslMode, "fe-ssl-mode", fe.SSLModePreferred,
 		"How the operator's MySQL connection to FE negotiates TLS. DISABLED keeps it plaintext; "+
 			"PREFERRED encrypts when FE advertises SSL support and stays plaintext otherwise; "+
 			"REQUIRED always encrypts and fails when FE does not support SSL. Case-insensitive. "+
@@ -65,7 +65,7 @@ func main() {
 	logger := ctrl.Log.WithName("main")
 
 	// Fail fast: an unusable ssl mode would otherwise stay silent until the first FE connection.
-	if err := cn.ValidateSSLMode(config.FeSslMode); err != nil {
+	if err := fe.ValidateSSLMode(config.FeSslMode); err != nil {
 		logger.Error(err, "invalid --fe-ssl-mode")
 		os.Exit(1)
 	}

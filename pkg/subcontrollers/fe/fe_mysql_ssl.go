@@ -1,4 +1,4 @@
-package cn
+package fe
 
 import (
 	"fmt"
@@ -50,14 +50,14 @@ func ValidateSSLMode(mode string) error {
 	}
 }
 
-// sslModeDSNSuffix returns the query string to append to the FE DSN for mode, including the leading
+// SSLModeDSNSuffix returns the query string to append to the FE DSN for mode, including the leading
 // "?" when non-empty. The values map onto go-sql-driver's tls= parameter: "preferred" negotiates TLS
 // but falls back to plaintext when the server does not advertise CLIENT_SSL, while "skip-verify"
 // insists on TLS. Neither verifies the server certificate.
 //
 // Unrecognized values yield "" — the plaintext behavior that predates this feature — rather than a
 // panic. Production never reaches that branch because main rejects such values via ValidateSSLMode.
-func sslModeDSNSuffix(mode string) string {
+func SSLModeDSNSuffix(mode string) string {
 	switch normalizeSSLMode(mode) {
 	case SSLModePreferred:
 		return "?tls=preferred"
