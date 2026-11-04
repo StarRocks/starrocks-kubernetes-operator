@@ -16,6 +16,7 @@ import (
 	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/templates/object"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 const (
@@ -92,7 +93,7 @@ func NewSQLExecutor(ctx context.Context, k8sClient client.Client, namespace, cnS
 func (executor *SQLExecutor) dsn() string {
 	return fmt.Sprintf("root:%s@tcp(%s.%s:%s)/%s",
 		executor.RootPassword, executor.FeServiceName, executor.FeServiceNamespace,
-		executor.FeServicePort, sslModeDSNSuffix(executor.SSLMode))
+		executor.FeServicePort, fe.SSLModeDSNSuffix(executor.SSLMode))
 }
 
 // ExecuteContext sql statements. Every time a SQL statement needs to be executed, a new sql.DB instance will be created.

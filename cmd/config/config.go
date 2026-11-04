@@ -11,7 +11,7 @@ var (
 
 	// FeSslMode decides whether the operator's MySQL connection to FE negotiates TLS. Valid values
 	// are DISABLED, PREFERRED and REQUIRED — the MySQL client's --ssl-mode vocabulary, matched
-	// case-insensitively. It is validated once at startup (see cn.ValidateSSLMode), applies to the
+	// case-insensitively. It is validated once at startup (see fe.ValidateSSLMode), applies to the
 	// whole operator process, and requires an operator restart to change.
 	FeSslMode string
 )

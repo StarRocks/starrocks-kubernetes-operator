@@ -1,4 +1,4 @@
-package cn
+package fe
 
 import (
 	"testing"
@@ -26,7 +26,7 @@ func TestSSLModeDSNSuffix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, sslModeDSNSuffix(tt.mode))
+			assert.Equal(t, tt.want, SSLModeDSNSuffix(tt.mode))
 		})
 	}
 }

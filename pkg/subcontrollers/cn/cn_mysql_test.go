@@ -19,6 +19,7 @@ import (
 
 	"github.com/StarRocks/starrocks-kubernetes-operator/cmd/config"
 	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/fake"
+	"github.com/StarRocks/starrocks-kubernetes-operator/pkg/subcontrollers/fe"
 )
 
 func TestNewSQLExecutor(t *testing.T) {
@@ -31,7 +32,7 @@ func TestNewSQLExecutor(t *testing.T) {
 
 	// NewSQLExecutor copies the process-wide flag value onto the executor, so pin it for this test.
 	originalSslMode := config.FeSslMode
-	config.FeSslMode = SSLModeRequired
+	config.FeSslMode = fe.SSLModeRequired
 	t.Cleanup(func() { config.FeSslMode = originalSslMode })
 
 	tests := []struct {
@@ -96,7 +97,7 @@ func TestNewSQLExecutor(t *testing.T) {
 				FeServiceName:      "fe",
 				FeServiceNamespace: "default",
 				FeServicePort:      "9030",
-				SSLMode:            SSLModeRequired,
+				SSLMode:            fe.SSLModeRequired,
 			},
 			wantErr: assert.NoError,
 		},
@@ -373,17 +374,17 @@ func TestSQLExecutorDSN(t *testing.T) {
 	}{
 		{
 			name: "disabled keeps the plaintext DSN unchanged",
-			mode: SSLModeDisabled,
+			mode: fe.SSLModeDisabled,
 			want: "root:123456@tcp(fe.default:9030)/",
 		},
 		{
 			name: "preferred appends the opportunistic tls parameter",
-			mode: SSLModePreferred,
+			mode: fe.SSLModePreferred,
 			want: "root:123456@tcp(fe.default:9030)/?tls=preferred",
 		},
 		{
 			name: "required appends the mandatory tls parameter",
-			mode: SSLModeRequired,
+			mode: fe.SSLModeRequired,
 			want: "root:123456@tcp(fe.default:9030)/?tls=skip-verify",
 		},
 	}

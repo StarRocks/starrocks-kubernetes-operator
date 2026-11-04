@@ -56,6 +56,13 @@ rules:
   - get
   - list
   - watch
+# the operator deletes the FE meta PVC of an FE pod removed by a scale-in, see SyncFrontendsInFE
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - delete
 - apiGroups:
   - starrocks.com
   resources:

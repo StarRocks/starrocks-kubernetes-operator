@@ -142,6 +142,14 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 		return err
 	}
 
+	if !shouldEnterDRMode {
+		// A scale-in leaves the removed FE nodes registered in the cluster, see SyncFrontendsInFE.
+		// Like the compute node cleanup, a failure here is not fatal: it is retried on the next reconcile.
+		if syncErr := fc.syncFrontendsInFE(ctx, src, feConfig, &expectSts); syncErr != nil {
+			logger.Info("sync frontends in FE failed", "error", syncErr)
+		}
+	}
+
 	return nil
 }
 
