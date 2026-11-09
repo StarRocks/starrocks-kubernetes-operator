@@ -95,7 +95,7 @@ lint: golangci-lint ## Run golangci-lint with CI-pinned version.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS="-mod=vendor" go test \
+	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test \
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/common/... 			\
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/controllers/... 		\
 		github.com/StarRocks/starrocks-kubernetes-operator/pkg/k8sutils/... 		\
