@@ -382,6 +382,68 @@ func TestCheckFEFullyRolledOut(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "OnDelete strategy - pods still on the old revision, CurrentRevision never advances",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "kube-starrocks-fe",
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas:       &replicas,
+						UpdateStrategy: appsv1.StatefulSetUpdateStrategy{Type: appsv1.OnDeleteStatefulSetStrategyType},
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 2,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    2,
+						CurrentRevision:    "v1",
+						UpdateRevision:     "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: false,
+		},
+		{
+			name: "OnDelete strategy - all pods on the update revision counts as rolled out",
+			args: args{
+				ctx: context.Background(),
+				k8sClient: fake.NewFakeClient(srapi.Scheme, &appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "StatefulSet",
+						APIVersion: appsv1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "kube-starrocks-fe",
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas:       &replicas,
+						UpdateStrategy: appsv1.StatefulSetUpdateStrategy{Type: appsv1.OnDeleteStatefulSetStrategyType},
+					},
+					Status: appsv1.StatefulSetStatus{
+						ObservedGeneration: 2,
+						ReadyReplicas:      3,
+						UpdatedReplicas:    3,
+						CurrentRevision:    "v1",
+						UpdateRevision:     "v2",
+					},
+				}),
+				clusterNamespace: "default",
+				clusterName:      "kube-starrocks",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

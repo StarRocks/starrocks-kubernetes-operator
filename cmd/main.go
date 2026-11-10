@@ -56,6 +56,11 @@ func main() {
 			"PREFERRED encrypts when FE advertises SSL support and stays plaintext otherwise; "+
 			"REQUIRED always encrypts and fails when FE does not support SSL. Case-insensitive. "+
 			"The server certificate is never verified. Requires an operator restart to change.")
+	flag.BoolVar(&config.EnableFeLeaderAwareUpgrade, "enable-fe-leader-aware-upgrade", false,
+		"Let the operator order FE pod replacement during an upgrade. The FE StatefulSet is forced to the "+
+			"OnDelete update strategy, and the operator deletes one FE pod at a time, followers first and the "+
+			"leader reported by SHOW FRONTENDS last, so a single upgrade causes exactly one leader election. "+
+			"Requires the operator to be able to delete pods.")
 
 	// Set up logger.
 	opts := zap.Options{}

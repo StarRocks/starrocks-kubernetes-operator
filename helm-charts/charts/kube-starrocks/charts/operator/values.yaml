@@ -111,6 +111,16 @@ starrocksOperator:
   # service DNS name. Leave empty to use the operator's built-in default. Changing this value
   # restarts the operator pod.
   feSslMode: PREFERRED
+  # Let the operator order FE pod replacement during an upgrade instead of the StatefulSet
+  # controller. When true, the FE StatefulSet is switched to the OnDelete update strategy and,
+  # whenever the FE pod template changes, the operator deletes one FE pod at a time: followers
+  # first, and the leader reported by SHOW FRONTENDS last. A single upgrade then triggers exactly
+  # one leader election, instead of the two that happen when the leader is replaced before a pod
+  # that goes on to win the election. Any updateStrategy set on the StarRocksCluster FE spec is
+  # ignored while this is on. The operator connects to FE as root using the MYSQL_PWD env var of
+  # the FE pods, if set, and refuses to delete anything when SHOW FRONTENDS fails or reports an FE
+  # as not alive. Changing this value restarts the operator pod.
+  enableFeLeaderAwareUpgrade: false
   # Additional operator container environment variables
   # You specify this manually like you would a raw deployment manifest.
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
