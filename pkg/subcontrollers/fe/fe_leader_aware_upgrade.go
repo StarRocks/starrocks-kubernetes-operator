@@ -224,7 +224,9 @@ func (fc *FeController) ReconcileLeaderAwareUpgrade(ctx context.Context, src *sr
 
 	var sts appsv1.StatefulSet
 	if err := fc.Client.Get(ctx, types.NamespacedName{Namespace: expectSts.Namespace, Name: expectSts.Name}, &sts); err != nil {
-		return err
+		// Right after ApplyStatefulSet created the StatefulSet the cached client may not see it yet; the
+		// watch on StatefulSets triggers another reconcile once it does.
+		return client.IgnoreNotFound(err)
 	}
 	if sts.Status.ObservedGeneration < sts.Generation || sts.Status.UpdateRevision == "" {
 		logger.Info("waiting for the statefulset controller to observe the new spec",

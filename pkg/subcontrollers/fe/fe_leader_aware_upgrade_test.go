@@ -551,6 +551,14 @@ func TestSyncCluster_LeaderAwareUpgradeConvertsExistingStatefulSet(t *testing.T)
 	require.Nil(t, sts.Spec.UpdateStrategy.RollingUpdate)
 }
 
+func TestReconcileLeaderAwareUpgrade_StatefulSetNotYetVisible(t *testing.T) {
+	src := newTestCluster(3)
+	c := fake.NewFakeClient(srapi.Scheme, src)
+	fc := &FeController{Client: c, Recorder: record.NewFakeRecorder(10)}
+	sts := newTestSts(3, 2)
+	require.NoError(t, fc.ReconcileLeaderAwareUpgrade(context.Background(), src, sts, testFeQueryPort))
+}
+
 func TestEnsureOnDeleteStrategy_MissingStatefulSet(t *testing.T) {
 	c := fake.NewFakeClient(srapi.Scheme)
 	require.NoError(t, EnsureOnDeleteStrategy(context.Background(), c, testNamespace, testFeSts))
