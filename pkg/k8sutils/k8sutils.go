@@ -398,6 +398,55 @@ func DeleteAutoscaler(ctx context.Context, k8sClient client.Client, namespace, n
 	return k8sClient.Delete(ctx, hpaObject)
 }
 
+// PatchPVCVolumeAttributesClass patches the volumeAttributesClassName on PVCs owned by a StatefulSet.
+// Since k8s API v0.26.1 does not include the VolumeAttributesClassName field in the PVC Go struct,
+// this uses an unstructured merge patch to set the field directly on the API server (requires k8s 1.31+).
+func PatchPVCVolumeAttributesClass(ctx context.Context, k8sClient client.Client,
+	namespace string, stsName string, storageVolumes []srapi.StorageVolume) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	// Build a map of volume name -> volumeAttributesClassName for volumes that have it set
+	vacByVolume := make(map[string]string)
+	for _, sv := range storageVolumes {
+		if sv.VolumeAttributesClassName != nil && *sv.VolumeAttributesClassName != "" {
+			vacByVolume[sv.Name] = *sv.VolumeAttributesClassName
+		}
+	}
+	if len(vacByVolume) == 0 {
+		return nil
+	}
+
+	// List PVCs with the OwnerReference label matching the StatefulSet name
+	var pvcList corev1.PersistentVolumeClaimList
+	if err := k8sClient.List(ctx, &pvcList,
+		client.InNamespace(namespace),
+	); err != nil {
+		return err
+	}
+
+	for i := range pvcList.Items {
+		pvc := &pvcList.Items[i]
+		// StatefulSet PVC names follow the pattern: {volumeClaimTemplateName}-{stsName}-{ordinal}
+		for volName, vac := range vacByVolume {
+			prefix := volName + "-" + stsName + "-"
+			if !strings.HasPrefix(pvc.Name, prefix) {
+				continue
+			}
+			patch := []byte(fmt.Sprintf(
+				`{"spec":{"volumeAttributesClassName":"%s"}}`, vac))
+			if err := k8sClient.Patch(ctx, pvc,
+				client.RawPatch(types.MergePatchType, patch)); err != nil {
+				logger.Error(err, "failed to patch PVC volumeAttributesClassName",
+					"pvc", pvc.Name, "volumeAttributesClassName", vac)
+				return err
+			}
+			logger.Info("patched PVC volumeAttributesClassName",
+				"pvc", pvc.Name, "volumeAttributesClassName", vac)
+		}
+	}
+	return nil
+}
+
 func PodIsReady(status *corev1.PodStatus) bool {
 	if status.ContainerStatuses == nil {
 		return false
