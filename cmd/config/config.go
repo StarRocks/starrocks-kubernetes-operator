@@ -14,6 +14,13 @@ var (
 	// case-insensitively. It is validated once at startup (see cn.ValidateSSLMode), applies to the
 	// whole operator process, and requires an operator restart to change.
 	FeSslMode string
+
+	// EnableFeLeaderAwareUpgrade makes the operator drive FE pod replacement itself instead of
+	// leaving it to the StatefulSet controller. When true, the FE StatefulSet is forced to the
+	// OnDelete update strategy and, on every template change, the operator deletes one FE pod at
+	// a time, followers first and the BDBJE leader (as reported by SHOW FRONTENDS) last, so that
+	// a single upgrade triggers exactly one leader election. See fe.ReconcileLeaderAwareUpgrade.
+	EnableFeLeaderAwareUpgrade bool
 )
 
 func GetServiceDomainSuffix() string {

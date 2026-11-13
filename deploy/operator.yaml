@@ -50,9 +50,17 @@ rules:
   - ""
   resources:
   - endpoints
-  - pods
   - secrets
   verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - delete
   - get
   - list
   - watch
@@ -180,6 +188,7 @@ spec:
         - --zap-encoder=console
         - --volume-name-with-hash=true
         - --fe-ssl-mode=PREFERRED
+        - --enable-fe-leader-aware-upgrade=false
         env:
         - name: TZ
           value: Asia/Shanghai

@@ -25,14 +25,26 @@ import (
 // Status returns a message describing statefulset status, and a bool value indicating if the status is considered done.
 // Copy from kubelet
 func Status(sts *appsv1.StatefulSet) (string, bool, error) {
-	if sts.Spec.UpdateStrategy.Type != appsv1.RollingUpdateStatefulSetStrategyType {
-		return "", true, fmt.Errorf("rollout status is only available for %s strategy type", appsv1.RollingUpdateStatefulSetStrategyType)
+	if sts.Spec.UpdateStrategy.Type != appsv1.RollingUpdateStatefulSetStrategyType &&
+		sts.Spec.UpdateStrategy.Type != appsv1.OnDeleteStatefulSetStrategyType {
+		return "", true, fmt.Errorf("rollout status is only available for %s and %s strategy types",
+			appsv1.RollingUpdateStatefulSetStrategyType, appsv1.OnDeleteStatefulSetStrategyType)
 	}
 	if sts.Status.ObservedGeneration == 0 || sts.Generation > sts.Status.ObservedGeneration {
 		return "Waiting for statefulset spec update to be observed", false, nil
 	}
 	if sts.Spec.Replicas != nil && sts.Status.ReadyReplicas < *sts.Spec.Replicas {
 		return fmt.Sprintf("Waiting for %d pods to be ready", *sts.Spec.Replicas-sts.Status.ReadyReplicas), false, nil
+	}
+	if sts.Spec.UpdateStrategy.Type == appsv1.OnDeleteStatefulSetStrategyType {
+		// The StatefulSet controller never advances CurrentRevision under OnDelete, so count pods on
+		// the update revision instead. The operator's leader-aware upgrade deletes pods to get them there.
+		if sts.Spec.Replicas != nil && sts.Status.UpdatedReplicas < *sts.Spec.Replicas {
+			return fmt.Sprintf("Waiting for OnDelete roll out to finish: %d out of %d pods have been updated",
+				sts.Status.UpdatedReplicas, *sts.Spec.Replicas), false, nil
+		}
+		return fmt.Sprintf("OnDelete roll out complete: %d pods have been updated at revision %s",
+			sts.Status.UpdatedReplicas, sts.Status.UpdateRevision), true, nil
 	}
 	if sts.Spec.UpdateStrategy.Type == appsv1.RollingUpdateStatefulSetStrategyType && sts.Spec.UpdateStrategy.RollingUpdate != nil {
 		if sts.Spec.Replicas != nil && sts.Spec.UpdateStrategy.RollingUpdate.Partition != nil {

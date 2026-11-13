@@ -43,6 +43,10 @@ import (
 type FeController struct {
 	Client   client.Client
 	Recorder record.EventRecorder
+
+	// NewFrontendsQuerier builds the SHOW FRONTENDS client used by the leader-aware upgrade. nil means
+	// the MySQL implementation; tests inject a fake.
+	NewFrontendsQuerier NewFrontendsQuerierFunc
 }
 
 // New construct a FeController.
@@ -113,6 +117,17 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 	drSpec := src.Spec.DisasterRecovery
 	drStatus := src.Status.DisasterRecoveryStatus
 	shouldEnterDRMode, queryPort := ShouldEnterDisasterRecoveryMode(drSpec, drStatus, feConfig)
+
+	// When the operator orders pod replacement itself (see fe_leader_aware_upgrade.go), the StatefulSet
+	// runs OnDelete and any updateStrategy from the CR is overridden. Disaster recovery rewrites the pod
+	// template itself and runs a single FE, so it keeps the CR's strategy and the ordered rollout stays
+	// out of its way.
+	leaderAwareUpgrade := LeaderAwareUpgradeEnabled() && !shouldEnterDRMode
+	if err = PrepareLeaderAwareUpgrade(ctx, fc.Client, &expectSts, leaderAwareUpgrade); err != nil {
+		logger.Error(err, "switch fe statefulset to OnDelete failed")
+		return err
+	}
+
 	if shouldEnterDRMode {
 		logger.Info("should enter disaster recovery mode")
 		if drStatus == nil {
@@ -128,6 +143,11 @@ func (fc *FeController) SyncCluster(ctx context.Context, src *srapi.StarRocksClu
 
 	if err = k8sutils.ApplyStatefulSet(ctx, fc.Client, &expectSts, shouldEnterDRMode, rutils.StatefulSetDeepEqual); err != nil {
 		logger.Error(err, "deploy statefulset failed")
+		return err
+	}
+
+	if err = fc.RunLeaderAwareUpgrade(ctx, src, &expectSts, feConfig, leaderAwareUpgrade); err != nil {
+		logger.Error(err, "leader-aware upgrade failed")
 		return err
 	}
 
@@ -289,7 +309,18 @@ func CheckFEFullyRolledOut(ctx context.Context, k8sClient client.Client, cluster
 		return false
 	}
 
-	// Check if revision is fully rolled out
+	// Check if revision is fully rolled out. Under the OnDelete strategy the StatefulSet controller never
+	// advances CurrentRevision, so the per-pod count is the only signal there.
+	if sts.Spec.UpdateStrategy.Type == appsv1.OnDeleteStatefulSetStrategyType {
+		if sts.Status.ObservedGeneration < sts.Generation ||
+			(sts.Spec.Replicas != nil && sts.Status.UpdatedReplicas < *sts.Spec.Replicas) {
+			logger.Info("FE StatefulSet OnDelete update in progress",
+				"updateRevision", sts.Status.UpdateRevision,
+				"updatedReplicas", sts.Status.UpdatedReplicas)
+			return false
+		}
+		return true
+	}
 	if sts.Status.UpdateRevision != sts.Status.CurrentRevision {
 		logger.Info("FE StatefulSet rolling update in progress",
 			"currentRevision", sts.Status.CurrentRevision,

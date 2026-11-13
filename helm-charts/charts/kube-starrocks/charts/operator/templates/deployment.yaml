@@ -70,6 +70,9 @@ spec:
         {{- if .Values.starrocksOperator.feSslMode }}
         - --fe-ssl-mode={{ .Values.starrocksOperator.feSslMode }}
         {{- end }}
+        {{- if .Values.starrocksOperator.enableFeLeaderAwareUpgrade }}
+        - --enable-fe-leader-aware-upgrade=true
+        {{- end }}
         env:
         - name: TZ
           value: {{ .Values.timeZone }}
